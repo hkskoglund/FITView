@@ -41,70 +41,57 @@ function onFitFileSelected(e) {
         return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
-    function parseRecordHeader(recHeader) {
-
-
-    }
-
-// Constructor function
-    function FitFileHeader(headerSize, protocolVersion, profileVersion, dataSize, dataType, headerCRC) {
-        this.headerSize = headerSize;
-        this.protocolVersion = protocolVersion;
-        this.profileVersion = profileVersion;
-        this.dataSize = dataSize;
-        this.dataType = dataType;
-        this.toinnerHTML = function () {
-            var headerHtml = '<p>Header size : ' + headerSize.toString() + ' bytes ' +
-        'Protocol version : ' + protocolVersion.toString() +
-        ' Profile version : ' + profileVersion.toString() +
-        ' Data size: ' + dataSize.toString() + ' bytes' +
-        ' Data type: ' + dataType;
-            if (headerCRC != undefined) {
-                headerHtml += 
-        ' CRC: ' + parseInt(headerCRC, 10).toString(16);
-        }
-    }
-
-
-function parseFitHeader(bufFitHeader) {
-    var dviewFitHeader = new DataView(bufFitHeader);
-    // DataView defaults to bigendian MSB --- LSB
-    // FIT file header protocol v. 1.3 stored as little endian
-    var fitHeader = new FitFileHeader(dviewFitHeader.getUint8(0), dviewFitHeader.getUint8(1),
-                                    dviewFitHeader.getUint16(2, true), dviewFitHeader.getUint32(4, true),
-                                    ab2str(bufFitHeader.slice(8, 12)));
     
-    // Optional header info
+// Constructor function
+    function FitFileHeader(bufFitHeader) {
+
+        var dviewFitHeader = new DataView(bufFitHeader);
+        // DataView defaults to bigendian MSB --- LSB
+        // FIT file header protocol v. 1.3 stored as little endian
+
+        this.headerSize = dviewFitHeader.getUint8(0);
+
+
+        this.protocolVersion = dviewFitHeader.getUint8(1);
+        this.profileVersion = dviewFitHeader.getUint16(2, true);
+        this.dataSize = dviewFitHeader.getUint32(4, true);
+        this.dataType = ab2str(bufFitHeader.slice(8, 12));
+
+        // Optional header info
  
-    if (fitHeader.headerSize >= 14) {
-        fitHeader.headerCRC = dviewFitHeader.getUint16(12, true);
+        if (this.headerSize >= 14) {
+            this.headerCRC = dviewFitHeader.getUint16(12, true);
        
+        }
+        
+        
+        this.toinnerHTML = function () {
+            var headerHtml = '<p>Header size : ' + this.headerSize.toString() + ' bytes ' +
+        'Protocol version : ' + this.protocolVersion.toString() +
+        ' Profile version : ' + this.profileVersion.toString() +
+        ' Data size: ' + this.dataSize.toString() + ' bytes' +
+        ' Data type: ' + this.dataType;
+            if (this.headerCRC != undefined) {
+                headerHtml += ' CRC: ' + parseInt(this.headerCRC, 10).toString(16);
+            }
+
+            return headerHtml;
+        }
+
+      
     }
-
-    // Skip additional optional header info...
-
-    outConsole.innerHTML += fitHeader.toinnerHTML;
-
-    return fitHeader.headerSize;
-
-}
 
 
 function fitLoadEnd(e)
 {
-    bufFitFile = fitReader.result;
-    // To do: check for length >= header+crc?
-
-    var headerSize;
-    
+   
     try {
-        headerSize = parseFitHeader(bufFitFile);
+        var fitHeader = new FitFileHeader(fitReader.result);
+        outConsole.innerHTML += fitHeader.toinnerHTML();
     } catch (e) {
         console.error('Trouble with FIT file header parsing, message:', e.message);
     }
 
-    
-    
 }
 
 function onbtnParseClick(e) {
