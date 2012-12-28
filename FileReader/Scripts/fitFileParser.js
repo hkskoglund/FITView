@@ -102,8 +102,8 @@ function onFitFileSelected(e) {
          try {
              // This will be fitReader, beacuse the loadend event fires there
              // self contains a reference to fitFileManager
-             var fitHeader = self.Header(fitReader.result,self.fitFile.size);
-             outConsole.innerHTML += fitHeader.toinnerHTML();
+             self.readHeader(fitReader.result,self.fitFile.size);
+             outConsole.innerHTML += self.toinnerHTML();
          } catch (e) {
              console.error('Trouble with FIT file header parsing, message:', e.message);
          }
@@ -123,7 +123,7 @@ function onFitFileSelected(e) {
 
 
 
-     this.Header = function (bufFitHeader, fitFileSystemSize) {
+     this.readHeader = function (bufFitHeader, fitFileSystemSize) {
 
          var dviewFitHeader = new DataView(bufFitHeader);
          // DataView defaults to bigendian MSB --- LSB
@@ -136,7 +136,7 @@ function onFitFileSelected(e) {
          this.profileVersion = dviewFitHeader.getUint16(2, true);
          this.dataSize = dviewFitHeader.getUint32(4, true);
 
-         var estimatedFitFileSize = this.headerSize + this.dataSize;
+         var estimatedFitFileSize = this.headerSize + this.dataSize+2;  // 2 for last CRC
          if (estimatedFitFileSize != fitFileSystemSize)
              console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString()+" bytes.");
 
@@ -150,25 +150,22 @@ function onFitFileSelected(e) {
                  console.info("Header CRC was not computed");
        
          }
+     }
         
-        
-         this.toinnerHTML = function () {
-             var headerHtml = '<p>Header size : ' + this.headerSize.toString() + ' bytes ' +
-         'Protocol version : ' + this.protocolVersion.toString() +
-         ' Profile version : ' + this.profileVersion.toString() +
-         ' Data size: ' + this.dataSize.toString() + ' bytes' +
-         ' Data type: ' + this.dataType;
-             if (this.headerCRC != undefined) {
-                 headerHtml += ' CRC: ' + parseInt(this.headerCRC, 10).toString(16);
-             }
-
-             return headerHtml;
+     this.toinnerHTML = function () {
+         var headerHtml = '<p>Header size : ' + this.headerSize.toString() + ' bytes ' +
+     'Protocol version : ' + this.protocolVersion.toString() +
+     ' Profile version : ' + this.profileVersion.toString() +
+     ' Data size: ' + this.dataSize.toString() + ' bytes' +
+     ' Data type: ' + this.dataType;
+         if (this.headerCRC != undefined) {
+             headerHtml += ' CRC: ' + parseInt(this.headerCRC, 10).toString(16);
          }
 
-         
-  
+         return headerHtml;
      }
  }
+ 
 
 
 
