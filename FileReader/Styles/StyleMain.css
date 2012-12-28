@@ -1,0 +1,4 @@
+﻿#btnParse {
+    /* Parse button is only available when file is selected/dropped */
+    visibility : hidden
+}

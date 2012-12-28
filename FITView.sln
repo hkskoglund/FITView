@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FITFileReader", "FileReader\FITFileReader.csproj", "{1A41E2EE-6577-41CE-A09A-03B1F3BBC6A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FITView", "FileReader\FITView.csproj", "{1A41E2EE-6577-41CE-A09A-03B1F3BBC6A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
