@@ -41,9 +41,47 @@ function onFitFileSelected(e) {
         return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
-    
+// Ported from C to javascript from FIT SDK 5.10 fit_crc.c
+// Accessed: 28 december 2012
+
+ function fitCRC_Get16(crc, byte)
+    {
+   var crc_table =
+    [
+      0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
+      0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400
+    ];
+
+   var tmp;
+
+    // compute checksum of lower four bits of byte
+    tmp = crc_table[crc & 0xF];
+    crc  = (crc >> 4) & 0x0FFF;
+    crc  = crc ^ tmp ^ crc_table[byte & 0xF];
+
+    // now compute checksum of upper four bits of byte
+    tmp = crc_table[crc & 0xF];
+    crc  = (crc >> 4) & 0x0FFF;
+    crc  = crc ^ tmp ^ crc_table[(byte >> 4) & 0xF];
+
+    return crc;
+    }
+
+ function fitCRC(payloadview,start,end) {
+     var crc = 0, byte;
+     
+
+     for (var i=start; i < end; i++)
+     {
+       byte = payloadview.getUint8(i);
+       crc =  fitCRC_Get16(crc, byte);
+     }
+     
+ return crc;
+
+ }
 // Constructor function
-    function FitFileHeader(bufFitHeader) {
+    function FitFileHeader(bufFitHeader, fitFileSystemSize) {
 
         var dviewFitHeader = new DataView(bufFitHeader);
         // DataView defaults to bigendian MSB --- LSB
@@ -55,12 +93,19 @@ function onFitFileSelected(e) {
         this.protocolVersion = dviewFitHeader.getUint8(1);
         this.profileVersion = dviewFitHeader.getUint16(2, true);
         this.dataSize = dviewFitHeader.getUint32(4, true);
+
+        var estimatedFitFileSize = this.headerSize + this.dataSize;
+        if (estimatedFitFileSize != fitFileSystemSize)
+            console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString()+" bytes.");
+
         this.dataType = ab2str(bufFitHeader.slice(8, 12));
 
         // Optional header info
  
         if (this.headerSize >= 14) {
             this.headerCRC = dviewFitHeader.getUint16(12, true);
+            if (this.headerCRC === 0)
+                console.info("Header CRC was not computed");
        
         }
         
@@ -77,14 +122,12 @@ function onFitFileSelected(e) {
 
             return headerHtml;
         }
-
-      
+  
     }
 
 
 function fitLoadEnd(e)
 {
-   
     try {
         var fitHeader = new FitFileHeader(fitReader.result);
         outConsole.innerHTML += fitHeader.toinnerHTML();
@@ -95,7 +138,9 @@ function fitLoadEnd(e)
 }
 
 function onbtnParseClick(e) {
+
     fitReader.addEventListener('loadend', fitLoadEnd, false);
+
     try {
         fitReader.readAsArrayBuffer(fitFile);
        
