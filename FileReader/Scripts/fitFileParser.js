@@ -135,16 +135,18 @@ function onFitFileSelected(e) {
      if (estimatedFitFileSize != fitFileSystemSize)
          console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString()+" bytes.");
 
-     this.dataType = ab2str(bufFitHeader.slice(8, 12));
+     this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
 
      // Optional header info
  
      if (this.headerSize >= MAXFITHEADERLENGTH) {
          this.headerCRC = dviewFitHeader.getUint16(12, true);
          if (this.headerCRC === 0)
-             console.info("Header CRC was not computed");
+             console.info("Header CRC was not stored in file");
        
      }
+
+     var recHeader = new RecordHeader(dviewFitHeader.getUint8(14));
  }
 
  FitFileManager.prototype.toinnerHTML = function () {
@@ -160,6 +162,33 @@ function onFitFileSelected(e) {
      return headerHtml;
  }
  
+
+ function RecordHeader(recHeaderByte) {
+     var HEADERTYPE_FLAG = 0x80;                // binary 10000000 
+     var NORMAL_MESSAGE_TYPE_FLAG = 0x40;       // binary 01000000
+     var NORMAL_LOCAL_MESSAGE_TYPE_FLAGS = 0xF; // binary 00001111
+     
+     // Data message time compressed
+     var TIMEOFFSET_FLAGS = 0x1F;                           // binary 00011111 
+     var COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS = 0x60; // binary 01100000 
+     
+     this.recHeaderByte = recHeaderByte;
+     this.headerType = (this.recHeaderByte & HEADERTYPE_FLAG) >> 7 // MSB 7 0 = normal header, 1 = compressed timestampheader
+
+     switch (this.headerType) {
+         case 0: // Normal header
+             this.messageType = (this.recHeaderByte & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6
+             // bit 5 = 0 reserved
+             // bit 4 = 0 reserved
+             this.localMessageType = this.recHeaderByte & NORMAL_LOCAL_MESSAGE_TYPE_FLAGS; // bit 0-3
+
+             break;
+         case 1: // Compressed timestamp header - only for data records
+             this.localMessageType = (this.recHeaderByte & COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS) >> 5;
+             this.timeOffset = (this.recHeaderByte & TIMEOFFSET_FLAGS); // bit 0-4 - in seconds since a fixed reference start time (max 32 secs)
+             break;
+     }
+ }
 
 
 
