@@ -1,24 +1,21 @@
 ﻿// Setup DOM event handling
 
+    var outConsole = document.getElementById('outConsole');
+
 // Capturing = false -> bubbling event
     var inpFITFile = document.getElementById('inpFITFile');
     inpFITFile.addEventListener('change', onFitFileSelected, false);
 
+    var fitFileManager = new FitFileManager();
+
     var btnParse = document.getElementById('btnParse')
-    btnParse.addEventListener('click', onbtnParseClick, false);
-
-   
-
-    var outConsole = document.getElementById('outConsole');
+    btnParse.addEventListener('click', fitFileManager.onbtnParseClick, false);
 
     var selectedFiles; // All File thats selected
 
 // User interface events
 
-    function onbtnParseClick(e) {
-        var fitManager = new FitFileManager(selectedFiles[0]);
-        fitManager.loadFile();
-    }
+   
 
 
 function onFitFileSelected(e) {
@@ -26,6 +23,7 @@ function onFitFileSelected(e) {
     e.preventDefault();
 
     selectedFiles = e.target.files;
+    fitFileManager.fitFile = selectedFiles[0];
    
     // To do: check file size
 
@@ -84,15 +82,33 @@ function onFitFileSelected(e) {
 
      //this.baseTypes = [{ "type" : 0, "field" : 0x00, "name" : "enum", "invalid" : 0xFF},
 
-
+     /*
+       @fitFile - File reference to FIT file from browser
+     ***/
      this.fitFile = fitFile;
+
+     /*
+       @index - Pointer to next unread byte in FIT file
+     ***/
+
+     this.index = 0;
+     /*
+       @definitionRecord - Contains definition msg. for local msg. type
+     ***/
+     this.definitionRecord = []
+
+     // Callback from button = this
+     this.onbtnParseClick = function (e) {
+         //var fitManager = new FitFileManager(selectedFiles[0]);
+         self.showFileInfo();
+         self.loadFile();
+     }
    
-     outConsole.innerHTML = '<p>Size: ' + this.fitFile.size.toString() + ' bytes, last modified: ' + this.fitFile.lastModifiedDate.toLocaleDateString() + '</p>';
+     this.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + this.fitFile.size.toString() + ' bytes, last modified: ' + this.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
-     // Callback for loadend event on FileReader
-     // e = ProgressEvent
-     // this = FileReader
-
+     /** Callback for loadend event on FileReader
+      @param e = ProgressEvent
+     ***/
      this.fitLoadEnd = function (e) {
          try {
              // self contains a reference to fitFileManager
@@ -104,8 +120,6 @@ function onFitFileSelected(e) {
 
      }
  }
-
-
 
  FitFileManager.prototype.loadFile = function () {
      this.fitReader = new FileReader();
@@ -140,16 +154,22 @@ function onFitFileSelected(e) {
 
      this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
 
+     this.index = 12;
+
      // Optional header info
  
      if (this.headerSize >= MAXFITHEADERLENGTH) {
          this.headerCRC = dviewFitHeader.getUint16(12, true);
+         this.index += 2;
          if (this.headerCRC === 0)
              console.info("Header CRC was not stored in file");
        
      }
 
-     var recHeader = new RecordHeader(dviewFitHeader.getUint8(14));
+     // Start reading records from file
+
+     this.getRecord(dviewFitHeader,this.index);
+    
  }
 
  FitFileManager.prototype.toinnerHTML = function () {
@@ -165,7 +185,15 @@ function onFitFileSelected(e) {
      return headerHtml;
  }
  
+ FitFileManager.prototype.getRecord = function (dviewFit,index) {
+    
+     var recHeader = new RecordHeader(dviewFit.getUint8(index++));
+     var recContent = new DefinitionMsg(dviewFit, index);
 
+     
+ }
+
+ 
  function RecordHeader(recHeaderByte) {
      var HEADERTYPE_FLAG = 0x80;                // binary 10000000 
      var NORMAL_MESSAGE_TYPE_FLAG = 0x40;       // binary 01000000
@@ -180,7 +208,7 @@ function onFitFileSelected(e) {
 
      switch (this.headerType) {
          case 0: // Normal header
-             this.messageType = (this.recHeaderByte & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6
+             this.messageType = (this.recHeaderByte & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition m0 = data msg.
              // bit 5 = 0 reserved
              // bit 4 = 0 reserved
              this.localMessageType = this.recHeaderByte & NORMAL_LOCAL_MESSAGE_TYPE_FLAGS; // bit 0-3
@@ -194,15 +222,29 @@ function onFitFileSelected(e) {
      }
  }
 
+ function Field(dviewFit,index) {
+     this.fieldDefinitionNumber = dviewFit.getUint8(index++);
+     this.size = dviewFit.getUint8(index++);
+     this.baseType = dviewFit.getUint8(index++);
+ }
+
  function DefinitionMsg(dviewFit, index) {
      //  5 byte FIXED content header
      this.reserved = dviewFit.getUint8(index++); // Reserved = 0
-     this.architecture = dviewFit.getUInt8(index++); // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
-     this.endianess = (this.architecture == 0);
-     this.globalMsgNr = dviewFit.getUint16(index++, this.littleEndian); // what kind of data message
-     this.fields = dviewFit.getUint8(index++); // Number of fields in data message
+     this.architecture = dviewFit.getUint8(index++); // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
+     this.littleEndian = (this.architecture == 0);
+     this.globalMsgNr = dviewFit.getUint16(index, this.littleEndian); // what kind of data message
+     index += 2; 
+     this.fieldNrs = dviewFit.getUint8(index++); // Number of fields in data message
 
      // VARIABLE content - field definitions
+
+     this.fields = [];
+     for (var i = 0; i < this.fieldNrs; i++) {
+         var field = new Field(dviewFit, index);
+         index += 3; // Each field is 3 bytes
+         this.fields.push(field);
+     }
 
  }
 
