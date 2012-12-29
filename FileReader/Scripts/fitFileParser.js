@@ -82,88 +82,82 @@ function onFitFileSelected(e) {
 
      var self = this;
 
-     var fitReader = new FileReader();
-
-     var dviewFitFile;
-
-     var bufFitFile; // ArrayBuffer -> contains FIT file as bytes
-
-     var fitReader;
-
-     var MAXFITHEADERLENGTH = 14; // FIT Protocol rev 1.3 p. 13
-
      this.fitFile = fitFile;
-
+   
      outConsole.innerHTML = '<p>Size: ' + this.fitFile.size.toString() + ' bytes, last modified: ' + this.fitFile.lastModifiedDate.toLocaleDateString() + '</p>';
 
+     // Callback for loadend event on FileReader
+     // e = ProgressEvent
+     // this = FileReader
 
-     // Callback for loadend event
      this.fitLoadEnd = function (e) {
          try {
-             // This will be fitReader, beacuse the loadend event fires there
              // self contains a reference to fitFileManager
-             self.readHeader(fitReader.result,self.fitFile.size);
+             self.readHeader(self.fitReader.result, self.fitFile.size);
              outConsole.innerHTML += self.toinnerHTML();
          } catch (e) {
              console.error('Trouble with FIT file header parsing, message:', e.message);
          }
 
      }
+ }
 
-     this.loadFile = function () {
-         fitReader.addEventListener('loadend', this.fitLoadEnd, false);
 
-         try {
-             fitReader.readAsArrayBuffer(this.fitFile);
 
-         } catch (e) {
-             console.error('Could not initialize fit file reader with bytes, message:', e.message);
-         }
+ FitFileManager.prototype.loadFile = function () {
+     this.fitReader = new FileReader();
+     this.fitReader.addEventListener('loadend', this.fitLoadEnd, false);
+
+     try {
+         this.fitReader.readAsArrayBuffer(this.fitFile);
+
+     } catch (e) {
+         console.error('Could not initialize fit file reader with bytes, message:', e.message);
      }
+ }
+
+ FitFileManager.prototype.readHeader = function (bufFitHeader, fitFileSystemSize) {
+
+     var MAXFITHEADERLENGTH = 14; // FIT Protocol rev 1.3 p. 13
+
+     var dviewFitHeader = new DataView(bufFitHeader);
+     // DataView defaults to bigendian MSB --- LSB
+     // FIT file header protocol v. 1.3 stored as little endian
+
+     this.headerSize = dviewFitHeader.getUint8(0);
 
 
+     this.protocolVersion = dviewFitHeader.getUint8(1);
+     this.profileVersion = dviewFitHeader.getUint16(2, true);
+     this.dataSize = dviewFitHeader.getUint32(4, true);
 
-     this.readHeader = function (bufFitHeader, fitFileSystemSize) {
+     var estimatedFitFileSize = this.headerSize + this.dataSize+2;  // 2 for last CRC
+     if (estimatedFitFileSize != fitFileSystemSize)
+         console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString()+" bytes.");
 
-         var dviewFitHeader = new DataView(bufFitHeader);
-         // DataView defaults to bigendian MSB --- LSB
-         // FIT file header protocol v. 1.3 stored as little endian
+     this.dataType = ab2str(bufFitHeader.slice(8, 12));
 
-         this.headerSize = dviewFitHeader.getUint8(0);
-
-
-         this.protocolVersion = dviewFitHeader.getUint8(1);
-         this.profileVersion = dviewFitHeader.getUint16(2, true);
-         this.dataSize = dviewFitHeader.getUint32(4, true);
-
-         var estimatedFitFileSize = this.headerSize + this.dataSize+2;  // 2 for last CRC
-         if (estimatedFitFileSize != fitFileSystemSize)
-             console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString()+" bytes.");
-
-         this.dataType = ab2str(bufFitHeader.slice(8, 12));
-
-         // Optional header info
+     // Optional header info
  
-         if (this.headerSize >= 14) {
-             this.headerCRC = dviewFitHeader.getUint16(12, true);
-             if (this.headerCRC === 0)
-                 console.info("Header CRC was not computed");
+     if (this.headerSize >= MAXFITHEADERLENGTH) {
+         this.headerCRC = dviewFitHeader.getUint16(12, true);
+         if (this.headerCRC === 0)
+             console.info("Header CRC was not computed");
        
-         }
      }
-        
-     this.toinnerHTML = function () {
-         var headerHtml = '<p>Header size : ' + this.headerSize.toString() + ' bytes ' +
-     'Protocol version : ' + this.protocolVersion.toString() +
-     ' Profile version : ' + this.profileVersion.toString() +
-     ' Data size: ' + this.dataSize.toString() + ' bytes' +
-     ' Data type: ' + this.dataType;
-         if (this.headerCRC != undefined) {
-             headerHtml += ' CRC: ' + parseInt(this.headerCRC, 10).toString(16);
-         }
+ }
 
-         return headerHtml;
+ FitFileManager.prototype.toinnerHTML = function () {
+     var headerHtml = '<p>Header size : ' + this.headerSize.toString() + ' bytes ' +
+ 'Protocol version : ' + this.protocolVersion.toString() +
+ ' Profile version : ' + this.profileVersion.toString() +
+ ' Data size: ' + this.dataSize.toString() + ' bytes' +
+ ' Data type: ' + this.dataType;
+     if (this.headerCRC != undefined) {
+         headerHtml += ' CRC: ' + parseInt(this.headerCRC, 10).toString(16);
      }
+
+     return headerHtml;
  }
  
 
