@@ -82,6 +82,9 @@ function onFitFileSelected(e) {
 
      var self = this;
 
+     //this.baseTypes = [{ "type" : 0, "field" : 0x00, "name" : "enum", "invalid" : 0xFF},
+
+
      this.fitFile = fitFile;
    
      outConsole.innerHTML = '<p>Size: ' + this.fitFile.size.toString() + ' bytes, last modified: ' + this.fitFile.lastModifiedDate.toLocaleDateString() + '</p>';
@@ -187,7 +190,20 @@ function onFitFileSelected(e) {
              this.localMessageType = (this.recHeaderByte & COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS) >> 5;
              this.timeOffset = (this.recHeaderByte & TIMEOFFSET_FLAGS); // bit 0-4 - in seconds since a fixed reference start time (max 32 secs)
              break;
+        
      }
+ }
+
+ function DefinitionMsg(dviewFit, index) {
+     //  5 byte FIXED content header
+     this.reserved = dviewFit.getUint8(index++); // Reserved = 0
+     this.architecture = dviewFit.getUInt8(index++); // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
+     this.endianess = (this.architecture == 0);
+     this.globalMsgNr = dviewFit.getUint16(index++, this.littleEndian); // what kind of data message
+     this.fields = dviewFit.getUint8(index++); // Number of fields in data message
+
+     // VARIABLE content - field definitions
+
  }
 
 
