@@ -185,68 +185,69 @@ function onFitFileSelected(e) {
      return headerHtml;
  }
  
- FitFileManager.prototype.getRecord = function (dviewFit,index) {
-    
-     var recHeader = new RecordHeader(dviewFit.getUint8(index++));
-     var recContent = new DefinitionMsg(dviewFit, index);
+ FitFileManager.prototype.getRecord = function (dviewFit, index) {
 
-     
- }
+     var recHeader = {};
+     var recContent = {};
+     var record = {};
 
- 
- function RecordHeader(recHeaderByte) {
+     var DEFINITION_MSG = 1;
+     var DATA_MSG = 0;
+
+     // HEADER
+
      var HEADERTYPE_FLAG = 0x80;                // binary 10000000 
      var NORMAL_MESSAGE_TYPE_FLAG = 0x40;       // binary 01000000
      var NORMAL_LOCAL_MESSAGE_TYPE_FLAGS = 0xF; // binary 00001111
-     
+
      // Data message time compressed
      var TIMEOFFSET_FLAGS = 0x1F;                           // binary 00011111 
      var COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS = 0x60; // binary 01100000 
-     
-     this.recHeaderByte = recHeaderByte;
-     this.headerType = (this.recHeaderByte & HEADERTYPE_FLAG) >> 7 // MSB 7 0 = normal header, 1 = compressed timestampheader
 
-     switch (this.headerType) {
+     recHeader["byte"] = dviewFit.getUint8(index++);
+     recHeader["type"] = (recHeader["byte"] & HEADERTYPE_FLAG) >> 7 // MSB 7 0 = normal header, 1 = compressed timestampheader
+
+     switch (recHeader["type"]) {
          case 0: // Normal header
-             this.messageType = (this.recHeaderByte & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition m0 = data msg.
+             recHeader["messageType"] = (recHeader["byte"] & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition, 0 = data msg.
              // bit 5 = 0 reserved
              // bit 4 = 0 reserved
-             this.localMessageType = this.recHeaderByte & NORMAL_LOCAL_MESSAGE_TYPE_FLAGS; // bit 0-3
+             recHeader["localMessageType"] = recHeader["byte"] & NORMAL_LOCAL_MESSAGE_TYPE_FLAGS; // bit 0-3
 
              break;
          case 1: // Compressed timestamp header - only for data records
-             this.localMessageType = (this.recHeaderByte & COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS) >> 5;
-             this.timeOffset = (this.recHeaderByte & TIMEOFFSET_FLAGS); // bit 0-4 - in seconds since a fixed reference start time (max 32 secs)
+             recHeader["localMessageType"] = (recHeader["byte"] & COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS) >> 5;
+             recHeader["timeOffset"] = (recHeader["byte"] & TIMEOFFSET_FLAGS); // bit 0-4 - in seconds since a fixed reference start time (max 32 secs)
              break;
-        
-     }
- }
 
- function Field(dviewFit,index) {
-     this.fieldDefinitionNumber = dviewFit.getUint8(index++);
-     this.size = dviewFit.getUint8(index++);
-     this.baseType = dviewFit.getUint8(index++);
- }
-
- function DefinitionMsg(dviewFit, index) {
-     //  5 byte FIXED content header
-     this.reserved = dviewFit.getUint8(index++); // Reserved = 0
-     this.architecture = dviewFit.getUint8(index++); // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
-     this.littleEndian = (this.architecture == 0);
-     this.globalMsgNr = dviewFit.getUint16(index, this.littleEndian); // what kind of data message
-     index += 2; 
-     this.fieldNrs = dviewFit.getUint8(index++); // Number of fields in data message
-
-     // VARIABLE content - field definitions
-
-     this.fields = [];
-     for (var i = 0; i < this.fieldNrs; i++) {
-         var field = new Field(dviewFit, index);
-         index += 3; // Each field is 3 bytes
-         this.fields.push(field);
      }
 
+     record["header"] = recHeader;
+
+     // VARIALE CONTENT, EITHER DATA OR DEFINITION
+
+     switch (recHeader["messageType"]) {
+         case DEFINITION_MSG:
+             //  5 byte FIXED content header
+             recContent["reserved"] = dviewFit.getUint8(index++); // Reserved = 0
+             recContent["architecture"] = dviewFit.getUint8(index++); // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
+             recContent["littleEndian"] = (this.architecture == 0);
+             recContent["globalMsgNr"] = dviewFit.getUint16(index, this.littleEndian); // what kind of data message
+             index += 2;
+             recContent["fieldNumbers"] = dviewFit.getUint8(index++); // Number of fields in data message
+
+             // VARIABLE content - field definitions as properties
+
+             for (var i = 0; i < recContent["fieldNumbers"]; i++)
+                 recContent["field" + i.toString()] = {
+                     "fieldDefinitionNumber": dviewFit.getUint8(index++),
+                     "size": dviewFit.getUint8(index++),
+                     "baseType": dviewFit.getUint8(index++)
+                 }
+             break;
+         case DATA_MSG: // Lookup in msg. definition cache -> read
+             break;
+     }
+
+     record["content"] = recContent;
  }
-
-
-
