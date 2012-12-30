@@ -64,10 +64,10 @@ function onFitFileSelected(e) {
     return crc;
     }
 
- function fitCRC(payloadview,start,end) {
-     var crc = 0;
+ function fitCRC(payloadview,start,end,crcSeed) {
+     var crc = crcSeed;
      
-     for (var i=start; i < end; i++)
+     for (var i=start; i <= end; i++)
      {
        crc =  fitCRC_Get16(crc, payloadview.getUint8(i));
      }
@@ -128,8 +128,20 @@ function onFitFileSelected(e) {
  }
 
  FitFileManager.prototype.parseFile = function () {
-     var firstRecord = this.getRecord(new DataView(this.fitReader.result), this.index);
-     this.littleEndian = firstRecord.content.littleEndian;
+     var aFITBuffer = this.fitReader.result;
+     var dvFITBuffer = new DataView(aFITBuffer);
+
+     var firstRecord = this.getRecord(dvFITBuffer, this.index);
+    
+     this.littleEndian = firstRecord.content.littleEndian; // The encoding used for records
+
+     // Unclear if last 2 bytes of FIT file is big/little endian, but based on FIT header CRC is stored in little endian, so
+     // it should be quite safe to assume the last two bytes is stored in little endian format
+     var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
+     console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
+     
+     // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
+
  }
 
 
@@ -145,8 +157,8 @@ function onFitFileSelected(e) {
      }
  }
 
- FitFileManager.prototype.getFITCRC = function (bufFit,littleEndian) {
-     var dviewFITCRC = new DataView(bufFit.slice(-2)); // Last 2 bytes of .FIT file contains CRC
+ FitFileManager.prototype.getFITCRC = function (aCRCBuffer,littleEndian) {
+     var dviewFITCRC = new DataView(aCRCBuffer); // Last 2 bytes of .FIT file contains CRC
      return dviewFITCRC.getUint16(0, littleEndian);
 
  }
@@ -162,8 +174,14 @@ function onFitFileSelected(e) {
      this.headerSize = dviewFitHeader.getUint8(0);
 
 
-     this.protocolVersion = dviewFitHeader.getUint8(1);
-     this.profileVersion = dviewFitHeader.getUint16(2, true);
+     this.protocolVersion = dviewFitHeader.getUint8(1);       // FIT SDK v5.1 - fit.h - 4-bit MSB = major - 4-bit LSB = minor
+     this.protocolVersionMajor = this.protocolVersion >> 4;
+     this.protocolVersionMinor = this.protocolVersion & 0x0F;
+
+     this.profileVersion = dviewFitHeader.getUint16(2, true); // FIT SDK v5.1: - fit h. -  major*100+minor
+     this.profileVersionMajor = Math.floor(this.profileVersion / 100);
+     this.profileVersionMinor = this.profileVersion - (this.profileVersionMajor * 100);
+     
      this.dataSize = dviewFitHeader.getUint32(4, true);
 
      var estimatedFitFileSize = this.headerSize + this.dataSize+2;  // 2 for last CRC
@@ -239,6 +257,7 @@ function onFitFileSelected(e) {
      }
 
      record["header"] = recHeader;
+     console.log("Header type: "+recHeader["headerType"]+" Local message type: "+recHeader["localMessageType"].toString());
 
      // VARIALE CONTENT, EITHER DATA OR DEFINITION
 
@@ -259,6 +278,9 @@ function onFitFileSelected(e) {
                      "size": dviewFit.getUint8(index++),
                      "baseType": dviewFit.getUint8(index++)
                  }
+
+             console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString());
+
              break;
          case DATA_MSG: // Lookup in msg. definition cache -> read
              break;
