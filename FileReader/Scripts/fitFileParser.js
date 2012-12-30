@@ -79,6 +79,7 @@ function onFitFileSelected(e) {
  function FitFileManager(fitFile) {
 
      var self = this;
+     
 
      //this.baseTypes = [{ "type" : 0, "field" : 0x00, "name" : "enum", "invalid" : 0xFF},
 
@@ -109,11 +110,16 @@ function onFitFileSelected(e) {
      /** Callback for loadend event on FileReader
       @param e = ProgressEvent
      ***/
-     this.fitLoadEnd = function (e) {
+     this.fitFileLoadEnd = function (e) {
          try {
              // self contains a reference to fitFileManager
-             self.readHeader(self.fitReader.result, self.fitFile.size);
+             self.getFITHeader(self.fitReader.result, self.fitFile.size);
              outConsole.innerHTML += self.toinnerHTML();
+
+             // Start reading records from file
+             self.parseFile();
+             
+
          } catch (e) {
              console.error('Trouble with FIT file header parsing, message:', e.message);
          }
@@ -121,9 +127,15 @@ function onFitFileSelected(e) {
      }
  }
 
+ FitFileManager.prototype.parseFile = function () {
+     var firstRecord = this.getRecord(new DataView(this.fitReader.result), this.index);
+     this.littleEndian = firstRecord.content.littleEndian;
+ }
+
+
  FitFileManager.prototype.loadFile = function () {
      this.fitReader = new FileReader();
-     this.fitReader.addEventListener('loadend', this.fitLoadEnd, false);
+     this.fitReader.addEventListener('loadend', this.fitFileLoadEnd, false);
 
      try {
          this.fitReader.readAsArrayBuffer(this.fitFile);
@@ -133,7 +145,13 @@ function onFitFileSelected(e) {
      }
  }
 
- FitFileManager.prototype.readHeader = function (bufFitHeader, fitFileSystemSize) {
+ FitFileManager.prototype.getFITCRC = function (bufFit,littleEndian) {
+     var dviewFITCRC = new DataView(bufFit.slice(-2)); // Last 2 bytes of .FIT file contains CRC
+     return dviewFITCRC.getUint16(0, littleEndian);
+
+ }
+
+ FitFileManager.prototype.getFITHeader = function (bufFitHeader, fitFileSystemSize) {
 
      var MAXFITHEADERLENGTH = 14; // FIT Protocol rev 1.3 p. 13
 
@@ -166,9 +184,7 @@ function onFitFileSelected(e) {
        
      }
 
-     // Start reading records from file
-
-     this.getRecord(dviewFitHeader,this.index);
+     
     
  }
 
@@ -205,9 +221,9 @@ function onFitFileSelected(e) {
      var COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS = 0x60; // binary 01100000 
 
      recHeader["byte"] = dviewFit.getUint8(index++);
-     recHeader["type"] = (recHeader["byte"] & HEADERTYPE_FLAG) >> 7 // MSB 7 0 = normal header, 1 = compressed timestampheader
+     recHeader["headerType"] = (recHeader["byte"] & HEADERTYPE_FLAG) >> 7 // MSB 7 0 = normal header, 1 = compressed timestampheader
 
-     switch (recHeader["type"]) {
+     switch (recHeader["headerType"]) {
          case 0: // Normal header
              recHeader["messageType"] = (recHeader["byte"] & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition, 0 = data msg.
              // bit 5 = 0 reserved
@@ -230,9 +246,8 @@ function onFitFileSelected(e) {
          case DEFINITION_MSG:
              //  5 byte FIXED content header
              recContent["reserved"] = dviewFit.getUint8(index++); // Reserved = 0
-             recContent["architecture"] = dviewFit.getUint8(index++); // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
-             recContent["littleEndian"] = (this.architecture == 0);
-             recContent["globalMsgNr"] = dviewFit.getUint16(index, this.littleEndian); // what kind of data message
+             recContent["littleEndian"] = dviewFit.getUint8(index++) == 0; // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
+             recContent["globalMsgNr"] = dviewFit.getUint16(index, recContent["littleEndian"]); // what kind of data message
              index += 2;
              recContent["fieldNumbers"] = dviewFit.getUint8(index++); // Number of fields in data message
 
@@ -250,4 +265,6 @@ function onFitFileSelected(e) {
      }
 
      record["content"] = recContent;
+
+     return record;
  }
