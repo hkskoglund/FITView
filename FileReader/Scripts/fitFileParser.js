@@ -223,6 +223,69 @@ FitFileManager.prototype.toinnerHTML = function () {
 
 FitFileManager.prototype.getRecord = function (dviewFit) {
 
+    // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
+
+    var fitBaseTypesInvalidValues = {};
+    fitBaseTypesInvalidValues[0x00] = {
+        "name": "enum",
+        "invalidValue": 0xFF
+    }
+    fitBaseTypesInvalidValues[0x01] = {
+        "name": "sint8",
+        "invalidValue": 0x7F
+    }
+    fitBaseTypesInvalidValues[0x02] = {
+        "name": "uint8",
+        "invalidValue": 0xFF
+    }
+    fitBaseTypesInvalidValues[0x83] = {
+        "name": "sint16",
+        "invalidValue": 0x7FFF
+    }
+    fitBaseTypesInvalidValues[0x84] = {
+        "name": "uint16",
+        "invalidValue": 0xFFFF
+    }
+    fitBaseTypesInvalidValues[0x85] = {
+        "name": "sint32",
+        "invalidValue": 0x7FFFFFFF
+    }
+    fitBaseTypesInvalidValues[0x86] = {
+        "name": "uint32",
+        "invalidValue": 0xFFFFFFFF
+    }
+    fitBaseTypesInvalidValues[0x07] = {
+        "name": "string",
+        "invalidValue": 0x00
+    }
+    fitBaseTypesInvalidValues[0x88] = {
+        "name": "float32",
+        "invalidValue": 0xFFFFFFFF
+    }
+    fitBaseTypesInvalidValues[0x89] = {
+        "name": "float64",
+        "invalidValue": 0xFFFFFFFFFFFFFFFF
+    }
+
+    fitBaseTypesInvalidValues[0x0A] = {
+        "name": "uint8z",
+        "invalidValue": 0x00
+    }
+    fitBaseTypesInvalidValues[0x8B] = {
+        "name": "uint16z",
+        "invalidValue": 0x0000
+    }
+    fitBaseTypesInvalidValues[0x8C] = {
+        "name": "uint32z",
+        "invalidValue": 0x00000000
+    }
+    fitBaseTypesInvalidValues[0x0D] = {
+        "name": "byte",
+        "invalidValue": 0xFF
+    }
+
+
+
     var recHeader = {};
     var recContent = {};
     var record = {};
@@ -284,6 +347,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
             console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
 
             break;
+
         case DATA_MSG: // Lookup in msg. definition in properties -> read fields
             var localMsgDefinition = this["localMsgDefinition" + recHeader["localMessageType"].toString()]
             if (localMsgDefinition == undefined || localMsgDefinition == null)
@@ -291,8 +355,46 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
 
             // Loop through all field definitions and read corresponding fields in data message
 
-            for (var i = 0; i < localMsgDefinition["content"].fieldNumbers; i++)
-                this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+            var littleEndian = localMsgDefinition["content"].littleEndian;
+
+            // var logging = "";
+            for (var i = 0; i < localMsgDefinition["content"].fieldNumbers; i++) {
+                var bType = localMsgDefinition.content["field" + i.toString()].baseType;
+                if (fitBaseTypesInvalidValues[bType] == undefined || fitBaseTypesInvalidValues[bType] == null)
+                    console.log("Base type not found for base type" + bType);
+                //  logging += fitBaseTypesInvalidValues[bType].name+" ";
+                // Just skip reading values at the moment...
+               // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+
+                switch (bType) {
+                    case 0x00: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
+                    case 0x0A: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
+                    case 0x01: recContent["field" + i.toString()] = { "value": dviewFit.getInt8(this.index++) }; break;
+                    case 0x02: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
+                    case 0x83: recContent["field" + i.toString()] = { "value": dviewFit.getInt16(this.index, littleEndian) }; this.index += 2; break;
+                    case 0x84: recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
+                    case 0x8B: recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
+                    case 0x85: recContent["field" + i.toString()] = { "value": dviewFit.getInt32(this.index, littleEndian) }; this.index += 4; break;
+                    case 0x86: recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
+                    case 0x8C: recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
+                    case 0x07: console.log("String not implemented yet!");
+                        //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // FIX IT LATER!!! Null terminated string? of 1 byte
+                        this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+                        break;
+                    case 0x88: recContent["field" + i.toString()] = { "value": dviewFit.getFloat32(this.index, littleEndian) }; this.index += 4; break;
+                    case 0x89: recContent["field" + i.toString()] = { "value": dviewFit.getFloat64(this.index, littleEndian) }; this.index += 8; break;
+                    case 0x0D: console.log("Array of bytes not implemented yet!");
+                        //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
+                        this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+                        break;
+                    default: //throw new Error("Base type " + bType.toString() + " not found in lookup switch"); break;
+                        console.error("Base type " + bType.toString() + " not found in lookup switch");
+                        this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+                        break;
+                }
+            }
+
+            //console.log(logging);
 
             break;
     }
