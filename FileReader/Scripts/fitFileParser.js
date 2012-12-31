@@ -133,6 +133,8 @@ FitFileManager.prototype.parseRecords = function () {
         // If we got an definition message, store it as a property 
         if (rec.header["messageType"] == 1)
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
+        
+            
     }
 
     //this.littleEndian = firstRecord.content.littleEndian; // The encoding used for records
@@ -366,32 +368,40 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                 // Just skip reading values at the moment...
                // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
 
+                var currentField = "field" + i.toString();
+
                 switch (bType) {
-                    case 0x00: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
-                    case 0x0A: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
-                    case 0x01: recContent["field" + i.toString()] = { "value": dviewFit.getInt8(this.index++) }; break;
-                    case 0x02: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
-                    case 0x83: recContent["field" + i.toString()] = { "value": dviewFit.getInt16(this.index, littleEndian) }; this.index += 2; break;
-                    case 0x84: recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
-                    case 0x8B: recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
-                    case 0x85: recContent["field" + i.toString()] = { "value": dviewFit.getInt32(this.index, littleEndian) }; this.index += 4; break;
-                    case 0x86: recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
-                    case 0x8C: recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
-                    case 0x07: console.log("String not implemented yet!");
+                    case 0x00:
+                    case 0x0A:
+                        recContent[currentField] = { "value": dviewFit.getUint8(this.index) }; break;
+                    //case 0x0A: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
+                    case 0x01: recContent[currentField] = { "value": dviewFit.getInt8(this.index) }; break;
+                    case 0x02: recContent[currentField] = { "value": dviewFit.getUint8(this.index) }; break;
+                    case 0x83: recContent[currentField] = { "value": dviewFit.getInt16(this.index, littleEndian) }; break;
+                    case 0x84:
+                    case 0x8B:
+                        recContent[currentField] = { "value": dviewFit.getUint16(this.index, littleEndian) }; break;
+                    // recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
+                    case 0x85: recContent[currentField] = { "value": dviewFit.getInt32(this.index, littleEndian) }; break;
+                    case 0x86:
+                    case 0x8C:
+                        recContent[currentField] = { "value": dviewFit.getUint32(this.index, littleEndian) }; break;
+                     //recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
+                    case 0x07: console.error("String not implemented yet!");
                         //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // FIX IT LATER!!! Null terminated string? of 1 byte
-                        this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+                        //this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
                         break;
-                    case 0x88: recContent["field" + i.toString()] = { "value": dviewFit.getFloat32(this.index, littleEndian) }; this.index += 4; break;
-                    case 0x89: recContent["field" + i.toString()] = { "value": dviewFit.getFloat64(this.index, littleEndian) }; this.index += 8; break;
-                    case 0x0D: console.log("Array of bytes not implemented yet!");
+                    case 0x88: recContent[currentField] = { "value": dviewFit.getFloat32(this.index, littleEndian) }; break;
+                    case 0x89: recContent[currentField] = { "value": dviewFit.getFloat64(this.index, littleEndian) }; break;
+                    case 0x0D: console.error("Array of bytes not implemented yet!");
                         //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
-                        this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
                         break;
                     default: //throw new Error("Base type " + bType.toString() + " not found in lookup switch"); break;
                         console.error("Base type " + bType.toString() + " not found in lookup switch");
-                        this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
                         break;
                 }
+                // Advance to next field value position
+                this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
             }
 
             //console.log(logging);
