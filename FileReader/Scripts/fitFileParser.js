@@ -133,6 +133,8 @@ FitFileManager.prototype.parseRecords = function () {
         // If we got an definition message, store it as a property 
         if (rec.header["messageType"] == 1)
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
+        else
+            this.showRecordContent(rec); // Data record
         
             
     }
@@ -148,6 +150,20 @@ FitFileManager.prototype.parseRecords = function () {
 
 }
 
+
+FitFileManager.prototype.showRecordContent = function (rec) {
+    var localMsgType = rec.header["localMessageType"].toString();
+    var definitionMsg = this["localMsgDefinition" + localMsgType];
+    var globalMsgType = definitionMsg.content.globalMsgNr;
+
+    var fieldNrs = definitionMsg.content.fieldNumbers;
+
+    var logger = "";
+    for (var i = 0; i < fieldNrs; i++)
+        logger += rec.content["field" + i.toString()].value + " ";
+
+    console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + " field values = " + logger);
+}
 
 FitFileManager.prototype.loadFile = function () {
     this.fitReader = new FileReader();
@@ -324,7 +340,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
     }
 
     record["header"] = recHeader;
-    console.log("Header type: " + recHeader["headerType"] + " Local message type: " + recHeader["localMessageType"].toString());
+   // console.log("Header type: " + recHeader["headerType"] + " Local message type: " + recHeader["localMessageType"].toString());
 
     // VARIALE CONTENT, EITHER DATA OR DEFINITION
 
@@ -346,7 +362,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                     "baseType": dviewFit.getUint8(this.index++)
                 }
 
-            console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
+     //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
 
             break;
 
