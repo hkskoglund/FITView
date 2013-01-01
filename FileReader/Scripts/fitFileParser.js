@@ -152,6 +152,7 @@ FitFileManager.prototype.parseRecords = function () {
 
 
 FitFileManager.prototype.showRecordContent = function (rec) {
+
     var localMsgType = rec.header["localMessageType"].toString();
     var definitionMsg = this["localMsgDefinition" + localMsgType];
     var globalMsgType = definitionMsg.content.globalMsgNr;
@@ -159,10 +160,23 @@ FitFileManager.prototype.showRecordContent = function (rec) {
     var fieldNrs = definitionMsg.content.fieldNumbers;
 
     var logger = "";
-    for (var i = 0; i < fieldNrs; i++)
-        logger += rec.content["field" + i.toString()].value + " ";
+    for (var i = 0; i < fieldNrs; i++) {
+        var field = "field" + i.toString();
+        logger += rec.content[field].fieldDefinitionNumber.toString() + ":" + rec.content[field].value.toString();
+        if (rec.content[field].invalid)
+            logger += "(I) ";
+        else
+            logger += " ";
+    }
 
     console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + " field values = " + logger);
+
+    // Build local message types
+
+    //swtich (globalMsgType) {
+    //    // record
+    //    case 20 :
+
 }
 
 FitFileManager.prototype.loadFile = function () {
@@ -385,30 +399,34 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
 
                 var currentField = "field" + i.toString();
+                recContent[currentField] = {};
+                recContent[currentField]["fieldDefinitionNumber"] = localMsgDefinition.content["field" + i.toString()].fieldDefinitionNumber;
+
+              
 
                 switch (bType) {
                     case 0x00:
                     case 0x0A:
-                        recContent[currentField] = { "value": dviewFit.getUint8(this.index) }; break;
+                        recContent[currentField].value = dviewFit.getUint8(this.index) ; break;
                     //case 0x0A: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
-                    case 0x01: recContent[currentField] = { "value": dviewFit.getInt8(this.index) }; break;
-                    case 0x02: recContent[currentField] = { "value": dviewFit.getUint8(this.index) }; break;
-                    case 0x83: recContent[currentField] = { "value": dviewFit.getInt16(this.index, littleEndian) }; break;
+                    case 0x01: recContent[currentField].value = dviewFit.getInt8(this.index); break;
+                    case 0x02: recContent[currentField].value = dviewFit.getUint8(this.index); break;
+                    case 0x83: recContent[currentField].value = dviewFit.getInt16(this.index, littleEndian); break;
                     case 0x84:
                     case 0x8B:
-                        recContent[currentField] = { "value": dviewFit.getUint16(this.index, littleEndian) }; break;
+                        recContent[currentField].value = dviewFit.getUint16(this.index, littleEndian); break;
                     // recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
-                    case 0x85: recContent[currentField] = { "value": dviewFit.getInt32(this.index, littleEndian) }; break;
+                    case 0x85: recContent[currentField].value = dviewFit.getInt32(this.index, littleEndian); break;
                     case 0x86:
                     case 0x8C:
-                        recContent[currentField] = { "value": dviewFit.getUint32(this.index, littleEndian) }; break;
+                        recContent[currentField].value = dviewFit.getUint32(this.index, littleEndian); break;
                      //recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
                     case 0x07: console.error("String not implemented yet!");
                         //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // FIX IT LATER!!! Null terminated string? of 1 byte
                         //this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
                         break;
-                    case 0x88: recContent[currentField] = { "value": dviewFit.getFloat32(this.index, littleEndian) }; break;
-                    case 0x89: recContent[currentField] = { "value": dviewFit.getFloat64(this.index, littleEndian) }; break;
+                    case 0x88: recContent[currentField].value =  dviewFit.getFloat32(this.index, littleEndian) ; break;
+                    case 0x89: recContent[currentField].value =  dviewFit.getFloat64(this.index, littleEndian); break;
                     case 0x0D: console.error("Array of bytes not implemented yet!");
                         //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
                         break;
@@ -416,6 +434,14 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                         console.error("Base type " + bType.toString() + " not found in lookup switch");
                         break;
                 }
+
+                // Did we get an invalid value?
+
+                if (fitBaseTypesInvalidValues[bType].invalidValue === recContent[currentField].value)
+                    recContent[currentField].invalid = true;
+                else
+                    recContent[currentField].invalid = false;
+
                 // Advance to next field value position
                 this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
             }
