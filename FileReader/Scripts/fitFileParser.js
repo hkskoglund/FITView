@@ -153,29 +153,97 @@ FitFileManager.prototype.parseRecords = function () {
 
 FitFileManager.prototype.showRecordContent = function (rec) {
 
+    // From profile.xls file in FIT SDK v 5.10
+    
+    var mesg_num = {
+        0 : "file_id",
+        1 : "capabilities", 
+        2 : "device_settings",
+        3 : "user_profile",
+        4 : "hrm_profile",
+        5 : "sdm_profile",
+        6 : "bike_profile",
+        7 : "zones_target",
+        8 : "hr_zone",
+        9 : "power_zone",
+        10 : "met_zone",
+        12 : "sport",
+        15 : "goal",
+        18 : "session",
+        19 : "lap",
+        20 : "record",
+        21 : "event",
+        23 : "device_info",
+        26 : "workout",
+        27 : "workout_step",
+        28 : "schedule",
+        30 : "weight_scale",
+        31 : "course",
+        32 : "course_point",
+        33 : "totals",
+        34 : "activity",
+        35 : "software",
+        37 : "file_capabilities",
+        38 : "mesg_capabilities",
+        39 : "field_capabilities",
+        49 : "file_creator",
+        51 : "blood_pressure",
+        53 : "speed_zone",
+        55 : "monitoring",
+        78 : "hrv",
+        101 : "length",
+        103 : "monitoring_info",
+        105 : "pad",
+        131 : "cadence_zone",
+        0xFF00 : "mfg_range_min",
+        0xFFEE: "mfg_range_max",
+
+        // From https://forums.garmin.com/showthread.php?31347-Garmin-fit-global-message-numbers
+
+        22	: "source",
+       104  : "battery"
+    }
+
+
+    var file_creator = {
+        0: "software_version",
+        1: "hardware_version"
+    }
+
     var localMsgType = rec.header["localMessageType"].toString();
     var definitionMsg = this["localMsgDefinition" + localMsgType];
     var globalMsgType = definitionMsg.content.globalMsgNr;
 
     var fieldNrs = definitionMsg.content.fieldNumbers;
 
+    var msg = { "message" : mesg_num[globalMsgType]};
+
     var logger = "";
     for (var i = 0; i < fieldNrs; i++) {
         var field = "field" + i.toString();
-        logger += rec.content[field].fieldDefinitionNumber.toString() + ":" + rec.content[field].value.toString();
+        var fieldDefNr = rec.content[field].fieldDefinitionNumber;
+
+        if (!rec.content[field].invalid)
+         switch (globalMsgType) {
+            //  file_creator
+            case 49 :  msg[file_creator[fieldDefNr]] = rec.content[field].value;
+                break;
+         }
+
+
+        logger += fieldDefNr.toString() + ":" + rec.content[field].value.toString();
         if (rec.content[field].invalid)
             logger += "(I) ";
         else
             logger += " ";
     }
 
-    console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + " field values = " + logger);
+    if (mesg_num[globalMsgType] === undefined)
+        console.error("Global Message Type " + globalMsgType.toString() + " number unsupported");
 
-    // Build local message types
+    console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":"+mesg_num[globalMsgType] + " field values = " + logger);
 
-    //swtich (globalMsgType) {
-    //    // record
-    //    case 20 :
+    
 
 }
 
