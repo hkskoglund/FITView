@@ -2,3 +2,8 @@
     /* Parse button is only available when file is selected/dropped */
     visibility : hidden
 }
+
+#testChart {
+    width: 100%;
+    height : 400px;
+}

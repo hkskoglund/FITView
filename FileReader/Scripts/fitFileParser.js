@@ -1,17 +1,24 @@
-﻿// Setup DOM event handling
+﻿var outConsole, inpFITFile, btnParse, selectedFiles;
+var fitFileManager;
 
-var outConsole = document.getElementById('outConsole');
+$(document).ready(function () {
+    // Setup DOM event handling
 
-// Capturing = false -> bubbling event
-var inpFITFile = document.getElementById('inpFITFile');
-inpFITFile.addEventListener('change', onFitFileSelected, false);
+    outConsole = document.getElementById('outConsole');
 
-var fitFileManager = new FitFileManager();
+    // Capturing = false -> bubbling event
+    inpFITFile = document.getElementById('inpFITFile');
+    inpFITFile.addEventListener('change', onFitFileSelected, false);
 
-var btnParse = document.getElementById('btnParse')
-btnParse.addEventListener('click', fitFileManager.onbtnParseClick, false);
+    fitFileManager = new FitFileManager();
 
-var selectedFiles; // All File thats selected
+     btnParse = document.getElementById('btnParse')
+    btnParse.addEventListener('click', fitFileManager.onbtnParseClick, false);
+
+     selectedFiles; // All File thats selected
+
+});
+
 
 // User interface events
 
@@ -26,6 +33,8 @@ function onFitFileSelected(e) {
     fitFileManager.fitFile = selectedFiles[0];
 
     // To do: check file size
+
+    
 
     var btnParse = document.getElementById('btnParse');
     btnParse.style.visibility = 'visible';
@@ -113,17 +122,45 @@ function FitFileManager(fitFile) {
             outConsole.innerHTML += self.toinnerHTML();
 
             // Start reading records from file
-            self.parseRecords();
+            var dataHR = [];
+            self.parseRecords(dataHR,"heart_rate");
 
+            // Charting
 
-        } catch (e) {
-            console.error('Trouble with FIT file header parsing, message:', e.message);
+            var testDiv = document.getElementById('testChart');
+
+            chart1 = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'testChart',
+                    type: 'line'
+                },
+                title: {
+                    text: ''
+                },
+                // xAxis: {
+                //     categories: ['Apples', 'Bananas', 'Oranges']
+                // },
+                yAxis: {
+                    title: {
+                        text: 'bpm'
+                    }
+                },
+
+                series : [{
+                name: 'Heart Rate',
+            data: dataHR}]
+
+            });
+
+  
+        } catch (err) {
+            console.error('Trouble with FIT file header parsing, message:', err.message);
         }
 
     }
 }
 
-FitFileManager.prototype.parseRecords = function () {
+FitFileManager.prototype.parseRecords = function (data,filter) {
     var aFITBuffer = this.fitReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
 
@@ -134,9 +171,9 @@ FitFileManager.prototype.parseRecords = function () {
         if (rec.header["messageType"] == 1)
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
         else {
-            var msg = this.getDataRecordContent(rec); // Data record
-            if (msg.heart_rate != undefined)
-                console.log("HR = " + msg.heart_rate.value.toString());
+            var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversions...
+            if (msg[filter] != undefined)
+                data.push(msg[filter].value);
         }
     }
 
@@ -237,24 +274,24 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             2: {"property" : "altitude", "scale" : 5, "offset" : 500, "unit": "m"},
             3: {"property" : "heart_rate", "unit": "bpm"  },
             4: {"property" : "cadence", "unit": "rpm"  },
-            5: {"property" : "distance"},
-            6: {"property" : "speed"},
-            7: {"property" : "power"},
-            8: {"property" : "compressed_speed_distance"},
-            9: {"property" : "grade"},
+            5: {"property" : "distance", "scale" : 100, "unit" : "m"},
+            6: { "property": "speed", "scale": 1000,"unit" : "m/s" },
+            7: {"property" : "power", "unit" : "watts"},
+            8: {"property" : "compressed_speed_distance"}, // TO DO FIX
+            9: {"property" : "grade", "scale" : 100, "unit" : "%"},
             10: {"property" : "resistance"},
-            11: {"property" : "time_from_course"},
-            12: {"property" : "cycle_length"},
-            13: {"property" : "temperature"},
-            17: {"property" : "speed_1s"},
-            18: {"property" :  "cycles"},
-            19: {"property" : "total_cycles"},
-            28: {"property" : "compressed_accumulated_power"},
-            29: {"property" : "accumulated_power"},
+            11: {"property" : "time_from_course", "scale" : 1000, "unit" : "s"},
+            12: {"property" : "cycle_length", "scale" : 100, "unit" : "m"},
+            13: {"property" : "temperature", "unit" : "C"},
+            17: {"property" : "speed_1s", "unit" : "m/s"},
+            18: {"property" :  "cycles", "unit" : "cycles"}, //TO DO FIX
+            19: {"property" : "total_cycles","unit" : "cycles"},
+            28: {"property" : "compressed_accumulated_power", "unit" : "watts"}, // TO DO FIX
+            29: {"property" : "accumulated_power", "unit" : "watts"},
             30: {"property" : "left_right_balance"},
-            31: {"property" : "gps_accuracy"},
-            32: {"property" : "vertical_speed"},
-            33: {"property" : "calories"}
+            31: {"property" : "gps_accuracy", "unit" : "m"},
+            32: {"property" : "vertical_speed", "scale" : 1000, "unit" : "m/s"},
+            33: {"property" : "calories", "unit" : "kcal"}
         }
 }
 
@@ -266,7 +303,8 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
 
     var fieldNrs = definitionMsg.content.fieldNumbers;
 
-    var msg = { "message" : this.getGlobalMessageTypeName(globalMsgType)};
+    var msg = { "message": this.getGlobalMessageTypeName(globalMsgType) };
+    msg.globalMessageType = globalMsgType;
 
     var logger = "";
 
@@ -281,7 +319,7 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
 
 
 
-
+            // Skip fields with invalid value
             if (!rec.content[field].invalid) {
 
                 var prop = globalMsg[fieldDefNr].property;
