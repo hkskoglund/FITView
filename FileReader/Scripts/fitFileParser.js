@@ -122,12 +122,21 @@ function FitFileManager(fitFile) {
             outConsole.innerHTML += self.toinnerHTML();
 
             // Start reading records from file
-            var dataHR = [];
-            self.parseRecords(dataHR,"heart_rate");
+            var rawData = {};
+            self.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true);
+
+            // We get speed in m/s, want it in km/h
+            if (rawData["speed"] != undefined)
+                rawData["speed"].forEach(function (element, index, array) {
+                    array[index] = element * 3.6;
+                });
+
+            var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
+                { name: 'Altitude', data: rawData["altitude"] },
+            { name: 'Cadence', data: rawData["cadence"] },
+            { name: 'Speed', data: rawData["speed"] }];
 
             // Charting
-
-            var testDiv = document.getElementById('testChart');
 
             chart1 = new Highcharts.Chart({
                 chart: {
@@ -146,9 +155,7 @@ function FitFileManager(fitFile) {
                     }
                 },
 
-                series : [{
-                name: 'Heart Rate',
-            data: dataHR}]
+                series : seriesSetup
 
             });
 
@@ -160,9 +167,11 @@ function FitFileManager(fitFile) {
     }
 }
 
-FitFileManager.prototype.parseRecords = function (data,filter) {
+FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset) {
     var aFITBuffer = this.fitReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
+
+    var prevIndex = this.index;
 
     while (this.index < this.headerSize + this.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
@@ -172,10 +181,36 @@ FitFileManager.prototype.parseRecords = function (data,filter) {
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
         else {
             var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversions...
-            if (msg[filter] != undefined)
-                data.push(msg[filter].value);
+
+            if (msg.message === message) {  // only look for specfic message
+                var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn
+                for (var i = 0; i < filterArr.length; i++) {
+                    var filter = filterArr[i];
+                    if (msg[filter] != undefined) {
+                        var val = msg[filter].value;
+                        var scale = msg[filter].scale;
+                        var offset = msg[filter].offset;
+
+                        // If requested do some value conversions
+                        if (applyScaleOffset) {
+                            if (scale != undefined)
+                                val = val / scale;
+
+                            if (offset != undefined)
+                                val = val - offset;
+                        }
+
+                        if (data[filter] == undefined)
+                            data[filter] = [];
+
+                        data[filter].push(val);
+                    }
+                }
+            }
         }
     }
+
+    this.index = prevIndex; 
 
     //this.littleEndian = firstRecord.content.littleEndian; // The encoding used for records
 
