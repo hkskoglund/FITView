@@ -133,10 +133,11 @@ FitFileManager.prototype.parseRecords = function () {
         // If we got an definition message, store it as a property 
         if (rec.header["messageType"] == 1)
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
-        else
-            this.showRecordContent(rec); // Data record
-        
-            
+        else {
+            var msg = this.getDataRecordContent(rec); // Data record
+            if (msg.heart_rate != undefined)
+                console.log("HR = " + msg.heart_rate.value.toString());
+        }
     }
 
     //this.littleEndian = firstRecord.content.littleEndian; // The encoding used for records
@@ -150,65 +151,114 @@ FitFileManager.prototype.parseRecords = function () {
 
 }
 
-
-FitFileManager.prototype.showRecordContent = function (rec) {
-
+FitFileManager.prototype.getGlobalMessageTypeName = function (globalMessageType) {
     // From profile.xls file in FIT SDK v 5.10
-    
+
     var mesg_num = {
-        0 : "file_id",
-        1 : "capabilities", 
-        2 : "device_settings",
-        3 : "user_profile",
-        4 : "hrm_profile",
-        5 : "sdm_profile",
-        6 : "bike_profile",
-        7 : "zones_target",
-        8 : "hr_zone",
-        9 : "power_zone",
-        10 : "met_zone",
-        12 : "sport",
-        15 : "goal",
-        18 : "session",
-        19 : "lap",
-        20 : "record",
-        21 : "event",
-        23 : "device_info",
-        26 : "workout",
-        27 : "workout_step",
-        28 : "schedule",
-        30 : "weight_scale",
-        31 : "course",
-        32 : "course_point",
-        33 : "totals",
-        34 : "activity",
-        35 : "software",
-        37 : "file_capabilities",
-        38 : "mesg_capabilities",
-        39 : "field_capabilities",
-        49 : "file_creator",
-        51 : "blood_pressure",
-        53 : "speed_zone",
-        55 : "monitoring",
-        78 : "hrv",
-        101 : "length",
-        103 : "monitoring_info",
-        105 : "pad",
-        131 : "cadence_zone",
-        0xFF00 : "mfg_range_min",
+        0: "file_id",
+        1: "capabilities",
+        2: "device_settings",
+        3: "user_profile",
+        4: "hrm_profile",
+        5: "sdm_profile",
+        6: "bike_profile",
+        7: "zones_target",
+        8: "hr_zone",
+        9: "power_zone",
+        10: "met_zone",
+        12: "sport",
+        15: "goal",
+        18: "session",
+        19: "lap",
+        20: "record",
+        21: "event",
+        23: "device_info",
+        26: "workout",
+        27: "workout_step",
+        28: "schedule",
+        30: "weight_scale",
+        31: "course",
+        32: "course_point",
+        33: "totals",
+        34: "activity",
+        35: "software",
+        37: "file_capabilities",
+        38: "mesg_capabilities",
+        39: "field_capabilities",
+        49: "file_creator",
+        51: "blood_pressure",
+        53: "speed_zone",
+        55: "monitoring",
+        78: "hrv",
+        101: "length",
+        103: "monitoring_info",
+        105: "pad",
+        131: "cadence_zone",
+        0xFF00: "mfg_range_min",
         0xFFEE: "mfg_range_max",
 
         // From https://forums.garmin.com/showthread.php?31347-Garmin-fit-global-message-numbers
 
-        22	: "source",
-       104  : "battery"
+        22: "source",
+        104: "battery"
     }
 
+    return mesg_num[globalMessageType];
+}
 
-    var file_creator = {
-        0: "software_version",
-        1: "hardware_version"
-    }
+FitFileManager.prototype.messageFactory = function (globalMessageType) {
+
+    var name = this.getGlobalMessageTypeName(globalMessageType);
+
+    
+    if (name === "file_creator")
+        return {
+            0: {"property" : "software_version"},
+            1: { "property": "hardware_version" }
+        }
+
+    if (name === "file_id")
+       return {
+           0: {"property" : "type"},
+           1: {"property" : "manufacturer"},
+           2: {"property" : "product"},
+           3: {"property" : "serial_number"},
+           4: {"property" : "time_created"},
+           5: { "property": "number" }
+       }
+
+    if (name === "record")
+
+        return {
+
+            253: {"property" : "timestamp",  "unit": "s"  },
+            0: {"property" : "position_lat","unit":"semicirles"},
+            1: {"property" : "position_long", "unit":"semicirles"},
+            2: {"property" : "altitude", "scale" : 5, "offset" : 500, "unit": "m"},
+            3: {"property" : "heart_rate", "unit": "bpm"  },
+            4: {"property" : "cadence", "unit": "rpm"  },
+            5: {"property" : "distance"},
+            6: {"property" : "speed"},
+            7: {"property" : "power"},
+            8: {"property" : "compressed_speed_distance"},
+            9: {"property" : "grade"},
+            10: {"property" : "resistance"},
+            11: {"property" : "time_from_course"},
+            12: {"property" : "cycle_length"},
+            13: {"property" : "temperature"},
+            17: {"property" : "speed_1s"},
+            18: {"property" :  "cycles"},
+            19: {"property" : "total_cycles"},
+            28: {"property" : "compressed_accumulated_power"},
+            29: {"property" : "accumulated_power"},
+            30: {"property" : "left_right_balance"},
+            31: {"property" : "gps_accuracy"},
+            32: {"property" : "vertical_speed"},
+            33: {"property" : "calories"}
+        }
+}
+
+FitFileManager.prototype.getDataRecordContent = function (rec) {
 
     var localMsgType = rec.header["localMessageType"].toString();
     var definitionMsg = this["localMsgDefinition" + localMsgType];
@@ -216,34 +266,55 @@ FitFileManager.prototype.showRecordContent = function (rec) {
 
     var fieldNrs = definitionMsg.content.fieldNumbers;
 
-    var msg = { "message" : mesg_num[globalMsgType]};
+    var msg = { "message" : this.getGlobalMessageTypeName(globalMsgType)};
 
     var logger = "";
-    for (var i = 0; i < fieldNrs; i++) {
-        var field = "field" + i.toString();
-        var fieldDefNr = rec.content[field].fieldDefinitionNumber;
 
-        if (!rec.content[field].invalid)
-         switch (globalMsgType) {
-            //  file_creator
-            case 49 :  msg[file_creator[fieldDefNr]] = rec.content[field].value;
-                break;
-         }
+    var globalMsg = this.messageFactory(globalMsgType);
+    if (globalMsg === undefined)
+        console.error("Global Message Type " + globalMsgType.toString() + " number unsupported");
+    else {
+
+        for (var i = 0; i < fieldNrs; i++) {
+            var field = "field" + i.toString();
+            var fieldDefNr = rec.content[field].fieldDefinitionNumber;
 
 
-        logger += fieldDefNr.toString() + ":" + rec.content[field].value.toString();
-        if (rec.content[field].invalid)
-            logger += "(I) ";
-        else
-            logger += " ";
+
+
+            if (!rec.content[field].invalid) {
+
+                var prop = globalMsg[fieldDefNr].property;
+                var unit = globalMsg[fieldDefNr].unit;
+                var scale = globalMsg[fieldDefNr].scale;
+                var offset = globalMsg[fieldDefNr].offset;
+
+                switch (globalMsgType) {
+                    // file_id
+                    case 0: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                        // record
+                    case 20: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                        //  file_creator
+                    case 49: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+
+                    default: console.error("Not implemented message for global type nr. " + globalMsgType.toString());
+                        break;
+                }
+            }
+
+
+            logger += fieldDefNr.toString() + ":" + rec.content[field].value.toString();
+            if (rec.content[field].invalid)
+                logger += "(I) ";
+            else
+                logger += " ";
+        }
+
+
+        console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
     }
 
-    if (mesg_num[globalMsgType] === undefined)
-        console.error("Global Message Type " + globalMsgType.toString() + " number unsupported");
-
-    console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":"+mesg_num[globalMsgType] + " field values = " + logger);
-
-    
+    return msg;
 
 }
 
