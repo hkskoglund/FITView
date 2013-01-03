@@ -128,7 +128,7 @@ function FitFileManager(fitFile) {
             // We get speed in m/s, want it in km/h
             if (rawData["speed"] != undefined)
                 rawData["speed"].forEach(function (element, index, array) {
-                    array[index] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
+                    array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
                 });
 
             var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
@@ -174,6 +174,9 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
 
     var prevIndex = this.index;
 
+    var d = new Date();
+    var timezoneOffset  = d.getTimezoneOffset();
+
     while (this.index < this.headerSize + this.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
 
@@ -194,7 +197,8 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
 
                         var timestamp = msg.timestamp.value;
                         if (applyNormalDatetime) {
-                            // Convert Garmin time to normal time
+                            var garminDateTime = new GarminDateTime(timestamp);
+                            timestamp = garminDateTime.convertTimestampToLocalTime(timezoneOffset);
 
                         }
 
@@ -674,3 +678,33 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
 
     return record;
 }
+
+
+
+// Garmin datetime = seconds since UTC 00:00 Dec 31 1989
+// If Garmin date_time is < 0x10000000 then it is system time (seconds from device power on)
+
+function GarminDateTime (timestamp) {
+    
+    //this.MIN = 0x10000000; 
+    // Date.UTC(1989,11,31) - Date.UTC(1970,0,1)
+     this.OFFSET = 631065600000; // Offset between Garmin (FIT) time and Unix time in ms (Dec 31, 1989 - 00:00:00 January 1, 1970).
+     this.timestamp = timestamp || undefined;
+}
+
+GarminDateTime.prototype.setTimestamp = function (timestamp) {
+    this.timestamp = timestamp;
+}
+
+GarminDateTime.prototype.getTimeStamp = function getTimestamp() {
+    return this.timestamp;
+}
+
+GarminDateTime.prototype.convertTimestampToLocalTime = function (timezoneOffset) {
+    var d = new Date();
+    return this.timestamp * 1000 + this.OFFSET+timezoneOffset*60*1000*-1;
+    //return d;
+}
+
+
+
