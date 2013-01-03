@@ -123,12 +123,12 @@ function FitFileManager(fitFile) {
 
             // Start reading records from file
             var rawData = {};
-            self.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true);
+            self.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true,true);
 
             // We get speed in m/s, want it in km/h
             if (rawData["speed"] != undefined)
                 rawData["speed"].forEach(function (element, index, array) {
-                    array[index] = element * 3.6;
+                    array[index] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
                 });
 
             var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
@@ -146,9 +146,10 @@ function FitFileManager(fitFile) {
                 title: {
                     text: ''
                 },
-                // xAxis: {
-                //     categories: ['Apples', 'Bananas', 'Oranges']
-                // },
+                 xAxis: {
+                     //categories : ['Apples', 'Bananas', 'Oranges']
+                     type : 'datetime'
+                 },
                 yAxis: {
                     title: {
                         text: 'bpm'
@@ -167,7 +168,7 @@ function FitFileManager(fitFile) {
     }
 }
 
-FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset) {
+FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset,applyNormalDatetime) {
     var aFITBuffer = this.fitReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
 
@@ -191,6 +192,12 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
                         var scale = msg[filter].scale;
                         var offset = msg[filter].offset;
 
+                        var timestamp = msg.timestamp.value;
+                        if (applyNormalDatetime) {
+                            // Convert Garmin time to normal time
+
+                        }
+
                         // If requested do some value conversions
                         if (applyScaleOffset) {
                             if (scale != undefined)
@@ -203,7 +210,7 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
                         if (data[filter] == undefined)
                             data[filter] = [];
 
-                        data[filter].push(val);
+                        data[filter].push([timestamp,val]);
                     }
                 }
             }
