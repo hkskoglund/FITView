@@ -702,7 +702,13 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                         break;
                     case 0x88: recContent[currentField].value =  dviewFit.getFloat32(this.index, littleEndian) ; break;
                     case 0x89: recContent[currentField].value =  dviewFit.getFloat64(this.index, littleEndian); break;
-                    case 0x0D: console.error("Array of bytes not implemented yet!");
+                    case 0x0D: //console.error("Array of bytes not implemented yet!");
+                        var bytesStartIndex = this.index;
+                        var bytes = [];
+                        for (var j = 0; j < bSize; j++) 
+                            bytes.push(dviewFit.getUint8(bytesStartIndex++));
+                        
+                        recContent[currentField] = { "value": bytes }; break;
                         //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
                         break;
                     default: //throw new Error("Base type " + bType.toString() + " not found in lookup switch"); break;
