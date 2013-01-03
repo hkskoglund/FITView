@@ -146,10 +146,10 @@ function FitFileManager(fitFile) {
                 title: {
                     text: ''
                 },
-                 xAxis: {
-                     //categories : ['Apples', 'Bananas', 'Oranges']
-                     type : 'datetime'
-                 },
+                xAxis: {
+                    //categories : ['Apples', 'Bananas', 'Oranges']
+                    type : 'datetime'
+                },
                 yAxis: {
                     title: {
                         text: 'bpm'
@@ -160,7 +160,50 @@ function FitFileManager(fitFile) {
 
             });
 
-  
+            var seriesSpeedVsHR = [];
+
+            if (rawData["heart_rate"] != undefined && rawData["speed"] != undefined)
+                var minLength;
+            var hrLength = rawData["heart_rate"].length;
+            var speedLength = rawData["speed"].length;
+
+            if (hrLength >= speedLength) // Arrays could be of different sizes, cut off
+                minLength = speedLength;
+            else
+                minLengt = hrLength;
+
+                for (var datap = 0; datap < minLength; datap++) {
+                    var x = rawData["speed"][datap][1];
+                    var y = rawData["heart_rate"][datap][1];
+                    if (x == undefined || y == undefined)
+                        console.error("Could not access raw data for data point nr. " + datap.toString());
+                    else
+                       seriesSpeedVsHR.push([rawData["speed"][datap][1], rawData["heart_rate"][datap][1]]);
+                }
+
+            var   chart2 = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'speedVsHRChart',
+                    type: 'line'
+                },
+                title: {
+                    text: ''
+                },
+                xAxis: {
+                        
+                    //categories : ['Apples', 'Bananas', 'Oranges']
+                    //type : 'datetime'
+                },
+                yAxis: {
+                    title: {
+                        text: 'bpm'
+                    }
+                },
+
+                series: [{ name : 'Speed vs Heart Rate', data: seriesSpeedVsHR }]
+
+            });
+        
         } catch (err) {
             console.error('Trouble with FIT file header parsing, message:', err.message);
         }
@@ -614,19 +657,18 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
 
             // var logging = "";
             for (var i = 0; i < localMsgDefinition["content"].fieldNumbers; i++) {
-                var bType = localMsgDefinition.content["field" + i.toString()].baseType;
+                var currentField = "field" + i.toString();
+                var bType = localMsgDefinition.content[currentField].baseType;
+                var bSize = localMsgDefinition.content[currentField].size;
+
                 if (fitBaseTypesInvalidValues[bType] == undefined || fitBaseTypesInvalidValues[bType] == null)
                     console.log("Base type not found for base type" + bType);
                 //  logging += fitBaseTypesInvalidValues[bType].name+" ";
                 // Just skip reading values at the moment...
                // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
 
-                var currentField = "field" + i.toString();
-                recContent[currentField] = {};
-                recContent[currentField]["fieldDefinitionNumber"] = localMsgDefinition.content["field" + i.toString()].fieldDefinitionNumber;
-
+                recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
               
-
                 switch (bType) {
                     case 0x00:
                     case 0x0A:
@@ -644,8 +686,18 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                     case 0x8C:
                         recContent[currentField].value = dviewFit.getUint32(this.index, littleEndian); break;
                      //recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
-                    case 0x07: console.error("String not implemented yet!");
-                        //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // FIX IT LATER!!! Null terminated string? of 1 byte
+                    case 0x07: //console.error("String not implemented yet!");
+                        var stringStartIndex = this.index;
+                        var str = "";
+                        for (var j = 0; j < bSize; j++) {
+                            var char = dviewFit.getUint8(stringStartIndex++);
+                            if (char == 0) // Null terminated string
+                                break;
+                            str += String.fromCharCode(char);
+                        }
+
+                        recContent[currentField] = { "value": str }; break;
+
                         //this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
                         break;
                     case 0x88: recContent[currentField].value =  dviewFit.getFloat32(this.index, littleEndian) ; break;
@@ -666,7 +718,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                     recContent[currentField].invalid = false;
 
                 // Advance to next field value position
-                this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+                this.index = this.index + bSize;
             }
 
             //console.log(logging);

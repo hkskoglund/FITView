@@ -7,3 +7,8 @@
     width: 100%;
     height : 400px;
 }
+
+#speedVsHRChart {
+    width: 50%;
+    height: 200px;
+}
