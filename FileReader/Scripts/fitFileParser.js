@@ -206,8 +206,7 @@ function showCharts(rawData) {
 
 
 
-
-    var chart3 = new Highcharts.Chart({
+    var options = {
         chart: {
             renderTo: 'zonesChart',
             type: 'bar'
@@ -217,26 +216,37 @@ function showCharts(rawData) {
         },
         xAxis: {
 
-            categories: [myZones[0].name, myZones[1].name, myZones[2].name, myZones[3].name, myZones[4].name]
+            //categories: [myZones[0].name, myZones[1].name, myZones[2].name, myZones[3].name, myZones[4].name]
             //type : 'datetime'
         },
         yAxis: {
             title: {
                 text: 'Minutes'
             }
-        },
+        }
 
         // Assuming 1 sec. sampling of data point -> divide by 60 to get number of minutes in zone
-        series: [{
-            name: 'Heart rate zones',
-            data: [[myZones[0].name + " (" + myZones[0].min.toString() + "-" + myZones[0].max.toString() + ")", myZones[0].count / 60],
-                [myZones[1].name + " (" + myZones[1].min.toString() + "-" + myZones[1].max.toString() + ")", myZones[1].count / 60],
-                [myZones[2].name + " (" + myZones[2].min.toString() + "-" + myZones[2].max.toString() + ")", myZones[2].count / 60],
-                [myZones[3].name + " (" + myZones[3].min.toString() + "-" + myZones[3].max.toString() + ")", myZones[3].count / 60],
-                [myZones[4].name + " (" + myZones[4].min.toString() + "-" + myZones[4].max.toString() + ")", myZones[4].count / 60]]
+        //series: []
+    };
 
-        }]
-    });
+    
+
+    var s1 = {};
+    
+    s1.name = "Heart rate zones";
+    s1.data = [];
+    options.xAxis.categories = [];
+    options.series = [];
+
+    for (var catNr = 0; catNr < myZones.length; catNr++)
+        {
+        options.xAxis.categories.push(myZones[catNr].name);
+        s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
+    }
+
+    options.series.push(s1);
+
+    var chart3 = new Highcharts.Chart(options);
 }
 
 function FitFileManager(fitFile) {
