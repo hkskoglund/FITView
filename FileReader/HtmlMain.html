@@ -11,7 +11,7 @@
 </head>
 <body>
     <header>
-        <h1>FITView</h1>
+        <h1 style="text-align: center">FITView</h1>
     </header>
     
     <div id="testChart"></div>
@@ -23,9 +23,16 @@
     
     <div>
         <input id="inpFITFile" type="file" />
-    <button id="btnParse" type="button">Parse</button>
+    <button id="btnParse" type="button">View</button>
+        <output id="outConsole" />
     <br />
-    <output id="outConsole"  />
+    </div>
+    
+    <div id="divHRZones" >
+        <h3 style="text-align:center">Heart Rate Zones</h3>
+        <button id="btnSaveZones" type="button">Save</button>
+        <button id="btnNewZone" type="button">New</button>
+    <br />
     </div>
     
     

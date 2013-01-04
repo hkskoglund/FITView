@@ -25,3 +25,8 @@
     float : left;
     
 }
+
+#divHRZones {
+    /*visibility: hidden;*/
+    width : 50%;
+}

@@ -203,6 +203,7 @@ function showCharts(rawData) {
             }
         },
 
+        // Assuming 1 sec. sampling of data point -> divide by 60 to get number of minutes in zone
         series: [{
             name: 'Heart rate zones',
             data: [[myZones[0].name + " (" + myZones[0].min.toString() + "-" + myZones[0].max.toString() + ")", myZones[0].count / 60],
