@@ -83,6 +83,138 @@ function fitCRC(payloadview, start, end, crcSeed) {
 
 }
 
+function showCharts(rawData) {
+    // We get speed in m/s, want it in km/h
+    if (rawData["speed"] != undefined)
+        rawData["speed"].forEach(function (element, index, array) {
+            array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
+        });
+
+    var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
+        { name: 'Altitude', data: rawData["altitude"] },
+    { name: 'Cadence', data: rawData["cadence"] },
+    { name: 'Speed', data: rawData["speed"] }];
+
+    // Charting
+
+    chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'testChart',
+            type: 'line'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            //categories : ['Apples', 'Bananas', 'Oranges']
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'bpm'
+            }
+        },
+
+        series: seriesSetup
+
+    });
+
+    var seriesSpeedVsHR = [];
+
+    if (rawData["heart_rate"] != undefined && rawData["speed"] != undefined)
+        var minLength;
+    var hrLength = rawData["heart_rate"].length;
+    var speedLength = rawData["speed"].length;
+
+    if (hrLength >= speedLength) // Arrays could be of different sizes, cut off
+        minLength = speedLength;
+    else
+        minLengt = hrLength;
+
+    var myZones = [{ name: 'Zone 1', min: 110, max: 120 },
+                { name: 'Zone 2', min: 121, max: 140 },
+                { name: 'Zone 3', min: 141, max: 150 },
+                { name: 'Zone 4', min: 151, max: 165 },
+                { name: 'Zone 5', min: 166, max: 256 }];
+
+    for (var datap = 0; datap < minLength; datap++) {
+        var speedx = rawData["speed"][datap][1];
+        var hry = rawData["heart_rate"][datap][1];
+        if (speedx == undefined || hry == undefined)
+            console.error("Could not access raw data for data point nr. " + datap.toString());
+        else {
+            seriesSpeedVsHR.push([speedx, hry]);
+
+            // Count Heart rate data points in zone
+            for (var zone = 0; zone < myZones.length; zone++) {
+                if (hry <= myZones[zone].max && hry >= myZones[zone].min)
+                    if (myZones[zone].count == undefined)
+                        myZones[zone].count = 1
+                    else
+                        myZones[zone].count++;
+            }
+
+
+        }
+    }
+
+    var chart2 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'speedVsHRChart',
+            type: 'line'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+
+            //categories : ['Apples', 'Bananas', 'Oranges']
+            //type : 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'bpm'
+            }
+        },
+
+        series: [{ name: 'Speed vs Heart Rate', data: seriesSpeedVsHR }]
+
+    });
+
+
+
+
+    var chart3 = new Highcharts.Chart({
+        chart: {
+            renderTo: 'zonesChart',
+            type: 'bar'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+
+            categories: [myZones[0].name, myZones[1].name, myZones[2].name, myZones[3].name, myZones[4].name]
+            //type : 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Minutes'
+            }
+        },
+
+        series: [{
+            name: 'Heart rate zones',
+            data: [[myZones[0].name + " (" + myZones[0].min.toString() + "-" + myZones[0].max.toString() + ")", myZones[0].count / 60],
+                [myZones[1].name + " (" + myZones[1].min.toString() + "-" + myZones[1].max.toString() + ")", myZones[1].count / 60],
+                [myZones[2].name + " (" + myZones[2].min.toString() + "-" + myZones[2].max.toString() + ")", myZones[2].count / 60],
+                [myZones[3].name + " (" + myZones[3].min.toString() + "-" + myZones[3].max.toString() + ")", myZones[3].count / 60],
+                [myZones[4].name + " (" + myZones[4].min.toString() + "-" + myZones[4].max.toString() + ")", myZones[4].count / 60]]
+
+        }]
+    });
+}
+
 function FitFileManager(fitFile) {
 
     var self = this;
@@ -124,86 +256,8 @@ function FitFileManager(fitFile) {
             // Start reading records from file
             var rawData = {};
             self.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true,true);
+            showCharts(rawData);
 
-            // We get speed in m/s, want it in km/h
-            if (rawData["speed"] != undefined)
-                rawData["speed"].forEach(function (element, index, array) {
-                    array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
-                });
-
-            var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
-                { name: 'Altitude', data: rawData["altitude"] },
-            { name: 'Cadence', data: rawData["cadence"] },
-            { name: 'Speed', data: rawData["speed"] }];
-
-            // Charting
-
-            chart1 = new Highcharts.Chart({
-                chart: {
-                    renderTo: 'testChart',
-                    type: 'line'
-                },
-                title: {
-                    text: ''
-                },
-                xAxis: {
-                    //categories : ['Apples', 'Bananas', 'Oranges']
-                    type : 'datetime'
-                },
-                yAxis: {
-                    title: {
-                        text: 'bpm'
-                    }
-                },
-
-                series : seriesSetup
-
-            });
-
-            var seriesSpeedVsHR = [];
-
-            if (rawData["heart_rate"] != undefined && rawData["speed"] != undefined)
-                var minLength;
-            var hrLength = rawData["heart_rate"].length;
-            var speedLength = rawData["speed"].length;
-
-            if (hrLength >= speedLength) // Arrays could be of different sizes, cut off
-                minLength = speedLength;
-            else
-                minLengt = hrLength;
-
-                for (var datap = 0; datap < minLength; datap++) {
-                    var x = rawData["speed"][datap][1];
-                    var y = rawData["heart_rate"][datap][1];
-                    if (x == undefined || y == undefined)
-                        console.error("Could not access raw data for data point nr. " + datap.toString());
-                    else
-                       seriesSpeedVsHR.push([rawData["speed"][datap][1], rawData["heart_rate"][datap][1]]);
-                }
-
-            var   chart2 = new Highcharts.Chart({
-                chart: {
-                    renderTo: 'speedVsHRChart',
-                    type: 'line'
-                },
-                title: {
-                    text: ''
-                },
-                xAxis: {
-                        
-                    //categories : ['Apples', 'Bananas', 'Oranges']
-                    //type : 'datetime'
-                },
-                yAxis: {
-                    title: {
-                        text: 'bpm'
-                    }
-                },
-
-                series: [{ name : 'Speed vs Heart Rate', data: seriesSpeedVsHR }]
-
-            });
-        
         } catch (err) {
             console.error('Trouble with FIT file header parsing, message:', err.message);
         }
