@@ -1,4 +1,4 @@
-﻿var outConsole, inpFITFile, btnParse, selectedFiles;
+﻿var outConsole, inpFITFile, btnParse, selectedFiles, btnSaveZones;
 var fitFileManager;
 
 $(document).ready(function () {
@@ -15,14 +15,18 @@ $(document).ready(function () {
      btnParse = document.getElementById('btnParse')
     btnParse.addEventListener('click', fitFileManager.onbtnParseClick, false);
 
-     selectedFiles; // All File thats selected
+
+    btnSaveZones = document.getElementById('btnSaveZones')
+    btnSaveZones.addEventListener('click', saveHRZones, false);
 
 });
 
 
 // User interface events
 
+function saveHRZones(e) {
 
+}
 
 
 function onFitFileSelected(e) {
@@ -83,6 +87,27 @@ function fitCRC(payloadview, start, end, crcSeed) {
 
 }
 
+function getHRZones() {
+    // Assume browser supports localStorage
+    var localStorage = window.localStorage;
+    var key = "FITView.HRZones";
+    var myZonesJSONString = localStorage.getItem(key);
+    
+    var myZones;
+    if (myZonesJSONString != null)
+        myZones = JSON.parse(myZonesJSONString);
+    else {
+        console.info("Local storage of "+key+" not found, using default HR Zones");
+        myZones = [{ name: 'Zone 1', min: 110, max: 120 },   // No storage found use default
+                 { name: 'Zone 2', min: 121, max: 140 },
+                 { name: 'Zone 3', min: 141, max: 150 },
+                 { name: 'Zone 4', min: 151, max: 165 },
+                 { name: 'Zone 5', min: 166, max: 256 }];
+    }
+
+    return myZones;
+}
+
 function showCharts(rawData) {
     // We get speed in m/s, want it in km/h
     if (rawData["speed"] != undefined)
@@ -123,6 +148,7 @@ function showCharts(rawData) {
 
     if (rawData["heart_rate"] != undefined && rawData["speed"] != undefined)
         var minLength;
+
     var hrLength = rawData["heart_rate"].length;
     var speedLength = rawData["speed"].length;
 
@@ -131,11 +157,8 @@ function showCharts(rawData) {
     else
         minLengt = hrLength;
 
-    var myZones = [{ name: 'Zone 1', min: 110, max: 120 },
-                { name: 'Zone 2', min: 121, max: 140 },
-                { name: 'Zone 3', min: 141, max: 150 },
-                { name: 'Zone 4', min: 151, max: 165 },
-                { name: 'Zone 5', min: 166, max: 256 }];
+    
+    var myZones = getHRZones();
 
     for (var datap = 0; datap < minLength; datap++) {
         var speedx = rawData["speed"][datap][1];
