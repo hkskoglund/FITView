@@ -358,7 +358,9 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
 
     // Unclear if last 2 bytes of FIT file is big/little endian, but based on FIT header CRC is stored in little endian, so
     // it should be quite safe to assume the last two bytes is stored in little endian format
-    var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
+    //var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
+
+    var CRC = dvFITBuffer.getUint16(aFITBuffer.byteLength - 2,true); // Force little endian
     console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
 
     // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
@@ -487,7 +489,8 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
 
     var globalMsg = this.messageFactory(globalMsgType);
     if (globalMsg === undefined)
-        console.error("Global Message Type " + globalMsgType.toString() + " number unsupported");
+        var t = 1;
+        //console.error("Global Message Type " + globalMsgType.toString() + " number unsupported");
     else {
 
         for (var i = 0; i < fieldNrs; i++) {
@@ -526,7 +529,7 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
         }
 
 
-        console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
+       // console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
     }
 
     return msg;
@@ -576,7 +579,13 @@ FitFileManager.prototype.getFITHeader = function (bufFitHeader, fitFileSystemSiz
     if (estimatedFitFileSize != fitFileSystemSize)
         console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString() + " bytes.");
 
-    this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
+    // 4 januar : Testet med IE 10, støtter ikke slice metoden...
+
+   // this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
+
+    this.dataType = "";
+    for (var indx = 8; indx < 12; indx++)
+        this.dataType += String.fromCharCode(dviewFitHeader.getUint8(indx));
 
     this.index = 12;
 
