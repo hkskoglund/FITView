@@ -1,30 +1,55 @@
-﻿var outConsole, inpFITFile, btnParse, selectedFiles, btnSaveZones;
-var fitFileManager;
-var divMsgMap;
+﻿//var outConsole, inpFITFile, btnParse, selectedFiles, btnSaveZones;
+//var fitFileManager;
+//var divMsgMap;
 
-$(document).ready(function () {
+var FITUI = new UIController();
+
+function UIController() {
+
+    
+}
+
+UIController.prototype.setup = function () {
     // Setup DOM event handling
 
-    outConsole = document.getElementById('outConsole');
+    // this = #document by default since we are called from $(document).ready event handler
+
+    FITUI.outConsole = document.getElementById('outConsole');
 
     // Capturing = false -> bubbling event
-    inpFITFile = document.getElementById('inpFITFile');
-    inpFITFile.addEventListener('change', onFitFileSelected, false);
+    FITUI.inpFITFile = document.getElementById('inpFITFile');
+    FITUI.inpFITFile.addEventListener('change', FITUI.onFitFileSelected, false);
 
-    fitFileManager = new FitFileManager();
+    FITUI.fitFileManager = new FitFileManager();
 
-     btnParse = document.getElementById('btnParse')
-    btnParse.addEventListener('click', fitFileManager.onbtnParseClick, false);
+    FITUI.btnParse = document.getElementById('btnParse')
+    FITUI.btnParse.addEventListener('click', FITUI.fitFileManager.onbtnParseClick, false);
 
 
-    btnSaveZones = document.getElementById('btnSaveZones')
-    btnSaveZones.addEventListener('click', saveHRZones, false);
+    FITUI.btnSaveZones = document.getElementById('btnSaveZones')
+    FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
 
-    divMsgMap = document.getElementById('divMsgMap');
-    
-   
-});
+    FITUI.divMsgMap = document.getElementById('divMsgMap');
 
+
+}
+
+
+UIController.prototype.onFitFileSelected = function (e) {
+    // console.log(e);
+    e.preventDefault();
+
+    FITUI.selectedFiles = e.target.files;
+    FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
+
+    // To do: check file size
+
+    FITUI.btnParse.style.visibility = 'visible';
+
+
+}
+
+$(document).ready(FITUI.setup);
 
 // User interface events
 
@@ -33,22 +58,7 @@ function saveHRZones(e) {
 }
 
 
-function onFitFileSelected(e) {
-    // console.log(e);
-    e.preventDefault();
 
-    selectedFiles = e.target.files;
-    fitFileManager.fitFile = selectedFiles[0];
-
-    // To do: check file size
-
-    
-
-    var btnParse = document.getElementById('btnParse');
-    btnParse.style.visibility = 'visible';
-
-
-}
 
 // Adapted From http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
 function ab2str(buf) {
@@ -340,7 +350,11 @@ function FitFileManager(fitFile) {
 
             // Start reading records from file
             var rawData = {};
-            self.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true,true);
+
+           
+            self.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true, true);
+
+            // Send custom event "rawDataLoaded", with e.Data = rawData to FITUI Controller which then starts show charts
             showCharts(rawData);
 
         } catch (err) {
@@ -354,6 +368,7 @@ function addToMessageMap(msg, fitFileManager) {
     var styleClass = "";
     switch (msg.globalMessageType) {
         case 0: styleClass = 'FITfile_id'; break;
+        case 19: styleClass = 'FITlap'; break;
         case 20: styleClass = 'FITrecord'; break;
         case 78: styleClass = 'FIThrv'; break;
         default: styleClass = 'FITunknown'; break;
@@ -372,6 +387,19 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
     var timezoneOffset  = d.getTimezoneOffset();
 
 
+    var event = new CustomEvent(
+	"FITnewGlobalMessage",
+	{
+	    detail: {
+	        message: msg,
+	        //time: new Date(),
+	    },
+	    bubbles: true,
+	    cancelable: true
+	}
+);
+
+
     while (this.index < this.headerSize + this.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
 
@@ -381,7 +409,11 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
         else {
             var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversions...
             
-            addToMessageMap(msg,this);
+            // Send custom event "FITnewGlobalMessage" to FITUI controller
+
+            addToMessageMap(msg, this);
+
+            
 
             if (msg.message === message) {  // only look for specfic message
                 var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn

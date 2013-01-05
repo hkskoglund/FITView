@@ -1,6 +1,16 @@
-﻿#btnParse {
+﻿header {
+ 
+    background-color : lightblue;
+    /*background-image: -webkit-linear-gradient( left, #ff0000, #ffa500 13.0%,#ffff00 26.0%,#0000ff 39.0%,#008000 52.0%,#4b0082 65.0%,#ee82ee 78.0%)*/
+    background-image : -webkit-linear-gradient( 45deg, lightblue  , blue );
+}
+
+#btnParse {
     /* Parse button is only available when file is selected/dropped */
-    visibility : hidden
+    visibility : hidden;
+    background-color: li
+    
+        
 }
 
 #testChart {
@@ -37,29 +47,36 @@
 /* FIT global messages for map */
 
 .FITrecord {
-    padding : 2px;
-    width : 3px;
+    padding : 1px;
+    width : 1px;
     float : left;
                background :   #000;
 }
 
+.FITlap {
+    padding : 1px;
+    /*height : 10px;*/
+    width : 1px;
+    float : left;
+               background : #4cff00 ;
+}
 .FITfile_id {
-    padding : 2px;
-    width: 3px;
+    padding : 1px;
+    width: 1px;
     float: left;
     background: #ffd800;
 }
 
 .FITunknown {
-    padding : 2px;
-        width: 3px;
+    padding : 1px;
+        width: 1px;
     float: left;
     background: #f00;
 }
 
 .FIThrv {
-    padding : 2px;
-     width: 3px;
+    padding : 1px;
+     width: 1px;
     float: left;
     background: #808080;
 }
