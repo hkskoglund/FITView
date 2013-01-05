@@ -6,123 +6,10 @@ var FITUI = new UIController();
 
 function UIController() {
 
-    
+    this.FITGLOBALMESSAGEEVENT = "FITGlobalMessageEvent";
 }
 
-UIController.prototype.setup = function () {
-    // Setup DOM event handling
-
-    // this = #document by default since we are called from $(document).ready event handler
-
-    FITUI.outConsole = document.getElementById('outConsole');
-
-    // Capturing = false -> bubbling event
-    FITUI.inpFITFile = document.getElementById('inpFITFile');
-    FITUI.inpFITFile.addEventListener('change', FITUI.onFitFileSelected, false);
-
-    FITUI.fitFileManager = new FitFileManager();
-
-    FITUI.btnParse = document.getElementById('btnParse')
-    FITUI.btnParse.addEventListener('click', FITUI.fitFileManager.onbtnParseClick, false);
-
-
-    FITUI.btnSaveZones = document.getElementById('btnSaveZones')
-    FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
-
-    FITUI.divMsgMap = document.getElementById('divMsgMap');
-
-
-}
-
-
-UIController.prototype.onFitFileSelected = function (e) {
-    // console.log(e);
-    e.preventDefault();
-
-    FITUI.selectedFiles = e.target.files;
-    FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
-
-    // To do: check file size
-
-    FITUI.btnParse.style.visibility = 'visible';
-
-
-}
-
-$(document).ready(FITUI.setup);
-
-// User interface events
-
-function saveHRZones(e) {
-
-}
-
-
-
-
-// Adapted From http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
-function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
-
-// Ported from C to javascript from FIT SDK 5.10 fit_crc.c
-// Accessed: 28 december 2012
-
-function fitCRC_Get16(crc, byte) {
-    var crc_table =
-     [
-       0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
-       0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400
-     ];
-
-    var tmp;
-
-    // compute checksum of lower four bits of byte
-    tmp = crc_table[crc & 0xF];
-    crc = (crc >> 4) & 0x0FFF;
-    crc = crc ^ tmp ^ crc_table[byte & 0xF];
-
-    // now compute checksum of upper four bits of byte
-    tmp = crc_table[crc & 0xF];
-    crc = (crc >> 4) & 0x0FFF;
-    crc = crc ^ tmp ^ crc_table[(byte >> 4) & 0xF];
-
-    return crc;
-}
-
-function fitCRC(payloadview, start, end, crcSeed) {
-    var crc = crcSeed;
-
-    for (var i = start; i <= end; i++) {
-        crc = fitCRC_Get16(crc, payloadview.getUint8(i));
-    }
-
-    return crc;
-
-}
-
-function getHRZones() {
-    // Assume browser supports localStorage
-    var localStorage = window.localStorage;
-    var key = "FITView.HRZones";
-    var myZonesJSONString = localStorage.getItem(key);
-    
-    var myZones;
-    if (myZonesJSONString != null)
-        myZones = JSON.parse(myZonesJSONString);
-    else {
-        console.info("Local storage of "+key+" not found, using default HR Zones");
-        myZones = [{ name: 'Zone 1', min: 110, max: 120 },   // No storage found use default
-                 { name: 'Zone 2', min: 121, max: 140 },
-                 { name: 'Zone 3', min: 141, max: 150 },
-                 { name: 'Zone 4', min: 151, max: 165 },
-                 { name: 'Zone 5', min: 166, max: 256 }];
-    }
-
-    return myZones;
-}
-
-function showSpeedVsHeartRate(rawData) {
+UIController.prototype.showSpeedVsHeartRate = function (rawData) {
     var seriesSpeedVsHR = [];
     var minLength;
 
@@ -198,7 +85,55 @@ function showSpeedVsHeartRate(rawData) {
 
 }
 
-function showHRZones(rawData) {
+UIController.prototype.showCharts = function (rawData) {
+    // We get speed in m/s, want it in km/h
+    if (rawData["speed"] != undefined)
+        rawData["speed"].forEach(function (element, index, array) {
+            array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
+        });
+
+    var chartId = "testChart";
+    var divChart = document.getElementById(chartId);
+    divChart.style.visibility = "visible";
+
+    var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
+        { name: 'Altitude', data: rawData["altitude"] },
+    { name: 'Cadence', data: rawData["cadence"] },
+    { name: 'Speed', data: rawData["speed"] }];
+
+    // Charting
+
+    chart1 = new Highcharts.Chart({
+        chart: {
+            renderTo: chartId,
+            type: 'line'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            //categories : ['Apples', 'Bananas', 'Oranges']
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'bpm'
+            }
+        },
+
+        series: seriesSetup
+
+    });
+
+
+    FITUI.showSpeedVsHeartRate(rawData);
+
+    FITUI.showHRZones(rawData);
+
+
+}
+
+UIController.prototype.showHRZones = function(rawData) {
     var divChart = document.getElementById("zonesChart");
     divChart.style.visibility = "visible";
     
@@ -262,123 +197,197 @@ function showHRZones(rawData) {
     var chart3 = new Highcharts.Chart(options);
 }
 
-function showCharts(rawData) {
-    // We get speed in m/s, want it in km/h
-    if (rawData["speed"] != undefined)
-        rawData["speed"].forEach(function (element, index, array) {
-            array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
-        });
-
-    var chartId = "testChart";
-    var divChart = document.getElementById(chartId);
-    divChart.style.visibility = "visible";
-
-    var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
-        { name: 'Altitude', data: rawData["altitude"] },
-    { name: 'Cadence', data: rawData["cadence"] },
-    { name: 'Speed', data: rawData["speed"] }];
-
-    // Charting
-
-    chart1 = new Highcharts.Chart({
-        chart: {
-            renderTo: chartId,
-            type: 'line'
-        },
-        title: {
-            text: ''
-        },
-        xAxis: {
-            //categories : ['Apples', 'Bananas', 'Oranges']
-            type: 'datetime'
-        },
-        yAxis: {
-            title: {
-                text: 'bpm'
-            }
-        },
-
-        series: seriesSetup
-
-    });
-
-    
-    showSpeedVsHeartRate(rawData);
-
-    showHRZones(rawData);
-
-    
-}
-
-function FitFileManager(fitFile) {
-
-    var self = this;
-
-
-
-    //this.baseTypes = [{ "type" : 0, "field" : 0x00, "name" : "enum", "invalid" : 0xFF},
-
-    /*
-      @fitFile - File reference to FIT file from browser
-    ***/
-    this.fitFile = fitFile;
-
-    /*
-      @index - Pointer to next unread byte in FIT file
-    ***/
-
-    this.index = 0;
-
-
-    // Callback from button = this
-    this.onbtnParseClick = function (e) {
+UIController.prototype.onbtnParseClick = // Callback from button = this
+    function (e) {
         //var fitManager = new FitFileManager(selectedFiles[0]);
-        self.showFileInfo();
-        self.loadFile();
+        FITUI.showFileInfo();
+        FITUI.fitFileManager.loadFile();
     }
 
-    this.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + this.fitFile.size.toString() + ' bytes, last modified: ' + this.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
-    /** Callback for loadend event on FileReader
-     @param e = ProgressEvent
-    ***/
-    this.fitFileLoadEnd = function (e) {
+UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
+
+
+UIController.prototype.setup = function () {
+    // Setup DOM event handling
+
+    // this = #document by default since we are called from $(document).ready event handler
+
+    FITUI.outConsole = document.getElementById('outConsole');
+
+    // Capturing = false -> bubbling event
+    FITUI.inpFITFile = document.getElementById('inpFITFile');
+    FITUI.inpFITFile.addEventListener('change', FITUI.onFitFileSelected, false);
+
+    FITUI.fitFileManager = new FitFileManager(); // Our business layer
+
+    FITUI.btnParse = document.getElementById('btnParse')
+    FITUI.btnParse.addEventListener('click', FITUI.onbtnParseClick, false);
+
+
+    FITUI.btnSaveZones = document.getElementById('btnSaveZones')
+    FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
+
+    FITUI.divMsgMap = document.getElementById('divMsgMap');
+   
+
+}
+
+UIController.prototype.showDataRecordsOnMap = function () {
+    var dataRecords = FITUI.fitFileManager.records;
+
+    for (var i = 0; i < dataRecords.length; i++) {
+        var styleClass = "";
+        switch (dataRecords[i]) {
+            case 0: styleClass = 'FITfile_id'; break;
+            case 19: styleClass = 'FITlap'; break;
+            case 20: styleClass = 'FITrecord'; break;
+            case 78: styleClass = 'FIThrv'; break;
+            default: styleClass = 'FITunknown'; break;
+        }
+
+        divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
+    }
+}
+
+
+
+
+UIController.prototype.onFitFileSelected = function (e) {
+    // console.log(e);
+    e.preventDefault();
+
+    FITUI.selectedFiles = e.target.files;
+    FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
+
+    // To do: check file size
+
+    FITUI.btnParse.style.visibility = 'visible';
+
+
+}
+
+UIController.prototype.showFITHeader = function () {
+    var headerHtml = '<p>Header size : ' + FITUI.fitFileManager.headerSize.toString() + ' bytes ' +
+'Protocol version : ' + FITUI.fitFileManager.protocolVersion.toString() +
+' Profile version : ' + FITUI.fitFileManager.profileVersion.toString() +
+' Data size: ' + FITUI.fitFileManager.dataSize.toString() + ' bytes' +
+' Data type: ' + FITUI.fitFileManager.dataType;
+    if (FITUI.fitFileManager.headerCRC != undefined) {
+        headerHtml += ' CRC: ' + parseInt(FITUI.fitFileManager.headerCRC, 10).toString(16);
+    }
+
+    return headerHtml;
+}
+
+UIController.prototype.fitFileLoadEnd = function (e) {
         try {
-            // self contains a reference to fitFileManager
-            self.getFITHeader(self.fitReader.result, self.fitFile.size);
-            outConsole.innerHTML += self.toinnerHTML();
-
+           
+            FITUI.fitFileManager.getFITHeader(FITUI.fitFileManager.fitFileReader.result, FITUI.fitFileManager.fitFile.size);
+            
             // Start reading records from file
             var rawData = {};
 
-           
-            self.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true, true);
 
-            // Send custom event "rawDataLoaded", with e.Data = rawData to FITUI Controller which then starts show charts
-            showCharts(rawData);
+            FITUI.fitFileManager.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true, true);
+
+            FITUI.showDataRecordsOnMap();
+
+            FITUI.showCharts(rawData);
 
         } catch (err) {
             console.error('Trouble with FIT file header parsing, message:', err.message);
         }
 
     }
+
+$(document).ready(FITUI.setup);
+
+// User interface events
+
+function saveHRZones(e) {
+
 }
 
-function addToMessageMap(msg, fitFileManager) {
-    var styleClass = "";
-    switch (msg.globalMessageType) {
-        case 0: styleClass = 'FITfile_id'; break;
-        case 19: styleClass = 'FITlap'; break;
-        case 20: styleClass = 'FITrecord'; break;
-        case 78: styleClass = 'FIThrv'; break;
-        default: styleClass = 'FITunknown'; break;
-    }
-    
-      divMsgMap.insertAdjacentHTML("beforeend", '<div class='+styleClass+'></div>');
+
+
+
+// Adapted From http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
+function ab2str(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
 }
+
+// Ported from C to javascript from FIT SDK 5.10 fit_crc.c
+// Accessed: 28 december 2012
+
+function fitCRC_Get16(crc, byte) {
+    var crc_table =
+     [
+       0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
+       0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400
+     ];
+
+    var tmp;
+
+    // compute checksum of lower four bits of byte
+    tmp = crc_table[crc & 0xF];
+    crc = (crc >> 4) & 0x0FFF;
+    crc = crc ^ tmp ^ crc_table[byte & 0xF];
+
+    // now compute checksum of upper four bits of byte
+    tmp = crc_table[crc & 0xF];
+    crc = (crc >> 4) & 0x0FFF;
+    crc = crc ^ tmp ^ crc_table[(byte >> 4) & 0xF];
+
+    return crc;
+}
+
+function fitCRC(payloadview, start, end, crcSeed) {
+    var crc = crcSeed;
+
+    for (var i = start; i <= end; i++) {
+        crc = fitCRC_Get16(crc, payloadview.getUint8(i));
+    }
+
+    return crc;
+
+}
+
+function getHRZones() {
+    // Assume browser supports localStorage
+    var localStorage = window.localStorage;
+    var key = "FITView.HRZones";
+    var myZonesJSONString = localStorage.getItem(key);
+    
+    var myZones;
+    if (myZonesJSONString != null)
+        myZones = JSON.parse(myZonesJSONString);
+    else {
+        console.info("Local storage of "+key+" not found, using default HR Zones");
+        myZones = [{ name: 'Zone 1', min: 110, max: 120 },   // No storage found use default
+                 { name: 'Zone 2', min: 121, max: 140 },
+                 { name: 'Zone 3', min: 141, max: 150 },
+                 { name: 'Zone 4', min: 151, max: 165 },
+                 { name: 'Zone 5', min: 166, max: 256 }];
+    }
+
+    return myZones;
+}
+
+
+
+
+
+
+function FitFileManager(fitFile) {
+    this.fitFile = fitFile; // Reference to FIT file in browser - FILE API
+    this.index = 0; // Pointer to next unread byte in FIT file
+    this.records = [] // Holds every global message nr. contained in FIT file
+}
+
 
 FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset,applyNormalDatetime) {
-    var aFITBuffer = this.fitReader.result;
+    var aFITBuffer = this.fitFileReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
 
     var prevIndex = this.index;
@@ -387,18 +396,7 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
     var timezoneOffset  = d.getTimezoneOffset();
 
 
-    var event = new CustomEvent(
-	"FITnewGlobalMessage",
-	{
-	    detail: {
-	        message: msg,
-	        //time: new Date(),
-	    },
-	    bubbles: true,
-	    cancelable: true
-	}
-);
-
+    
 
     while (this.index < this.headerSize + this.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
@@ -409,11 +407,7 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
         else {
             var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversions...
             
-            // Send custom event "FITnewGlobalMessage" to FITUI controller
-
-            addToMessageMap(msg, this);
-
-            
+            this.records.push(msg.globalMessageType);
 
             if (msg.message === message) {  // only look for specfic message
                 var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn
@@ -635,11 +629,11 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
 }
 
 FitFileManager.prototype.loadFile = function () {
-    this.fitReader = new FileReader();
-    this.fitReader.addEventListener('loadend', this.fitFileLoadEnd, false);
+    this.fitFileReader = new FileReader();
+    this.fitFileReader.addEventListener('loadend', FITUI.fitFileLoadEnd, false);
 
     try {
-        this.fitReader.readAsArrayBuffer(this.fitFile);
+        this.fitFileReader.readAsArrayBuffer(this.fitFile);
 
     } catch (e) {
         console.error('Could not initialize fit file reader with bytes, message:', e.message);
@@ -701,18 +695,7 @@ FitFileManager.prototype.getFITHeader = function (bufFitHeader, fitFileSystemSiz
 
 }
 
-FitFileManager.prototype.toinnerHTML = function () {
-    var headerHtml = '<p>Header size : ' + this.headerSize.toString() + ' bytes ' +
-'Protocol version : ' + this.protocolVersion.toString() +
-' Profile version : ' + this.profileVersion.toString() +
-' Data size: ' + this.dataSize.toString() + ' bytes' +
-' Data type: ' + this.dataType;
-    if (this.headerCRC != undefined) {
-        headerHtml += ' CRC: ' + parseInt(this.headerCRC, 10).toString(16);
-    }
 
-    return headerHtml;
-}
 
 FitFileManager.prototype.getRecord = function (dviewFit) {
 
