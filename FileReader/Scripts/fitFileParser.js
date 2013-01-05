@@ -1,5 +1,6 @@
 ﻿var outConsole, inpFITFile, btnParse, selectedFiles, btnSaveZones;
 var fitFileManager;
+var divMsgMap;
 
 $(document).ready(function () {
     // Setup DOM event handling
@@ -19,6 +20,9 @@ $(document).ready(function () {
     btnSaveZones = document.getElementById('btnSaveZones')
     btnSaveZones.addEventListener('click', saveHRZones, false);
 
+    divMsgMap = document.getElementById('divMsgMap');
+    
+   
 });
 
 
@@ -346,6 +350,18 @@ function FitFileManager(fitFile) {
     }
 }
 
+function addToMessageMap(msg, fitFileManager) {
+    var styleClass = "";
+    switch (msg.globalMessageType) {
+        case 0: styleClass = 'FITfile_id'; break;
+        case 20: styleClass = 'FITrecord'; break;
+        case 78: styleClass = 'FIThrv'; break;
+        default: styleClass = 'FITunknown'; break;
+    }
+    
+      divMsgMap.insertAdjacentHTML("beforeend", '<div class='+styleClass+'></div>');
+}
+
 FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset,applyNormalDatetime) {
     var aFITBuffer = this.fitReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
@@ -355,6 +371,7 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
     var d = new Date();
     var timezoneOffset  = d.getTimezoneOffset();
 
+
     while (this.index < this.headerSize + this.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
 
@@ -363,6 +380,8 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
         else {
             var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversions...
+            
+            addToMessageMap(msg,this);
 
             if (msg.message === message) {  // only look for specfic message
                 var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn

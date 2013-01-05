@@ -31,5 +31,35 @@
 
 #divHRZones {
     /*visibility: hidden;*/
-    width : 50%;
+    width: 50%;
+}
+
+/* FIT global messages for map */
+
+.FITrecord {
+    padding : 2px;
+    width : 3px;
+    float : left;
+               background :   #000;
+}
+
+.FITfile_id {
+    padding : 2px;
+    width: 3px;
+    float: left;
+    background: #ffd800;
+}
+
+.FITunknown {
+    padding : 2px;
+        width: 3px;
+    float: left;
+    background: #f00;
+}
+
+.FIThrv {
+    padding : 2px;
+     width: 3px;
+    float: left;
+    background: #808080;
 }
