@@ -816,33 +816,38 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
             // Skip fields with invalid value
             if (!rec.content[field].invalid) {
 
-                var prop = globalMsg[fieldDefNr].property;
-                var unit = globalMsg[fieldDefNr].unit;
-                var scale = globalMsg[fieldDefNr].scale;
-                var offset = globalMsg[fieldDefNr].offset;
+                if (globalMsg[fieldDefNr] == undefined || globalMsg[fieldDefNr] == null)
+                    console.error("Cannot read property of fieldDefNr " + fieldDefNr.toString()+" on global message type "+ globalMsgType.toString());
+                else {
+                    var prop = globalMsg[fieldDefNr].property;
 
-                switch (globalMsgType) {
-                    // file_id
-                    case 0: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-                        // session
-                    case 18: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                    var unit = globalMsg[fieldDefNr].unit;
+                    var scale = globalMsg[fieldDefNr].scale;
+                    var offset = globalMsg[fieldDefNr].offset;
 
-                        // lap
-                    case 19: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-                        // record
-                    case 20: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                    switch (globalMsgType) {
+                        // file_id
+                        case 0: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                            // session
+                        case 18: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                        // activity
-                    case 34: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                            // lap
+                        case 19: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                            // record
+                        case 20: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                        //  file_creator
-                    case 49: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                            // activity
+                        case 34: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                        // hrv
-                    case 78: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                            //  file_creator
+                        case 49: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                    default: console.error("Not implemented message for global type nr., check messageFactory " + globalMsgType.toString());
-                        break;
+                            // hrv
+                        case 78: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+
+                        default: console.error("Not implemented message for global type nr., check messageFactory " + globalMsgType.toString());
+                            break;
+                    }
                 }
             }
 
