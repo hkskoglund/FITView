@@ -238,8 +238,8 @@ UIController.prototype.setup = function () {
     FITUI.btnParse.addEventListener('click', FITUI.onbtnParseClick, false);
 
 
-    FITUI.btnSaveZones = document.getElementById('btnSaveZones')
-    FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
+    //FITUI.btnSaveZones = document.getElementById('btnSaveZones')
+    //FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
 
     FITUI.divMsgMap = document.getElementById('divMsgMap');
    
@@ -574,8 +574,8 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
     
     if (name === "file_creator")
         return {
-            0: {"property" : "software_version"},
-            1: { "property": "hardware_version" }
+            0: { "property" : "software_version"},
+            1: { "property" : "hardware_version" }
         }
 
     if (name === "file_id")
