@@ -1,12 +1,12 @@
-﻿//var outConsole, inpFITFile, btnParse, selectedFiles, btnSaveZones;
-//var fitFileManager;
-//var divMsgMap;
+﻿var FITUI;
 
-var FITUI = new UIController();
+window.onload = function () {
+    FITUI = new UIController();
+    FITUI.setup();
+}
 
 function UIController() {
 
-    this.FITGLOBALMESSAGEEVENT = "FITGlobalMessageEvent";
 }
 
 UIController.prototype.showSpeedVsHeartRate = function (rawData) {
@@ -85,7 +85,7 @@ UIController.prototype.showSpeedVsHeartRate = function (rawData) {
 
 }
 
-UIController.prototype.showCharts = function (rawData) {
+UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) {
     // We get speed in m/s, want it in km/h
     if (rawData["speed"] != undefined)
         rawData["speed"].forEach(function (element, index, array) {
@@ -95,29 +95,51 @@ UIController.prototype.showCharts = function (rawData) {
     var chartId = "testChart";
     var divChart = document.getElementById(chartId);
     divChart.style.visibility = "visible";
+    var seriesSetup = [];
 
-    var seriesSetup = [{ name: 'Heart rate', data: rawData["heart_rate"] },
-        { name: 'Altitude', data: rawData["altitude"] },
-    { name: 'Cadence', data: rawData["cadence"] },
-    { name: 'Speed', data: rawData["speed"] }];
+    // Record data
+    if (rawData["heart_rate"] != undefined)
+        seriesSetup.push({ name: 'Heart rate', data: rawData["heart_rate"]})
+    if (rawData["altitude"] != undefined)
+        seriesSetup.push({ name: 'Altitude', data: rawData["altitude"] });
+    if (rawData["cadence"] != undefined)
+        seriesSetup.push({ name: 'Cadence', data: rawData["cadence"] });
+    if (rawData["speed"] != undefined)
+        seriesSetup.push({ name: 'Speed', data: rawData["speed"] });
 
-    // Charting
+    // Lap data
+    if (rawData["total_ascent"] != undefined)
+        seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData["total_ascent"] });
+    if (rawData["total_descent"] != undefined)
+        seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData["total_descent"] });
+    if (rawData["avg_heart_rate"] != undefined)
+        seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData["avg_heart_rate"] });
+    if (rawData["max_heart_rate"] != undefined)
+        seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData["max_heart_rate"] });
+
+    // Hrv
+    if (rawData["hrv"] != undefined)
+        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData["hrv"] })
+
+    var xAxisType = 'datetime'
+    if (skipTimestamps)
+        xAxisType = '';
 
     chart1 = new Highcharts.Chart({
         chart: {
             renderTo: chartId,
-            type: 'line'
+            type: chartType
         },
         title: {
             text: ''
         },
         xAxis: {
             //categories : ['Apples', 'Bananas', 'Oranges']
-            type: 'datetime'
+            type: xAxisType
         },
         yAxis: {
             title: {
-                text: 'bpm'
+                text: ''
             }
         },
 
@@ -126,9 +148,9 @@ UIController.prototype.showCharts = function (rawData) {
     });
 
 
-    FITUI.showSpeedVsHeartRate(rawData);
+    //FITUI.showSpeedVsHeartRate(rawData);
 
-    FITUI.showHRZones(rawData);
+    //FITUI.showHRZones(rawData);
 
 
 }
@@ -197,16 +219,7 @@ UIController.prototype.showHRZones = function(rawData) {
     var chart3 = new Highcharts.Chart(options);
 }
 
-UIController.prototype.onbtnParseClick = // Callback from button = this
-    function (e) {
-        //var fitManager = new FitFileManager(selectedFiles[0]);
-        FITUI.showFileInfo();
-        FITUI.fitFileManager.loadFile();
-    }
-
-
 UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
-
 
 UIController.prototype.setup = function () {
     // Setup DOM event handling
@@ -240,31 +253,17 @@ UIController.prototype.showDataRecordsOnMap = function () {
         var styleClass = "";
         switch (dataRecords[i]) {
             case 0: styleClass = 'FITfile_id'; break;
+            case 18: styleClass = 'FITsession'; break;
             case 19: styleClass = 'FITlap'; break;
             case 20: styleClass = 'FITrecord'; break;
+            case 34: styleClass = 'FITactivity'; break;
+            
             case 78: styleClass = 'FIThrv'; break;
             default: styleClass = 'FITunknown'; break;
         }
 
         divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
     }
-}
-
-
-
-
-UIController.prototype.onFitFileSelected = function (e) {
-    // console.log(e);
-    e.preventDefault();
-
-    FITUI.selectedFiles = e.target.files;
-    FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
-
-    // To do: check file size
-
-    FITUI.btnParse.style.visibility = 'visible';
-
-
 }
 
 UIController.prototype.showFITHeader = function () {
@@ -280,6 +279,14 @@ UIController.prototype.showFITHeader = function () {
     return headerHtml;
 }
 
+// Event handlers
+
+UIController.prototype.onbtnParseClick = // Callback from button = this
+    function (e) {
+        //var fitManager = new FitFileManager(selectedFiles[0]);
+        //FITUI.showFileInfo();
+        FITUI.fitFileManager.loadFile();
+    }
 UIController.prototype.fitFileLoadEnd = function (e) {
         try {
            
@@ -290,10 +297,12 @@ UIController.prototype.fitFileLoadEnd = function (e) {
 
 
             FITUI.fitFileManager.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true, true);
+            //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
+            //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
 
             FITUI.showDataRecordsOnMap();
 
-            FITUI.showCharts(rawData);
+            FITUI.showCharts(rawData,false,'line');
 
         } catch (err) {
             console.error('Trouble with FIT file header parsing, message:', err.message);
@@ -301,15 +310,24 @@ UIController.prototype.fitFileLoadEnd = function (e) {
 
     }
 
-$(document).ready(FITUI.setup);
+UIController.prototype.onFitFileSelected = function (e) {
+    // console.log(e);
+    e.preventDefault();
 
-// User interface events
+    FITUI.selectedFiles = e.target.files;
+    FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
 
-function saveHRZones(e) {
+    // To do: check file size
+
+    FITUI.btnParse.style.visibility = 'visible';
+
 
 }
 
 
+function saveHRZones(e) {
+
+}
 
 
 // Adapted From http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
@@ -375,22 +393,32 @@ function getHRZones() {
 }
 
 
-
-
-
-
 function FitFileManager(fitFile) {
     this.fitFile = fitFile; // Reference to FIT file in browser - FILE API
     this.index = 0; // Pointer to next unread byte in FIT file
     this.records = [] // Holds every global message nr. contained in FIT file
+
+    this.event_type = {
+        start: 0,
+        stop: 1,
+        consecutive_depreciated: 2,
+        marker: 3,
+        stop_all: 4,
+        begin_depreciated: 5,
+        end_depreciated: 6,
+        end_all_depreciated: 7,
+        stop_disable: 8,
+        stop_disable_all: 9
+    }
 }
 
-
-FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset,applyNormalDatetime) {
+// query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
+             
+FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset,applyNormalDatetime,skipTimeStamp) {
     var aFITBuffer = this.fitFileReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
 
-    var prevIndex = this.index;
+    var prevIndex = this.index; // If parseRecords are called again it will start just after header again
 
     var d = new Date();
     var timezoneOffset  = d.getTimezoneOffset();
@@ -405,24 +433,46 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
         if (rec.header["messageType"] == 1)
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
         else {
-            var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversions...
+            var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
             
             this.records.push(msg.globalMessageType);
 
+           
             if (msg.message === message) {  // only look for specfic message
+               
                 var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn
+                //console.log("Request for raw data filtering on message : " + msg.message + " filtering on fields: " + filters);
+
                 for (var i = 0; i < filterArr.length; i++) {
                     var filter = filterArr[i];
+
+
                     if (msg[filter] != undefined) {
+                      //  console.log("Found field " + filter+" i = "+i.toString());
+
                         var val = msg[filter].value;
                         var scale = msg[filter].scale;
                         var offset = msg[filter].offset;
 
-                        var timestamp = msg.timestamp.value;
-                        if (applyNormalDatetime) {
-                            var garminDateTime = new GarminDateTime(timestamp);
-                            timestamp = garminDateTime.convertTimestampToLocalTime(timezoneOffset);
+                        // Convert timestamps to local time
+                        var timestamp;
+                        if (msg.timestamp != undefined)
+                          timestamp = msg.timestamp.value;
+                        
+                        var start_time;
+                        if (msg.start_time != undefined)
+                           start_time = msg.start_time.value;
 
+                        
+                        if (applyNormalDatetime) {
+                            if (timestamp != undefined) {
+                                var garminDateTimestamp = new GarminDateTime(timestamp);
+                                timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                            }
+                            if (start_time != undefined) {
+                                var garminDateTimestamp = new GarminDateTime(start_time);
+                                start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                            }
                         }
 
                         // If requested do some value conversions
@@ -437,7 +487,10 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
                         if (data[filter] == undefined)
                             data[filter] = [];
 
-                        data[filter].push([timestamp,val]);
+                        if (skipTimeStamp)
+                           data[filter].push(val);
+                        else
+                           data[filter].push([timestamp,val]);
                     }
                 }
             }
@@ -535,9 +588,28 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
            5: { "property": "number" }
        }
 
+    // ACTIVITY FILE MESSAGES
+
+    if (name === "activity") {
+        return {
+            253: { "property": "timestamp", "unit": "s" },
+            0: { "property": "total_timer_time", "scale" : 1000, "unit": "s" }, // Excluding pauses
+            1: { "property": "num_sessions"},
+            2: { "property": "type" },
+            3: { "property": "event"  },
+            4: { "property": "event_type" },
+            5: { "property": "local_timestamp" },
+            6: { "property": "event_group" }
+        }
+    }
+
     if (name === "record")
 
         return {
+
+ 
+
+
 
             253: {"property" : "timestamp",  "unit": "s"  },
             0: {"property" : "position_lat","unit":"semicirles"},
@@ -564,6 +636,156 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             32: {"property" : "vertical_speed", "scale" : 1000, "unit" : "m/s"},
             33: {"property" : "calories", "unit" : "kcal"}
         }
+
+    if (name === "session")
+
+        return {
+            254: { "property": "message_index" },
+            253: { "property": "timestamp", "unit": "s" },   // Session end time
+            0: { "property": "event" },
+            1: { "property": "event_type" },
+            2: { "property": "start_time" },
+            3: { "property": "start_position_lat", "unit": "semicirles" },
+            4: { "property": "start_position_long", "unit": "semicirles" },
+            5: { "property": "sport" },
+            6: { "property": "sub_sport"},
+            7: { "property": "total_elapsed_time", "unit": "s", "scale": 1000 }, // Time (includes pauses)
+            8: { "property": "total_timer_time", "unit": "s", "scale": 1000 }, // Timer Time (excludes pauses)
+            9: { "property": "total_distance", "unit": "m", "scale": 100 },
+            10: { "property": "total_cycles_strides" },
+            11: { "property": "total_calories", "unit": "kcal" },
+            // Where is 12? hmmm...
+            13: { "property": "total_fat_calories", "unit": "kcal" }, // IF New Leaf
+            14: { "property": "avg_speed", "unit": "m/s", "scale": 1000 },
+            15: { "property": "max_speed", "unit": "m/s", "scale": 1000 },
+            16: { "property": "avg_heart_rate", "unit": "bpm" },
+            17: { "property": "max_heart_rate", "unit": "bpm" },
+            18: { "property": "avg_cadence", "unit": "rpm" },
+            19: { "property": "max_cadence", "unit": "rpm" },
+            20: { "property": "avg_power", "unit": "watts" },
+            21: { "property": "max_power", "unit": "watts" },
+            22: { "property": "total_ascent", "unit": "m" },
+            23: { "property": "total_descent", "unit": "m" },
+            24: { "property": "total_training_effect", "scale": 10 },
+            25: { "property": "first_lap_index" },
+            26: { "property": "num_laps" },
+            27: { "property": "event_group" },
+            
+            28: { "property": "trigger" },
+            29: { "property": "nec_lat", "unit": "semicirles" },
+            30: { "property": "nec_long", "unit": "semicirles" },
+            31: { "property": "swc_lat", "unit": "semicirles" },
+            32: { "property": "swc_long", "unit": "semicirles" },
+            34: { "property": "normalized_power", "unit": "watts" },
+            35: { "property": "training_stress_score", "unit": "tss", scale: 10 },
+            36: { "property": "intensity_factor", "unit": "if", scale: 1000 },
+            37: { "property": "left_right_balance", "unit": "watts" },
+
+            41: { "property": "avg_stroke_count", "scale":10, "unit" : "strokes/lap" },
+            42: { "property": "avg_stroke_distance", "scale": 100, "unit": "m" },
+            43: { "property": "swim_stroke" },
+            44: { "property": "pool_length", "scale" : 100, "unit" : "m" },
+            46: { "property": "pool_length_unit" },
+            47: { "property": "num_active_lengths", "unit": "lengths" }, // # active lengths of swim pool
+            48: { "property": "total_work", "unit": "J" },
+
+            49: { "property": "avg_altitude", "scale": 5, "offset": 500, "unit": "m" },
+            50: { "property": "max_altitude", "scale": 5, "offset": 500, "unit": "m" },
+            51: { "property": "gps_accuracy", "unit": "m" },
+            52: { "property": "avg_grade", "unit": "%", "scale": 100 },
+            53: { "property": "avg_pos_grade", "unit": "%", "scale": 100 },
+            54: { "property": "avg_neg_grade", "unit": "%", "scale": 100 },
+            55: { "property": "max_pos_grade", "unit": "%", "scale": 100 },
+            56: { "property": "max_neg_grade", "unit": "%", "scale": 100 },
+            57: { "property": "avg_temperature", "unit": "C" },
+            58: { "property": "max_temperature", "unit": "C" },
+            59: { "property": "total_moving_time", "scale": 1000, "unit": "s" },
+            60: { "property": "avg_pos_vertical_speed", "scale": 1000, "unit": "m/s" },
+            61: { "property": "avg_neg_vertical_speed", "scale": 1000, "unit": "m/s" },
+            62: { "property": "max_pos_vertical_speed", "scale": 1000, "unit": "m/s" },
+            63: { "property": "max_neg_vertical_speed", "scale": 1000, "unit": "m/s" },
+            64: { "property": "min_heart_rate",  "unit": "bpm" },
+            65: { "property": "time_in_hr_zone", "scale": 1000, "unit": "s" }, // [N] array of N, may get some trouble here...
+            66: { "property": "time_in_speed_zone", "scale": 1000, "unit": "s" }, // [N]
+            67: { "property": "time_in_cadence_zone", "scale": 1000, "unit": "s" }, // [N]
+            68: { "property": "time_in_power_zone", "scale": 1000, "unit": "s" },  // [N]
+            69: { "property": "avg_lap_time", "scale": 1000, "unit": "s" },
+            70: { "property": "best_lap_index"  },
+            71: { "property": "min_altitude", "scale": 5, "offset": 500, "unit": "m" },
+            
+        }
+
+    if (name === "lap")
+
+        return {
+            254: { "property": "message_index" },
+            253: { "property": "timestamp", "unit": "s" },   // Lap end time
+            0: { "property": "event" },
+            1: { "property": "event_type" },
+            2: { "property": "start_time" },
+            3: { "property": "start_position_lat", "unit": "semicirles" },
+            4: { "property": "start_position_long", "unit": "semicirles" },
+            5: { "property": "end_position_lat", "unit": "semicirles" },
+            6: { "property": "end_position_long", "unit": "semicirles" },
+            7: { "property": "total_elapsed_time", "unit": "s", "scale": 1000 }, // Time (includes pauses)
+            8: { "property": "total_timer_time", "unit": "s", "scale": 1000 }, // Timer Time (excludes pauses)
+            9: { "property": "total_distance", "unit": "m", "scale": 100 },
+            10: { "property": "total_cycles_strides" },
+            11: { "property": "total_calories", "unit": "kcal" },
+            12: { "property": "total_fat_calories", "unit": "kcal" }, // IF New Leaf
+            13: { "property": "avg_speed", "unit": "m/s", "scale": 1000 },
+            14: { "property": "max_speed", "unit": "m/s", "scale": 1000 },
+            15: { "property": "avg_heart_rate", "unit": "bpm" },
+            16: { "property": "max_heart_rate", "unit": "bpm" },
+            17: { "property": "avg_cadence", "unit": "rpm" },
+            18: { "property": "max_cadence", "unit": "rpm" },
+            19: { "property": "avg_power", "unit": "watts" },
+            20: { "property": "max_power", "unit": "watts" },
+            21: { "property": "total_ascent", "unit": "m" },
+            22: { "property": "total_descent", "unit": "m" },
+            23: { "property": "intensity" },
+            24: { "property": "lap_trigger" },
+            25: { "property": "sport" },
+            26: { "property": "event_group" },
+            32: { "property": "num_lengths", "unit": "lengths" }, // # lengths in swim pool
+            33: { "property": "normalized_power", "unit": "watts" },
+            34: { "property": "left_right_balance", "unit": "watts" },
+            35: { "property": "first_length_index" },
+            37: { "property": "avg_stroke_distance", "scale": 100, "unit": "m" },
+            38: { "property": "swim_stroke" },
+            39: { "property": "sub_sport" },
+            40: { "property": "num_active_lengths", "unit": "lengths" },
+            41: { "property": "total_work", "unit": "J" },
+            42: { "property": "avg_altitude", "scale": 5, "offset": 500, "unit": "m" },
+            43: { "property": "max_altitude", "scale": 5, "offset": 500, "unit": "m" },
+            44: { "property": "gps_accuracy", "unit": "m" },
+            45: { "property": "avg_grade", "unit": "%", "scale": 100 },
+            46: { "property": "avg_pos_grade", "unit": "%", "scale": 100 },
+            47: { "property": "avg_neg_grade", "unit": "%", "scale": 100 },
+            48: { "property": "max_pos_grade", "unit": "%", "scale": 100 },
+            49: { "property": "max_neg_grade", "unit": "%", "scale": 100 },
+            50: { "property": "avg_temperature", "unit": "C" },
+            51: { "property": "max_temperature", "unit": "C" },
+            52: { "property": "total_moving_time", "scale": 1000, "unit": "s" },
+            53: { "property": "avg_pos_vertical_speed", "scale": 1000, "unit": "m/s" },
+            54: { "property": "avg_neg_vertical_speed", "scale": 1000, "unit": "m/s" },
+            55: { "property": "max_pos_vertical_speed", "scale": 1000, "unit": "m/s" },
+            56: { "property": "max_neg_vertical_speed", "scale": 1000, "unit": "m/s" },
+            57: { "property": "time_in_hr_zone", "scale": 1000, "unit": "s" },
+            58: { "property": "time_in_speed_zone", "scale": 1000, "unit": "s" },
+            59: { "property": "time_in_cadence_zone", "scale": 1000, "unit": "s" },
+            60: { "property": "time_in_power_zone", "scale": 1000, "unit": "s" },
+            61: { "property": "repetition_num", "scale": 1000, "unit": "s" },
+            62: { "property": "min_altitude", "scale": 5, "offset": 500, "unit": "m" },
+            63: { "property": "min_heart_rate", "unit": "m" },
+            71: { "property": "wkt_step_index", "unit": "bpm" },
+        }
+
+    if (name === "hrv") {
+        return {
+            0: { "property": "hrv", "unit": "s", "scale": 1000 }
+        }
+    }
 }
 
 FitFileManager.prototype.getDataRecordContent = function (rec) {
@@ -602,12 +824,24 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
                 switch (globalMsgType) {
                     // file_id
                     case 0: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                        // session
+                    case 18: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+
+                        // lap
+                    case 19: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
                         // record
                     case 20: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+
+                        // activity
+                    case 34: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+
                         //  file_creator
                     case 49: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                    default: console.error("Not implemented message for global type nr. " + globalMsgType.toString());
+                        // hrv
+                    case 78: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+
+                    default: console.error("Not implemented message for global type nr., check messageFactory " + globalMsgType.toString());
                         break;
                 }
             }
@@ -620,8 +854,8 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
                 logger += " ";
         }
 
-
-       // console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
+        if (globalMsgType != 20 && globalMsgType != 78) 
+          console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
     }
 
     return msg;
@@ -874,6 +1108,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                             str += String.fromCharCode(char);
                         }
 
+                        console.log("Got a null terminated string " + str);
                         recContent[currentField] = { "value": str }; break;
 
                         //this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
@@ -885,7 +1120,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                         var bytes = [];
                         for (var j = 0; j < bSize; j++) 
                             bytes.push(dviewFit.getUint8(bytesStartIndex++));
-                        
+                        console.log("Got an byte array with " + bSize.toString() + " bytes");
                         recContent[currentField] = { "value": bytes }; break;
                         //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
                         break;

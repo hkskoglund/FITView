@@ -40,7 +40,7 @@
 }
 
 #divHRZones {
-    /*visibility: hidden;*/
+    visibility: hidden;
     width: 50%;
 }
 
@@ -53,13 +53,7 @@
                background :   #000;
 }
 
-.FITlap {
-    padding : 1px;
-    /*height : 10px;*/
-    width : 1px;
-    float : left;
-               background : #4cff00 ;
-}
+
 .FITfile_id {
     padding : 1px;
     width: 1px;
@@ -79,4 +73,25 @@
      width: 1px;
     float: left;
     background: #808080;
+}
+
+.FITactivity {
+    padding: 1px;
+    width: 1px;
+    float: left;
+    background: #4cff00;
+}
+
+.FITlap {
+    padding: 1px;
+    width: 1px;
+    float: left;
+    background: #0094ff;
+}
+
+.FITsession {
+    padding: 1px;
+    width: 1px;
+    float: left;
+    background: #ff6a00;
 }
