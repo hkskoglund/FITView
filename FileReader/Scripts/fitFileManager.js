@@ -2,7 +2,11 @@
 
 var workerThreadContext = self;
 
+// self = dedicatedWorkerContext
+// console = undefined in worker -> comment out console.* msg
+
 self.addEventListener('message', function (e) {
+    // We get an MessageEvent of type message = e
     var data = e.data;
 
     if (data.request == undefined) {
@@ -12,9 +16,7 @@ self.addEventListener('message', function (e) {
 
     switch (data.request) {
 
-        case 'loadFitFile': self.postMessage('Starting filemanager with file url ' + data.toString());
-            
-            fitFileManager = new FitFileManager(data);
+        case 'loadFitFile':   fitFileManager = new FitFileManager(data.data);
             break;
         default: self.postMessage('Unrecongized command' + data.request); break;
     }
@@ -27,6 +29,7 @@ function FitFileManager(fitFile) {
     this.fitFile = fitFile; // Reference to FIT file in browser - FILE API
     this.index = 0; // Pointer to next unread byte in FIT file
     this.records = [] // Holds every global message nr. contained in FIT file
+    this.fileBuffer = {};
 
     this.event_type = {
         start: 0,
@@ -41,29 +44,40 @@ function FitFileManager(fitFile) {
         stop_disable_all: 9
     }
 
-    this.fitFileReader = new FileReader();
-    this.fitFileReader.addEventListener('loadend', function (e) {
-        console.log("Loadend event handler");
-        self.postMessage("Loadend of file");
-    }
-        , false);
+    this.fitFileReader = new FileReaderSync();
+   
 
+   
     try {
-        this.fitFileReader.readAsArrayBuffer(this.fitFile);
+        this.fileBuffer = this.fitFileReader.readAsArrayBuffer(this.fitFile);
         
     } catch (e) {
         console.error('Could not initialize fit file reader with bytes, message:', e.message);
     }
+
+    this.setupFITHeader(this.fileBuffer, this.fitFile.size);
+
+    // Start reading records from file
+    var rawData = {};
+
+
+    var rawDataJSON = this.getDataRecords("record", "heart_rate altitude cadence speed", true, true);
+    //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
+    //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
+    
+
+    self.postMessage({ response: "rawData", data: rawDataJSON });
 }
 
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
 
 FitFileManager.prototype.getDataRecords = function (message, filters, applyScaleOffset, applyNormalDatetime, skipTimeStamp) {
-    var aFITBuffer = this.fitFileReader.result;
+    var aFITBuffer = this.fileBuffer;
     var dvFITBuffer = new DataView(aFITBuffer);
 
     var prevIndex = this.index; // If parseRecords are called again it will start just after header again
 
+    // Date object not available for webworker
     var d = new Date();
     var timezoneOffset = d.getTimezoneOffset();
 
@@ -150,7 +164,7 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
     //var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
 
     var CRC = dvFITBuffer.getUint16(aFITBuffer.byteLength - 2, true); // Force little endian
-    console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
+    //console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
 
     // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
 
@@ -462,9 +476,9 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
             // Skip fields with invalid value
             if (!rec.content[field].invalid) {
 
-                if (globalMsg[fieldDefNr] == undefined || globalMsg[fieldDefNr] == null)
-                    console.error("Cannot read property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString());
-                else {
+                if (globalMsg[fieldDefNr] != undefined && globalMsg[fieldDefNr] != null)
+                   // console.error("Cannot read property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString());
+                 {
                     var prop = globalMsg[fieldDefNr].property;
 
                     var unit = globalMsg[fieldDefNr].unit;
@@ -492,7 +506,7 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
                             // hrv
                         case 78: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                        default: console.error("Not implemented message for global type nr., check messageFactory " + globalMsgType.toString());
+                        default: //console.error("Not implemented message for global type nr., check messageFactory " + globalMsgType.toString());
                             break;
                     }
                 }
@@ -507,8 +521,8 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
         }
 
         // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
-        if (globalMsgType != 20 && globalMsgType != 78)
-            console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
+        //if (globalMsgType != 20 && globalMsgType != 78)
+          //  console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
     }
 
     return msg;
@@ -545,8 +559,10 @@ FitFileManager.prototype.setupFITHeader = function (bufFitHeader, fitFileSystemS
     this.dataSize = dviewFitHeader.getUint32(4, true);
 
     var estimatedFitFileSize = this.headerSize + this.dataSize + 2;  // 2 for last CRC
-    if (estimatedFitFileSize != fitFileSystemSize)
-        console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString() + " bytes.");
+
+    //if (estimatedFitFileSize != fitFileSystemSize)
+        
+    //      console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString() + " bytes.");
 
     // 4 januar : Testet med IE 10, støtter ikke slice metoden...
 
@@ -563,8 +579,8 @@ FitFileManager.prototype.setupFITHeader = function (bufFitHeader, fitFileSystemS
     if (this.headerSize >= MAXFITHEADERLENGTH) {
         this.headerCRC = dviewFitHeader.getUint16(12, true);
         this.index += 2;
-        if (this.headerCRC === 0)
-            console.info("Header CRC was not stored in file");
+        //if (this.headerCRC === 0)
+        //    console.info("Header CRC was not stored in file");
 
     }
 

@@ -222,7 +222,9 @@ UIController.prototype.showHRZones = function(rawData) {
 //UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
 UIController.prototype.onFITManagerMsg = function (e) {
-    console.log("Got message from worker "+e.data.toString());
+    console.log("Got message from worker " + e.data.toString());
+
+    //rawData = JSON.parse(rawDataJSON);
 }
 
 UIController.prototype.setup = function () {
@@ -297,16 +299,7 @@ UIController.prototype.setup = function () {
 UIController.prototype.fitFileLoadEnd = function (e) {
         try {
            
-            FITUI.fitFileManager.setupFITHeader(FITUI.fitFileManager.fitFileReader.result, FITUI.fitFileManager.fitFile.size);
             
-            // Start reading records from file
-            var rawData = {};
-
-
-            var rawDataJSON = FITUI.fitFileManager.getDataRecords("record", "heart_rate altitude cadence speed", true, true);
-            //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
-            //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
-            rawData = JSON.parse(rawDataJSON);
 
             FITUI.showDataRecordsOnMap();
 
@@ -324,10 +317,10 @@ UIController.prototype.onFitFileSelected = function (e) {
 
     FITUI.selectedFiles = e.target.files;
 
-    var fileURL = FITUI.selectedFiles[0];
+    var file = FITUI.selectedFiles[0];
     //window.URL.revokeObjectURL(fileURL);
     // Maybe can be used to send it to a web worker for background processing
-    var msg = { request: 'loadFitFile', data: fileURL };
+    var msg = { request: 'loadFitFile', data: file };
     FITUI.fitFileManager.postMessage(msg);
 
     FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
