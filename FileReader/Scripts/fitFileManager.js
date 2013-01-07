@@ -1,14 +1,22 @@
 ﻿var fitFileManager;
 
+var workerThreadContext = self;
+
 self.addEventListener('message', function (e) {
     var data = e.data;
 
-    switch (data.cmd) {
+    if (data.request == undefined) {
+        self.postMessage("Unrecognized command!");
+        return;
+    }
 
-        case 'start': self.postMessage('Starting filemanager with file url ' + data.url);
-            fitFileManager = new FitFileManager(data.url);
+    switch (data.request) {
+
+        case 'loadFitFile': self.postMessage('Starting filemanager with file url ' + data.toString());
+            
+            fitFileManager = new FitFileManager(data);
             break;
-        default: self.postMessage('Unrecongized command' + data.cmd); break;
+        default: self.postMessage('Unrecongized command' + data.request); break;
     }
 
   
@@ -32,21 +40,22 @@ function FitFileManager(fitFile) {
         stop_disable: 8,
         stop_disable_all: 9
     }
-}
 
-
-
-FitFileManager.prototype.loadFile = function () {
     this.fitFileReader = new FileReader();
-    this.fitFileReader.addEventListener('loadend', FITUI.fitFileLoadEnd, false);
+    this.fitFileReader.addEventListener('loadend', function (e) {
+        console.log("Loadend event handler");
+        self.postMessage("Loadend of file");
+    }
+        , false);
 
     try {
         this.fitFileReader.readAsArrayBuffer(this.fitFile);
-
+        
     } catch (e) {
         console.error('Could not initialize fit file reader with bytes, message:', e.message);
     }
 }
+
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
 
 FitFileManager.prototype.getDataRecords = function (message, filters, applyScaleOffset, applyNormalDatetime, skipTimeStamp) {

@@ -222,7 +222,7 @@ UIController.prototype.showHRZones = function(rawData) {
 //UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
 UIController.prototype.onFITManagerMsg = function (e) {
-    console.log("Got message from worker");
+    console.log("Got message from worker "+e.data.toString());
 }
 
 UIController.prototype.setup = function () {
@@ -239,8 +239,8 @@ UIController.prototype.setup = function () {
     FITUI.fitFileManager = new Worker("Scripts/fitFileManager.js")
     FITUI.fitFileManager.addEventListener('message', FITUI.onFITManagerMsg, false);
 
-    FITUI.btnParse = document.getElementById('btnParse')
-    FITUI.btnParse.addEventListener('click', FITUI.onbtnParseClick, false);
+    //FITUI.btnParse = document.getElementById('btnParse')
+    //FITUI.btnParse.addEventListener('click', FITUI.onbtnParseClick, false);
 
 
     //FITUI.btnSaveZones = document.getElementById('btnSaveZones')
@@ -286,13 +286,14 @@ UIController.prototype.setup = function () {
 
 // Event handlers
 
-UIController.prototype.onbtnParseClick = // Callback from button = this
-    function (e) {
-        //var fitManager = new FitFileManager(selectedFiles[0]);
-        //FITUI.showFileInfo();
+//UIController.prototype.onbtnParseClick = // Callback from button = this
+//    function (e) {
+//        //var fitManager = new FitFileManager(selectedFiles[0]);
+//        //FITUI.showFileInfo();
         
-        FITUI.fitFileManager.loadFile();
-    }
+//        FITUI.fitFileManager.loadFile();
+//    }
+
 UIController.prototype.fitFileLoadEnd = function (e) {
         try {
            
@@ -323,17 +324,17 @@ UIController.prototype.onFitFileSelected = function (e) {
 
     FITUI.selectedFiles = e.target.files;
 
-    var fileURL = window.URL.createObjectURL(FITUI.selectedFiles[0]);
-    window.URL.revokeObjectURL(fileURL);
+    var fileURL = FITUI.selectedFiles[0];
+    //window.URL.revokeObjectURL(fileURL);
     // Maybe can be used to send it to a web worker for background processing
-    var msg = { command: 'start', data: { url: fileURL } };
+    var msg = { request: 'loadFitFile', data: fileURL };
     FITUI.fitFileManager.postMessage(msg);
 
     FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
 
     // To do: check file size
 
-    FITUI.btnParse.style.visibility = 'visible';
+    //FITUI.btnParse.style.visibility = 'visible';
 
 
 }
