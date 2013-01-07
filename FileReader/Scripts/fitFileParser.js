@@ -285,20 +285,22 @@ UIController.prototype.onbtnParseClick = // Callback from button = this
     function (e) {
         //var fitManager = new FitFileManager(selectedFiles[0]);
         //FITUI.showFileInfo();
+        
         FITUI.fitFileManager.loadFile();
     }
 UIController.prototype.fitFileLoadEnd = function (e) {
         try {
            
-            FITUI.fitFileManager.getFITHeader(FITUI.fitFileManager.fitFileReader.result, FITUI.fitFileManager.fitFile.size);
+            FITUI.fitFileManager.setupFITHeader(FITUI.fitFileManager.fitFileReader.result, FITUI.fitFileManager.fitFile.size);
             
             // Start reading records from file
             var rawData = {};
 
 
-            FITUI.fitFileManager.parseRecords(rawData, "record", "heart_rate altitude cadence speed", true, true);
+            var rawDataJSON = FITUI.fitFileManager.getDataRecords("record", "heart_rate altitude cadence speed", true, true);
             //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
             //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
+            rawData = JSON.parse(rawDataJSON);
 
             FITUI.showDataRecordsOnMap();
 
@@ -315,6 +317,11 @@ UIController.prototype.onFitFileSelected = function (e) {
     e.preventDefault();
 
     FITUI.selectedFiles = e.target.files;
+
+    var fileURL = window.URL.createObjectURL(FITUI.selectedFiles[0]);
+    window.URL.revokeObjectURL(fileURL);
+    // Maybe can be used to send it to a web worker for background processing
+
     FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
 
     // To do: check file size
@@ -414,7 +421,7 @@ function FitFileManager(fitFile) {
 
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
              
-FitFileManager.prototype.parseRecords = function (data,message,filters,applyScaleOffset,applyNormalDatetime,skipTimeStamp) {
+FitFileManager.prototype.getDataRecords = function (message,filters,applyScaleOffset,applyNormalDatetime,skipTimeStamp) {
     var aFITBuffer = this.fitFileReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
 
@@ -423,7 +430,7 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
     var d = new Date();
     var timezoneOffset  = d.getTimezoneOffset();
 
-
+    var data = {};
     
 
     while (this.index < this.headerSize + this.dataSize) {
@@ -510,6 +517,8 @@ FitFileManager.prototype.parseRecords = function (data,message,filters,applyScal
 
     // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
 
+     
+    return JSON.stringify(data);
 }
 
 FitFileManager.prototype.getGlobalMessageTypeName = function (globalMessageType) {
@@ -825,6 +834,7 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
                     var scale = globalMsg[fieldDefNr].scale;
                     var offset = globalMsg[fieldDefNr].offset;
 
+                    // Duplication of code, maybe later do some value conversions here for specific messages
                     switch (globalMsgType) {
                         // file_id
                         case 0: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
@@ -859,6 +869,7 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
                 logger += " ";
         }
 
+        // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
         if (globalMsgType != 20 && globalMsgType != 78) 
           console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
     }
@@ -885,7 +896,7 @@ FitFileManager.prototype.getFITCRC = function (aCRCBuffer, littleEndian) {
 
 }
 
-FitFileManager.prototype.getFITHeader = function (bufFitHeader, fitFileSystemSize) {
+FitFileManager.prototype.setupFITHeader = function (bufFitHeader, fitFileSystemSize) {
 
     var MAXFITHEADERLENGTH = 14; // FIT Protocol rev 1.3 p. 13
 
