@@ -58,7 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Index.html" />
-    <Content Include="Scripts\fitFileParser.js" />
+    <Content Include="Scripts\fitFileManager.js" />
+    <Content Include="Scripts\fitView.js" />
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />

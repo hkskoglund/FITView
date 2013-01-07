@@ -1,403 +1,18 @@
-﻿var FITUI;
+﻿var fitFileManager;
 
-window.onload = function () {
-    FITUI = new UIController();
-    FITUI.setup();
-}
+self.addEventListener('message', function (e) {
+    var data = e.data;
 
-function UIController() {
+    switch (data.cmd) {
 
-}
-
-UIController.prototype.showSpeedVsHeartRate = function (rawData) {
-    var seriesSpeedVsHR = [];
-    var minLength;
-
-    if (rawData["heart_rate"] == undefined || rawData["heart_rate"] == null)
-        return;
-
-    if (rawData["speed"] == undefined || rawData["speed"] == null)
-        return;
-
-    if (rawData["heart_rate"].length == 0)
-        return;
-
-    if (rawData["speed"].length == 0)
-        return;
-
-    var hrLength = rawData["heart_rate"].length;
-    var speedLength = rawData["speed"].length;
-
-    if (hrLength >= speedLength) // Arrays could be of different sizes, cut off
-        minLength = speedLength;
-    else
-        minLengt = hrLength;
-
-
-    var myZones = getHRZones();
-
-    for (var datap = 0; datap < minLength; datap++) {
-        var speedx = rawData["speed"][datap][1];
-        var hry = rawData["heart_rate"][datap][1];
-        if (speedx == undefined || hry == undefined)
-            console.error("Could not access raw data for data point nr. " + datap.toString());
-        else {
-            seriesSpeedVsHR.push([speedx, hry]);
-
-            // Count Heart rate data points in zone
-            for (var zone = 0; zone < myZones.length; zone++) {
-                if (hry <= myZones[zone].max && hry >= myZones[zone].min)
-                    if (myZones[zone].count == undefined)
-                        myZones[zone].count = 1
-                    else
-                        myZones[zone].count++;
-            }
-
-
-        }
+        case 'start': self.postMessage('Starting filemanager with file url ' + data.url);
+            fitFileManager = new FitFileManager(data.url);
+            break;
+        default: self.postMessage('Unrecongized command' + data.cmd); break;
     }
 
-    var divChart = document.getElementById("speedVsHRChart");
-    divChart.style.visibility = "visible";
-
-    var chart2 = new Highcharts.Chart({
-        chart: {
-            renderTo: 'speedVsHRChart',
-            type: 'line'
-        },
-        title: {
-            text: ''
-        },
-        xAxis: {
-
-            //categories : ['Apples', 'Bananas', 'Oranges']
-            //type : 'datetime'
-        },
-        yAxis: {
-            title: {
-                text: 'bpm'
-            }
-        },
-
-        series: [{ name: 'Speed vs Heart Rate', data: seriesSpeedVsHR }]
-
-    });
-
-}
-
-UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) {
-    // We get speed in m/s, want it in km/h
-    if (rawData["speed"] != undefined)
-        rawData["speed"].forEach(function (element, index, array) {
-            array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
-        });
-
-    var chartId = "testChart";
-    var divChart = document.getElementById(chartId);
-    divChart.style.visibility = "visible";
-    var seriesSetup = [];
-
-    // Record data
-    if (rawData["heart_rate"] != undefined)
-        seriesSetup.push({ name: 'Heart rate', data: rawData["heart_rate"]})
-    if (rawData["altitude"] != undefined)
-        seriesSetup.push({ name: 'Altitude', data: rawData["altitude"] });
-    if (rawData["cadence"] != undefined)
-        seriesSetup.push({ name: 'Cadence', data: rawData["cadence"] });
-    if (rawData["speed"] != undefined)
-        seriesSetup.push({ name: 'Speed', data: rawData["speed"] });
-
-    // Lap data
-    if (rawData["total_ascent"] != undefined)
-        seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData["total_ascent"] });
-    if (rawData["total_descent"] != undefined)
-        seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData["total_descent"] });
-    if (rawData["avg_heart_rate"] != undefined)
-        seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData["avg_heart_rate"] });
-    if (rawData["max_heart_rate"] != undefined)
-        seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData["max_heart_rate"] });
-
-    // Hrv
-    if (rawData["hrv"] != undefined)
-        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData["hrv"] })
-
-    var xAxisType = 'datetime'
-    if (skipTimestamps)
-        xAxisType = '';
-
-    chart1 = new Highcharts.Chart({
-        chart: {
-            renderTo: chartId,
-            type: chartType
-        },
-        title: {
-            text: ''
-        },
-        xAxis: {
-            //categories : ['Apples', 'Bananas', 'Oranges']
-            type: xAxisType
-        },
-        yAxis: {
-            title: {
-                text: ''
-            }
-        },
-
-        series: seriesSetup
-
-    });
-
-
-    //FITUI.showSpeedVsHeartRate(rawData);
-
-    //FITUI.showHRZones(rawData);
-
-
-}
-
-UIController.prototype.showHRZones = function(rawData) {
-    var divChart = document.getElementById("zonesChart");
-    divChart.style.visibility = "visible";
-    
-    var options = {
-        chart: {
-            renderTo: 'zonesChart',
-            type: 'bar'
-        },
-        title: {
-            text: ''
-        },
-        xAxis: {
-
-            //categories: [myZones[0].name, myZones[1].name, myZones[2].name, myZones[3].name, myZones[4].name]
-            //type : 'datetime'
-        },
-        yAxis: {
-            title: {
-                text: 'Minutes'
-            }
-        }
-
-        // Assuming 1 sec. sampling of data point -> divide by 60 to get number of minutes in zone
-        //series: []
-    };
-
-
-    var myZones = getHRZones();
-
-    for (var datap = 0; datap < rawData["heart_rate"].length; datap++) {
-        
-        var hry = rawData["heart_rate"][datap][1];
-        if (hry == undefined || hry == null)
-            console.error("Could not access raw data for data point nr. " + datap.toString());
-        else {
-            // Count Heart rate data points in zone
-            for (var zone = 0; zone < myZones.length; zone++) {
-                if (hry <= myZones[zone].max && hry >= myZones[zone].min)
-                    if (myZones[zone].count == undefined)
-                        myZones[zone].count = 1
-                    else
-                        myZones[zone].count++;
-            }
-        }
-    }
-
-    var s1 = {};
-
-    s1.name = "Heart rate zones";
-    s1.data = [];
-    options.xAxis.categories = [];
-    options.series = [];
-
-    for (var catNr = 0; catNr < myZones.length; catNr++) {
-        options.xAxis.categories.push(myZones[catNr].name);
-        s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
-    }
-
-    options.series.push(s1);
-
-    var chart3 = new Highcharts.Chart(options);
-}
-
-UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
-
-UIController.prototype.setup = function () {
-    // Setup DOM event handling
-
-    // this = #document by default since we are called from $(document).ready event handler
-
-    FITUI.outConsole = document.getElementById('outConsole');
-
-    // Capturing = false -> bubbling event
-    FITUI.inpFITFile = document.getElementById('inpFITFile');
-    FITUI.inpFITFile.addEventListener('change', FITUI.onFitFileSelected, false);
-
-    FITUI.fitFileManager = new FitFileManager(); // Our business layer
-
-    FITUI.btnParse = document.getElementById('btnParse')
-    FITUI.btnParse.addEventListener('click', FITUI.onbtnParseClick, false);
-
-
-    //FITUI.btnSaveZones = document.getElementById('btnSaveZones')
-    //FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
-
-    FITUI.divMsgMap = document.getElementById('divMsgMap');
-   
-
-}
-
-UIController.prototype.showDataRecordsOnMap = function () {
-    var dataRecords = FITUI.fitFileManager.records;
-
-    for (var i = 0; i < dataRecords.length; i++) {
-        var styleClass = "";
-        switch (dataRecords[i]) {
-            case 0: styleClass = 'FITfile_id'; break;
-            case 18: styleClass = 'FITsession'; break;
-            case 19: styleClass = 'FITlap'; break;
-            case 20: styleClass = 'FITrecord'; break;
-            case 34: styleClass = 'FITactivity'; break;
-            
-            case 78: styleClass = 'FIThrv'; break;
-            default: styleClass = 'FITunknown'; break;
-        }
-
-        divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
-    }
-}
-
-UIController.prototype.showFITHeader = function () {
-    var headerHtml = '<p>Header size : ' + FITUI.fitFileManager.headerSize.toString() + ' bytes ' +
-'Protocol version : ' + FITUI.fitFileManager.protocolVersion.toString() +
-' Profile version : ' + FITUI.fitFileManager.profileVersion.toString() +
-' Data size: ' + FITUI.fitFileManager.dataSize.toString() + ' bytes' +
-' Data type: ' + FITUI.fitFileManager.dataType;
-    if (FITUI.fitFileManager.headerCRC != undefined) {
-        headerHtml += ' CRC: ' + parseInt(FITUI.fitFileManager.headerCRC, 10).toString(16);
-    }
-
-    return headerHtml;
-}
-
-// Event handlers
-
-UIController.prototype.onbtnParseClick = // Callback from button = this
-    function (e) {
-        //var fitManager = new FitFileManager(selectedFiles[0]);
-        //FITUI.showFileInfo();
-        
-        FITUI.fitFileManager.loadFile();
-    }
-UIController.prototype.fitFileLoadEnd = function (e) {
-        try {
-           
-            FITUI.fitFileManager.setupFITHeader(FITUI.fitFileManager.fitFileReader.result, FITUI.fitFileManager.fitFile.size);
-            
-            // Start reading records from file
-            var rawData = {};
-
-
-            var rawDataJSON = FITUI.fitFileManager.getDataRecords("record", "heart_rate altitude cadence speed", true, true);
-            //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
-            //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
-            rawData = JSON.parse(rawDataJSON);
-
-            FITUI.showDataRecordsOnMap();
-
-            FITUI.showCharts(rawData,false,'line');
-
-        } catch (err) {
-            console.error('Trouble with FIT file header parsing, message:', err.message);
-        }
-
-    }
-
-UIController.prototype.onFitFileSelected = function (e) {
-    // console.log(e);
-    e.preventDefault();
-
-    FITUI.selectedFiles = e.target.files;
-
-    var fileURL = window.URL.createObjectURL(FITUI.selectedFiles[0]);
-    window.URL.revokeObjectURL(fileURL);
-    // Maybe can be used to send it to a web worker for background processing
-
-    FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
-
-    // To do: check file size
-
-    FITUI.btnParse.style.visibility = 'visible';
-
-
-}
-
-
-function saveHRZones(e) {
-
-}
-
-
-// Adapted From http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
-function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
-
-// Ported from C to javascript from FIT SDK 5.10 fit_crc.c
-// Accessed: 28 december 2012
-
-function fitCRC_Get16(crc, byte) {
-    var crc_table =
-     [
-       0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
-       0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400
-     ];
-
-    var tmp;
-
-    // compute checksum of lower four bits of byte
-    tmp = crc_table[crc & 0xF];
-    crc = (crc >> 4) & 0x0FFF;
-    crc = crc ^ tmp ^ crc_table[byte & 0xF];
-
-    // now compute checksum of upper four bits of byte
-    tmp = crc_table[crc & 0xF];
-    crc = (crc >> 4) & 0x0FFF;
-    crc = crc ^ tmp ^ crc_table[(byte >> 4) & 0xF];
-
-    return crc;
-}
-
-function fitCRC(payloadview, start, end, crcSeed) {
-    var crc = crcSeed;
-
-    for (var i = start; i <= end; i++) {
-        crc = fitCRC_Get16(crc, payloadview.getUint8(i));
-    }
-
-    return crc;
-
-}
-
-function getHRZones() {
-    // Assume browser supports localStorage
-    var localStorage = window.localStorage;
-    var key = "FITView.HRZones";
-    var myZonesJSONString = localStorage.getItem(key);
-    
-    var myZones;
-    if (myZonesJSONString != null)
-        myZones = JSON.parse(myZonesJSONString);
-    else {
-        console.info("Local storage of "+key+" not found, using default HR Zones");
-        myZones = [{ name: 'Zone 1', min: 110, max: 120 },   // No storage found use default
-                 { name: 'Zone 2', min: 121, max: 140 },
-                 { name: 'Zone 3', min: 141, max: 150 },
-                 { name: 'Zone 4', min: 151, max: 165 },
-                 { name: 'Zone 5', min: 166, max: 256 }];
-    }
-
-    return myZones;
-}
+  
+},false);
 
 
 function FitFileManager(fitFile) {
@@ -419,19 +34,32 @@ function FitFileManager(fitFile) {
     }
 }
 
+
+
+FitFileManager.prototype.loadFile = function () {
+    this.fitFileReader = new FileReader();
+    this.fitFileReader.addEventListener('loadend', FITUI.fitFileLoadEnd, false);
+
+    try {
+        this.fitFileReader.readAsArrayBuffer(this.fitFile);
+
+    } catch (e) {
+        console.error('Could not initialize fit file reader with bytes, message:', e.message);
+    }
+}
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
-             
-FitFileManager.prototype.getDataRecords = function (message,filters,applyScaleOffset,applyNormalDatetime,skipTimeStamp) {
+
+FitFileManager.prototype.getDataRecords = function (message, filters, applyScaleOffset, applyNormalDatetime, skipTimeStamp) {
     var aFITBuffer = this.fitFileReader.result;
     var dvFITBuffer = new DataView(aFITBuffer);
 
     var prevIndex = this.index; // If parseRecords are called again it will start just after header again
 
     var d = new Date();
-    var timezoneOffset  = d.getTimezoneOffset();
+    var timezoneOffset = d.getTimezoneOffset();
 
     var data = {};
-    
+
 
     while (this.index < this.headerSize + this.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
@@ -441,12 +69,12 @@ FitFileManager.prototype.getDataRecords = function (message,filters,applyScaleOf
             this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
         else {
             var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
-            
+
             this.records.push(msg.globalMessageType);
 
-           
+
             if (msg.message === message) {  // only look for specfic message
-               
+
                 var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn
                 //console.log("Request for raw data filtering on message : " + msg.message + " filtering on fields: " + filters);
 
@@ -455,7 +83,7 @@ FitFileManager.prototype.getDataRecords = function (message,filters,applyScaleOf
 
 
                     if (msg[filter] != undefined) {
-                      //  console.log("Found field " + filter+" i = "+i.toString());
+                        //  console.log("Found field " + filter+" i = "+i.toString());
 
                         var val = msg[filter].value;
                         var scale = msg[filter].scale;
@@ -464,13 +92,13 @@ FitFileManager.prototype.getDataRecords = function (message,filters,applyScaleOf
                         // Convert timestamps to local time
                         var timestamp;
                         if (msg.timestamp != undefined)
-                          timestamp = msg.timestamp.value;
-                        
+                            timestamp = msg.timestamp.value;
+
                         var start_time;
                         if (msg.start_time != undefined)
-                           start_time = msg.start_time.value;
+                            start_time = msg.start_time.value;
 
-                        
+
                         if (applyNormalDatetime) {
                             if (timestamp != undefined) {
                                 var garminDateTimestamp = new GarminDateTime(timestamp);
@@ -495,16 +123,16 @@ FitFileManager.prototype.getDataRecords = function (message,filters,applyScaleOf
                             data[filter] = [];
 
                         if (skipTimeStamp)
-                           data[filter].push(val);
+                            data[filter].push(val);
                         else
-                           data[filter].push([timestamp,val]);
+                            data[filter].push([timestamp, val]);
                     }
                 }
             }
         }
     }
 
-    this.index = prevIndex; 
+    this.index = prevIndex;
 
     //this.littleEndian = firstRecord.content.littleEndian; // The encoding used for records
 
@@ -512,12 +140,12 @@ FitFileManager.prototype.getDataRecords = function (message,filters,applyScaleOf
     // it should be quite safe to assume the last two bytes is stored in little endian format
     //var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
 
-    var CRC = dvFITBuffer.getUint16(aFITBuffer.byteLength - 2,true); // Force little endian
+    var CRC = dvFITBuffer.getUint16(aFITBuffer.byteLength - 2, true); // Force little endian
     console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
 
     // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
 
-     
+
     return JSON.stringify(data);
 }
 
@@ -580,32 +208,32 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
 
     var name = this.getGlobalMessageTypeName(globalMessageType);
 
-    
+
     if (name === "file_creator")
         return {
-            0: { "property" : "software_version"},
-            1: { "property" : "hardware_version" }
+            0: { "property": "software_version" },
+            1: { "property": "hardware_version" }
         }
 
     if (name === "file_id")
-       return {
-           0: {"property" : "type"},
-           1: {"property" : "manufacturer"},
-           2: {"property" : "product"},
-           3: {"property" : "serial_number"},
-           4: {"property" : "time_created"},
-           5: { "property": "number" }
-       }
+        return {
+            0: { "property": "type" },
+            1: { "property": "manufacturer" },
+            2: { "property": "product" },
+            3: { "property": "serial_number" },
+            4: { "property": "time_created" },
+            5: { "property": "number" }
+        }
 
     // ACTIVITY FILE MESSAGES
 
     if (name === "activity") {
         return {
             253: { "property": "timestamp", "unit": "s" },
-            0: { "property": "total_timer_time", "scale" : 1000, "unit": "s" }, // Excluding pauses
-            1: { "property": "num_sessions"},
+            0: { "property": "total_timer_time", "scale": 1000, "unit": "s" }, // Excluding pauses
+            1: { "property": "num_sessions" },
             2: { "property": "type" },
-            3: { "property": "event"  },
+            3: { "property": "event" },
             4: { "property": "event_type" },
             5: { "property": "local_timestamp" },
             6: { "property": "event_group" }
@@ -616,34 +244,34 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
 
         return {
 
- 
 
 
 
-            253: {"property" : "timestamp",  "unit": "s"  },
-            0: {"property" : "position_lat","unit":"semicirles"},
-            1: {"property" : "position_long", "unit":"semicirles"},
-            2: {"property" : "altitude", "scale" : 5, "offset" : 500, "unit": "m"},
-            3: {"property" : "heart_rate", "unit": "bpm"  },
-            4: {"property" : "cadence", "unit": "rpm"  },
-            5: {"property" : "distance", "scale" : 100, "unit" : "m"},
-            6: { "property": "speed", "scale": 1000,"unit" : "m/s" },
-            7: {"property" : "power", "unit" : "watts"},
-            8: {"property" : "compressed_speed_distance"}, // TO DO FIX
-            9: {"property" : "grade", "scale" : 100, "unit" : "%"},
-            10: {"property" : "resistance"},
-            11: {"property" : "time_from_course", "scale" : 1000, "unit" : "s"},
-            12: {"property" : "cycle_length", "scale" : 100, "unit" : "m"},
-            13: {"property" : "temperature", "unit" : "C"},
-            17: {"property" : "speed_1s", "unit" : "m/s"},
-            18: {"property" :  "cycles", "unit" : "cycles"}, //TO DO FIX
-            19: {"property" : "total_cycles","unit" : "cycles"},
-            28: {"property" : "compressed_accumulated_power", "unit" : "watts"}, // TO DO FIX
-            29: {"property" : "accumulated_power", "unit" : "watts"},
-            30: {"property" : "left_right_balance"},
-            31: {"property" : "gps_accuracy", "unit" : "m"},
-            32: {"property" : "vertical_speed", "scale" : 1000, "unit" : "m/s"},
-            33: {"property" : "calories", "unit" : "kcal"}
+
+            253: { "property": "timestamp", "unit": "s" },
+            0: { "property": "position_lat", "unit": "semicirles" },
+            1: { "property": "position_long", "unit": "semicirles" },
+            2: { "property": "altitude", "scale": 5, "offset": 500, "unit": "m" },
+            3: { "property": "heart_rate", "unit": "bpm" },
+            4: { "property": "cadence", "unit": "rpm" },
+            5: { "property": "distance", "scale": 100, "unit": "m" },
+            6: { "property": "speed", "scale": 1000, "unit": "m/s" },
+            7: { "property": "power", "unit": "watts" },
+            8: { "property": "compressed_speed_distance" }, // TO DO FIX
+            9: { "property": "grade", "scale": 100, "unit": "%" },
+            10: { "property": "resistance" },
+            11: { "property": "time_from_course", "scale": 1000, "unit": "s" },
+            12: { "property": "cycle_length", "scale": 100, "unit": "m" },
+            13: { "property": "temperature", "unit": "C" },
+            17: { "property": "speed_1s", "unit": "m/s" },
+            18: { "property": "cycles", "unit": "cycles" }, //TO DO FIX
+            19: { "property": "total_cycles", "unit": "cycles" },
+            28: { "property": "compressed_accumulated_power", "unit": "watts" }, // TO DO FIX
+            29: { "property": "accumulated_power", "unit": "watts" },
+            30: { "property": "left_right_balance" },
+            31: { "property": "gps_accuracy", "unit": "m" },
+            32: { "property": "vertical_speed", "scale": 1000, "unit": "m/s" },
+            33: { "property": "calories", "unit": "kcal" }
         }
 
     if (name === "session")
@@ -657,7 +285,7 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             3: { "property": "start_position_lat", "unit": "semicirles" },
             4: { "property": "start_position_long", "unit": "semicirles" },
             5: { "property": "sport" },
-            6: { "property": "sub_sport"},
+            6: { "property": "sub_sport" },
             7: { "property": "total_elapsed_time", "unit": "s", "scale": 1000 }, // Time (includes pauses)
             8: { "property": "total_timer_time", "unit": "s", "scale": 1000 }, // Timer Time (excludes pauses)
             9: { "property": "total_distance", "unit": "m", "scale": 100 },
@@ -679,7 +307,7 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             25: { "property": "first_lap_index" },
             26: { "property": "num_laps" },
             27: { "property": "event_group" },
-            
+
             28: { "property": "trigger" },
             29: { "property": "nec_lat", "unit": "semicirles" },
             30: { "property": "nec_long", "unit": "semicirles" },
@@ -690,10 +318,10 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             36: { "property": "intensity_factor", "unit": "if", scale: 1000 },
             37: { "property": "left_right_balance", "unit": "watts" },
 
-            41: { "property": "avg_stroke_count", "scale":10, "unit" : "strokes/lap" },
+            41: { "property": "avg_stroke_count", "scale": 10, "unit": "strokes/lap" },
             42: { "property": "avg_stroke_distance", "scale": 100, "unit": "m" },
             43: { "property": "swim_stroke" },
-            44: { "property": "pool_length", "scale" : 100, "unit" : "m" },
+            44: { "property": "pool_length", "scale": 100, "unit": "m" },
             46: { "property": "pool_length_unit" },
             47: { "property": "num_active_lengths", "unit": "lengths" }, // # active lengths of swim pool
             48: { "property": "total_work", "unit": "J" },
@@ -713,15 +341,15 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             61: { "property": "avg_neg_vertical_speed", "scale": 1000, "unit": "m/s" },
             62: { "property": "max_pos_vertical_speed", "scale": 1000, "unit": "m/s" },
             63: { "property": "max_neg_vertical_speed", "scale": 1000, "unit": "m/s" },
-            64: { "property": "min_heart_rate",  "unit": "bpm" },
+            64: { "property": "min_heart_rate", "unit": "bpm" },
             65: { "property": "time_in_hr_zone", "scale": 1000, "unit": "s" }, // [N] array of N, may get some trouble here...
             66: { "property": "time_in_speed_zone", "scale": 1000, "unit": "s" }, // [N]
             67: { "property": "time_in_cadence_zone", "scale": 1000, "unit": "s" }, // [N]
             68: { "property": "time_in_power_zone", "scale": 1000, "unit": "s" },  // [N]
             69: { "property": "avg_lap_time", "scale": 1000, "unit": "s" },
-            70: { "property": "best_lap_index"  },
+            70: { "property": "best_lap_index" },
             71: { "property": "min_altitude", "scale": 5, "offset": 500, "unit": "m" },
-            
+
         }
 
     if (name === "lap")
@@ -826,7 +454,7 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
             if (!rec.content[field].invalid) {
 
                 if (globalMsg[fieldDefNr] == undefined || globalMsg[fieldDefNr] == null)
-                    console.error("Cannot read property of fieldDefNr " + fieldDefNr.toString()+" on global message type "+ globalMsgType.toString());
+                    console.error("Cannot read property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString());
                 else {
                     var prop = globalMsg[fieldDefNr].property;
 
@@ -870,25 +498,15 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
         }
 
         // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
-        if (globalMsgType != 20 && globalMsgType != 78) 
-          console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
+        if (globalMsgType != 20 && globalMsgType != 78)
+            console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
     }
 
     return msg;
 
 }
 
-FitFileManager.prototype.loadFile = function () {
-    this.fitFileReader = new FileReader();
-    this.fitFileReader.addEventListener('loadend', FITUI.fitFileLoadEnd, false);
 
-    try {
-        this.fitFileReader.readAsArrayBuffer(this.fitFile);
-
-    } catch (e) {
-        console.error('Could not initialize fit file reader with bytes, message:', e.message);
-    }
-}
 
 FitFileManager.prototype.getFITCRC = function (aCRCBuffer, littleEndian) {
     var dviewFITCRC = new DataView(aCRCBuffer); // Last 2 bytes of .FIT file contains CRC
@@ -923,7 +541,7 @@ FitFileManager.prototype.setupFITHeader = function (bufFitHeader, fitFileSystemS
 
     // 4 januar : Testet med IE 10, støtter ikke slice metoden...
 
-   // this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
+    // this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
 
     this.dataType = "";
     for (var indx = 8; indx < 12; indx++)
@@ -1048,7 +666,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
     }
 
     record["header"] = recHeader;
-   // console.log("Header type: " + recHeader["headerType"] + " Local message type: " + recHeader["localMessageType"].toString());
+    // console.log("Header type: " + recHeader["headerType"] + " Local message type: " + recHeader["localMessageType"].toString());
 
     // VARIALE CONTENT, EITHER DATA OR DEFINITION
 
@@ -1070,7 +688,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                     "baseType": dviewFit.getUint8(this.index++)
                 }
 
-     //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
+            //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
 
             break;
 
@@ -1093,27 +711,27 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                     console.log("Base type not found for base type" + bType);
                 //  logging += fitBaseTypesInvalidValues[bType].name+" ";
                 // Just skip reading values at the moment...
-               // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+                // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
 
                 recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
-              
+
                 switch (bType) {
                     case 0x00:
                     case 0x0A:
-                        recContent[currentField].value = dviewFit.getUint8(this.index) ; break;
-                    //case 0x0A: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
+                        recContent[currentField].value = dviewFit.getUint8(this.index); break;
+                        //case 0x0A: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
                     case 0x01: recContent[currentField].value = dviewFit.getInt8(this.index); break;
                     case 0x02: recContent[currentField].value = dviewFit.getUint8(this.index); break;
                     case 0x83: recContent[currentField].value = dviewFit.getInt16(this.index, littleEndian); break;
                     case 0x84:
                     case 0x8B:
                         recContent[currentField].value = dviewFit.getUint16(this.index, littleEndian); break;
-                    // recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
+                        // recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
                     case 0x85: recContent[currentField].value = dviewFit.getInt32(this.index, littleEndian); break;
                     case 0x86:
                     case 0x8C:
                         recContent[currentField].value = dviewFit.getUint32(this.index, littleEndian); break;
-                     //recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
+                        //recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
                     case 0x07: //console.error("String not implemented yet!");
                         var stringStartIndex = this.index;
                         var str = "";
@@ -1129,12 +747,12 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
 
                         //this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
                         break;
-                    case 0x88: recContent[currentField].value =  dviewFit.getFloat32(this.index, littleEndian) ; break;
-                    case 0x89: recContent[currentField].value =  dviewFit.getFloat64(this.index, littleEndian); break;
+                    case 0x88: recContent[currentField].value = dviewFit.getFloat32(this.index, littleEndian); break;
+                    case 0x89: recContent[currentField].value = dviewFit.getFloat64(this.index, littleEndian); break;
                     case 0x0D: //console.error("Array of bytes not implemented yet!");
                         var bytesStartIndex = this.index;
                         var bytes = [];
-                        for (var j = 0; j < bSize; j++) 
+                        for (var j = 0; j < bSize; j++)
                             bytes.push(dviewFit.getUint8(bytesStartIndex++));
                         console.log("Got an byte array with " + bSize.toString() + " bytes");
                         recContent[currentField] = { "value": bytes }; break;
@@ -1167,16 +785,15 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
 }
 
 
-
 // Garmin datetime = seconds since UTC 00:00 Dec 31 1989
 // If Garmin date_time is < 0x10000000 then it is system time (seconds from device power on)
 
-function GarminDateTime (timestamp) {
-    
+function GarminDateTime(timestamp) {
+
     //this.MIN = 0x10000000; 
     // Date.UTC(1989,11,31) - Date.UTC(1970,0,1)
-     this.OFFSET = 631065600000; // Offset between Garmin (FIT) time and Unix time in ms (Dec 31, 1989 - 00:00:00 January 1, 1970).
-     this.timestamp = timestamp || undefined;
+    this.OFFSET = 631065600000; // Offset between Garmin (FIT) time and Unix time in ms (Dec 31, 1989 - 00:00:00 January 1, 1970).
+    this.timestamp = timestamp || undefined;
 }
 
 GarminDateTime.prototype.setTimestamp = function (timestamp) {
@@ -1189,9 +806,6 @@ GarminDateTime.prototype.getTimeStamp = function getTimestamp() {
 
 GarminDateTime.prototype.convertTimestampToLocalTime = function (timezoneOffset) {
     var d = new Date();
-    return this.timestamp * 1000 + this.OFFSET+timezoneOffset*60*1000*-1;
+    return this.timestamp * 1000 + this.OFFSET + timezoneOffset * 60 * 1000 * -1;
     //return d;
 }
-
-
-
