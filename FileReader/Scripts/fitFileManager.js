@@ -16,24 +16,39 @@ self.addEventListener('message', function (e) {
 
     switch (data.request) {
 
-        case 'loadFitFile':   fitFileManager = new FitFileManager(data.fitfile,data.timeCalibration,data.globalmessage,data.fields);
+        case 'loadFitFile':
+            var options = {
+                fitfile: data.fitfile,
+                timecalibration: data.timeCalibration,
+                globalmessage: data.globalmessage,
+                fields: data.fields,
+                skiptimestamps: data.skipTimestamps
+            };
+
+            fitFileManager = new FitFileManager(options);
             break;
-        default: self.postMessage('Unrecongized command' + data.request); break;
+        default:
+            self.postMessage('Unrecongized command' + data.request);
+            break;
     }
 
   
 },false);
 
 
-function FitFileManager(fitFile,timeCalibration,globalmessage,fields) {
-    this.fitFile = fitFile; // Reference to FIT file in browser - FILE API
+function FitFileManager(options) {
+
+    //fitFile, timeCalibration, globalmessage, fields, skipTimestamps
+
+    this.fitFile = options.fitfile; // Reference to FIT file in browser - FILE API
     this.index = 0; // Pointer to next unread byte in FIT file
-    this.records = [] // Holds every global message nr. contained in FIT file
+    this.records = []; // Holds every global message nr. contained in FIT file
     this.fileBuffer = {};
 
-    this.timeCalibration = timeCalibration // Offset from Garmin time 
-    this.globalMessage = globalmessage;
-    this.fields = fields;
+    this.timeCalibration = options.timecalibration; // Offset from Garmin time
+    this.globalMessage = options.globalmessage;
+    this.fields = options.fields;
+    this.skipTimestamps = options.skiptimestamps;
 
     this.event_type = {
         start: 0,
@@ -48,9 +63,7 @@ function FitFileManager(fitFile,timeCalibration,globalmessage,fields) {
         stop_disable_all: 9
     }
 
-    this.fitFileReader = new FileReaderSync();
-   
-
+    this.fitFileReader = new FileReaderSync(); // For web worker
    
     try {
         this.fileBuffer = this.fitFileReader.readAsArrayBuffer(this.fitFile);
@@ -65,11 +78,11 @@ function FitFileManager(fitFile,timeCalibration,globalmessage,fields) {
     var rawData = {};
 
 
-    var rawDataJSON = this.getDataRecords(this.globalMessage, this.fields, true, true, this.timeCalibration, false);
+    var rawDataJSON = this.getDataRecords(this.globalMessage, this.fields, true, true, this.timeCalibration, this.skipTimestamps);
     //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
     //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
     
-
+    // Should be possible to send data without conversion to JSON for newer browsers....
     self.postMessage({ response: "rawData", rawdata: rawDataJSON, datamessages: this.records  });
 }
 

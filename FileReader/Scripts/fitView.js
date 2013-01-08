@@ -118,13 +118,18 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
         seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData["max_heart_rate"] });
 
     // Hrv
-    if (rawData["hrv"] != undefined)
-        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData["hrv"] })
+    if (rawData["time"] != undefined) {
+        skipTimestamps = true;
+        chartType = 'bar';
+        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData["time"] })
+    }
 
     var xAxisType = 'datetime'
     if (skipTimestamps)
         xAxisType = '';
 
+    var d = new Date();
+    console.log("Starting highchart now" + d );
     chart1 = new Highcharts.Chart({
         chart: {
             renderTo: chartId,
@@ -146,6 +151,9 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
         series: seriesSetup
 
     });
+
+    d = new Date();
+    console.log("Finishing highcharts now" + d);
 
 
     //FITUI.showSpeedVsHeartRate(rawData);
@@ -237,10 +245,18 @@ UIController.prototype.onFITManagerMsg = function (e) {
     
 }
 
+UIController.prototype.onFITManagerError = function (e) {
+    console.error("Error in worker, status " + e.toString());
+}
+
 UIController.prototype.setup = function () {
     // Setup DOM event handling
 
     // this = #document by default since we are called from $(document).ready event handler
+
+    //if (!Modernizr.webworkers) {
+    //    alert("This application will not work due to lack of webworker functionality");
+    //}
 
     FITUI.outConsole = document.getElementById('outConsole');
 
@@ -248,9 +264,7 @@ UIController.prototype.setup = function () {
     FITUI.inpFITFile = document.getElementById('inpFITFile');
     FITUI.inpFITFile.addEventListener('change', FITUI.onFitFileSelected, false);
 
-    FITUI.fitFileManager = new Worker("Scripts/fitFileManager.js")
-    FITUI.fitFileManager.addEventListener('message', FITUI.onFITManagerMsg, false);
-
+   
     //FITUI.btnParse = document.getElementById('btnParse')
     //FITUI.btnParse.addEventListener('click', FITUI.onbtnParseClick, false);
 
@@ -304,16 +318,32 @@ UIController.prototype.onFitFileSelected = function (e) {
 
     FITUI.selectedFiles = e.target.files;
 
-    var file = FITUI.selectedFiles[0];
+    var files = FITUI.selectedFiles;
    
+    // Setup mutiple/batch workers
+    console.log("Setup of " + files.length + " workers.");
+    for (var fileNr = 0; fileNr < files.length; fileNr++) {
+        //FITUI["fitFileManager" + fileNr.toString()] = new Worker("Scripts/fitFileManager.js")
+        //FITUI["fitFileManager" + fileNr.toString()].addEventListener('message', FITUI.onFITManagerMsg, false);
+        //FITUI["fitFileManager" + fileNr.toString()].addEventListener('error', FITUI.onFITManagerError, false);
+
+    };
+    
+        FITUI["fitFileManager"] = new Worker("Scripts/fitFileManager.js")
+        FITUI["fitFileManager"].addEventListener('message', FITUI.onFITManagerMsg, false);
+        FITUI["fitFileManager"].addEventListener('error', FITUI.onFITManagerError, false);
+   
+
     // Need to adjust timestamps in the underlying data from Garmin time/System time
-    var d = new Date();
-    var timezoneOffset = d.getTimezoneOffset() // Minute difference UTC-localtime
-    var timeCalibration = 631065600000 + (timezoneOffset * 60 * 1000 * -1);
+
+    var garminDT = new GarminDateTime();
+    var timeCalibration = garminDT.convertTimestampToLocalTime();
 
     // Start our worker now
-    var msg = { request: 'loadFitFile', "fitfile": file, "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed" };
-    FITUI.fitFileManager.postMessage(msg); 
+    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed", skipTimestamps : false };
+    //var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "hrv", "fields" : "time", skipTimestamps : true };
+
+    FITUI["fitFileManager"].postMessage(msg);
 
 }
 
@@ -387,30 +417,6 @@ function getHRZones() {
 
 
 
-// Garmin datetime = seconds since UTC 00:00 Dec 31 1989
-// If Garmin date_time is < 0x10000000 then it is system time (seconds from device power on)
-
-function GarminDateTime(timestamp) {
-
-    //this.MIN = 0x10000000; 
-    // Date.UTC(1989,11,31) - Date.UTC(1970,0,1)
-    this.OFFSET = 631065600000; // Offset between Garmin (FIT) time and Unix time in ms (Dec 31, 1989 - 00:00:00 January 1, 1970).
-    this.timestamp = timestamp || undefined;
-}
-
-GarminDateTime.prototype.setTimestamp = function (timestamp) {
-    this.timestamp = timestamp;
-}
-
-GarminDateTime.prototype.getTimeStamp = function getTimestamp() {
-    return this.timestamp;
-}
-
-GarminDateTime.prototype.convertTimestampToLocalTime = function (timezoneOffset) {
-    //var d = new Date();
-    return this.timestamp * 1000 + this.OFFSET + timezoneOffset * 60 * 1000 * -1;
-    //return d;
-}
 
 
 
