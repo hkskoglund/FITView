@@ -224,7 +224,10 @@ UIController.prototype.showHRZones = function(rawData) {
 UIController.prototype.onFITManagerMsg = function (e) {
     console.log("Got message from worker " + e.data.toString());
 
-    //rawData = JSON.parse(rawDataJSON);
+    var rawData = JSON.parse(e.data.data);
+    //FITUI.showDataRecordsOnMap();
+
+    FITUI.showCharts(rawData, false, 'line');
 }
 
 UIController.prototype.setup = function () {
@@ -320,10 +323,14 @@ UIController.prototype.onFitFileSelected = function (e) {
     var file = FITUI.selectedFiles[0];
     //window.URL.revokeObjectURL(fileURL);
     // Maybe can be used to send it to a web worker for background processing
-    var msg = { request: 'loadFitFile', data: file };
+
+    var d = new Date();
+    var timezoneOffset = d.getTimezoneOffset() // Minute difference UTC-localtime
+    var timeCalibration = 631065600000 + (timezoneOffset*60*1000*-1);
+    var msg = { request: 'loadFitFile', "fitfile": file, "timeCalibration" : timeCalibration };
     FITUI.fitFileManager.postMessage(msg);
 
-    FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
+   // FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
 
     // To do: check file size
 
@@ -402,7 +409,30 @@ function getHRZones() {
 
 
 
+// Garmin datetime = seconds since UTC 00:00 Dec 31 1989
+// If Garmin date_time is < 0x10000000 then it is system time (seconds from device power on)
 
+function GarminDateTime(timestamp) {
+
+    //this.MIN = 0x10000000; 
+    // Date.UTC(1989,11,31) - Date.UTC(1970,0,1)
+    this.OFFSET = 631065600000; // Offset between Garmin (FIT) time and Unix time in ms (Dec 31, 1989 - 00:00:00 January 1, 1970).
+    this.timestamp = timestamp || undefined;
+}
+
+GarminDateTime.prototype.setTimestamp = function (timestamp) {
+    this.timestamp = timestamp;
+}
+
+GarminDateTime.prototype.getTimeStamp = function getTimestamp() {
+    return this.timestamp;
+}
+
+GarminDateTime.prototype.convertTimestampToLocalTime = function (timezoneOffset) {
+    //var d = new Date();
+    return this.timestamp * 1000 + this.OFFSET + timezoneOffset * 60 * 1000 * -1;
+    //return d;
+}
 
 
 

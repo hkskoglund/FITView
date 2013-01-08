@@ -16,7 +16,7 @@ self.addEventListener('message', function (e) {
 
     switch (data.request) {
 
-        case 'loadFitFile':   fitFileManager = new FitFileManager(data.data);
+        case 'loadFitFile':   fitFileManager = new FitFileManager(data.fitfile,data.timeCalibration);
             break;
         default: self.postMessage('Unrecongized command' + data.request); break;
     }
@@ -25,11 +25,13 @@ self.addEventListener('message', function (e) {
 },false);
 
 
-function FitFileManager(fitFile) {
+function FitFileManager(fitFile,timeCalibration) {
     this.fitFile = fitFile; // Reference to FIT file in browser - FILE API
     this.index = 0; // Pointer to next unread byte in FIT file
     this.records = [] // Holds every global message nr. contained in FIT file
     this.fileBuffer = {};
+
+    this.timeCalibration = timeCalibration // Offset from Garmin time 
 
     this.event_type = {
         start: 0,
@@ -52,7 +54,7 @@ function FitFileManager(fitFile) {
         this.fileBuffer = this.fitFileReader.readAsArrayBuffer(this.fitFile);
         
     } catch (e) {
-        console.error('Could not initialize fit file reader with bytes, message:', e.message);
+        //console.error('Could not initialize fit file reader with bytes, message:', e.message);
     }
 
     this.setupFITHeader(this.fileBuffer, this.fitFile.size);
@@ -61,7 +63,7 @@ function FitFileManager(fitFile) {
     var rawData = {};
 
 
-    var rawDataJSON = this.getDataRecords("record", "heart_rate altitude cadence speed", true, true);
+    var rawDataJSON = this.getDataRecords("record", "heart_rate altitude cadence speed", true, this.timeCalibration, true);
     //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
     //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
     
@@ -71,15 +73,15 @@ function FitFileManager(fitFile) {
 
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
 
-FitFileManager.prototype.getDataRecords = function (message, filters, applyScaleOffset, applyNormalDatetime, skipTimeStamp) {
+FitFileManager.prototype.getDataRecords = function (message, filters, applyScaleOffset, applyNormalDatetime, timeCalibration, skipTimeStamp) {
     var aFITBuffer = this.fileBuffer;
     var dvFITBuffer = new DataView(aFITBuffer);
 
     var prevIndex = this.index; // If parseRecords are called again it will start just after header again
 
     // Date object not available for webworker
-    var d = new Date();
-    var timezoneOffset = d.getTimezoneOffset();
+   // var d = new Date();
+   // var timezoneOffset = d.getTimezoneOffset();
 
     var data = {};
 
@@ -124,12 +126,14 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
 
                         if (applyNormalDatetime) {
                             if (timestamp != undefined) {
-                                var garminDateTimestamp = new GarminDateTime(timestamp);
-                                timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                                //var garminDateTimestamp = new GarminDateTime(timestamp);
+                                //timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                                timestamp = timestamp * 1000 + timeCalibration;
                             }
                             if (start_time != undefined) {
-                                var garminDateTimestamp = new GarminDateTime(start_time);
-                                start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                                //var garminDateTimestamp = new GarminDateTime(start_time);
+                                //start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                                timestamp = timestamp * 1000 + timeCalibration;
                             }
                         }
 
@@ -810,27 +814,3 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
 }
 
 
-// Garmin datetime = seconds since UTC 00:00 Dec 31 1989
-// If Garmin date_time is < 0x10000000 then it is system time (seconds from device power on)
-
-function GarminDateTime(timestamp) {
-
-    //this.MIN = 0x10000000; 
-    // Date.UTC(1989,11,31) - Date.UTC(1970,0,1)
-    this.OFFSET = 631065600000; // Offset between Garmin (FIT) time and Unix time in ms (Dec 31, 1989 - 00:00:00 January 1, 1970).
-    this.timestamp = timestamp || undefined;
-}
-
-GarminDateTime.prototype.setTimestamp = function (timestamp) {
-    this.timestamp = timestamp;
-}
-
-GarminDateTime.prototype.getTimeStamp = function getTimestamp() {
-    return this.timestamp;
-}
-
-GarminDateTime.prototype.convertTimestampToLocalTime = function (timezoneOffset) {
-    var d = new Date();
-    return this.timestamp * 1000 + this.OFFSET + timezoneOffset * 60 * 1000 * -1;
-    //return d;
-}
