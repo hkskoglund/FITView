@@ -16,7 +16,7 @@ self.addEventListener('message', function (e) {
 
     switch (data.request) {
 
-        case 'loadFitFile':   fitFileManager = new FitFileManager(data.fitfile,data.timeCalibration);
+        case 'loadFitFile':   fitFileManager = new FitFileManager(data.fitfile,data.timeCalibration,data.globalmessage,data.fields);
             break;
         default: self.postMessage('Unrecongized command' + data.request); break;
     }
@@ -25,13 +25,15 @@ self.addEventListener('message', function (e) {
 },false);
 
 
-function FitFileManager(fitFile,timeCalibration) {
+function FitFileManager(fitFile,timeCalibration,globalmessage,fields) {
     this.fitFile = fitFile; // Reference to FIT file in browser - FILE API
     this.index = 0; // Pointer to next unread byte in FIT file
     this.records = [] // Holds every global message nr. contained in FIT file
     this.fileBuffer = {};
 
     this.timeCalibration = timeCalibration // Offset from Garmin time 
+    this.globalMessage = globalmessage;
+    this.fields = fields;
 
     this.event_type = {
         start: 0,
@@ -63,12 +65,12 @@ function FitFileManager(fitFile,timeCalibration) {
     var rawData = {};
 
 
-    var rawDataJSON = this.getDataRecords("record", "heart_rate altitude cadence speed", true, true, this.timeCalibration, false);
+    var rawDataJSON = this.getDataRecords(this.globalMessage, this.fields, true, true, this.timeCalibration, false);
     //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
     //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
     
 
-    self.postMessage({ response: "rawData", data: rawDataJSON });
+    self.postMessage({ response: "rawData", rawdata: rawDataJSON, datamessages: this.records  });
 }
 
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
@@ -448,7 +450,8 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
 
     if (name === "hrv") {
         return {
-            0: { "property": "hrv", "unit": "s", "scale": 1000 }
+            0: { "property": "time", "unit": "s", "scale": 1000 } // Array of N elements.... [N] according to SDK profile.xls
+            
         }
     }
 }

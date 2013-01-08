@@ -222,12 +222,19 @@ UIController.prototype.showHRZones = function(rawData) {
 //UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
 UIController.prototype.onFITManagerMsg = function (e) {
-    console.log("Got message from worker " + e.data.toString());
+    
+    var data = e.data;
 
-    var rawData = JSON.parse(e.data.data);
-    //FITUI.showDataRecordsOnMap();
+    switch (data.response) {
+        case 'rawData': var rawData = JSON.parse(data.rawdata);
+            FITUI.showCharts(rawData, false, 'line');
+            FITUI.showDataRecordsOnMap(data.datamessages);
+            break;
+        default: console.error("Received unrecognized message from worker " + data.response); break;
+    }
 
-    FITUI.showCharts(rawData, false, 'line');
+    
+    
 }
 
 UIController.prototype.setup = function () {
@@ -256,25 +263,25 @@ UIController.prototype.setup = function () {
 
 }
 
-//UIController.prototype.showDataRecordsOnMap = function () {
-//    var dataRecords = FITUI.fitFileManager.records;
-
-//    for (var i = 0; i < dataRecords.length; i++) {
-//        var styleClass = "";
-//        switch (dataRecords[i]) {
-//            case 0: styleClass = 'FITfile_id'; break;
-//            case 18: styleClass = 'FITsession'; break;
-//            case 19: styleClass = 'FITlap'; break;
-//            case 20: styleClass = 'FITrecord'; break;
-//            case 34: styleClass = 'FITactivity'; break;
+UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
+    
+   dataRecords.forEach(function (element,index,array) { // forEach takes a callback
+    
+        var styleClass = "";
+        switch (element) {
+            case 0: styleClass = 'FITfile_id'; break;
+            case 18: styleClass = 'FITsession'; break;
+            case 19: styleClass = 'FITlap'; break;
+            case 20: styleClass = 'FITrecord'; break;
+            case 34: styleClass = 'FITactivity'; break;
             
-//            case 78: styleClass = 'FIThrv'; break;
-//            default: styleClass = 'FITunknown'; break;
-//        }
+            case 78: styleClass = 'FIThrv'; break;
+            default: styleClass = 'FITunknown'; break;
+        }
 
-//        divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
-//    }
-//}
+        divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
+    })
+}
 
 //UIController.prototype.showFITHeader = function () {
 //    var headerHtml = '<p>Header size : ' + FITUI.fitFileManager.headerSize.toString() + ' bytes ' +
@@ -289,30 +296,7 @@ UIController.prototype.setup = function () {
 //    return headerHtml;
 //}
 
-// Event handlers
 
-//UIController.prototype.onbtnParseClick = // Callback from button = this
-//    function (e) {
-//        //var fitManager = new FitFileManager(selectedFiles[0]);
-//        //FITUI.showFileInfo();
-        
-//        FITUI.fitFileManager.loadFile();
-//    }
-
-UIController.prototype.fitFileLoadEnd = function (e) {
-        try {
-           
-            
-
-            FITUI.showDataRecordsOnMap();
-
-            FITUI.showCharts(rawData,false,'line');
-
-        } catch (err) {
-            console.error('Trouble with FIT file header parsing, message:', err.message);
-        }
-
-    }
 
 UIController.prototype.onFitFileSelected = function (e) {
     // console.log(e);
@@ -321,21 +305,15 @@ UIController.prototype.onFitFileSelected = function (e) {
     FITUI.selectedFiles = e.target.files;
 
     var file = FITUI.selectedFiles[0];
-    //window.URL.revokeObjectURL(fileURL);
-    // Maybe can be used to send it to a web worker for background processing
-
+   
+    // Need to adjust timestamps in the underlying data from Garmin time/System time
     var d = new Date();
     var timezoneOffset = d.getTimezoneOffset() // Minute difference UTC-localtime
-    var timeCalibration = 631065600000 + (timezoneOffset*60*1000*-1);
-    var msg = { request: 'loadFitFile', "fitfile": file, "timeCalibration" : timeCalibration };
-    FITUI.fitFileManager.postMessage(msg); // Start our worker now
+    var timeCalibration = 631065600000 + (timezoneOffset * 60 * 1000 * -1);
 
-   // FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
-
-    // To do: check file size
-
-    //FITUI.btnParse.style.visibility = 'visible';
-
+    // Start our worker now
+    var msg = { request: 'loadFitFile', "fitfile": file, "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed" };
+    FITUI.fitFileManager.postMessage(msg); 
 
 }
 
