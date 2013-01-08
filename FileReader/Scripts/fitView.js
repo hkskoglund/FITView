@@ -328,7 +328,7 @@ UIController.prototype.onFitFileSelected = function (e) {
     var timezoneOffset = d.getTimezoneOffset() // Minute difference UTC-localtime
     var timeCalibration = 631065600000 + (timezoneOffset*60*1000*-1);
     var msg = { request: 'loadFitFile', "fitfile": file, "timeCalibration" : timeCalibration };
-    FITUI.fitFileManager.postMessage(msg);
+    FITUI.fitFileManager.postMessage(msg); // Start our worker now
 
    // FITUI.fitFileManager.fitFile = FITUI.selectedFiles[0];
 

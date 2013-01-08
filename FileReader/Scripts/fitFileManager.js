@@ -63,7 +63,7 @@ function FitFileManager(fitFile,timeCalibration) {
     var rawData = {};
 
 
-    var rawDataJSON = this.getDataRecords("record", "heart_rate altitude cadence speed", true, this.timeCalibration, true);
+    var rawDataJSON = this.getDataRecords("record", "heart_rate altitude cadence speed", true, true, this.timeCalibration, false);
     //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
     //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
     
@@ -73,6 +73,7 @@ function FitFileManager(fitFile,timeCalibration) {
 
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
 
+//                                                 
 FitFileManager.prototype.getDataRecords = function (message, filters, applyScaleOffset, applyNormalDatetime, timeCalibration, skipTimeStamp) {
     var aFITBuffer = this.fileBuffer;
     var dvFITBuffer = new DataView(aFITBuffer);
