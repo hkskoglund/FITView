@@ -1,4 +1,5 @@
-﻿var FITUI;
+﻿"use strict"
+var FITUI;
 
 window.onload = function () {
     FITUI = new UIController();
@@ -13,16 +14,16 @@ UIController.prototype.showSpeedVsHeartRate = function (rawData) {
     var seriesSpeedVsHR = [];
     var minLength;
 
-    if (rawData["heart_rate"] == undefined || rawData["heart_rate"] == null)
+    if (rawData["heart_rate"] === undefined || rawData["heart_rate"] === null)
         return;
 
-    if (rawData["speed"] == undefined || rawData["speed"] == null)
+    if (rawData["speed"] === undefined || rawData["speed"] === null)
         return;
 
-    if (rawData["heart_rate"].length == 0)
+    if (rawData["heart_rate"].length === 0)
         return;
 
-    if (rawData["speed"].length == 0)
+    if (rawData["speed"].length === 0)
         return;
 
     var hrLength = rawData["heart_rate"].length;
@@ -39,7 +40,7 @@ UIController.prototype.showSpeedVsHeartRate = function (rawData) {
     for (var datap = 0; datap < minLength; datap++) {
         var speedx = rawData["speed"][datap][1];
         var hry = rawData["heart_rate"][datap][1];
-        if (speedx == undefined || hry == undefined)
+        if (speedx === undefined || hry === undefined)
             console.error("Could not access raw data for data point nr. " + datap.toString());
         else {
             seriesSpeedVsHR.push([speedx, hry]);
@@ -47,7 +48,7 @@ UIController.prototype.showSpeedVsHeartRate = function (rawData) {
             // Count Heart rate data points in zone
             for (var zone = 0; zone < myZones.length; zone++) {
                 if (hry <= myZones[zone].max && hry >= myZones[zone].min)
-                    if (myZones[zone].count == undefined)
+                    if (myZones[zone].count === undefined)
                         myZones[zone].count = 1
                     else
                         myZones[zone].count++;
@@ -87,7 +88,7 @@ UIController.prototype.showSpeedVsHeartRate = function (rawData) {
 
 UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) {
     // We get speed in m/s, want it in km/h
-    if (rawData["speed"] != undefined)
+    if (rawData["speed"] !== undefined)
         rawData["speed"].forEach(function (element, index, array) {
             array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
         });
@@ -98,30 +99,30 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
     var seriesSetup = [];
 
     // Record data
-    if (rawData["heart_rate"] != undefined)
+    if (rawData["heart_rate"] !== undefined)
         seriesSetup.push({ name: 'Heart rate', data: rawData["heart_rate"]})
-    if (rawData["altitude"] != undefined)
+    if (rawData["altitude"] !== undefined)
         seriesSetup.push({ name: 'Altitude', data: rawData["altitude"] });
-    if (rawData["cadence"] != undefined)
+    if (rawData["cadence"] !== undefined)
         seriesSetup.push({ name: 'Cadence', data: rawData["cadence"] });
-    if (rawData["speed"] != undefined)
+    if (rawData["speed"] !== undefined)
         seriesSetup.push({ name: 'Speed', data: rawData["speed"] });
 
     // Lap data
-    if (rawData["total_ascent"] != undefined)
+    if (rawData["total_ascent"] !== undefined)
         seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData["total_ascent"] });
-    if (rawData["total_descent"] != undefined)
+    if (rawData["total_descent"] !== undefined)
         seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData["total_descent"] });
-    if (rawData["avg_heart_rate"] != undefined)
+    if (rawData["avg_heart_rate"] !== undefined)
         seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData["avg_heart_rate"] });
-    if (rawData["max_heart_rate"] != undefined)
+    if (rawData["max_heart_rate"] !== undefined)
         seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData["max_heart_rate"] });
 
     // Hrv
-    if (rawData["time"] != undefined) {
+    if (rawData.time !== undefined) {
         skipTimestamps = true;
         chartType = 'bar';
-        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData["time"] })
+        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.time })
     }
 
     var xAxisType = 'datetime'
@@ -133,7 +134,9 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
     chart1 = new Highcharts.Chart({
         chart: {
             renderTo: chartId,
-            type: chartType
+            type: chartType,
+// Allow zooming
+            zoomType: 'xy'
         },
         title: {
             text: ''
@@ -340,8 +343,8 @@ UIController.prototype.onFitFileSelected = function (e) {
     var timeCalibration = garminDT.convertTimestampToLocalTime();
 
     // Start our worker now
-    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed", skipTimestamps : false };
-    //var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "hrv", "fields" : "time", skipTimestamps : true };
+    //var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed", skipTimestamps : false };
+    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "hrv", "fields" : "time", skipTimestamps : true };
 
     FITUI["fitFileManager"].postMessage(msg);
 

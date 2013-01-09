@@ -1,4 +1,5 @@
-﻿var fitFileManager;
+﻿"use strict"
+var fitFileManager;
 
 var workerThreadContext = self;
 
@@ -9,7 +10,7 @@ self.addEventListener('message', function (e) {
     // We get an MessageEvent of type message = e
     var data = e.data;
 
-    if (data.request == undefined) {
+    if (data.request === undefined) {
         self.postMessage("Unrecognized command!");
         return;
     }
@@ -61,7 +62,7 @@ function FitFileManager(options) {
         end_all_depreciated: 7,
         stop_disable: 8,
         stop_disable_all: 9
-    }
+    };
 
     this.fitFileReader = new FileReaderSync(); // For web worker
    
@@ -106,8 +107,8 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
         var rec = this.getRecord(dvFITBuffer, this.index);
 
         // If we got an definition message, store it as a property 
-        if (rec.header["messageType"] == 1)
-            this["localMsgDefinition" + rec.header["localMessageType"].toString()] = rec;
+        if (rec.header.messageType === 1)
+            this["localMsgDefinition" + rec.header.localMessageType.toString()] = rec;
         else {
             var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
 
@@ -123,7 +124,7 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
                     var filter = filterArr[i];
 
 
-                    if (msg[filter] != undefined) {
+                    if (msg[filter] !== undefined) {
                         //  console.log("Found field " + filter+" i = "+i.toString());
 
                         var val = msg[filter].value;
@@ -132,21 +133,21 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
 
                         // Convert timestamps to local time
                         var timestamp;
-                        if (msg.timestamp != undefined)
+                        if (msg.timestamp !== undefined)
                             timestamp = msg.timestamp.value;
 
                         var start_time;
-                        if (msg.start_time != undefined)
+                        if (msg.start_time !== undefined)
                             start_time = msg.start_time.value;
 
 
                         if (applyNormalDatetime) {
-                            if (timestamp != undefined) {
+                            if (timestamp !== undefined) {
                                 //var garminDateTimestamp = new GarminDateTime(timestamp);
                                 //timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
                                 timestamp = timestamp * 1000 + timeCalibration;
                             }
-                            if (start_time != undefined) {
+                            if (start_time !== undefined) {
                                 //var garminDateTimestamp = new GarminDateTime(start_time);
                                 //start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
                                 timestamp = timestamp * 1000 + timeCalibration;
@@ -155,14 +156,14 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
 
                         // If requested do some value conversions
                         if (applyScaleOffset) {
-                            if (scale != undefined)
+                            if (scale !== undefined)
                                 val = val / scale;
 
-                            if (offset != undefined)
+                            if (offset !== undefined)
                                 val = val - offset;
                         }
 
-                        if (data[filter] == undefined)
+                        if (data[filter] === undefined)
                             data[filter] = [];
 
                         if (skipTimeStamp)
@@ -391,7 +392,7 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             68: { "property": "time_in_power_zone", "scale": 1000, "unit": "s" },  // [N]
             69: { "property": "avg_lap_time", "scale": 1000, "unit": "s" },
             70: { "property": "best_lap_index" },
-            71: { "property": "min_altitude", "scale": 5, "offset": 500, "unit": "m" },
+            71: { "property": "min_altitude", "scale": 5, "offset": 500, "unit": "m" }
 
         }
 
@@ -458,7 +459,7 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
             61: { "property": "repetition_num", "scale": 1000, "unit": "s" },
             62: { "property": "min_altitude", "scale": 5, "offset": 500, "unit": "m" },
             63: { "property": "min_heart_rate", "unit": "m" },
-            71: { "property": "wkt_step_index", "unit": "bpm" },
+            71: { "property": "wkt_step_index", "unit": "bpm" }
         }
 
     if (name === "hrv") {
@@ -471,7 +472,7 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
 
 FitFileManager.prototype.getDataRecordContent = function (rec) {
 
-    var localMsgType = rec.header["localMessageType"].toString();
+    var localMsgType = rec.header.localMessageType.toString();
     var definitionMsg = this["localMsgDefinition" + localMsgType];
     var globalMsgType = definitionMsg.content.globalMsgNr;
 
@@ -497,7 +498,7 @@ FitFileManager.prototype.getDataRecordContent = function (rec) {
             // Skip fields with invalid value
             if (!rec.content[field].invalid) {
 
-                if (globalMsg[fieldDefNr] != undefined && globalMsg[fieldDefNr] != null)
+                if (globalMsg[fieldDefNr] !== undefined && globalMsg[fieldDefNr] !== null)
                    // console.error("Cannot read property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString());
                  {
                     var prop = globalMsg[fieldDefNr].property;
@@ -619,60 +620,60 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
     fitBaseTypesInvalidValues[0x00] = {
         "name": "enum",
         "invalidValue": 0xFF
-    }
+    };
     fitBaseTypesInvalidValues[0x01] = {
         "name": "sint8",
         "invalidValue": 0x7F
-    }
+    };
     fitBaseTypesInvalidValues[0x02] = {
         "name": "uint8",
         "invalidValue": 0xFF
-    }
+    };
     fitBaseTypesInvalidValues[0x83] = {
         "name": "sint16",
         "invalidValue": 0x7FFF
-    }
+    };
     fitBaseTypesInvalidValues[0x84] = {
         "name": "uint16",
         "invalidValue": 0xFFFF
-    }
+    };
     fitBaseTypesInvalidValues[0x85] = {
         "name": "sint32",
         "invalidValue": 0x7FFFFFFF
-    }
+    };
     fitBaseTypesInvalidValues[0x86] = {
         "name": "uint32",
         "invalidValue": 0xFFFFFFFF
-    }
+    };
     fitBaseTypesInvalidValues[0x07] = {
         "name": "string",
         "invalidValue": 0x00
-    }
+    };
     fitBaseTypesInvalidValues[0x88] = {
         "name": "float32",
         "invalidValue": 0xFFFFFFFF
-    }
+    };
     fitBaseTypesInvalidValues[0x89] = {
         "name": "float64",
         "invalidValue": 0xFFFFFFFFFFFFFFFF
-    }
+    };
 
     fitBaseTypesInvalidValues[0x0A] = {
         "name": "uint8z",
         "invalidValue": 0x00
-    }
+    };
     fitBaseTypesInvalidValues[0x8B] = {
         "name": "uint16z",
         "invalidValue": 0x0000
-    }
+    };
     fitBaseTypesInvalidValues[0x8C] = {
         "name": "uint32z",
         "invalidValue": 0x00000000
-    }
+    };
     fitBaseTypesInvalidValues[0x0D] = {
         "name": "byte",
         "invalidValue": 0xFF
-    }
+    };
 
 
 
@@ -693,42 +694,42 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
     var TIMEOFFSET_FLAGS = 0x1F;                           // binary 00011111 
     var COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS = 0x60; // binary 01100000 
 
-    recHeader["byte"] = dviewFit.getUint8(this.index++);
-    recHeader["headerType"] = (recHeader["byte"] & HEADERTYPE_FLAG) >> 7 // MSB 7 0 = normal header, 1 = compressed timestampheader
+    recHeader.byte = dviewFit.getUint8(this.index++);
+    recHeader.headerType = (recHeader.byte & HEADERTYPE_FLAG) >> 7; // MSB 7 0 = normal header, 1 = compressed timestampheader
 
-    switch (recHeader["headerType"]) {
+    switch (recHeader.headerType) {
         case 0: // Normal header
-            recHeader["messageType"] = (recHeader["byte"] & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition, 0 = data msg.
+            recHeader.messageType = (recHeader.byte & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition, 0 = data msg.
             // bit 5 = 0 reserved
             // bit 4 = 0 reserved
-            recHeader["localMessageType"] = recHeader["byte"] & NORMAL_LOCAL_MESSAGE_TYPE_FLAGS; // bit 0-3
+            recHeader.localMessageType = recHeader.byte & NORMAL_LOCAL_MESSAGE_TYPE_FLAGS; // bit 0-3
 
             break;
         case 1: // Compressed timestamp header - only for data records
-            recHeader["localMessageType"] = (recHeader["byte"] & COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS) >> 5;
-            recHeader["timeOffset"] = (recHeader["byte"] & TIMEOFFSET_FLAGS); // bit 0-4 - in seconds since a fixed reference start time (max 32 secs)
+            recHeader.localMessageType = (recHeader.byte & COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS) >> 5;
+            recHeader.timeOffset = (recHeader.byte & TIMEOFFSET_FLAGS); // bit 0-4 - in seconds since a fixed reference start time (max 32 secs)
             break;
 
     }
 
-    record["header"] = recHeader;
+    record.header = recHeader;
     // console.log("Header type: " + recHeader["headerType"] + " Local message type: " + recHeader["localMessageType"].toString());
 
     // VARIALE CONTENT, EITHER DATA OR DEFINITION
 
-    switch (recHeader["messageType"]) {
+    switch (recHeader.messageType) {
         case DEFINITION_MSG:
             //  5 byte FIXED content header
-            recContent["reserved"] = dviewFit.getUint8(this.index++); // Reserved = 0
-            recContent["littleEndian"] = dviewFit.getUint8(this.index++) == 0; // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
-            recContent["globalMsgNr"] = dviewFit.getUint16(this.index, recContent["littleEndian"]); // what kind of data message
+            recContent.reserved = dviewFit.getUint8(this.index++); // Reserved = 0
+            recContent.littleEndian = dviewFit.getUint8(this.index++) === 0; // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
+            recContent.globalMsgNr = dviewFit.getUint16(this.index, recContent.littleEndian); // what kind of data message
             this.index = this.index + 2;
-            recContent["fieldNumbers"] = dviewFit.getUint8(this.index++); // Number of fields in data message
+            recContent.fieldNumbers = dviewFit.getUint8(this.index++); // Number of fields in data message
 
             // VARIABLE content - field definitions as properties
 
-            for (var i = 0; i < recContent["fieldNumbers"]; i++)
-                recContent["field" + i.toString()] = {
+            for (var fieldNr = 0; fieldNr < recContent.fieldNumbers; fieldNr++)
+                recContent["field" + fieldNr.toString()] = {
                     "fieldDefinitionNumber": dviewFit.getUint8(this.index++),
                     "size": dviewFit.getUint8(this.index++),
                     "baseType": dviewFit.getUint8(this.index++)
@@ -739,21 +740,21 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
             break;
 
         case DATA_MSG: // Lookup in msg. definition in properties -> read fields
-            var localMsgDefinition = this["localMsgDefinition" + recHeader["localMessageType"].toString()]
-            if (localMsgDefinition == undefined || localMsgDefinition == null)
+            var localMsgDefinition = this["localMsgDefinition" + recHeader.localMessageType.toString()];
+            if (localMsgDefinition === undefined || localMsgDefinition === null)
                 throw new Error("Could not find message definition of data message");
 
             // Loop through all field definitions and read corresponding fields in data message
 
-            var littleEndian = localMsgDefinition["content"].littleEndian;
+            var littleEndian = localMsgDefinition.content.littleEndian;
 
             // var logging = "";
-            for (var i = 0; i < localMsgDefinition["content"].fieldNumbers; i++) {
-                var currentField = "field" + i.toString();
+            for (var fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
+                var currentField = "field" + fieldNr.toString();
                 var bType = localMsgDefinition.content[currentField].baseType;
                 var bSize = localMsgDefinition.content[currentField].size;
 
-                if (fitBaseTypesInvalidValues[bType] == undefined || fitBaseTypesInvalidValues[bType] == null)
+                if (fitBaseTypesInvalidValues[bType] === undefined || fitBaseTypesInvalidValues[bType] === null)
                     console.log("Base type not found for base type" + bType);
                 //  logging += fitBaseTypesInvalidValues[bType].name+" ";
                 // Just skip reading values at the moment...
@@ -781,27 +782,28 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
                     case 0x07: //console.error("String not implemented yet!");
                         var stringStartIndex = this.index;
                         var str = "";
-                        for (var j = 0; j < bSize; j++) {
+                        for (var charNr = 0; charNr < bSize; charNr++) {
                             var char = dviewFit.getUint8(stringStartIndex++);
-                            if (char == 0) // Null terminated string
+                            if (char === 0) // Null terminated string
                                 break;
                             str += String.fromCharCode(char);
                         }
 
                         console.log("Got a null terminated string " + str);
-                        recContent[currentField] = { "value": str }; break;
+                        recContent[currentField] = { "value": str };
+                        break;
 
                         //this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
-                        break;
+                    
                     case 0x88: recContent[currentField].value = dviewFit.getFloat32(this.index, littleEndian); break;
                     case 0x89: recContent[currentField].value = dviewFit.getFloat64(this.index, littleEndian); break;
                     case 0x0D: //console.error("Array of bytes not implemented yet!");
                         var bytesStartIndex = this.index;
                         var bytes = [];
-                        for (var j = 0; j < bSize; j++)
+                        for (var byteNr = 0; byteNr < bSize; byteNr++)
                             bytes.push(dviewFit.getUint8(bytesStartIndex++));
                         console.log("Got an byte array with " + bSize.toString() + " bytes");
-                        recContent[currentField] = { "value": bytes }; break;
+                        recContent[currentField] = { "value": bytes }; 
                         //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
                         break;
                     default: //throw new Error("Base type " + bType.toString() + " not found in lookup switch"); break;
@@ -825,7 +827,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
             break;
     }
 
-    record["content"] = recContent;
+    record.content = recContent;
 
     return record;
 }
