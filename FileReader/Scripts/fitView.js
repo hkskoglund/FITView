@@ -416,13 +416,13 @@ UIController.prototype.onFitFileSelected = function (e) {
     query.push(
        
        // { message: "hrv", fields: "time" },
-       { message: "file_id", fields: "type manufacturer product serial_number time_created number" },
-       { message: "file_creator", fields: "software_version hardware_version"},
-      { message: "record", fields: "heart_rate speed altitude cadence" },
-       { message: "session", fields: "start_time start_position_lat start_position_long" }
+       { message: "file_id", fields: "type manufacturer product serial_number time_created number", skiptimestamps: true },
+       { message: "file_creator", fields: "software_version hardware_version", skiptimestamps: true},
+      { message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
+       { message: "session", fields: "start_time start_position_lat start_position_long", skiptimestamps : true }
        );
 
-    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration": timeCalibration, "query" : query, skipTimestamps: true };
+    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration": timeCalibration, "query" : query };
 
     FITUI["fitFileManager"].postMessage(msg);
 
