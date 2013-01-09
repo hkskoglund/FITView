@@ -249,17 +249,46 @@ UIController.prototype.showHRZones = function(rawData) {
 //UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
 
+function semiCirclesToDegrees(semicircles) {
+    return semicircles * 180 / 2147483648;  // 2 147 483 648 = 2^31
+
+
+}
 UIController.prototype.showMap = function(session)
 {
-    if (session.start_position_lat !== undefined && session.start_position_long !== undefined) {
-        var mapOptions = {
-            center: new google.maps.LatLng(-34.397, 150.644),
-            zoom: 8,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-        var map = new google.maps.Map(document.getElementById("activityMap"),
-            mapOptions);
-    }
+    // Plot markers for start of each session
+
+    if (session.start_position_lat.length === 0)
+        return;
+
+
+    session.start_position_lat.forEach(function (element, index, array) {
+
+        var lat = session.start_position_lat[index];
+        var long = session.start_position_long[index];
+
+        var gt = new GarminDateTime();
+        gt.setTimestamp(session.start_time[index]);
+        var startTime = new Date(gt.convertTimestampToLocalTime());
+        
+
+        if (lat !== undefined && long !== undefined) {
+            var latlong = new google.maps.LatLng(semiCirclesToDegrees(lat), semiCirclesToDegrees(long));
+            var mapOptions = {
+                center: latlong,
+                zoom: 14,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            var map = new google.maps.Map(document.getElementById("activityMap"),
+                mapOptions);
+
+            var marker = new google.maps.Marker({
+                position: latlong,
+                title: startTime.toLocaleTimeString(),
+                map: map
+            });
+        }
+    });
 }
 
 UIController.prototype.onFITManagerMsg = function (e) {

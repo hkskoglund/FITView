@@ -211,6 +211,3 @@ function FITLap() {
             6: { "property": "event_group" }
         }
     }
-
-
-}
