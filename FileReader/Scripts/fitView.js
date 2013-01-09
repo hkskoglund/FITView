@@ -125,10 +125,11 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
     }
 
     // Hrv
-    if (rawData.hrv != undefined) {
+    if (rawData.hrv !== undefined) {
         if (rawData.hrv.time !== undefined) {
             skipTimestamps = true;
-            chartType = 'bar';
+            //chartType = 'bar';
+            // Seems like line rendering is much faster than bar...
             seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
         }
     }
@@ -137,21 +138,28 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
     if (skipTimestamps)
         xAxisType = '';
 
+
+    var chartOptions = {
+        renderTo: chartId,
+        type: chartType,
+        // Allow zooming
+        zoomType: 'xy'
+    }
+
+    //if (rawData.hrv !== undefined)
+    //    chartOptions.inverted = true;
+
     var d = new Date();
     console.log("Starting highchart now" + d );
     chart1 = new Highcharts.Chart({
-        chart: {
-            renderTo: chartId,
-            type: chartType,
-// Allow zooming
-            zoomType: 'xy'
-        },
+        chart: chartOptions,
         title: {
             text: ''
         },
         xAxis: {
             //categories : ['Apples', 'Bananas', 'Oranges']
             type: xAxisType
+            //reversed : true
         },
         yAxis: {
             title: {
@@ -245,11 +253,16 @@ UIController.prototype.onFITManagerMsg = function (e) {
     var data = e.data;
 
     switch (data.response) {
-        case 'rawData': var rawData = JSON.parse(data.rawdata);
+        case 'rawData':
+            var rawData = JSON.parse(data.rawdata);
             FITUI.showCharts(rawData, false, 'line');
             FITUI.showDataRecordsOnMap(data.datamessages);
             break;
-        default: console.error("Received unrecognized message from worker " + data.response); break;
+        case 'header':
+            var headerInfo = data.header;
+            break;
+        default:
+            console.error("Received unrecognized message from worker " + data.response); break;
     }
 
     
@@ -352,7 +365,15 @@ UIController.prototype.onFitFileSelected = function (e) {
 
     // Start our worker now
     //var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed", skipTimestamps : false };
-    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "hrv", "fields" : "time", skipTimestamps : true };
+
+    var query = [];
+  
+    query.push(
+       
+        { message: "hrv", fields: "time" },
+        { message: "record", fields: "heart_rate speed altitude cadence" });
+
+    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration": timeCalibration, "query" : query, skipTimestamps: true };
 
     FITUI["fitFileManager"].postMessage(msg);
 

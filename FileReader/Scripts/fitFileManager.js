@@ -1,4 +1,6 @@
 ﻿//use strict
+//importScripts('Messages.js'); Gives network error??
+
 var fitFileManager;
 
 var workerThreadContext = self;
@@ -21,8 +23,7 @@ self.addEventListener('message', function (e) {
             var options = {
                 fitfile: data.fitfile,
                 timecalibration: data.timeCalibration,
-                globalmessage: data.globalmessage,
-                fields: data.fields,
+                query: data.query,
                 skiptimestamps: data.skipTimestamps
             };
 
@@ -47,8 +48,7 @@ function FitFileManager(options) {
     this.fileBuffer = {};
 
     this.timeCalibration = options.timecalibration; // Offset from Garmin time
-    this.globalMessage = options.globalmessage;
-    this.fields = options.fields;
+    this.query = options.query;
     this.skipTimestamps = options.skiptimestamps;
 
     this.event_type = {
@@ -73,13 +73,15 @@ function FitFileManager(options) {
         //console.error('Could not initialize fit file reader with bytes, message:', e.message);
     }
 
-    this.setupFITHeader(this.fileBuffer, this.fitFile.size);
+    this.headerInfo = this.getFITHeader(this.fileBuffer, this.fitFile.size);
+
+    self.postMessage({ response: "header", header: this.headerInfo });
 
     // Start reading records from file
     var rawData = {};
 
 
-    var rawDataJSON = this.getDataRecords(this.globalMessage, this.fields, true, true, this.timeCalibration, this.skipTimestamps);
+    var rawDataJSON = this.getDataRecords(this.query, true, true, this.timeCalibration, this.skipTimestamps);
     //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
     //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
     
@@ -88,9 +90,9 @@ function FitFileManager(options) {
 }
 
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
-
+// query [{ message : "record", fields: "f1 f1f"}
 //                                                 
-FitFileManager.prototype.getDataRecords = function (message, filters, applyScaleOffset, applyNormalDatetime, timeCalibration, skipTimeStamp) {
+FitFileManager.prototype.getDataRecords = function (query, applyScaleOffset, applyNormalDatetime, timeCalibration, skipTimeStamp) {
     var aFITBuffer = this.fileBuffer;
     var dvFITBuffer = new DataView(aFITBuffer);
 
@@ -102,78 +104,84 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
 
     var data = {};
 
-    data[message] = {};
+    for (var queryNr = 0; queryNr < query.length; queryNr++) {
+        data[query[queryNr].message] = {};
+    }
 
+    if (this.headerInfo == undefined)
+        return undefined;
 
-    while (this.index < this.headerSize + this.dataSize) {
+    while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
 
         // If we got an definition message, store it as a property 
         if (rec.header.messageType === 1)
             this["localMsgDefinition" + rec.header.localMessageType.toString()] = rec;
         else {
-            var msg = this.getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
+            var rec = this.getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
 
-            this.records.push(msg.globalMessageType);
-
-
-            if (msg.message === message) {  // only look for specfic message
-
-                
-
-                var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn
-                //console.log("Request for raw data filtering on message : " + msg.message + " filtering on fields: " + filters);
-
-                for (var filterNr = 0; filterNr < filterArr.length; filterNr++) {
-                    var filter = filterArr[filterNr];
+            this.records.push(rec.globalMessageType); // Store all data globalmessage types contained in FIT file
 
 
-                    if (msg[filter] !== undefined) {
-                        //  console.log("Found field " + filter+" i = "+i.toString());
-
-                        var val = msg[filter].value;
-                        var scale = msg[filter].scale;
-                        var offset = msg[filter].offset;
-
-                        // Convert timestamps to local time
-                        var timestamp;
-                        if (msg.timestamp !== undefined)
-                            timestamp = msg.timestamp.value;
-
-                        var start_time;
-                        if (msg.start_time !== undefined)
-                            start_time = msg.start_time.value;
+            for (var queryNr = 0; queryNr < query.length; queryNr++) { // Allow query of more than one message, i.e record session lap
+                if (rec.message === query[queryNr].message) {  // only look for specfic message
 
 
-                        if (applyNormalDatetime) {
-                            if (timestamp !== undefined) {
-                                //var garminDateTimestamp = new GarminDateTime(timestamp);
-                                //timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
-                                timestamp = timestamp * 1000 + timeCalibration;
+
+                    var fields = query[queryNr].fields.split(" "); // Filters format f1 f2 f3 ... fn
+                    //console.log("Request for raw data filtering on message : " + msg.message + " filtering on fields: " + filters);
+
+                    for (var fieldNr = 0; fieldNr < fields.length; fieldNr++) {
+                        var field = fields[fieldNr];
+
+
+                        if (rec[field] !== undefined) {
+                            //  console.log("Found field " + filter+" i = "+i.toString());
+
+                            var val = rec[field].value;
+                            var scale = rec[field].scale;
+                            var offset = rec[field].offset;
+
+                            // Convert timestamps to local time
+                            var timestamp;
+                            if (rec.timestamp !== undefined)
+                                timestamp = rec.timestamp.value;
+
+                            var start_time;
+                            if (rec.start_time !== undefined)
+                                start_time = rec.start_time.value;
+
+                            // Thought : skip value conversions here -> just pass through raw data and let higher level intepret...
+                            if (applyNormalDatetime) {
+                                if (timestamp !== undefined) {
+                                    //var garminDateTimestamp = new GarminDateTime(timestamp);
+                                    //timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                                    timestamp = timestamp * 1000 + timeCalibration;
+                                }
+                                if (start_time !== undefined) {
+                                    //var garminDateTimestamp = new GarminDateTime(start_time);
+                                    //start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                                    timestamp = timestamp * 1000 + timeCalibration;
+                                }
                             }
-                            if (start_time !== undefined) {
-                                //var garminDateTimestamp = new GarminDateTime(start_time);
-                                //start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
-                                timestamp = timestamp * 1000 + timeCalibration;
+
+                            // If requested do some value conversions
+                            if (applyScaleOffset) {
+                                if (scale !== undefined)
+                                    val = val / scale;
+
+                                if (offset !== undefined)
+                                    val = val - offset;
                             }
+
+                            if (data[rec.message][field] === undefined)
+                                data[rec.message][field] = [];
+
+                            if (skipTimeStamp)
+                                data[rec.message][field].push(val);
+                            else
+                                data[rec.message][field].push([timestamp, val]);
                         }
-
-                        // If requested do some value conversions
-                        if (applyScaleOffset) {
-                            if (scale !== undefined)
-                                val = val / scale;
-
-                            if (offset !== undefined)
-                                val = val - offset;
-                        }
-
-                        if (data[message][filter] === undefined)
-                            data[message][filter] = [];
-
-                        if (skipTimeStamp)
-                            data[message][filter].push(val);
-                        else
-                            data[message][filter].push([timestamp, val]);
                     }
                 }
             }
@@ -252,26 +260,23 @@ FitFileManager.prototype.getGlobalMessageTypeName = function (globalMessageType)
     return mesg_num[globalMessageType];
 }
 
+
+
 FitFileManager.prototype.messageFactory = function (globalMessageType) {
 
     var name = this.getGlobalMessageTypeName(globalMessageType);
 
 
-    if (name === "file_creator")
-        return {
-            0: { "property": "software_version" },
-            1: { "property": "hardware_version" }
-        }
+    if (name === "file_creator") {
+        var fc = new FileCreator();
+        return fc.properties;
+    }
 
-    if (name === "file_id")
-        return {
-            0: { "property": "type" },
-            1: { "property": "manufacturer" },
-            2: { "property": "product" },
-            3: { "property": "serial_number" },
-            4: { "property": "time_created" },
-            5: { "property": "number" }
-        }
+
+     if (name === "file_id") {
+        var fid = new FileId();
+        return fid.properties;
+     }
 
     // ACTIVITY FILE MESSAGES
 
@@ -288,39 +293,10 @@ FitFileManager.prototype.messageFactory = function (globalMessageType) {
         }
     }
 
-    if (name === "record")
-
-        return {
-
-
-
-
-
-            253: { "property": "timestamp", "unit": "s" },
-            0: { "property": "position_lat", "unit": "semicirles" },
-            1: { "property": "position_long", "unit": "semicirles" },
-            2: { "property": "altitude", "scale": 5, "offset": 500, "unit": "m" },
-            3: { "property": "heart_rate", "unit": "bpm" },
-            4: { "property": "cadence", "unit": "rpm" },
-            5: { "property": "distance", "scale": 100, "unit": "m" },
-            6: { "property": "speed", "scale": 1000, "unit": "m/s" },
-            7: { "property": "power", "unit": "watts" },
-            8: { "property": "compressed_speed_distance" }, // TO DO FIX
-            9: { "property": "grade", "scale": 100, "unit": "%" },
-            10: { "property": "resistance" },
-            11: { "property": "time_from_course", "scale": 1000, "unit": "s" },
-            12: { "property": "cycle_length", "scale": 100, "unit": "m" },
-            13: { "property": "temperature", "unit": "C" },
-            17: { "property": "speed_1s", "unit": "m/s" },
-            18: { "property": "cycles", "unit": "cycles" }, //TO DO FIX
-            19: { "property": "total_cycles", "unit": "cycles" },
-            28: { "property": "compressed_accumulated_power", "unit": "watts" }, // TO DO FIX
-            29: { "property": "accumulated_power", "unit": "watts" },
-            30: { "property": "left_right_balance" },
-            31: { "property": "gps_accuracy", "unit": "m" },
-            32: { "property": "vertical_speed", "scale": 1000, "unit": "m/s" },
-            33: { "property": "calories", "unit": "kcal" }
-        }
+    if (name === "record") {
+        var activity = new Activity();
+        return activity.properties;
+    }
 
     if (name === "session")
 
@@ -563,7 +539,7 @@ FitFileManager.prototype.getFITCRC = function (aCRCBuffer, littleEndian) {
 
 }
 
-FitFileManager.prototype.setupFITHeader = function (bufFitHeader, fitFileSystemSize) {
+FitFileManager.prototype.getFITHeader = function (bufFitHeader, fitFileSystemSize) {
 
     var MAXFITHEADERLENGTH = 14; // FIT Protocol rev 1.3 p. 13
 
@@ -571,20 +547,21 @@ FitFileManager.prototype.setupFITHeader = function (bufFitHeader, fitFileSystemS
     // DataView defaults to bigendian MSB --- LSB
     // FIT file header protocol v. 1.3 stored as little endian
 
-    this.headerSize = dviewFitHeader.getUint8(0);
+    var headerInfo = {
+        headerSize : dviewFitHeader.getUint8(0),
+    protocolVersion : dviewFitHeader.getUint8(1),       // FIT SDK v5.1 - fit.h - 4-bit MSB = major - 4-bit LSB = minor
+    profileVersion : dviewFitHeader.getUint16(2, true),  // FIT SDK v5.1: - fit h. -  major*100+minor
+     dataSize : dviewFitHeader.getUint32(4, true)
+    };
 
 
-    this.protocolVersion = dviewFitHeader.getUint8(1);       // FIT SDK v5.1 - fit.h - 4-bit MSB = major - 4-bit LSB = minor
-    this.protocolVersionMajor = this.protocolVersion >> 4;
-    this.protocolVersionMinor = this.protocolVersion & 0x0F;
+    headerInfo.protocolVersionMajor = headerInfo.protocolVersion >> 4;
+    headerInfo.protocolVersionMinor = headerInfo.protocolVersion & 0x0F;
 
-    this.profileVersion = dviewFitHeader.getUint16(2, true); // FIT SDK v5.1: - fit h. -  major*100+minor
-    this.profileVersionMajor = Math.floor(this.profileVersion / 100);
-    this.profileVersionMinor = this.profileVersion - (this.profileVersionMajor * 100);
+    headerInfo.profileVersionMajor = Math.floor(headerInfo.profileVersion / 100);
+    headerInfo.profileVersionMinor = headerInfo.profileVersion - (headerInfo.profileVersionMajor * 100);
 
-    this.dataSize = dviewFitHeader.getUint32(4, true);
-
-    var estimatedFitFileSize = this.headerSize + this.dataSize + 2;  // 2 for last CRC
+    var estimatedFitFileSize = headerInfo.headerSize + headerInfo.dataSize + 2;  // 2 for last CRC
 
     //if (estimatedFitFileSize != fitFileSystemSize)
         
@@ -594,23 +571,23 @@ FitFileManager.prototype.setupFITHeader = function (bufFitHeader, fitFileSystemS
 
     // this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
 
-    this.dataType = "";
+    headerInfo.dataType = "";
     for (var indx = 8; indx < 12; indx++)
-        this.dataType += String.fromCharCode(dviewFitHeader.getUint8(indx));
+        headerInfo.dataType += String.fromCharCode(dviewFitHeader.getUint8(indx));
 
     this.index = 12;
 
     // Optional header info
 
-    if (this.headerSize >= MAXFITHEADERLENGTH) {
-        this.headerCRC = dviewFitHeader.getUint16(12, true);
+    if (headerInfo.headerSize >= MAXFITHEADERLENGTH) {
+        headerInfo.headerCRC = dviewFitHeader.getUint16(12, true);
         this.index += 2;
         //if (this.headerCRC === 0)
         //    console.info("Header CRC was not stored in file");
 
     }
 
-
+    return headerInfo;
 
 }
 
@@ -836,4 +813,52 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
     return record;
 }
 
+function FileCreator() {
 
+    this.properties = {
+        0: { "property": "software_version" },
+        1: { "property": "hardware_version" }
+    }
+}
+
+function FileId() {
+    this.properties = {
+        0: { "property": "type" },
+        1: { "property": "manufacturer" },
+        2: { "property": "product" },
+        3: { "property": "serial_number" },
+        4: { "property": "time_created" },
+        5: { "property": "number" }
+    }
+}
+
+function Activity() {
+    this.properties = {
+
+
+        253: { "property": "timestamp", "unit": "s" },
+        0: { "property": "position_lat", "unit": "semicirles" },
+        1: { "property": "position_long", "unit": "semicirles" },
+        2: { "property": "altitude", "scale": 5, "offset": 500, "unit": "m" },
+        3: { "property": "heart_rate", "unit": "bpm" },
+        4: { "property": "cadence", "unit": "rpm" },
+        5: { "property": "distance", "scale": 100, "unit": "m" },
+        6: { "property": "speed", "scale": 1000, "unit": "m/s" },
+        7: { "property": "power", "unit": "watts" },
+        8: { "property": "compressed_speed_distance" }, // TO DO FIX
+        9: { "property": "grade", "scale": 100, "unit": "%" },
+        10: { "property": "resistance" },
+        11: { "property": "time_from_course", "scale": 1000, "unit": "s" },
+        12: { "property": "cycle_length", "scale": 100, "unit": "m" },
+        13: { "property": "temperature", "unit": "C" },
+        17: { "property": "speed_1s", "unit": "m/s" },
+        18: { "property": "cycles", "unit": "cycles" }, //TO DO FIX
+        19: { "property": "total_cycles", "unit": "cycles" },
+        28: { "property": "compressed_accumulated_power", "unit": "watts" }, // TO DO FIX
+        29: { "property": "accumulated_power", "unit": "watts" },
+        30: { "property": "left_right_balance" },
+        31: { "property": "gps_accuracy", "unit": "m" },
+        32: { "property": "vertical_speed", "scale": 1000, "unit": "m/s" },
+        33: { "property": "calories", "unit": "kcal" }
+    }
+}
