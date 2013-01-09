@@ -8,9 +8,14 @@
 #btnParse {
     /* Parse button is only available when file is selected/dropped */
     visibility : hidden;
-    background-color: li
+    
     
         
+}
+
+#activityMap {
+    width: 100%;
+    height: 300px;
 }
 
 #testChart {

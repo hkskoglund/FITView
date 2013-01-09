@@ -248,6 +248,20 @@ UIController.prototype.showHRZones = function(rawData) {
 
 //UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
+
+UIController.prototype.showMap = function(session)
+{
+    if (session.start_position_lat !== undefined && session.start_position_long !== undefined) {
+        var mapOptions = {
+            center: new google.maps.LatLng(-34.397, 150.644),
+            zoom: 8,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("activityMap"),
+            mapOptions);
+    }
+}
+
 UIController.prototype.onFITManagerMsg = function (e) {
     
     var data = e.data;
@@ -255,6 +269,8 @@ UIController.prototype.onFITManagerMsg = function (e) {
     switch (data.response) {
         case 'rawData':
             var rawData = JSON.parse(data.rawdata);
+            if (rawData.session != undefined)
+                FITUI.showMap(rawData.session);
             FITUI.showCharts(rawData, false, 'line');
             FITUI.showDataRecordsOnMap(data.datamessages);
             break;
@@ -353,9 +369,9 @@ UIController.prototype.onFitFileSelected = function (e) {
 
     };
     
-        FITUI["fitFileManager"] = new Worker("Scripts/fitFileManager.js")
-        FITUI["fitFileManager"].addEventListener('message', FITUI.onFITManagerMsg, false);
-        FITUI["fitFileManager"].addEventListener('error', FITUI.onFITManagerError, false);
+    FITUI["fitFileManager"] = new Worker("Scripts/fitFileManager.js")
+    FITUI["fitFileManager"].addEventListener('message', FITUI.onFITManagerMsg, false);
+    FITUI["fitFileManager"].addEventListener('error', FITUI.onFITManagerError, false);
    
 
     // Need to adjust timestamps in the underlying data from Garmin time/System time
@@ -370,12 +386,18 @@ UIController.prototype.onFitFileSelected = function (e) {
   
     query.push(
        
-        { message: "hrv", fields: "time" },
-        { message: "record", fields: "heart_rate speed altitude cadence" });
+       // { message: "hrv", fields: "time" },
+       { message: "file_id", fields: "type manufacturer product serial_number time_created number" },
+       { message: "file_creator", fields: "software_version hardware_version"},
+      { message: "record", fields: "heart_rate speed altitude cadence" },
+       { message: "session", fields: "start_time start_position_lat start_position_long" }
+       );
 
     var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration": timeCalibration, "query" : query, skipTimestamps: true };
 
     FITUI["fitFileManager"].postMessage(msg);
+
+
 
 }
 
