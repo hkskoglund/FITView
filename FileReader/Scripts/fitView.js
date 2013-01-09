@@ -258,7 +258,7 @@ UIController.prototype.showMap = function(session)
 {
     // Plot markers for start of each session
 
-    if (session.start_position_lat.length === 0)
+    if (session.start_position_lat == undefined)
         return;
 
 

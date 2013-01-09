@@ -1,5 +1,5 @@
 ﻿//use strict
-//importScripts('Messages.js'); Gives network error??
+importScripts('Scripts/Messages.js'); 
 
 var fitFileManager;
 
