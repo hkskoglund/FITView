@@ -1,4 +1,4 @@
-﻿"use strict"
+﻿//use strict
 var fitFileManager;
 
 var workerThreadContext = self;
@@ -102,6 +102,8 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
 
     var data = {};
 
+    data[message] = {};
+
 
     while (this.index < this.headerSize + this.dataSize) {
         var rec = this.getRecord(dvFITBuffer, this.index);
@@ -117,11 +119,13 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
 
             if (msg.message === message) {  // only look for specfic message
 
+                
+
                 var filterArr = filters.split(" "); // Filters format f1 f2 f3 ... fn
                 //console.log("Request for raw data filtering on message : " + msg.message + " filtering on fields: " + filters);
 
-                for (var i = 0; i < filterArr.length; i++) {
-                    var filter = filterArr[i];
+                for (var filterNr = 0; filterNr < filterArr.length; filterNr++) {
+                    var filter = filterArr[filterNr];
 
 
                     if (msg[filter] !== undefined) {
@@ -163,13 +167,13 @@ FitFileManager.prototype.getDataRecords = function (message, filters, applyScale
                                 val = val - offset;
                         }
 
-                        if (data[filter] === undefined)
-                            data[filter] = [];
+                        if (data[message][filter] === undefined)
+                            data[message][filter] = [];
 
                         if (skipTimeStamp)
-                            data[filter].push(val);
+                            data[message][filter].push(val);
                         else
-                            data[filter].push([timestamp, val]);
+                            data[message][filter].push([timestamp, val]);
                     }
                 }
             }

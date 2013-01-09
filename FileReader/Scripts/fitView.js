@@ -1,4 +1,4 @@
-﻿"use strict"
+﻿//use strict
 var FITUI;
 
 window.onload = function () {
@@ -87,11 +87,7 @@ UIController.prototype.showSpeedVsHeartRate = function (rawData) {
 }
 
 UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) {
-    // We get speed in m/s, want it in km/h
-    if (rawData["speed"] !== undefined)
-        rawData["speed"].forEach(function (element, index, array) {
-            array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
-        });
+    
 
     var chartId = "testChart";
     var divChart = document.getElementById(chartId);
@@ -99,30 +95,42 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
     var seriesSetup = [];
 
     // Record data
-    if (rawData["heart_rate"] !== undefined)
-        seriesSetup.push({ name: 'Heart rate', data: rawData["heart_rate"]})
-    if (rawData["altitude"] !== undefined)
-        seriesSetup.push({ name: 'Altitude', data: rawData["altitude"] });
-    if (rawData["cadence"] !== undefined)
-        seriesSetup.push({ name: 'Cadence', data: rawData["cadence"] });
-    if (rawData["speed"] !== undefined)
-        seriesSetup.push({ name: 'Speed', data: rawData["speed"] });
 
-    // Lap data
-    if (rawData["total_ascent"] !== undefined)
-        seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData["total_ascent"] });
-    if (rawData["total_descent"] !== undefined)
-        seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData["total_descent"] });
-    if (rawData["avg_heart_rate"] !== undefined)
-        seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData["avg_heart_rate"] });
-    if (rawData["max_heart_rate"] !== undefined)
-        seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData["max_heart_rate"] });
+    if (rawData.record !== undefined) {
+        // We get speed in m/s, want it in km/h
+        if (rawData.record.speed !== undefined)
+            rawData.record.speed.forEach(function (element, index, array) {
+                array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
+            });
+        if (rawData.record["heart_rate"] !== undefined)
+            seriesSetup.push({ name: 'Heart rate', data: rawData.record["heart_rate"] })
+        if (rawData.record["altitude"] !== undefined)
+            seriesSetup.push({ name: 'Altitude', data: rawData.record["altitude"] });
+        if (rawData.record["cadence"] !== undefined)
+            seriesSetup.push({ name: 'Cadence', data: rawData.record["cadence"] });
+        if (rawData.record["speed"] !== undefined)
+            seriesSetup.push({ name: 'Speed', data: rawData.record["speed"] });
+    }
+
+    if (rawData.lap != undefined) {
+        // Lap data
+        if (rawData.lap["total_ascent"] !== undefined)
+            seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData.lap["total_ascent"] });
+        if (rawData.lap["total_descent"] !== undefined)
+            seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData.lap["total_descent"] });
+        if (rawData.lap["avg_heart_rate"] !== undefined)
+            seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData.lap["avg_heart_rate"] });
+        if (rawData.lap["max_heart_rate"] !== undefined)
+            seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData.lap["max_heart_rate"] });
+    }
 
     // Hrv
-    if (rawData.time !== undefined) {
-        skipTimestamps = true;
-        chartType = 'bar';
-        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.time })
+    if (rawData.hrv != undefined) {
+        if (rawData.hrv.time !== undefined) {
+            skipTimestamps = true;
+            chartType = 'bar';
+            seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
+        }
     }
 
     var xAxisType = 'datetime'
