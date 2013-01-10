@@ -103,7 +103,7 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
                 array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
             });
         if (rawData.record["heart_rate"] !== undefined)
-            seriesSetup.push({ name: 'Heart rate', data: rawData.record["heart_rate"] })
+            seriesSetup.push({ name: 'Heart rate',data: rawData.record["heart_rate"], id : 'heartrateseries'})
         if (rawData.record["altitude"] !== undefined)
             seriesSetup.push({ name: 'Altitude', data: rawData.record["altitude"] });
         if (rawData.record["cadence"] !== undefined)
@@ -133,6 +133,20 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
             seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
         }
     }
+
+    //// Test flags
+
+    //seriesSetup.push({
+    //    type: 'flags',
+    //    onSeries: 'heartrateseries',
+    //    data: [{
+    //        x: 0,
+    //        text: 'First heart rate',
+    //        title: 'I'
+    //    }],
+    //    width: 16,
+    //    showInLegend: false
+    //});
 
     var xAxisType = 'datetime'
     if (skipTimestamps)
@@ -418,8 +432,10 @@ UIController.prototype.onFitFileSelected = function (e) {
        // { message: "hrv", fields: "time" },
        { message: "file_id", fields: "type manufacturer product serial_number time_created number", skiptimestamps: true },
        { message: "file_creator", fields: "software_version hardware_version", skiptimestamps: true},
-      { message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
-       { message: "session", fields: "start_time start_position_lat start_position_long", skiptimestamps : true }
+       { message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
+       { message: "session", fields: "start_time start_position_lat start_position_long", skiptimestamps: true },
+       { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group", skiptimestamps: true }
+      //{ message: "hrv", fields: "time", skiptimestamps : true }
        );
 
     var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration": timeCalibration, "query" : query };

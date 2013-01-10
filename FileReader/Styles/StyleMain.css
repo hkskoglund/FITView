@@ -61,7 +61,7 @@
 
 .FITfile_id {
     padding : 1px;
-    width: 1px;
+    width: 5px;
     float: left;
     background: #ffd800;
 }
@@ -82,21 +82,21 @@
 
 .FITactivity {
     padding: 1px;
-    width: 1px;
+    width: 10px;
     float: left;
     background: #4cff00;
 }
 
 .FITlap {
     padding: 1px;
-    width: 1px;
+    width: 15px;
     float: left;
     background: #0094ff;
 }
 
 .FITsession {
     padding: 1px;
-    width: 1px;
+    width: 20px;
     float: left;
     background: #ff6a00;
 }

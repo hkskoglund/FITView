@@ -1,5 +1,5 @@
 ﻿//use strict
-importScripts('Messages.js');  // Will load "Script/Messages.js probably since worker is loaded from /Scripts directory
+importScripts('FITMessage.js');  // Will load "Script/FITMessage.js probably since worker is loaded from /Scripts directory
 
 var fitFileManager;
 
@@ -265,29 +265,30 @@ FitFileManager.prototype.getGlobalMessageTypeName = function (globalMessageType)
 FitFileManager.prototype.messageFactory = function (globalMessageType) {
 
     var name = this.getGlobalMessageTypeName(globalMessageType);
-    var message = { properties : undefined};
-    
+    var fitMsg = FITMessage();
+    var message = { properties : undefined };
+
     switch (name) {
         case "file_creator":
-            message = new FITFileCreator();
+            message.properties = fitMsg.fileCreator();
             break;
         case "file_id":
-            message = new FITFileId();
+            message.properties = fitMsg.fileId();
             break;
         case "activity":
-            message = new FITActivity();
+            message.properties = fitMsg.activity();
             break;
         case "record":
-            message = new FITRecord();
+            message.properties = fitMsg.record();
             break;
         case "session":
-            message = new FITSession();
+            message.properties = fitMsg.session();
             break;
         case "lap":
-            message = new FITLap();
+            message.properties = fitMsg.lap();
             break;
         case "hrv":
-            message = new FITHrv();
+            message.properties = fitMsg.hrv();
             break;
         
         
