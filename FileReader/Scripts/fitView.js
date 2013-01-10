@@ -432,8 +432,8 @@ UIController.prototype.onFitFileSelected = function (e) {
        // { message: "hrv", fields: "time" },
        { message: "file_id", fields: "type manufacturer product serial_number time_created number", skiptimestamps: true },
        { message: "file_creator", fields: "software_version hardware_version", skiptimestamps: true},
-       { message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
-       { message: "session", fields: "start_time start_position_lat start_position_long", skiptimestamps: true },
+       //{ message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
+       { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps", skiptimestamps: true },
        { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group", skiptimestamps: true }
       //{ message: "hrv", fields: "time", skiptimestamps : true }
        );

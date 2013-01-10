@@ -5,6 +5,21 @@
     background-image : -webkit-linear-gradient( 45deg, lightblue  , blue );
 }
 
+    header.session {
+    
+    }
+
+.sessionList li { 
+display: inline;
+list-style-type: none;
+/*padding-right: 20px;*/
+margin-left: 0;
+padding-left: 0;
+white-space: nowrap;
+}
+
+
+
 #btnParse {
     /* Parse button is only available when file is selected/dropped */
     visibility : hidden;
