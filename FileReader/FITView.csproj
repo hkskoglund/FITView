@@ -58,18 +58,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Index.html" />
-    <Content Include="Scripts\fitFileManager.js" />
-    <Content Include="Scripts\fitView.js" />
+    <Content Include="Scripts\FITReader.js" />
+    <Content Include="Scripts\FITView.js" />
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.8.3.intellisense.js" />
-    <Content Include="Scripts\GarminDateTime.js" />
     <Content Include="Scripts\highcharts.js" />
     <Content Include="Scripts\highcharts.src.js" />
     <Content Include="Scripts\jquery-1.8.3.js" />
     <Content Include="Scripts\jquery-1.8.3.min.js" />
     <Content Include="Scripts\FITMessage.js" />
+    <Content Include="Scripts\FITUtility.js" />
     <Content Include="Stylesheets\StyleMain.css" />
     <Content Include="Web.config" />
   </ItemGroup>

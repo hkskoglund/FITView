@@ -1,6 +1,6 @@
 ﻿//use strict
-importScripts('FITMessage.js');  // Will load "Script/FITMessage.js probably since worker is loaded from /Scripts directory
-
+// Will load "Script/FITMessage.js probably since worker is loaded from /Scripts directory
+importScripts('FITMessage.js', 'FITUtility.js');  
 var fitFileManager;
 
 var workerThreadContext = self;
@@ -22,7 +22,7 @@ self.addEventListener('message', function (e) {
         case 'loadFitFile':
             var options = {
                 fitfile: data.fitfile,
-                timecalibration: data.timeCalibration,
+               
                 query: data.query,
                 skiptimestamps: data.skipTimestamps
             };
@@ -42,12 +42,16 @@ function FitFileManager(options) {
 
     //fitFile, timeCalibration, globalmessage, fields, skipTimestamps
 
+
+    var d = new Date();
+    var timeOffset = d.getTimezoneOffset() * -60000; // in milliseconds.
+
     this.fitFile = options.fitfile; // Reference to FIT file in browser - FILE API
     this.index = 0; // Pointer to next unread byte in FIT file
     this.records = []; // Holds every global message nr. contained in FIT file
     this.fileBuffer = {};
 
-    this.timeCalibration = options.timecalibration; // Offset from Garmin time
+   
     this.query = options.query;
     
 
@@ -81,7 +85,7 @@ function FitFileManager(options) {
     var rawData = {};
 
 
-    var rawDataJSON = this.getDataRecords(this.query, true, true, this.timeCalibration);
+    var rawDataJSON = this.getDataRecords(this.query,timeOffset);
     //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
     //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
     
@@ -92,7 +96,8 @@ function FitFileManager(options) {
 // query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
 // query [{ message : "record", fields: "f1 f1f"}
 //                                                 
-FitFileManager.prototype.getDataRecords = function (query, applyScaleOffset, applyNormalDatetime, timeCalibration, skipTimeStamp) {
+FitFileManager.prototype.getDataRecords = function (query, timeOffset) {
+    var util = FITUtility();
     var aFITBuffer = this.fileBuffer;
     var dvFITBuffer = new DataView(aFITBuffer);
 
@@ -142,37 +147,37 @@ FitFileManager.prototype.getDataRecords = function (query, applyScaleOffset, app
                             var scale = rec[field].scale;
                             var offset = rec[field].offset;
 
-                            // Convert timestamps to local time
+                            //// Convert timestamps to local time
                             var timestamp;
-                            if (rec.timestamp !== undefined)
+                             if (rec.timestamp !== undefined)
                                 timestamp = rec.timestamp.value;
 
-                            var start_time;
-                            if (rec.start_time !== undefined)
-                                start_time = rec.start_time.value;
+                            //var start_time;
+                            //if (rec.start_time !== undefined)
+                            //    start_time = rec.start_time.value;
 
                             // Thought : skip value conversions here -> just pass through raw data and let higher level intepret...
-                            if (applyNormalDatetime) {
-                                if (timestamp !== undefined) {
-                                    //var garminDateTimestamp = new GarminDateTime(timestamp);
-                                    //timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
-                                    timestamp = timestamp * 1000 + timeCalibration;
-                                }
-                                if (start_time !== undefined) {
-                                    //var garminDateTimestamp = new GarminDateTime(start_time);
-                                    //start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
-                                    timestamp = timestamp * 1000 + timeCalibration;
-                                }
-                            }
+                            //if (applyNormalDatetime) {
+                            //    if (timestamp !== undefined) {
+                            //        //var garminDateTimestamp = new GarminDateTime(timestamp);
+                            //        //timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                            //        timestamp = timestamp * 1000;
+                            //    }
+                            //    if (start_time !== undefined) {
+                            //        //var garminDateTimestamp = new GarminDateTime(start_time);
+                            //        //start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
+                            //        timestamp = timestamp * 1000;
+                            //    }
+                            //}
 
                             // If requested do some value conversions
-                            if (applyScaleOffset) {
+                            //if (applyScaleOffset) {
                                 if (scale !== undefined)
                                     val = val / scale;
 
                                 if (offset !== undefined)
                                     val = val - offset;
-                            }
+                            //}
 
                             if (data[rec.message][field] === undefined)
                                 data[rec.message][field] = [];
@@ -180,7 +185,7 @@ FitFileManager.prototype.getDataRecords = function (query, applyScaleOffset, app
                             if (query[queryNr].skiptimestamps)
                                 data[rec.message][field].push(val);
                             else
-                                data[rec.message][field].push([timestamp, val]);
+                                data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
                         }
                     }
                 }

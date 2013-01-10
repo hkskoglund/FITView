@@ -263,15 +263,14 @@ UIController.prototype.showHRZones = function(rawData) {
 //UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
 
 
-function semiCirclesToDegrees(semicircles) {
-    return semicircles * 180 / 2147483648;  // 2 147 483 648 = 2^31
 
-
-}
 UIController.prototype.showMap = function(session)
 {
     // Plot markers for start of each session
-
+     
+    var util = FITUtility();
+    
+   
     if (session.start_position_lat == undefined)
         return;
 
@@ -281,13 +280,14 @@ UIController.prototype.showMap = function(session)
         var lat = session.start_position_lat[index];
         var long = session.start_position_long[index];
 
-        var gt = new GarminDateTime();
-        gt.setTimestamp(session.start_time[index]);
-        var startTime = new Date(gt.convertTimestampToLocalTime());
+        
+        var startTimeDate = new Date();
+        startTimeDate.setTime(util.convertTimestampToUTC(session.timestamp[index]));
+
         
 
         if (lat !== undefined && long !== undefined) {
-            var latlong = new google.maps.LatLng(semiCirclesToDegrees(lat), semiCirclesToDegrees(long));
+            var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
             var mapOptions = {
                 center: latlong,
                 zoom: 14,
@@ -298,7 +298,7 @@ UIController.prototype.showMap = function(session)
 
             var marker = new google.maps.Marker({
                 position: latlong,
-                title: startTime.toLocaleTimeString(),
+                title: startTimeDate.toLocaleTimeString(),
                 map: map
             });
         }
@@ -412,15 +412,12 @@ UIController.prototype.onFitFileSelected = function (e) {
 
     };
     
-    FITUI["fitFileManager"] = new Worker("Scripts/fitFileManager.js")
+    FITUI["fitFileManager"] = new Worker("Scripts/FITReader.js")
     FITUI["fitFileManager"].addEventListener('message', FITUI.onFITManagerMsg, false);
     FITUI["fitFileManager"].addEventListener('error', FITUI.onFITManagerError, false);
    
 
     // Need to adjust timestamps in the underlying data from Garmin time/System time
-
-    var garminDT = new GarminDateTime();
-    var timeCalibration = garminDT.convertTimestampToLocalTime();
 
     // Start our worker now
     //var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed", skipTimestamps : false };
@@ -432,13 +429,13 @@ UIController.prototype.onFitFileSelected = function (e) {
        // { message: "hrv", fields: "time" },
        { message: "file_id", fields: "type manufacturer product serial_number time_created number", skiptimestamps: true },
        { message: "file_creator", fields: "software_version hardware_version", skiptimestamps: true},
-       //{ message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
+       { message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
        { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps", skiptimestamps: true },
        { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group", skiptimestamps: true }
       //{ message: "hrv", fields: "time", skiptimestamps : true }
        );
 
-    var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration": timeCalibration, "query" : query };
+    var msg = { request: 'loadFitFile', "fitfile": files[0],  "query" : query };
 
     FITUI["fitFileManager"].postMessage(msg);
 
@@ -452,46 +449,9 @@ function saveHRZones(e) {
 }
 
 
-// Adapted From http://updates.html5rocks.com/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
-function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
 
-// Ported from C to javascript from FIT SDK 5.10 fit_crc.c
-// Accessed: 28 december 2012
 
-function fitCRC_Get16(crc, byte) {
-    var crc_table =
-     [
-       0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
-       0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400
-     ];
 
-    var tmp;
-
-    // compute checksum of lower four bits of byte
-    tmp = crc_table[crc & 0xF];
-    crc = (crc >> 4) & 0x0FFF;
-    crc = crc ^ tmp ^ crc_table[byte & 0xF];
-
-    // now compute checksum of upper four bits of byte
-    tmp = crc_table[crc & 0xF];
-    crc = (crc >> 4) & 0x0FFF;
-    crc = crc ^ tmp ^ crc_table[(byte >> 4) & 0xF];
-
-    return crc;
-}
-
-function fitCRC(payloadview, start, end, crcSeed) {
-    var crc = crcSeed;
-
-    for (var i = start; i <= end; i++) {
-        crc = fitCRC_Get16(crc, payloadview.getUint8(i));
-    }
-
-    return crc;
-
-}
 
 function getHRZones() {
     // Assume browser supports localStorage
