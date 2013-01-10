@@ -1,8 +1,8 @@
 ﻿function FITUtility() {
     var expose = {};
 
-    //var d = new Date();
-    //var timezoneOffset = d.getTimezoneOffset();
+    var d = new Date();
+    var timezoneOffset = d.getTimezoneOffset()*-60000; // in milliseconds
 
     var MIN = 0x10000000;
     // Date.UTC(1989,11,31) - Date.UTC(1970,0,1)
@@ -57,10 +57,13 @@
     
     expose.convertTimestampToUTC = function (timestamp) {
         
-        return timestamp * 1000 + OFFSET; 
+        return timestamp * 1000 + OFFSET; // millisec.
       
     }
 
+    expose.convertTimestampToLocalTime = function (timestamp) {
+        return timestamp * 1000 + OFFSET + timezoneOffset; // millisec.
+    }
 
 
 

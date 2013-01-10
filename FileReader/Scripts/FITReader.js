@@ -40,12 +40,6 @@ self.addEventListener('message', function (e) {
 
 function FitFileManager(options) {
 
-    //fitFile, timeCalibration, globalmessage, fields, skipTimestamps
-
-
-    var d = new Date();
-    var timeOffset = d.getTimezoneOffset() * -60000; // in milliseconds.
-
     this.fitFile = options.fitfile; // Reference to FIT file in browser - FILE API
     this.index = 0; // Pointer to next unread byte in FIT file
     this.records = []; // Holds every global message nr. contained in FIT file
@@ -81,31 +75,21 @@ function FitFileManager(options) {
 
     self.postMessage({ response: "header", header: this.headerInfo });
 
-    // Start reading records from file
+    
     var rawData = {};
 
-
-    var rawDataJSON = this.getDataRecords(this.query,timeOffset);
-    //FITUI.fitFileManager.parseRecords(rawData, "lap", "total_ascent total_descent avg_heart_rate max_heart_rate", true, true,false);
-    //FITUI.fitFileManager.parseRecords(rawData, "hrv", "hrv", true, true, true);
+    var rawData = this.getDataRecords(this.query);
     
-    // Should be possible to send data without conversion to JSON for newer browsers....
-    self.postMessage({ response: "rawData", rawdata: rawDataJSON, datamessages: this.records  });
+    self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: this.records  });
 }
 
-// query = { [ "record","f1 f2 f3"],["lap","f1 f2 f3"] }
-// query [{ message : "record", fields: "f1 f1f"}
-//                                                 
-FitFileManager.prototype.getDataRecords = function (query, timeOffset) {
+                                                
+FitFileManager.prototype.getDataRecords = function (query) {
     var util = FITUtility();
     var aFITBuffer = this.fileBuffer;
     var dvFITBuffer = new DataView(aFITBuffer);
 
-    var prevIndex = this.index; // If parseRecords are called again it will start just after header again
-
-    // Date object not available for webworker
-   // var d = new Date();
-   // var timezoneOffset = d.getTimezoneOffset();
+    var prevIndex = this.index; // If getDataRecords are called again it will start just after header again
 
     var data = {};
 
@@ -129,7 +113,7 @@ FitFileManager.prototype.getDataRecords = function (query, timeOffset) {
 
 
             for (var queryNr = 0; queryNr < query.length; queryNr++) { // Allow query of more than one message, i.e record session lap
-                if (rec.message === query[queryNr].message) {  // only look for specfic message
+                if (rec.message === query[queryNr].message) {  // only look for specfic messages
 
 
 
@@ -182,10 +166,10 @@ FitFileManager.prototype.getDataRecords = function (query, timeOffset) {
                             if (data[rec.message][field] === undefined)
                                 data[rec.message][field] = [];
 
-                            if (query[queryNr].skiptimestamps)
+                            //if (query[queryNr].skiptimestamps)
                                 data[rec.message][field].push(val);
-                            else
-                                data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
+                            //else
+                            //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
                         }
                     }
                 }
@@ -207,7 +191,9 @@ FitFileManager.prototype.getDataRecords = function (query, timeOffset) {
     // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
 
 
-    return JSON.stringify(data);
+    //return JSON.stringify(data);
+    
+    return data;
 }
 
 FitFileManager.prototype.getGlobalMessageTypeName = function (globalMessageType) {

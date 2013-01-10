@@ -86,7 +86,38 @@ UIController.prototype.showSpeedVsHeartRate = function (rawData) {
 
 }
 
-UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) {
+function combine(values, timestamps) {
+    var util = FITUtility();
+    var combined = [];
+
+    if (values.length !== timestamps.length)
+        console.warn("Length of arrays to comine is not of same size...");
+
+    //if (verifyTimestamps(timestamps)) {
+        values.forEach(function (element, index, array) {
+            combined.push([util.convertTimestampToLocalTime(timestamps[index]), element]);
+        });
+        return combined;
+    //} else
+    //    return values;
+}
+
+function verifyTimestamps(timestamps) {
+    var valid = true;
+    var len = timestamps.length;
+
+    for (var index=0;index<len-1;index++)
+        if (timestamps[index+1] < timestamps[index])
+        {
+            valid = false;
+            break;
+        }
+
+    return valid;
+}
+        
+
+UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType) {
     
 
     var chartId = "testChart";
@@ -100,39 +131,39 @@ UIController.prototype.showCharts = function (rawData,skipTimestamps,chartType) 
         // We get speed in m/s, want it in km/h
         if (rawData.record.speed !== undefined)
             rawData.record.speed.forEach(function (element, index, array) {
-                array[index][1] = element[1] * 3.6;  // Second element is y value, x is first (timestamp)
+                array[index][0] = element[0] * 3.6;  // Second element is y value, x is first (timestamp)
             });
         if (rawData.record["heart_rate"] !== undefined)
-            seriesSetup.push({ name: 'Heart rate',data: rawData.record["heart_rate"], id : 'heartrateseries'})
+            seriesSetup.push({ name: 'Heart rate',data: combine(rawData.record["heart_rate"],rawData.record["timestamp"]), id : 'heartrateseries'})
         if (rawData.record["altitude"] !== undefined)
-            seriesSetup.push({ name: 'Altitude', data: rawData.record["altitude"] });
+            seriesSetup.push({ name: 'Altitude', data: combine(rawData.record["altitude"], rawData.record["timestamp"]) });
         if (rawData.record["cadence"] !== undefined)
-            seriesSetup.push({ name: 'Cadence', data: rawData.record["cadence"] });
+            seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
         if (rawData.record["speed"] !== undefined)
-            seriesSetup.push({ name: 'Speed', data: rawData.record["speed"] });
+            seriesSetup.push({ name: 'Speed', data: combine(rawData.record["speed"],rawData.record["timestamp"]) });
     }
 
-    if (rawData.lap != undefined) {
-        // Lap data
-        if (rawData.lap["total_ascent"] !== undefined)
-            seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData.lap["total_ascent"] });
-        if (rawData.lap["total_descent"] !== undefined)
-            seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData.lap["total_descent"] });
-        if (rawData.lap["avg_heart_rate"] !== undefined)
-            seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData.lap["avg_heart_rate"] });
-        if (rawData.lap["max_heart_rate"] !== undefined)
-            seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData.lap["max_heart_rate"] });
-    }
+    //if (rawData.lap != undefined) {
+    //    // Lap data
+    //    if (rawData.lap["total_ascent"] !== undefined)
+    //        seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData.lap["total_ascent"] });
+    //    if (rawData.lap["total_descent"] !== undefined)
+    //        seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData.lap["total_descent"] });
+    //    if (rawData.lap["avg_heart_rate"] !== undefined)
+    //        seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData.lap["avg_heart_rate"] });
+    //    if (rawData.lap["max_heart_rate"] !== undefined)
+    //        seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData.lap["max_heart_rate"] });
+    //}
 
     // Hrv
-    if (rawData.hrv !== undefined) {
-        if (rawData.hrv.time !== undefined) {
-            skipTimestamps = true;
-            //chartType = 'bar';
-            // Seems like line rendering is much faster than bar...
-            seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
-        }
-    }
+    //if (rawData.hrv !== undefined) {
+    //    if (rawData.hrv.time !== undefined) {
+    //        skipTimestamps = true;
+    //        //chartType = 'bar';
+    //        // Seems like line rendering is much faster than bar...
+    //        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
+    //    }
+    //}
 
     //// Test flags
 
@@ -264,7 +295,7 @@ UIController.prototype.showHRZones = function(rawData) {
 
 
 
-UIController.prototype.showMap = function(session)
+UIController.prototype.showMap = function(map,session)
 {
     // Plot markers for start of each session
      
@@ -288,13 +319,8 @@ UIController.prototype.showMap = function(session)
 
         if (lat !== undefined && long !== undefined) {
             var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
-            var mapOptions = {
-                center: latlong,
-                zoom: 14,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            };
-            var map = new google.maps.Map(document.getElementById("activityMap"),
-                mapOptions);
+            
+            map.setCenter(latlong);
 
             var marker = new google.maps.Marker({
                 position: latlong,
@@ -303,7 +329,42 @@ UIController.prototype.showMap = function(session)
             });
         }
     });
+
+
+
 }
+
+UIController.prototype.initMap = function () {
+    var mapOptions = {
+        center: new google.maps.LatLng(37.772323, -122.214897),
+        zoom: 14,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+
+    return new google.maps.Map(document.getElementById("activityMap"), mapOptions);
+}
+
+
+UIController.prototype.showPolyline = function (map,record) {
+
+    var activityCoordinates = [];
+    var util = FITUtility();
+
+    record.position_lat.forEach( function (element,index,array) {
+        activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element),util.semiCirclesToDegrees(record.position_long[index])));
+    })
+
+    var activityPath = new google.maps.Polyline({
+        path: activityCoordinates,
+        strokeColor: "#FF0000",
+        strokeOpacity: 1.0,
+        strokeWeight: 2
+    });
+
+    activityPath.setMap(map);
+
+}
+
 
 UIController.prototype.onFITManagerMsg = function (e) {
     
@@ -311,9 +372,17 @@ UIController.prototype.onFITManagerMsg = function (e) {
 
     switch (data.response) {
         case 'rawData':
-            var rawData = JSON.parse(data.rawdata);
+            //var rawData = JSON.parse(data.rawdata);
+            var rawData = data.rawdata;
+
+            var map = FITUI.initMap();
+
             if (rawData.session != undefined)
-                FITUI.showMap(rawData.session);
+                FITUI.showMap(map,rawData.session);
+
+            if (rawData.record != undefined)
+                FITUI.showPolyline(map,rawData.record);
+
             FITUI.showCharts(rawData, false, 'line');
             FITUI.showDataRecordsOnMap(data.datamessages);
             break;
@@ -429,10 +498,10 @@ UIController.prototype.onFitFileSelected = function (e) {
        // { message: "hrv", fields: "time" },
        { message: "file_id", fields: "type manufacturer product serial_number time_created number", skiptimestamps: true },
        { message: "file_creator", fields: "software_version hardware_version", skiptimestamps: true},
-       { message: "record", fields: "heart_rate speed altitude cadence", skiptimestamps: false},
+       { message: "record", fields: "timestamp position_lat position_long heart_rate altitude speed", skiptimestamps: false},
        { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps", skiptimestamps: true },
-       { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group", skiptimestamps: true }
-      //{ message: "hrv", fields: "time", skiptimestamps : true }
+      // { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group", skiptimestamps: true }
+      { message: "hrv", fields: "time", skiptimestamps : true }
        );
 
     var msg = { request: 'loadFitFile', "fitfile": files[0],  "query" : query };
