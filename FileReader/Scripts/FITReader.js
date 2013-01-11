@@ -24,7 +24,7 @@ self.addEventListener('message', function (e) {
                 fitfile: data.fitfile,
                
                 query: data.query,
-                skiptimestamps: data.skipTimestamps
+               
             };
 
             fitFileManager = new FitFileManager(options);
@@ -74,8 +74,7 @@ function FitFileManager(options) {
     this.headerInfo = this.getFITHeader(this.fileBuffer, this.fitFile.size);
 
     self.postMessage({ response: "header", header: this.headerInfo });
-
-    
+  
     var rawData = {};
 
     var rawData = this.getDataRecords(this.query);
@@ -93,15 +92,13 @@ FitFileManager.prototype.getDataRecords = function (query) {
 
     var data = {};
 
-    for (var queryNr = 0; queryNr < query.length; queryNr++) {
-        data[query[queryNr].message] = {};
-    }
-
     if (this.headerInfo == undefined)
         return undefined;
 
-    while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
-        var rec = this.getRecord(dvFITBuffer, this.index);
+    // while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
+    var maxReadToByte = this.headerInfo.fitFileSystemSize-2-prevIndex;
+    while (this.index < this.headerInfo.fitFileSystemSize-2-prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
+    var rec = this.getRecord(dvFITBuffer,maxReadToByte);
 
         // If we got an definition message, store it as a property 
         if (rec.header.messageType === 1)
@@ -115,7 +112,8 @@ FitFileManager.prototype.getDataRecords = function (query) {
             for (var queryNr = 0; queryNr < query.length; queryNr++) { // Allow query of more than one message, i.e record session lap
                 if (rec.message === query[queryNr].message) {  // only look for specfic messages
 
-
+                    if (data[query[queryNr].message] === undefined)
+                        data[query[queryNr].message] = {};
 
                     var fields = query[queryNr].fields.split(" "); // Filters format f1 f2 f3 ... fn
                     //console.log("Request for raw data filtering on message : " + msg.message + " filtering on fields: " + filters);
@@ -403,14 +401,9 @@ FitFileManager.prototype.getFITHeader = function (bufFitHeader, fitFileSystemSiz
     headerInfo.profileVersionMajor = Math.floor(headerInfo.profileVersion / 100);
     headerInfo.profileVersionMinor = headerInfo.profileVersion - (headerInfo.profileVersionMajor * 100);
 
-    var estimatedFitFileSize = headerInfo.headerSize + headerInfo.dataSize + 2;  // 2 for last CRC
-
-    //if (estimatedFitFileSize != fitFileSystemSize)
-        
-    //      console.warn("Header reports FIT file size " + estimatedFitFileSize.toString() + " bytes, but file system reports: " + fitFileSystemSize.toString() + " bytes.");
-
-    // 4 januar : Testet med IE 10, støtter ikke slice metoden...
-
+    headerInfo.estimatedFitFileSize = headerInfo.headerSize + headerInfo.dataSize + 2;  // 2 for last CRC
+    headerInfo.fitFileSystemSize = fitFileSystemSize;
+   
     // this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
 
     headerInfo.dataType = "";
@@ -435,7 +428,7 @@ FitFileManager.prototype.getFITHeader = function (bufFitHeader, fitFileSystemSiz
 
 
 
-FitFileManager.prototype.getRecord = function (dviewFit) {
+FitFileManager.prototype.getRecord = function (dviewFit,maxReadToByte) {
 
     // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
 
@@ -551,7 +544,7 @@ FitFileManager.prototype.getRecord = function (dviewFit) {
 
             // VARIABLE content - field definitions as properties
 
-            for (var fieldNr = 0; fieldNr < recContent.fieldNumbers; fieldNr++)
+            for (var fieldNr = 0; fieldNr < recContent.fieldNumbers && this.index < maxReadToByte-3 ; fieldNr++)
                 recContent["field" + fieldNr.toString()] = {
                     "fieldDefinitionNumber": dviewFit.getUint8(this.index++),
                     "size": dviewFit.getUint8(this.index++),

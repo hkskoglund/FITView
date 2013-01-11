@@ -39,6 +39,11 @@ white-space: nowrap;
     /*height : 300px;*/
 }
 
+#hrvChart {
+    width: 100%;
+}
+
+
 #speedVsHRChart {
    width : 49%;
     /*height: 200px;*/

@@ -119,7 +119,7 @@ function verifyTimestamps(timestamps) {
 }
         
 
-UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType) {
+UIController.prototype.showChartsDatetime = function (rawData) {
     
 
     var chartId = "testChart";
@@ -157,15 +157,7 @@ UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType
     //        seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData.lap["max_heart_rate"] });
     //}
 
-    // Hrv
-    //if (rawData.hrv !== undefined) {
-    //    if (rawData.hrv.time !== undefined) {
-    //        skipTimestamps = true;
-    //        //chartType = 'bar';
-    //        // Seems like line rendering is much faster than bar...
-    //        seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
-    //    }
-    //}
+    
 
     //// Test flags
 
@@ -182,13 +174,10 @@ UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType
     //});
 
     var xAxisType = 'datetime'
-    if (skipTimestamps)
-        xAxisType = '';
-
-
+    
     var chartOptions = {
         renderTo: chartId,
-        type: chartType,
+        type: 'line',
         // Allow zooming
         zoomType: 'xy'
     }
@@ -225,6 +214,62 @@ UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType
     //FITUI.showSpeedVsHeartRate(rawData);
 
     //FITUI.showHRZones(rawData);
+
+
+}
+
+UIController.prototype.showChartHrv = function (rawData)
+{
+    var chartId = "hrvChart";
+    var divChart = document.getElementById(chartId);
+    //divChart.style.visibility = "visible";
+    var seriesSetup = [];
+
+    if (rawData.hrv !== undefined) {
+        if (rawData.hrv.time !== undefined) {
+
+            //chartType = 'bar';
+            // Seems like line rendering is much faster than bar...
+            //divChart.style.visibility = 'visible';
+            divChart.style.display = 'block';
+            seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
+        }
+        
+    } 
+    else {
+        divChart.style.display = 'none';
+        return;
+    }
+
+    var xAxisType = ''
+
+    var chartOptions = {
+        renderTo: chartId,
+        type: 'line',
+        // Allow zooming
+        zoomType: 'xy'
+    }
+
+
+    chart1 = new Highcharts.Chart({
+        chart: chartOptions,
+        title: {
+            text: ''
+        },
+        xAxis: {
+            //categories : ['Apples', 'Bananas', 'Oranges']
+            type: xAxisType
+            //reversed : true
+        },
+        yAxis: {
+            title: {
+                text: ''
+            }
+        },
+
+        series: seriesSetup
+
+    });
 
 
 }
@@ -394,6 +439,7 @@ UIController.prototype.onFITManagerMsg = function (e) {
     var data = e.data;
 
     switch (data.response) {
+
         case 'rawData':
             //var rawData = JSON.parse(data.rawdata);
             var rawData = data.rawdata;
@@ -407,12 +453,18 @@ UIController.prototype.onFITManagerMsg = function (e) {
             if (rawData.record != undefined)
                 FITUI.showPolyline(this.map,rawData.record);
 
-            FITUI.showCharts(rawData, false, 'line');
+            FITUI.showChartsDatetime(rawData);
+            FITUI.showChartHrv(rawData);
+
             FITUI.showDataRecordsOnMap(data.datamessages);
             break;
+
         case 'header':
             var headerInfo = data.header;
+            if (headerInfo.estimatedFitFileSize != headerInfo.fitFileSystemSize)
+                console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFileSystemSize.toString() + " bytes.");
             break;
+
         default:
             console.error("Received unrecognized message from worker " + data.response); break;
     }
@@ -449,6 +501,7 @@ UIController.prototype.setup = function () {
     //FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
 
     FITUI.divMsgMap = document.getElementById('divMsgMap');
+    
    
 
 }
@@ -525,12 +578,12 @@ UIController.prototype.onFitFileSelected = function (e) {
     query.push(
        
        // { message: "hrv", fields: "time" },
-       { message: "file_id", fields: "type manufacturer product serial_number time_created number", skiptimestamps: true },
-       { message: "file_creator", fields: "software_version hardware_version", skiptimestamps: true},
-       { message: "record", fields: "timestamp position_lat position_long heart_rate altitude speed", skiptimestamps: false},
-       { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps", skiptimestamps: true },
-      // { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group", skiptimestamps: true }
-      { message: "hrv", fields: "time", skiptimestamps : true }
+       { message: "file_id", fields: "type manufacturer product serial_number time_created number" },
+       { message: "file_creator", fields: "software_version hardware_version"},
+       { message: "record", fields: "timestamp position_lat position_long heart_rate altitude speed"},
+       { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps" },
+       { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group" },
+      { message: "hrv", fields: "time"}
        );
 
     var msg = { request: 'loadFitFile', "fitfile": files[0],  "query" : query };
