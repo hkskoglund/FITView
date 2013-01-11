@@ -444,19 +444,31 @@ UIController.prototype.onFITManagerMsg = function (e) {
             //var rawData = JSON.parse(data.rawdata);
             var rawData = data.rawdata;
 
+
+            // Initialize map
             if (this.map === undefined)
                 this.map = FITUI.initMap();
 
-            if (rawData.session != undefined)
-                FITUI.showMap(this.map,rawData.session);
 
-            if (rawData.record != undefined)
-                FITUI.showPolyline(this.map,rawData.record);
+            switch (rawData.file_id.type[0]) {
+                case 4:
 
-            FITUI.showChartsDatetime(rawData);
-            FITUI.showChartHrv(rawData);
+                    if (rawData.session != undefined)
+                        FITUI.showMap(this.map, rawData.session);
 
-            FITUI.showDataRecordsOnMap(data.datamessages);
+                    if (rawData.record != undefined)
+                        FITUI.showPolyline(this.map, rawData.record);
+
+                    FITUI.showChartsDatetime(rawData);
+                    FITUI.showChartHrv(rawData);
+
+                    FITUI.showDataRecordsOnMap(data.datamessages);
+                    break;
+                default:
+                    console.warn("Unsupported fit file type ", rawData.file_id.type[0]);
+                    break;
+
+            }
             break;
 
         case 'header':
@@ -466,7 +478,8 @@ UIController.prototype.onFITManagerMsg = function (e) {
             break;
 
         default:
-            console.error("Received unrecognized message from worker " + data.response); break;
+            console.error("Received unrecognized message from worker " + data.response);
+            break;
     }
 
     
