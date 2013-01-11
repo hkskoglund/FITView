@@ -8,6 +8,8 @@ window.onload = function () {
 
 function UIController() {
 
+    this.map = undefined;
+
 }
 
 UIController.prototype.showSpeedVsHeartRate = function (rawData) {
@@ -91,7 +93,7 @@ function combine(values, timestamps) {
     var combined = [];
 
     if (values.length !== timestamps.length)
-        console.warn("Length of arrays to comine is not of same size...");
+        console.warn("Length of arrays to comine is not of same size; values length ="+values.length.toString()+ " timestamp length : "+timestamps.length.toString());
 
     //if (verifyTimestamps(timestamps)) {
         values.forEach(function (element, index, array) {
@@ -128,19 +130,19 @@ UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType
     // Record data
 
     if (rawData.record !== undefined) {
-        // We get speed in m/s, want it in km/h
-        if (rawData.record.speed !== undefined)
-            rawData.record.speed.forEach(function (element, index, array) {
-                array[index][0] = element[0] * 3.6;  // Second element is y value, x is first (timestamp)
-            });
+
         if (rawData.record["heart_rate"] !== undefined)
-            seriesSetup.push({ name: 'Heart rate',data: combine(rawData.record["heart_rate"],rawData.record["timestamp"]), id : 'heartrateseries'})
+            seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record["heart_rate"], rawData.record["timestamp"]), id: 'heartrateseries' })
         if (rawData.record["altitude"] !== undefined)
             seriesSetup.push({ name: 'Altitude', data: combine(rawData.record["altitude"], rawData.record["timestamp"]) });
         if (rawData.record["cadence"] !== undefined)
             seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
-        if (rawData.record["speed"] !== undefined)
-            seriesSetup.push({ name: 'Speed', data: combine(rawData.record["speed"],rawData.record["timestamp"]) });
+        if (rawData.record["speed"] !== undefined) {
+            rawData.record.speed.forEach(function (element, index, array) {
+                array[index][0] = element[0] * 3.6;
+            });
+            seriesSetup.push({ name: 'Speed', data: combine(rawData.record["speed"], rawData.record["timestamp"]) });
+        }
     }
 
     //if (rawData.lap != undefined) {
@@ -195,7 +197,7 @@ UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType
     //    chartOptions.inverted = true;
 
     var d = new Date();
-    console.log("Starting highchart now" + d );
+    console.log("Starting highchart now " + d );
     chart1 = new Highcharts.Chart({
         chart: chartOptions,
         title: {
@@ -217,7 +219,7 @@ UIController.prototype.showCharts = function (rawData, skipTimestamps, chartType
     });
 
     d = new Date();
-    console.log("Finishing highcharts now" + d);
+    console.log("Finishing highcharts now " + d);
 
 
     //FITUI.showSpeedVsHeartRate(rawData);
@@ -335,21 +337,42 @@ UIController.prototype.showMap = function(map,session)
 }
 
 UIController.prototype.initMap = function () {
+
+    var myCurrentPosition, newMap =undefined;
+
     var mapOptions = {
-        center: new google.maps.LatLng(37.772323, -122.214897),
-        zoom: 14,
+
+        zoom: 13,
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
 
-    return new google.maps.Map(document.getElementById("activityMap"), mapOptions);
+    newMap = new google.maps.Map(document.getElementById("activityMap"), mapOptions);
+
+    var prevCenter = newMap.getCenter();
+
+    if (navigator.geolocation) {
+        // Async call with anonymous callback..
+        navigator.geolocation.getCurrentPosition(function (position) {
+            myCurrentPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+            currentCenter = newMap.getCenter();
+           
+            if (currentCenter === undefined)
+                newMap.setCenter(myCurrentPosition);
+        });
+    }
+
+    return newMap;
 }
 
 
 UIController.prototype.showPolyline = function (map,record) {
 
+    if (record.position_lat === undefined || record.position_lat === null)
+        return;
+
     var activityCoordinates = [];
     var util = FITUtility();
-
+   
     record.position_lat.forEach( function (element,index,array) {
         activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element),util.semiCirclesToDegrees(record.position_long[index])));
     })
@@ -375,13 +398,14 @@ UIController.prototype.onFITManagerMsg = function (e) {
             //var rawData = JSON.parse(data.rawdata);
             var rawData = data.rawdata;
 
-            var map = FITUI.initMap();
+            if (this.map === undefined)
+                this.map = FITUI.initMap();
 
             if (rawData.session != undefined)
-                FITUI.showMap(map,rawData.session);
+                FITUI.showMap(this.map,rawData.session);
 
             if (rawData.record != undefined)
-                FITUI.showPolyline(map,rawData.record);
+                FITUI.showPolyline(this.map,rawData.record);
 
             FITUI.showCharts(rawData, false, 'line');
             FITUI.showDataRecordsOnMap(data.datamessages);
@@ -431,6 +455,11 @@ UIController.prototype.setup = function () {
 
 UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
     
+    // Clear div
+    while (divMsgMap.firstChild) {
+        divMsgMap.removeChild(divMsgMap.firstChild);
+    }
+
    dataRecords.forEach(function (element,index,array) { // forEach takes a callback
     
         var styleClass = "";
