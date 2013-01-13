@@ -1,7 +1,14 @@
-﻿function FITMessage() {
+﻿// Try creating "namespace" FIT in parent function execution context
 
-    var message = {};
+var FIT = {};
 
+
+if (FIT.ActivityFile === undefined)
+    FIT.Activity = {};
+
+FIT.ActivityFile = function () {
+
+   
     // Private
     var fileIdProperties = {
         0: { "property": "type" },
@@ -201,36 +208,37 @@
         6: { "property": "event_group" }
     };
 
-    // Build object literal with function to expose
-    message.fileId = function () {
-        return fileIdProperties;
-    };
-
-    message.fileCreator = function () {
-        return fileCreatorProperties;
-    };
-
-    message.record = function () {
-        return recordProperties;
-    };
-
-    message.session = function () {
-        return sessionProperties;
-    };
-
-    message.lap = function () {
-        return lapProperties;
-    };
-
-    message.hrv = function () {
-        return hrvProperties;
-    };
-
-    message.activity = function () {
-        return activityProperties;
-    };
-
 
     // Expose functions
-    return message;
+    return {
+
+        fileId : function () {
+            return fileIdProperties;
+        },
+
+        fileCreator : function () {
+            return fileCreatorProperties;
+        },
+
+        record : function () {
+            return recordProperties;
+        },
+
+        session : function () {
+            return sessionProperties;
+        },
+
+        lap : function () {
+            return lapProperties;
+        },
+
+        hrv : function () {
+            return hrvProperties;
+        },
+
+        activity : function () {
+            return activityProperties;
+        }}
+        
+        
 }

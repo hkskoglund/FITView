@@ -58,7 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Index.html" />
-    <Content Include="Scripts\FITReader.js" />
+    <Content Include="Scripts\FITImport.js" />
     <Content Include="Scripts\FITView.js" />
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
@@ -68,7 +68,7 @@
     <Content Include="Scripts\highcharts.src.js" />
     <Content Include="Scripts\jquery-1.8.3.js" />
     <Content Include="Scripts\jquery-1.8.3.min.js" />
-    <Content Include="Scripts\FITMessage.js" />
+    <Content Include="Scripts\FITActivityFile.js" />
     <Content Include="Scripts\FITUtility.js" />
     <Content Include="Stylesheets\StyleMain.css" />
     <Content Include="Web.config" />
