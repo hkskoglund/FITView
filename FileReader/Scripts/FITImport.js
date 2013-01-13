@@ -69,26 +69,33 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         const DB_NAME = 'fit-import';
         const DB_VERSION = 1; // Use a long long for this value (don't use a float)
-        const DB_STORE_NAME = 'records';
+        const DB_OBJECTSTORE_NAME = 'records';
  
         var db;
 
         function openDb() {
             //console.log("openDb ...");
+            self.postMessage({response : "openDb()"});
             var req = indexedDB.open(DB_NAME, DB_VERSION);
             req.onsuccess = function (evt) {
                 // Better use "this" than "req" to get the result to avoid problems with
                 // garbage collection.
                 // db = req.result;
                 db = this.result;
-               // console.log("openDb DONE");
+                // console.log("openDb DONE");
+
+                if (rawData !== undefined)
+                  addRawdata(rawData);
             };
             req.onerror = function (evt) {
                 //console.error("openDb:", evt.target.errorCode);
+                self.postMessage("openDB error "+evt.target.errorCode.toString());
+
             };
 
             req.onupgradeneeded = function (evt) {
                 //console.log("openDb.onupgradeneeded");
+                self.postMessage({response : "onupgradeneeded"},evt);
                 var store = evt.currentTarget.result.createObjectStore(
                   DB_STORE_NAME, { keyPath: 'id', autoIncrement: true });
 
@@ -97,6 +104,53 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //store.createIndex('year', 'year', { unique: false });
             };
         }
+
+
+        /**
+    * @param {string} store_name
+    * @param {string} mode either "readonly" or "readwrite"
+    */
+        function getObjectStore(store_name, mode) {
+            var tx = db.transaction(store_name, mode);
+            return tx.objectStore(store_name);
+        }
+
+
+
+        function addRawdata(rawdata) {
+            //console.log("addPublication arguments:", arguments);
+            //var obj = { biblioid: biblioid, title: title, year: year };
+            var obj = {name : "Henning"};
+
+            //if (typeof blob != 'undefined')
+            //    obj.blob = blob;
+ 
+
+           
+
+            var store = getObjectStore(DB_OBJECTSTORE_NAME, 'readwrite');
+            var req;
+            try {
+                req = store.add(obj);
+            } catch (e) {
+                //if (e.name == 'DataCloneError')
+                //    displayActionFailure("This engine doesn't know how to clone a Blob, " +
+                //                         "use Firefox");
+                throw e;
+            }
+            req.onsuccess = function (evt) {
+                self.postMessage({ response: "importedFITToIndexedDB"});
+                //console.log("Insertion in DB successful");
+                //displayActionSuccess();
+                //displayPubList(store);
+            };
+            req.onerror = function() {
+                //console.error("addPublication error", this.error);
+                //displayActionFailure(this.error);
+            };
+        }
+
+
 
         openDb();
 
@@ -113,7 +167,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         self.postMessage({ response: "header", header: this.headerInfo });
 
-        var rawData = {};
+        
 
         var rawData = this.getDataRecords(this.query);
 
@@ -121,10 +175,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         // Populate indexeddb with imported data
 
-        //populateDB(rawdata);
+
         // self.postMessage({ response: "importedFITToIndexedDB",...});
 
-        self.close();
+       // self.close();
     }
 
 
