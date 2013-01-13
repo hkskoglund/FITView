@@ -92,6 +92,11 @@ function combine(values, timestamps) {
     var util = FITUtility();
     var combined = [];
 
+    if (timestamps == undefined) {
+        console.warn("Found no timestamps to combine with data measurements.");
+        return values;
+    }
+
     if (values.length !== timestamps.length)
         console.warn("Length of arrays to comine is not of same size; values length ="+values.length.toString()+ " timestamp length : "+timestamps.length.toString());
 
@@ -180,6 +185,7 @@ UIController.prototype.showChartsDatetime = function (rawData) {
         type: 'line',
         // Allow zooming
         zoomType: 'xy'
+    
     }
 
     //if (rawData.hrv !== undefined)
@@ -205,6 +211,9 @@ UIController.prototype.showChartsDatetime = function (rawData) {
 
         series: seriesSetup
 
+    },function(){
+        //callback action
+        alert('Something is happening now....');
     });
 
     d = new Date();
