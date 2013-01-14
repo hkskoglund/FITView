@@ -113,8 +113,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 self.postMessage({ response: "Success openDb(), version " + DB_VERSION.toString() });
                 db = this.result;
                 // console.log("openDb DONE");
-               // getRawdata();
-
+                // getRawdata();
+               
+                getRawdata();
             };
 
             req.onerror = function (evt) {
@@ -127,8 +128,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //console.log("openDb.onupgradeneeded");
                 self.postMessage({ response: "Starting onupgradeneeded, version " + DB_VERSION.toString() });
                // self.postMessage({response : "onupgradeneeded", data : evt});
-                //var store = evt.currentTarget.result.createObjectStore(
-                //  DB_OBJECTSTORE_NAME, { keyPath: 'timestamp' });
+                var store = evt.currentTarget.result.createObjectStore(
+                  DB_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement:false });
 
                 //getRawdata();
                 
@@ -138,7 +139,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //store.createIndex('year', 'year', { unique: false });
             };
 
-            getRawdata();
+           
         }
 
 
@@ -153,7 +154,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
 
 
-        function addRawdata(rawdata) {
+        function addRawdata(store,obj) {
             //console.log("addPublication arguments:", arguments);
             //var obj = { biblioid: biblioid, title: title, year: year };
             //var obj = {name : "Henning"};
@@ -162,9 +163,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             //    obj.blob = blob;
  
 
-           
+            //var overrideObj = { timestamp: new Date().getTime() };
 
-            var store = getObjectStore(DB_OBJECTSTORE_NAME, 'readwrite');
+            
             var req;
             try {
                 req = store.add(obj);
@@ -180,7 +181,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //displayActionSuccess();
                 //displayPubList(store);
             };
-            req.onerror = function() {
+            req.onerror = function (evt) {
+                self.postMessage({ response: "Could not write object to store"});
                 //console.error("addPublication error", this.error);
                 //displayActionFailure(this.error);
             };
@@ -276,7 +278,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             self.postMessage({ response: "header", header: headerInfo });
 
-            getRawdata();
+            deleteDb();
+
+            openDb();
+
+
+            
            
         }
 
@@ -295,6 +302,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             // while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
             var maxReadToByte = headerInfo.fitFileSystemSize - 2 - prevIndex;
+
+            var store = getObjectStore(DB_OBJECTSTORE_NAME, 'readwrite');
+
+
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
 
@@ -310,6 +321,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         data[rec.message] = {};
 
                     if (rec.message === "hrv" || rec.message === "file_id" || rec.message === "record") {
+
+                        if (rec.message === "record")
+                         addRawdata(store, rec);
+                       
                         for (var prop in rec) {
 
                             //if (rec[prop] !== undefined) {
