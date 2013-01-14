@@ -25,16 +25,15 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             case 'importFitFile':
                 var options = {
-                    fitfile: data.fitfile,
-
-                    query: data.query,
+                    fitfile: data.fitfile
+                    //,query: data.query,
 
                 };
 
                 fitFileManager = new FitFileImport(options);
                 break;
             default:
-                self.postMessage('Unrecongized command' + data.request);
+                self.postMessage('Unrecognized command' + data.request);
                 break;
         }
 
@@ -50,7 +49,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         this.fileBuffer = {};
 
 
-        this.query = options.query;
+        //this.query = options.query;
 
 
         this.event_type = {
@@ -67,9 +66,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         };
 
 
-        const DB_NAME = 'fit-import';
-        const DB_VERSION = 1; // Use a long long for this value (don't use a float)
-        const DB_OBJECTSTORE_NAME = 'records';
+        var DB_NAME = 'fit-import';
+        var DB_VERSION = 1; // Use a long long for this value (don't use a float)
+        var DB_OBJECTSTORE_NAME = 'records';
  
         var db;
 
@@ -95,7 +94,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             req.onupgradeneeded = function (evt) {
                 //console.log("openDb.onupgradeneeded");
-                self.postMessage({response : "onupgradeneeded"},evt);
+                self.postMessage({response : "onupgradeneeded", data : evt});
                 var store = evt.currentTarget.result.createObjectStore(
                   DB_STORE_NAME, { keyPath: 'id', autoIncrement: true });
 
@@ -152,7 +151,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
 
 
-        openDb();
+       // openDb();
 
         this.fitFileReader = new FileReaderSync(); // For web worker
 
@@ -169,7 +168,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         
 
-        var rawData = this.getDataRecords(this.query);
+        var rawData = this.getDataRecords(
+            //this.query
+            );
 
         self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: this.records });
 
@@ -182,10 +183,13 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
     }
 
 
-    FitFileImport.prototype.getDataRecords = function (query) {
+    FitFileImport.prototype.getDataRecords = function (
+        //query
+        ) {
         var util = FITUtility();
         var aFITBuffer = this.fileBuffer;
         var dvFITBuffer = new DataView(aFITBuffer);
+        
 
         var prevIndex = this.index; // If getDataRecords are called again it will start just after header again
 
@@ -207,70 +211,34 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                 this.records.push(rec.globalMessageType); // Store all data globalmessage types contained in FIT file
 
+                if (data[rec.message] === undefined)
+                  data[rec.message] = {};
 
-                for (var queryNr = 0; queryNr < query.length; queryNr++) { // Allow query of more than one message, i.e record session lap
-                    if (rec.message === query[queryNr].message) {  // only look for specfic messages
+                if (rec.message === "hrv" || rec.message=== "file_id" || rec.message === "record")
+                         for (var prop in rec) {
 
-                        if (data[query[queryNr].message] === undefined)
-                            data[query[queryNr].message] = {};
-
-                        var fields = query[queryNr].fields.split(" "); // Filters format f1 f2 f3 ... fn
-                        //console.log("Request for raw data filtering on message : " + msg.message + " filtering on fields: " + filters);
-
-                        for (var fieldNr = 0; fieldNr < fields.length; fieldNr++) {
-                            var field = fields[fieldNr];
-
-
-                            if (rec[field] !== undefined) {
+                            //if (rec[prop] !== undefined) {
                                 //  console.log("Found field " + filter+" i = "+i.toString());
 
-                                var val = rec[field].value;
-                                var scale = rec[field].scale;
-                                var offset = rec[field].offset;
+                             //if (rec[prop].value !== undefined) {
 
-                                //// Convert timestamps to local time
-                                var timestamp;
-                                if (rec.timestamp !== undefined)
-                                    timestamp = rec.timestamp.value;
+                            var val = rec[prop].value;
+                            
 
-                                //var start_time;
-                                //if (rec.start_time !== undefined)
-                                //    start_time = rec.start_time.value;
+                                if (val !== undefined) {
 
-                                // Thought : skip value conversions here -> just pass through raw data and let higher level intepret...
-                                //if (applyNormalDatetime) {
-                                //    if (timestamp !== undefined) {
-                                //        //var garminDateTimestamp = new GarminDateTime(timestamp);
-                                //        //timestamp = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
-                                //        timestamp = timestamp * 1000;
-                                //    }
-                                //    if (start_time !== undefined) {
-                                //        //var garminDateTimestamp = new GarminDateTime(start_time);
-                                //        //start_time = garminDateTimestamp.convertTimestampToLocalTime(timezoneOffset);
-                                //        timestamp = timestamp * 1000;
-                                //    }
-                                //}
+                                    if (data[(rec.message)][prop] === undefined)
+                                        data[(rec.message)][prop] = [];
 
-                                // If requested do some value conversions
-                                //if (applyScaleOffset) {
-                                if (scale !== undefined)
-                                    val = val / scale;
+                                    //if (query[queryNr].skiptimestamps)
 
-                                if (offset !== undefined)
-                                    val = val - offset;
-                                //}
-
-                                if (data[rec.message][field] === undefined)
-                                    data[rec.message][field] = [];
-
-                                //if (query[queryNr].skiptimestamps)
-                                data[rec.message][field].push(val);
+                                    data[rec.message][prop].push(val);
+                                }
                                 //else
                                 //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
-                            }
+                           // }
                         }
-                    }
-                }
+               
             }
         }
 
@@ -414,8 +382,6 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 var field = "field" + i.toString();
                 var fieldDefNr = rec.content[field].fieldDefinitionNumber;
 
-
-
                 // Skip fields with invalid value
                 if (!rec.content[field].invalid) {
 
@@ -427,6 +393,15 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         var unit = globalMsg[fieldDefNr].unit;
                         var scale = globalMsg[fieldDefNr].scale;
                         var offset = globalMsg[fieldDefNr].offset;
+                        var val = rec.content[field].value;
+
+                        if (scale !== undefined)
+                            val = val / scale;
+
+                        if (offset !== undefined)
+                            val = val - offset;
+
+                        rec.content[field].value = val;
 
                         // Duplication of code, maybe later do some value conversions here for specific messages
                         switch (globalMsgType) {

@@ -213,10 +213,14 @@
 
             series: seriesSetup
 
-        }, function () {
-            //callback action
-            alert('Something is happening now....');
-        });
+        }
+
+
+            //, function () {
+            ////callback action
+            //alert('Something is happening now....');
+    //    }
+    );
 
         d = new Date();
         console.log("Finishing highcharts now " + d);
@@ -595,20 +599,23 @@
         // Start our worker now
         //var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed", skipTimestamps : false };
 
-        var query = [];
+        //var query = [];
 
-        query.push(
+        //query.push(
 
-           // { message: "hrv", fields: "time" },
-           { message: "file_id", fields: "type manufacturer product serial_number time_created number" },
-           { message: "file_creator", fields: "software_version hardware_version" },
-           { message: "record", fields: "timestamp position_lat position_long heart_rate altitude speed" },
-           { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps" },
-           { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group" },
-          { message: "hrv", fields: "time" }
-           );
+        //   // { message: "hrv", fields: "time" },
+        //   { message: "file_id", fields: "type manufacturer product serial_number time_created number" },
+        //   { message: "file_creator", fields: "software_version hardware_version" },
+        //   { message: "record", fields: "timestamp position_lat position_long heart_rate altitude speed" },
+        //   { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps" },
+        //   { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group" },
+        //  { message: "hrv", fields: "time" }
+        //   );
 
-        var msg = { request: 'importFitFile', "fitfile": files[0], "query": query };
+        var msg = {
+            request: 'importFitFile', "fitfile": files[0]
+            //, "query": query
+        };
 
         FITUI["fitFileManager"].postMessage(msg);
 
