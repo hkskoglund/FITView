@@ -80,8 +80,13 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         var DB_NAME = 'fit-import';
         var DB_VERSION = 1; // Use a long long for this value (don't use a float)
-        var DB_OBJECTSTORE_NAME = 'records';
- 
+
+        // Object store
+        var RECORD_OBJECTSTORE_NAME = 'records';
+        var LAP_OBJECTSTORE_NAME = 'lap';
+        var SESSION_OBJECTSTORE_NAME = 'session';
+        var HRV_OBJECTSTORE_NAME = 'hrv';
+
         var db;
         var req;
 
@@ -143,13 +148,15 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //console.log("openDb.onupgradeneeded");
                 self.postMessage({ response: "info", data : "Starting onupgradeneeded, version " + DB_VERSION.toString() });
                // self.postMessage({response : "onupgradeneeded", data : evt});
-                var store = evt.currentTarget.result.createObjectStore(
-                  DB_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement:false });
+                var recordStore = evt.currentTarget.result.createObjectStore(RECORD_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement:false });
+                var lapStore = evt.currentTarget.result.createObjectStore(LAP_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                var sessionStore = evt.currentTarget.result.createObjectStore(SESSION_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                var hrvStore = evt.currentTarget.result.createObjectStore(HRV_OBJECTSTORE_NAME, { keyPath: 'start_time', autoIncrement: false });
 
                 //getRawdata();
                 
 
-                store.createIndex('timestamp', 'timestamp.value', { unique: true });
+                //store.createIndex('timestamp', 'timestamp.value', { unique: true });
                 //store.createIndex('title', 'title', { unique: false });
                 //store.createIndex('year', 'year', { unique: false });
             };
@@ -169,7 +176,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
 
 
-        function addRawdata(store,obj) {
+        function addRawdata(store,datarec) {
             //console.log("addPublication arguments:", arguments);
             //var obj = { biblioid: biblioid, title: title, year: year };
             //var obj = {name : "Henning"};
@@ -180,22 +187,33 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             //var overrideObj = { timestamp: new Date().getTime() };
 
-            
             var req;
             try {
-                req = store.add(obj);
+                req = store.add(datarec);
             } catch (e) {
                 //if (e.name == 'DataCloneError')
                 //    displayActionFailure("This engine doesn't know how to clone a Blob, " +
                 //                         "use Firefox");
                 throw e;
             }
+
+            //req.transaction.oncompleted = function (evt) {
+            //    self.postMessage({ response: "info", data: "Transaction completed" });
+            //}
+
             req.onsuccess = function (evt) {
                 //self.postMessage({ response: "importedFITToIndexedDB"});
+              //  self.postMessage({ response: "info", data: "Add transaction completed" });
                 //console.log("Insertion in DB successful");
                 //displayActionSuccess();
                 //displayPubList(store);
+                //var trans = req.transaction;
+                //trans.oncompleted = function (evt) {
+                //    s
+                //}
+                
             };
+
             req.onerror = function (evt) {
                 self.postMessage({ response: "error", data : "Could not write object to store"});
                 //console.error("addPublication error", this.error);
@@ -299,8 +317,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             // while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
             var maxReadToByte = headerInfo.fitFileSystemSize - 2 - prevIndex;
 
-            var store = getObjectStore(DB_OBJECTSTORE_NAME, 'readwrite');
-
+            var recordStore = getObjectStore(RECORD_OBJECTSTORE_NAME, 'readwrite');
+            var lapStore = getObjectStore(LAP_OBJECTSTORE_NAME, 'readwrite');
+            var sessionStore = getObjectStore(SESSION_OBJECTSTORE_NAME, 'readwrite');
+            var hrvStore = getObjectStore(HRV_OBJECTSTORE_NAME, 'readwrite');
 
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
@@ -316,11 +336,17 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     if (rawdata[datarec.message] === undefined)
                         rawdata[datarec.message] = {};
 
-                    if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session") {
+                    if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
 
-                        if (datarec.message === "record")  // Push records to objectstore (Indexed DB)
-                         addRawdata(store, datarec);
+                        if (datarec.message === "record")
+                            addRawdata(recordStore, datarec);
                        
+                        if (datarec.message === "lap")
+                            addRawdata(lapStore, datarec);
+
+                        if (datarec.message === "session")
+                            addRawdata(sessionStore, datarec);
+
                         for (var prop in datarec) {
 
                             //if (rec[prop] !== undefined) {
@@ -347,6 +373,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                 }
             }
+
+            // Persist hrv data if any
+
+            if (rawdata.hrv !== undefined)
+                // Pick start time of first session as key
+                addRawdata(hrvStore, { start_time: rawdata.session.start_time[0], time: rawdata.hrv.time });
 
             index = prevIndex;
 
@@ -421,10 +453,20 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 // file_id
                                 case FIT_MSG_FILEID: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
                                     // session
-                                case FIT_MSG_SESSION: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_SESSION:
+                                    if (prop === "timestamp" || prop === "start_time")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; 
+                                    break;
 
                                     // lap
-                                case FIT_MSG_LAP: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_LAP:
+                                    if (prop === "timestamp" || prop === "start_time")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                                    break;
                                     // record
                                 case FIT_MSG_RECORD:
                                    

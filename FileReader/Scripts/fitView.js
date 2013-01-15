@@ -101,7 +101,7 @@
         }
 
         if (values.length !== timestamps.length)
-            console.warn("Length of arrays to comine is not of same size; values length =" + values.length.toString() + " timestamp length : " + timestamps.length.toString());
+            console.warn("Length of arrays to comine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString());
 
         
         //if (verifyTimestamps(timestamps)) {
