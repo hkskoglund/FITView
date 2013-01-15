@@ -85,17 +85,22 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var db;
         var req;
 
+
+        var FIT_DEFINITION_MSG = 1;
+        var FIT_DATA_MSG = 0;
+
+
         function deleteDb() {
-            self.postMessage({ response: "deleteDb()" });
+            self.postMessage({ response: "info", data : "deleteDb()" });
             
             var req = indexedDB.deleteDatabase(DB_NAME);
             
             req.onsuccess = function (evt) {
-                self.postMessage({ response: "Success deleting database" });
+                self.postMessage({ response: "info", data : "Success deleting database" });
             };
 
             req.onerror = function (evt) {
-                self.postMessage({ response: "Error deleting database" });
+                self.postMessage({ response: "error", data : "Error deleting database" });
             };
                 
         }
@@ -103,14 +108,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         function openDb() {
             //console.log("openDb ...");
-            self.postMessage({ response: "Starting openDb(), version " + DB_VERSION.toString() });
+            self.postMessage({ response: "info", data : "Starting openDb(), version " + DB_VERSION.toString() });
             req = indexedDB.open(DB_NAME, DB_VERSION);
 
             req.onsuccess = function (evt) {
                 // Better use "this" than "req" to get the result to avoid problems with
                 // garbage collection.
                 // db = req.result;
-                self.postMessage({ response: "Success openDb(), version " + DB_VERSION.toString() });
+                self.postMessage({ response: "info", data : "Success openDb(), version " + DB_VERSION.toString() });
                 db = this.result;
                 // console.log("openDb DONE");
                 // getRawdata();
@@ -120,13 +125,13 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             req.onerror = function (evt) {
                 //console.error("openDb:", evt.target.errorCode);
-                self.postMessage({ response: "openDB error " + evt.target.errorCode.toString() });
+                self.postMessage({ response: "error", data : "openDB error " + evt.target.errorCode.toString() });
 
             };
 
             req.onupgradeneeded = function (evt) {
                 //console.log("openDb.onupgradeneeded");
-                self.postMessage({ response: "Starting onupgradeneeded, version " + DB_VERSION.toString() });
+                self.postMessage({ response: "info", data : "Starting onupgradeneeded, version " + DB_VERSION.toString() });
                // self.postMessage({response : "onupgradeneeded", data : evt});
                 var store = evt.currentTarget.result.createObjectStore(
                   DB_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement:false });
@@ -176,13 +181,13 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 throw e;
             }
             req.onsuccess = function (evt) {
-                self.postMessage({ response: "importedFITToIndexedDB"});
+                //self.postMessage({ response: "importedFITToIndexedDB"});
                 //console.log("Insertion in DB successful");
                 //displayActionSuccess();
                 //displayPubList(store);
             };
             req.onerror = function (evt) {
-                self.postMessage({ response: "Could not write object to store"});
+                self.postMessage({ response: "error", data : "Could not write object to store"});
                 //console.error("addPublication error", this.error);
                 //displayActionFailure(this.error);
             };
@@ -243,26 +248,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             };
         }
 
-        //deleteDb();
-
-        //openDb();
-
         
-
-
-
-       // getRawdata();
-
-        
-
-        // Populate indexeddb with imported data
-
-
-        // self.postMessage({ response: "importedFITToIndexedDB",...});
-
-        // self.close();
-       // self.postMessage({ response: "FITImport last seen here....." });
-
 
         exposeFunc.readFitFile = function () {
             fitFileReader = new FileReaderSync(); // For web worker
@@ -271,14 +257,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
               fileBuffer = fitFileReader.readAsArrayBuffer(fitFile);
 
             } catch (e) {
-                //console.error('Could not initialize fit file reader with bytes, message:', e.message);
+                self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes"  });
             }
 
             headerInfo = getFITHeader(fileBuffer,fitFile.size);
 
             self.postMessage({ response: "header", header: headerInfo });
 
-            deleteDb();
+            deleteDb(); // For now delete DB ...
 
             openDb();
 
@@ -295,7 +281,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var prevIndex = index; // If getDataRecords are called again it will start just after header again
 
-            var data = {};
+            var rawdata = {}; // Facilitate easy integration with highchart series
 
             if (headerInfo == undefined)
                 return undefined;
@@ -309,40 +295,39 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
 
-                // If we got an definition message, store it as a property 
-                if (rec.header.messageType === 1)
-                    localMsgDef["localMsgDefinition" + rec.header.localMessageType.toString()] = rec;
+                
+                if (rec.header.messageType === FIT_DEFINITION_MSG)
+                    localMsgDef["localMsgDefinition" + rec.header.localMessageType.toString()] = rec; // If we got an definition message, store it as a property 
                 else {
-                    var rec = getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
+                    var datarec = getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
 
                     records.push(rec.globalMessageType); // Store all data globalmessage types contained in FIT file
 
-                    if (data[rec.message] === undefined)
-                        data[rec.message] = {};
+                    if (rawdata[datarec.message] === undefined)
+                        rawdata[datarec.message] = {};
 
-                    if (rec.message === "hrv" || rec.message === "file_id" || rec.message === "record") {
+                    if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session") {
 
-                        if (rec.message === "record")
-                         addRawdata(store, rec);
+                        if (datarec.message === "record")  // Push records to objectstore (Indexed DB)
+                         addRawdata(store, datarec);
                        
-                        for (var prop in rec) {
+                        for (var prop in datarec) {
 
                             //if (rec[prop] !== undefined) {
                             //  console.log("Found field " + filter+" i = "+i.toString());
 
                             //if (rec[prop].value !== undefined) {
 
-                            var val = rec[prop].value;
+                            var val = datarec[prop].value;
 
 
                             if (val !== undefined) {
 
-                                if (data[(rec.message)][prop] === undefined)
-                                    data[(rec.message)][prop] = [];
+                                if (rawdata[(datarec.message)][prop] === undefined)
+                                    rawdata[(datarec.message)][prop] = [];
 
-                                //if (query[queryNr].skiptimestamps)
 
-                                data[rec.message][prop].push(val);
+                                rawdata[datarec.message][prop].push(val);
                             }
                             //else
                             //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
@@ -369,7 +354,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             //return JSON.stringify(data);
 
-            return data;
+            return rawdata;
         }
 
 
@@ -387,9 +372,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var logger = "";
 
             var globalMsg = messageFactory(globalMsgType);
+
+
             if (globalMsg === undefined)
-                var t = 1;
-                //console.error("Global Message Type " + globalMsgType.toString() + " number unsupported");
+                
+                self.postMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
+               
             else {
 
                 for (var i = 0; i < fieldNrs; i++) {
@@ -400,7 +388,6 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     if (!rec.content[field].invalid) {
 
                         if (globalMsg[fieldDefNr] !== undefined && globalMsg[fieldDefNr] !== null)
-                            // console.error("Cannot read property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString());
                         {
                             var prop = globalMsg[fieldDefNr].property;
 
@@ -441,7 +428,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 default: //console.error("Not implemented message for global type nr., check messageFactory " + globalMsgType.toString());
                                     break;
                             }
-                        }
+                        } else
+                            
+                            self.postMessage({ response: "error", data: "Cannot read property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() });
+
+                          
                     }
 
 
@@ -679,8 +670,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var recContent = {};
             var record = {};
 
-            var DEFINITION_MSG = 1;
-            var DATA_MSG = 0;
+           
 
             // HEADER
 
@@ -716,7 +706,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             // VARIALE CONTENT, EITHER DATA OR DEFINITION
 
             switch (recHeader.messageType) {
-                case DEFINITION_MSG:
+                case FIT_DEFINITION_MSG:
                     //  5 byte FIXED content header
                     recContent.reserved = dviewFit.getUint8(index++); // Reserved = 0
                     recContent.littleEndian = dviewFit.getUint8(index++) === 0; // 0 = little endian 1 = big endian (javascript dataview defaults to big endian!)
@@ -737,7 +727,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                     break;
 
-                case DATA_MSG: // Lookup in msg. definition in properties -> read fields
+                case FIT_DATA_MSG: // Lookup in msg. definition in properties -> read fields
                     var localMsgDefinition = localMsgDef["localMsgDefinition" + recHeader.localMessageType.toString()];
                     if (localMsgDefinition === undefined || localMsgDefinition === null)
                         throw new Error("Could not find message definition of data message");

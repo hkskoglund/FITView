@@ -449,13 +449,13 @@
 
     UIController.prototype.onFITManagerMsg = function (e) {
 
-        var data = e.data;
+        var eventdata = e.data;
 
-        switch (data.response) {
+        switch (eventdata.response) {
 
             case 'rawData':
                 //var rawData = JSON.parse(data.rawdata);
-                var rawData = data.rawdata;
+                var rawData = eventdata.rawdata;
 
 
                 // Initialize map
@@ -464,7 +464,7 @@
 
 
                 switch (rawData.file_id.type[0]) {
-                    case 4:
+                    case 4: // Activity file
 
                         if (rawData.session != undefined)
                             FITUI.showMap(this.map, rawData.session);
@@ -475,7 +475,7 @@
                         FITUI.showChartsDatetime(rawData);
                         FITUI.showChartHrv(rawData);
 
-                        FITUI.showDataRecordsOnMap(data.datamessages);
+                        FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;
                     default:
                         console.warn("Unsupported fit file type ", rawData.file_id.type[0]);
@@ -485,13 +485,21 @@
                 break;
 
             case 'header':
-                var headerInfo = data.header;
+                var headerInfo = eventdata.header;
                 if (headerInfo.estimatedFitFileSize != headerInfo.fitFileSystemSize)
                     console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFileSystemSize.toString() + " bytes.");
                 break;
 
+            case 'error':
+                console.error(eventdata.data);
+                break;
+
+            case 'info':
+                console.info(eventdata.data);
+                break;
+
             default:
-                console.error("Received unrecognized message from worker " + data.response);
+                console.error("Received unrecognized message from worker " + eventdata.response);
                 break;
         }
 
