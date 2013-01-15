@@ -85,9 +85,19 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var db;
         var req;
 
-
+        // FIT file contains definition rec. followed by data rec.
         var FIT_DEFINITION_MSG = 1;
         var FIT_DATA_MSG = 0;
+
+        // Global msg types.
+
+        var FIT_MSG_FILEID = 0;
+        var FIT_MSG_SESSION = 18;
+        var FIT_MSG_LAP = 19;
+        var FIT_MSG_RECORD = 20;
+        var FIT_MSG_ACTIVITY = 34;
+        var FIT_MSG_FILE_CREATOR = 49;
+        var FIT_MSG_HRV = 78;
 
 
         function deleteDb() {
@@ -139,7 +149,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //getRawdata();
                 
 
-                //store.createIndex('timestamp', 'timestamp', { unique: true });
+                store.createIndex('timestamp', 'timestamp.value', { unique: true });
                 //store.createIndex('title', 'title', { unique: false });
                 //store.createIndex('year', 'year', { unique: false });
             };
@@ -373,6 +383,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var globalMsg = messageFactory(globalMsgType);
 
+            var util = FITUtility();
+
 
             if (globalMsg === undefined)
                 
@@ -407,25 +419,32 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             // Duplication of code, maybe later do some value conversions here for specific messages
                             switch (globalMsgType) {
                                 // file_id
-                                case 0: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_FILEID: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
                                     // session
-                                case 18: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_SESSION: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
                                     // lap
-                                case 19: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_LAP: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
                                     // record
-                                case 20: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_RECORD:
+                                   
+                                    if (prop === "timestamp")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                                    break;
 
                                     // activity
-                                case 34: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_ACTIVITY: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
                                     //  file_creator
-                                case 49: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_FILE_CREATOR: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
                                     // hrv
-                                case 78: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_HRV: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                                default: //console.error("Not implemented message for global type nr., check messageFactory " + globalMsgType.toString());
+                                default:
+                                    self.postMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
                                     break;
                             }
                         } else
@@ -444,8 +463,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 }
 
                 // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
-                //if (globalMsgType != 20 && globalMsgType != 78)
-                //  console.log("Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger);
+                if (globalMsgType != FIT_MSG_RECORD && globalMsgType != FIT_MSG_HRV)
+                    self.postMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
             }
 
             return msg;

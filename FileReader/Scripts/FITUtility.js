@@ -53,6 +53,11 @@
     }
 
 
+    expose.addTimezoneOffsetToUTC = function (utc_timestamp)
+    {
+        return utc_timestamp + timezoneOffset;
+    }
+
    
     
     expose.convertTimestampToUTC = function (timestamp) {

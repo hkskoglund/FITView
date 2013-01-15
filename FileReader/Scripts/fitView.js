@@ -103,9 +103,11 @@
         if (values.length !== timestamps.length)
             console.warn("Length of arrays to comine is not of same size; values length =" + values.length.toString() + " timestamp length : " + timestamps.length.toString());
 
+        
         //if (verifyTimestamps(timestamps)) {
         values.forEach(function (element, index, array) {
-            combined.push([util.convertTimestampToLocalTime(timestamps[index]), element]);
+            // combined.push([util.convertTimestampToLocalTime(timestamps[index]), element]);
+            combined.push([util.addTimezoneOffsetToUTC(timestamps[index]), element]);
         });
         return combined;
         //} else
