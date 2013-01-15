@@ -8,7 +8,7 @@ if (FIT.ActivityFile === undefined)
 
 FIT.ActivityFile = function () {
 
-   
+
     // Private
     var fileIdProperties = {
         0: { "property": "type" },
@@ -197,6 +197,14 @@ FIT.ActivityFile = function () {
         0: { "property": "time", "unit": "s", "scale": 1000 } // Array of N elements.... [N] according to SDK profile.xls
     };
 
+    var eventProperties = {
+        253: { "property": "timestamp", "unit": "s" },
+        0: { "property": "event" },
+        1: { "property": "event_type" },
+        2: { "property": "data16" },
+        3: { "property": "data" }  };
+
+
     var activityProperties = {
         253: { "property": "timestamp", "unit": "s" },
         0: { "property": "total_timer_time", "scale": 1000, "unit": "s" }, // Excluding pauses
@@ -212,33 +220,38 @@ FIT.ActivityFile = function () {
     // Expose functions
     return {
 
-        fileId : function () {
+        fileId: function () {
             return fileIdProperties;
         },
 
-        fileCreator : function () {
+        fileCreator: function () {
             return fileCreatorProperties;
         },
 
-        record : function () {
+        record: function () {
             return recordProperties;
         },
 
-        session : function () {
+        session: function () {
             return sessionProperties;
         },
 
-        lap : function () {
+        lap: function () {
             return lapProperties;
         },
 
-        hrv : function () {
+        hrv: function () {
             return hrvProperties;
         },
 
-        activity : function () {
+        activity: function () {
             return activityProperties;
-        }}
-        
-        
-}
+        },
+
+        event: function () {
+            return eventProperties;
+        }
+    };
+
+
+};
