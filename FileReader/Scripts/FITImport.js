@@ -596,6 +596,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         } else {
                             self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() +" unknown field generated to store data" });
 
+
                             // Allow for auto generating unknown properties than have data (not defined in FITActivitiyFile.js)
                             if (fieldDefNr === 253) { // Seems like field def. 253 is always a timestamp
                                 prop = "timestamp";
@@ -1836,14 +1837,20 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                              var bType = localMsgDefinition.content[currentField].baseType;
                                              var bSize = localMsgDefinition.content[currentField].size;
 
-                                             if (fitBaseTypesInvalidValues[bType] === undefined || fitBaseTypesInvalidValues[bType] === null)
-                                                 console.log("Base type not found for base type" + bType);
-                                             //  logging += fitBaseTypesInvalidValues[bType].name+" ";
-                                             // Just skip reading values at the moment...
-                                             // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
 
                                              recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
 
+                                             if (fitBaseTypesInvalidValues[bType] === undefined || fitBaseTypesInvalidValues[bType] === null) {
+                                                 self.postMessage({ response: "error", data: "Base type not found for base type" + bType.toString() });
+                                                 // Advance to next field value position
+                                                 index = index + bSize;
+                                                 continue;
+                                             }
+                                                 //  logging += fitBaseTypesInvalidValues[bType].name+" ";
+                                             // Just skip reading values at the moment...
+                                             // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+
+                                         
                                              switch (bType) {
                                                  case 0x00:
                                                  case 0x0A:
