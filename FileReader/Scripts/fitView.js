@@ -289,16 +289,26 @@
         chart1 = new Highcharts.Chart({
             chart: chartOptions,
             title: {
-                text: ''
+                text: 'Heart rate variability'
             },
             xAxis: {
                 //categories : ['Apples', 'Bananas', 'Oranges']
-                type: xAxisType
+                type: xAxisType,
                 //reversed : true
+                events: {
+                    setExtremes: function (event) {
+                        console.log("setExtremes xAxis ", event.min, event.max);
+                    }
+                }
             },
             yAxis: {
                 title: {
                     text: ''
+                },
+                events: {
+                    setExtremes: function (event) {
+                        console.log("setExtremes yAxis ", event.min, event.max);
+                    }
                 }
             },
 
@@ -545,9 +555,18 @@
 
         // this = #document by default since we are called from $(document).ready event handler
 
-        //if (!Modernizr.webworkers) {
-        //    alert("This application will not work due to lack of webworker functionality");
-        //}
+        if (!Modernizr.webworkers) {
+            alert("This application will not work due to lack of webworker functionality");
+        }
+
+        
+        if (!Modernizr.indexeddb) {
+            alert("This application will not work due to lack of indexedDB");
+        }
+
+        if (!Modernizr.geolocation) {
+            alert("This application will not work due to lack of geolocation");
+        }
 
         FITUI.outConsole = document.getElementById('outConsole');
 

@@ -63,13 +63,14 @@
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
-    <None Include="Scripts\jquery-1.8.3.intellisense.js" />
     <Content Include="Scripts\highcharts.js" />
     <Content Include="Scripts\highcharts.src.js" />
-    <Content Include="Scripts\jquery-1.8.3.js" />
-    <Content Include="Scripts\jquery-1.8.3.min.js" />
     <Content Include="Scripts\FITActivityFile.js" />
     <Content Include="Scripts\FITUtility.js" />
+    <None Include="Scripts\jquery-1.9.0.intellisense.js" />
+    <Content Include="Scripts\jquery-1.9.0.js" />
+    <Content Include="Scripts\jquery-1.9.0.min.js" />
+    <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Stylesheets\StyleMain.css" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -77,6 +78,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\jquery-1.9.0.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
