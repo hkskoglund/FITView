@@ -85,6 +85,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var LAP_OBJECTSTORE_NAME = 'lap';
         var SESSION_OBJECTSTORE_NAME = 'session';
         var HRV_OBJECTSTORE_NAME = 'hrv';
+        var ACTIVITY_OBJECTSTORE_NAME = 'activity';
 
         var db;
         var req;
@@ -175,6 +176,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 var lapStore = evt.currentTarget.result.createObjectStore(LAP_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                 var sessionStore = evt.currentTarget.result.createObjectStore(SESSION_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                 var hrvStore = evt.currentTarget.result.createObjectStore(HRV_OBJECTSTORE_NAME, { keyPath: 'start_time', autoIncrement: false });
+                var activityStore = evt.currentTarget.result.createObjectStore(ACTIVITY_OBJECTSTORE_NAME, { keyPath: 'timestamp', autoIncrement: false });
 
                 //getRawdata();
                 
@@ -352,7 +354,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var recordStore = getObjectStore(RECORD_OBJECTSTORE_NAME,"readwrite");
             var lapStore = getObjectStore(LAP_OBJECTSTORE_NAME,"readwrite");
             var sessionStore = getObjectStore(SESSION_OBJECTSTORE_NAME,"readwrite");
-            var hrvStore = getObjectStore(HRV_OBJECTSTORE_NAME,"readwrite");
+            var hrvStore = getObjectStore(HRV_OBJECTSTORE_NAME, "readwrite");
+            var activityStore = getObjectStore(ACTIVITY_OBJECTSTORE_NAME, "readwrite");
 
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
@@ -373,14 +376,25 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                         //if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
 
-                        if (datarec.message === "record")
-                            addRawdata(recordStore, datarec);
+                        // Presist data to indexedDB
+                        switch (datarec.message)
+                        {
+                            case "record":
+                                addRawdata(recordStore, datarec);
+                                break;
+                            case "lap":
+                                addRawdata(lapStore, datarec);
+                                break;
+                            case "session":
+                                addRawdata(sessionStore, datarec);
+                                break;
+                            case "activity":
+                                addRawdata(activityStore, datarec);
+                                break;
+                        }
 
-                        if (datarec.message === "lap")
-                            addRawdata(lapStore, datarec);
-
-                        if (datarec.message === "session")
-                            addRawdata(sessionStore, datarec);
+                        
+                        // Build rawdata structure tailored for integration with highchart
 
                         for (var prop in datarec) {
 
