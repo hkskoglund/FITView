@@ -610,7 +610,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     }
 
 
-                    logger += fieldDefNr.toString() + ":" + rec.content[field].value.toString();
+                    
+                    logger += fieldDefNr.toString();
+
+                    if (rec.content[field].value !== undefined)
+                        logger += ":" + rec.content[field].value.toString();
+                    else
+                        logger += " : undefined";
+
                     if (rec.content[field].invalid)
                         logger += "(I) ";
                     else
@@ -931,13 +938,22 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         var bType = localMsgDefinition.content[currentField].baseType;
                         var bSize = localMsgDefinition.content[currentField].size;
 
-                        if (fitBaseTypesInvalidValues[bType] !== undefined || fitBaseTypesInvalidValues[bType] !== null)
-                           {
+                        
+                           
                         //  logging += fitBaseTypesInvalidValues[bType].name+" ";
                         // Just skip reading values at the moment...
                         // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
 
                         recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
+
+
+                        if (fitBaseTypesInvalidValues[bType] === undefined || fitBaseTypesInvalidValues[bType] === null) {
+                            self.postMessage({ response: "error", data: "Base type not found for base type " + bType + " reported size is " + bSize + " bytes." });
+                            recContent[currentField].invalid = true;
+                            // Advance to next field value position
+                            index = index + bSize;
+                            continue;
+                        }
 
                         switch (bType) {
                             case 0x00:
@@ -990,16 +1006,15 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                         // Did we get an invalid value?
 
-                        if (fitBaseTypeInvalidValues[bType] !== undefined) {
+                       
                             if (fitBaseTypesInvalidValues[bType].invalidValue === recContent[currentField].value)
                                 recContent[currentField].invalid = true;
                             else
                                 recContent[currentField].invalid = false;
-                        }
+                        
 
-                        } else
-                            self.postMessage({ response: "error", data: "Base type not found for base type " + bType + " reported size is " + bSize + "bytes." });
-
+                        
+                            
                         // Advance to next field value position
                         index = index + bSize;
                     }
@@ -1684,6 +1699,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                  // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
 
                                  var fitBaseTypesInvalidValues = {};
+
                                  fitBaseTypesInvalidValues[0x00] = {
                                      "name": "enum",
                                      "invalidValue": 0xFF
@@ -1855,7 +1871,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                                          str += String.fromCharCode(char);
                                                      }
 
-                                                     console.log("Got a null terminated string " + str);
+                                                     //console.log("Got a null terminated string " + str);
                                                      recContent[currentField] = { "value": str };
                                                      break;
 
