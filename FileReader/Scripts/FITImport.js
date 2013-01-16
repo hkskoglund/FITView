@@ -565,10 +565,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
                             }
                         } else {
-                            self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() +"auto field generated to store data" });
+                            self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() +"unknown field generated to store data" });
 
-                            // Allow for auto generating unknown properties (not defined in FITActivitiyFile.js)
-                            prop = "auto" + fieldDefNr.toString();
+                            // Allow for auto generating unknown properties than have data (not defined in FITActivitiyFile.js)
+                            prop = "unknown" + fieldDefNr.toString();
                             msg[prop] = { "value": rec.content[field].value};
 
                         }
@@ -688,6 +688,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     break;
                 default:
                     self.postMessage({ response: "error", data: "No message properties found, global message name : " + name });
+                    message.properties = {};
                     break;
                     
             }
@@ -1384,11 +1385,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                  var util = FITUtility();
 
 
-                                 if (globalMsg === undefined)
+                                 //if (globalMsg === undefined)
 
-                                     self.postMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
+                                 //    self.postMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
 
-                                 else {
+                                 //else {
 
                                      for (var i = 0; i < fieldNrs; i++) {
                                          var field = "field" + i.toString();
@@ -1479,7 +1480,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                      // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
                                      if (globalMsgType != FIT_MSG_RECORD && globalMsgType != FIT_MSG_HRV)
                                          self.postMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
-                                 }
+                                 //}
 
                                  return msg;
 
