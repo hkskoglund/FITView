@@ -109,7 +109,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         function deleteDb() {
             // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
-            // Problem : can only delete indexeddb one time in the same tab
+            
             self.postMessage({ response: "info", data: "deleteDb()" });
             
             var req;

@@ -143,7 +143,9 @@
             if (rawData.record["heart_rate"] !== undefined)
                 seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record["heart_rate"], rawData.record["timestamp"]), id: 'heartrateseries' })
             if (rawData.record["altitude"] !== undefined)
-                seriesSetup.push({ name: 'Altitude', data: combine(rawData.record["altitude"], rawData.record["timestamp"]) });
+                seriesSetup.push({ name: 'Altitude', data: 
+                    combine(rawData.record["altitude"], rawData.record["timestamp"]),
+                });
             if (rawData.record["cadence"] !== undefined)
                 seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
             if (rawData.record["speed"] !== undefined) {
@@ -189,9 +191,8 @@
             type: 'line',
             // Allow zooming
             zoomType: 'xy'
-
-        }
-
+            
+    }
         //if (rawData.hrv !== undefined)
         //    chartOptions.inverted = true;
 
@@ -199,6 +200,7 @@
         console.log("Starting highchart now " + d);
         chart1 = new Highcharts.Chart({
             chart: chartOptions,
+            
             title: {
                 text: ''
             },
@@ -213,7 +215,24 @@
                 }
             },
 
+            plotOptions: {
+                series: {
+                    allowPointSelect: true,
+                    point: {
+
+                        events: {
+                            select: function () {
+                                console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y)
+                            }
+                        }
+
+                    }
+                }
+            },
+
             series: seriesSetup
+
+
 
         }
 
