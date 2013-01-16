@@ -370,71 +370,74 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 else {
                     var datarec = getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
 
-                    records.push(datarec.globalMessageType); // Store all data globalmessage types contained in FIT file
+                    if (datarec !== undefined) {
 
-                    if (datarec.message !== undefined) {
-                        if (rawdata[datarec.message] === undefined)
-                            rawdata[datarec.message] = {};
+                        records.push(datarec.globalMessageType); // Store all data globalmessage types contained in FIT file
 
-                        //if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
+                        if (datarec.message !== undefined) {
+                            if (rawdata[datarec.message] === undefined)
+                                rawdata[datarec.message] = {};
 
-                        // Presist data to indexedDB
-                        switch (datarec.message) {
-                            case "record":
-                                if (datarec.timestamp !== undefined)
-                                    addRawdata(recordStore, datarec);
-                                else
-                                    self.postMessage({ response: "error", data: "No timestamp found in message record (probably swim data - speed/distance), skipped saving" });
+                            //if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
 
-                                break;
-                            case "lap":
-                                addRawdata(lapStore, datarec);
-                                break;
-                            case "session":
-                                addRawdata(sessionStore, datarec);
-                                break;
-                            case "activity":
-                                addRawdata(activityStore, datarec);
-                                break;
-                            case "length":
-                                //self.postMessage({ response: "info", data: "Found length message" });
-                                //addRawdata(lengthStore, datarec);
-                                if (datarec.start_time !== undefined)
-                                    addRawdata(lengthStore, datarec);
-                                else
-                                    self.postMessage({ response: "error", data: "No start_time found in message : length, cannot save to indexedDB" });
+                            // Presist data to indexedDB
+                            switch (datarec.message) {
+                                case "record":
+                                    if (datarec.timestamp !== undefined)
+                                        addRawdata(recordStore, datarec);
+                                    else
+                                        self.postMessage({ response: "error", data: "No timestamp found in message record (probably swim data - speed/distance), skipped saving" });
 
-                                break;
-                        }
+                                    break;
+                                case "lap":
+                                    addRawdata(lapStore, datarec);
+                                    break;
+                                case "session":
+                                    addRawdata(sessionStore, datarec);
+                                    break;
+                                case "activity":
+                                    addRawdata(activityStore, datarec);
+                                    break;
+                                case "length":
+                                    //self.postMessage({ response: "info", data: "Found length message" });
+                                    //addRawdata(lengthStore, datarec);
+                                    if (datarec.start_time !== undefined)
+                                        addRawdata(lengthStore, datarec);
+                                    else
+                                        self.postMessage({ response: "error", data: "No start_time found in message : length, cannot save to indexedDB" });
 
-
-                        // Build rawdata structure tailored for integration with highchart
-
-                        for (var prop in datarec) {
-
-                            //if (rec[prop] !== undefined) {
-                            //  console.log("Found field " + filter+" i = "+i.toString());
-
-                            //if (rec[prop].value !== undefined) {
-
-                            var val = datarec[prop].value;
-
-
-                            if (val !== undefined) {
-
-                                if (rawdata[(datarec.message)][prop] === undefined)
-                                    rawdata[(datarec.message)][prop] = [];
-
-
-                                rawdata[datarec.message][prop].push(val);
+                                    break;
                             }
-                            //else
-                            //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
-                            // }
-                        }
-                        //}
-                    } else
-                        self.postMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
+
+
+                            // Build rawdata structure tailored for integration with highchart
+
+                            for (var prop in datarec) {
+
+                                //if (rec[prop] !== undefined) {
+                                //  console.log("Found field " + filter+" i = "+i.toString());
+
+                                //if (rec[prop].value !== undefined) {
+
+                                var val = datarec[prop].value;
+
+
+                                if (val !== undefined) {
+
+                                    if (rawdata[(datarec.message)][prop] === undefined)
+                                        rawdata[(datarec.message)][prop] = [];
+
+
+                                    rawdata[datarec.message][prop].push(val);
+                                }
+                                //else
+                                //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
+                                // }
+                            }
+                            //}
+                        } else
+                            self.postMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
+                    }
                 }
             }
 
@@ -468,6 +471,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var localMsgType = rec.header.localMessageType.toString();
             var definitionMsg = localMsgDef["localMsgDefinition" + localMsgType];
+
+            if (definitionMsg === undefined) {
+                self.postMessage({ response: "error", data: "No msg. definition found for local msg. type = " + localMsgType });
+                return undefined;
+            }
+
             var globalMsgType = definitionMsg.content.globalMsgNr;
 
             var fieldNrs = definitionMsg.content.fieldNumbers;
@@ -490,6 +499,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                 for (var i = 0; i < fieldNrs; i++) {
                     var field = "field" + i.toString();
+
+                    if (rec.content[field] === undefined) {
+                        self.postMessage({ response: "error", data: "Cannot read content of field " + field + " global message type "+ globalMsgType.toString() });
+                        break;
+                    }
+
                     var fieldDefNr = rec.content[field].fieldDefinitionNumber;
 
                     // Skip fields with invalid value
@@ -900,9 +915,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                 case FIT_DATA_MSG: // Lookup in msg. definition in properties -> read fields
                     var localMsgDefinition = localMsgDef["localMsgDefinition" + recHeader.localMessageType.toString()];
-                    if (localMsgDefinition === undefined || localMsgDefinition === null)
-                        throw new Error("Could not find message definition of data message");
+                    if (localMsgDefinition === undefined || localMsgDefinition === null) {
+                      //  throw new Error("Could not find message definition of data message - local message type = " + recHeader.localMessageType.toString());
+                        self.postMessage({ response: "error", data: "Could not find message definition of data message - local message type = " + recHeader.localMessageType.toString() });
+                        break;
 
+                    }
                     // Loop through all field definitions and read corresponding fields in data message
 
                     var littleEndian = localMsgDefinition.content.littleEndian;
@@ -913,8 +931,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         var bType = localMsgDefinition.content[currentField].baseType;
                         var bSize = localMsgDefinition.content[currentField].size;
 
-                        if (fitBaseTypesInvalidValues[bType] === undefined || fitBaseTypesInvalidValues[bType] === null)
-                            console.log("Base type not found for base type" + bType);
+                        if (fitBaseTypesInvalidValues[bType] !== undefined || fitBaseTypesInvalidValues[bType] !== null)
+                           {
                         //  logging += fitBaseTypesInvalidValues[bType].name+" ";
                         // Just skip reading values at the moment...
                         // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
@@ -948,7 +966,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     str += String.fromCharCode(char);
                                 }
 
-                                console.log("Got a null terminated string " + str);
+                                //console.log("Got a null terminated string " + str);
                                 recContent[currentField] = { "value": str };
                                 break;
 
@@ -961,21 +979,26 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 var bytes = [];
                                 for (var byteNr = 0; byteNr < bSize; byteNr++)
                                     bytes.push(dviewFit.getUint8(bytesStartIndex++));
-                                console.log("Got an byte array with " + bSize.toString() + " bytes");
+                                //console.log("Got an byte array with " + bSize.toString() + " bytes");
                                 recContent[currentField] = { "value": bytes };
                                 //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
                                 break;
                             default: //throw new Error("Base type " + bType.toString() + " not found in lookup switch"); break;
-                                console.error("Base type " + bType.toString() + " not found in lookup switch");
+                                self.postMessage({ response: "error", data: "Base type " + bType.toString() + " not found in lookup switch" });
                                 break;
                         }
 
                         // Did we get an invalid value?
 
-                        if (fitBaseTypesInvalidValues[bType].invalidValue === recContent[currentField].value)
-                            recContent[currentField].invalid = true;
-                        else
-                            recContent[currentField].invalid = false;
+                        if (fitBaseTypeInvalidValues[bType] !== undefined) {
+                            if (fitBaseTypesInvalidValues[bType].invalidValue === recContent[currentField].value)
+                                recContent[currentField].invalid = true;
+                            else
+                                recContent[currentField].invalid = false;
+                        }
+
+                        } else
+                            self.postMessage({ response: "error", data: "Base type not found for base type " + bType + " reported size is " + bSize + "bytes." });
 
                         // Advance to next field value position
                         index = index + bSize;
