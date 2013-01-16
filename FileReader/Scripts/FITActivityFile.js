@@ -217,6 +217,26 @@ FIT.ActivityFile = function () {
     };
 
 
+    var deviceInfoProperties = {
+        253: { "property": "timestamp", "unit": "s" },
+        0: { "property": "device_index" }, 
+        1: { "property": "device_type" },
+        2: { "property": "manufacturer" },
+        3: { "property": "serial_number" },
+        4: { "property": "product" },
+        5: { "property": "software_version", "scale" : 100 },
+        6: { "property": "hardware_version" },
+        7: { "property": "cum_operating_time", unit : "s" }, // Reset by new battery or charge
+        10: { "property": "battery_voltage", "scale": 256, unit: "V" },
+        11: { "property": "battery_status" }
+
+        //// Mysterious 90XT fielddef.
+        //9: { "property": "unknown9" },
+        //15: { "property": "unknown15" },
+        //16: { "property": "unknown16" }
+
+    };
+
     // Expose functions
     return {
 
@@ -250,7 +270,11 @@ FIT.ActivityFile = function () {
 
         event: function () {
             return eventProperties;
-        }
+        },
+
+        deviceInfo : function () {
+        return deviceInfoProperties;
+    }
     };
 
 

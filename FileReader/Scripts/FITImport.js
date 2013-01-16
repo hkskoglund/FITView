@@ -32,6 +32,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                 fitFileManager = FitFileImport(options);
                 fitFileManager.readFitFile();
+                
 
                 break;
             default:
@@ -56,8 +57,6 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         var fitFileReader;
         var headerInfo;
-
-        var index;
 
         var localMsgDef = {};
 
@@ -104,16 +103,30 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var FIT_MSG_ACTIVITY = 34;
         var FIT_MSG_FILE_CREATOR = 49;
         var FIT_MSG_HRV = 78;
+        var FIT_MSG_DEVICE_INFO = 23;
         
 
 
         function deleteDb() {
-            self.postMessage({ response: "info", data : "deleteDb()" });
+            // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
+            // Problem : can only delete indexeddb one time in the same tab
+            self.postMessage({ response: "info", data: "deleteDb()" });
             
-            var req = indexedDB.deleteDatabase(DB_NAME);
+            var req;
             
+            try {
+                req=  indexedDB.deleteDatabase(DB_NAME);
+            } catch (e) {
+                self.postMessage({ response: "error", data: e.message });
+            }
+            //req.onblocked = function (evt) {
+            //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+            //}
+
+
             req.onsuccess = function (evt) {
-                self.postMessage({ response: "info", data : "Success deleting database" });
+                self.postMessage({ response: "info", data: "Success deleting database" });
+                openDb();
             };
 
             req.onerror = function (evt) {
@@ -128,6 +141,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             self.postMessage({ response: "info", data : "Starting openDb(), version " + DB_VERSION.toString() });
             req = indexedDB.open(DB_NAME, DB_VERSION);
 
+            req.onblocked = function (evt) {
+                self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+            }
+
             req.onsuccess = function (evt) {
                 // Better use "this" than "req" to get the result to avoid problems with
                 // garbage collection.
@@ -138,6 +155,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 // getRawdata();
                
                 getRawdata();
+
+                
+
+                //self.close();  // Free resources, terminate worker
             };
 
             req.onerror = function (evt) {
@@ -229,6 +250,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records });
 
+            
             //if (rawData !== undefined)
             //  addRawdata(rawData);
 
@@ -294,9 +316,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             self.postMessage({ response: "header", header: headerInfo });
 
-            deleteDb(); // For now delete DB ...
+            deleteDb();
 
-            openDb();
+           // openDb();
+
+           
 
 
             
@@ -319,10 +343,16 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             // while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
             var maxReadToByte = headerInfo.fitFileSystemSize - 2 - prevIndex;
 
-            var recordStore = getObjectStore(RECORD_OBJECTSTORE_NAME, 'readwrite');
-            var lapStore = getObjectStore(LAP_OBJECTSTORE_NAME, 'readwrite');
-            var sessionStore = getObjectStore(SESSION_OBJECTSTORE_NAME, 'readwrite');
-            var hrvStore = getObjectStore(HRV_OBJECTSTORE_NAME, 'readwrite');
+            //var tx = db.transaction([RECORD_OBJECTSTORE_NAME,LAP_OBJECTSTORE_NAME, SESSION_OBJECTSTORE_NAME,HRV_OBJECTSTORE_NAME], "readwrite");
+            
+            //tx.onerror = function (evt) {
+            //    self.postMessage({ response: "error", data: evt });
+            //}
+
+            var recordStore = getObjectStore(RECORD_OBJECTSTORE_NAME,"readwrite");
+            var lapStore = getObjectStore(LAP_OBJECTSTORE_NAME,"readwrite");
+            var sessionStore = getObjectStore(SESSION_OBJECTSTORE_NAME,"readwrite");
+            var hrvStore = getObjectStore(HRV_OBJECTSTORE_NAME,"readwrite");
 
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
@@ -333,16 +363,19 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 else {
                     var datarec = getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
 
-                    records.push(rec.globalMessageType); // Store all data globalmessage types contained in FIT file
+                    records.push(datarec.globalMessageType); // Store all data globalmessage types contained in FIT file
 
-                    if (rawdata[datarec.message] === undefined)
-                        rawdata[datarec.message] = {};
+                    if (datarec.message !== undefined)
+                        // Unknown global message 79 recorded by 910XT....
+                    {
+                        if (rawdata[datarec.message] === undefined)
+                            rawdata[datarec.message] = {};
 
-                    if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
+                        //if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
 
                         if (datarec.message === "record")
                             addRawdata(recordStore, datarec);
-                       
+
                         if (datarec.message === "lap")
                             addRawdata(lapStore, datarec);
 
@@ -371,8 +404,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
                             // }
                         }
+                        //}
                     }
-
                 }
             }
 
@@ -397,7 +430,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
 
             //return JSON.stringify(data);
-
+            db.close(); // Hopefully cleanup and free resources
             return rawdata;
         }
 
@@ -453,7 +486,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             // Duplication of code, maybe later do some value conversions here for specific messages
                             switch (globalMsgType) {
                                 // file_id
-                                case FIT_MSG_FILEID: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_FILEID:
+                                    if (prop === "time_created")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
                                     // session
                                 case FIT_MSG_SESSION:
                                     if (prop === "timestamp" || prop === "start_time")
@@ -479,7 +515,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
 
                                     // activity
-                                case FIT_MSG_ACTIVITY: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case FIT_MSG_ACTIVITY:
+                                    if (prop === "timestamp")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
                                     //  file_creator
                                 case FIT_MSG_FILE_CREATOR: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
@@ -489,8 +529,17 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                                     // event
                                 case FIT_MSG_EVENT:
+                                    if (prop === "timestamp")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
                                     break;
+
+                                case FIT_MSG_DEVICE_INFO:
+                                    if (prop === "timestamp")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                                    break;
+
                                 default:
                                     self.postMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
                                     break;
@@ -606,6 +655,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     break;
                 case "event":
                     message.properties = fitActivity.event();
+                    break;
+                case "device_info":
+                    message.properties = fitActivity.deviceInfo();
                     break;
                 default:
                     self.postMessage({ response: "error", data: "No message properties found, global message name : " + name });
@@ -998,6 +1050,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                                  req.onsuccess = function (evt) {
                                      self.postMessage({ response: "info", data: "Success deleting database" });
+                                     openDb();
                                  };
 
                                  req.onerror = function (evt) {
@@ -1372,6 +1425,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                                                          // event
                                                      case FIT_MSG_EVENT:
+                                                         msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                                                         break;
+                                                     case FIT_MSG_DEVICE_INFO:
                                                          msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
                                                          break;
                                                      default:

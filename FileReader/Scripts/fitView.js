@@ -484,6 +484,14 @@
                         break;
 
                 }
+
+                // Make sure we terminate previous worker
+                if (FITUI["fitFileManager"] !== undefined) {
+                    FITUI["fitFileManager"].removeEventListener('error', FITUI.onFITManagerError, false);
+                    FITUI["fitFileManager"].removeEventListener('message', FITUI.onFITManagerMsg, false);
+                    FITUI["fitFileManager"].terminate();
+                }
+
                 break;
 
             case 'header':
@@ -544,6 +552,16 @@
 
     UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
 
+        var FIT_MSG_FILEID = 0;
+        var FIT_MSG_SESSION = 18;
+        var FIT_MSG_LAP = 19;
+        var FIT_MSG_RECORD = 20;
+        var FIT_MSG_EVENT = 21;
+        var FIT_MSG_ACTIVITY = 34;
+        var FIT_MSG_FILE_CREATOR = 49;
+        var FIT_MSG_HRV = 78;
+        var FIT_MSG_DEVICE_INFO = 23;
+
         // Clear div
         while (divMsgMap.firstChild) {
             divMsgMap.removeChild(divMsgMap.firstChild);
@@ -553,13 +571,15 @@
 
             var styleClass = "";
             switch (element) {
-                case 0: styleClass = 'FITfile_id'; break;
-                case 18: styleClass = 'FITsession'; break;
-                case 19: styleClass = 'FITlap'; break;
-                case 20: styleClass = 'FITrecord'; break;
-                case 34: styleClass = 'FITactivity'; break;
-
-                case 78: styleClass = 'FIThrv'; break;
+                case FIT_MSG_FILEID: styleClass = 'FITfile_id'; break;
+                case FIT_MSG_SESSION: styleClass = 'FITsession'; break;
+                case FIT_MSG_LAP: styleClass = 'FITlap'; break;
+                case FIT_MSG_RECORD: styleClass = 'FITrecord'; break;
+                case FIT_MSG_DEVICE_INFO: styleClass = 'FITdevice_info'; break;
+                case FIT_MSG_ACTIVITY: styleClass = 'FITactivity'; break;
+                case FIT_MSG_HRV: styleClass = 'FIThrv'; break;
+                case FIT_MSG_EVENT: styleClass = 'FITevent'; break;
+                case FIT_MSG_FILE_CREATOR: styleClass = 'FITfile_creator'; break;
                 default: styleClass = 'FITunknown'; break;
             }
 
@@ -580,11 +600,39 @@
     //    return headerHtml;
     //}
 
+    function deleteDb() {
+        // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
+        // Problem : can only delete indexeddb one time in the same tab
+        //self.postMessage({ response: "info", data: "deleteDb()" });
 
+        var req;
+
+        try {
+            req = indexedDB.deleteDatabase("fit-import");
+        } catch (e) {
+            console.error(e.message);
+        }
+        //req.onblocked = function (evt) {
+        //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+        //}
+
+
+        req.onsuccess = function (evt) {
+            console.info("Delete "+evt.currentTarget.readyState);
+            
+        };
+
+        req.onerror = function (evt) {
+            console.error("Error deleting database");
+        };
+
+    }
 
     UIController.prototype.onFitFileSelected = function (e) {
         // console.log(e);
         e.preventDefault();
+
+        
 
         FITUI.selectedFiles = e.target.files;
 
@@ -598,6 +646,8 @@
             //FITUI["fitFileManager" + fileNr.toString()].addEventListener('error', FITUI.onFITManagerError, false);
 
         };
+
+        
 
         FITUI["fitFileManager"] = new Worker("Scripts/FITImport.js")
         FITUI["fitFileManager"].addEventListener('message', FITUI.onFITManagerMsg, false);
@@ -621,6 +671,8 @@
         //   { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group" },
         //  { message: "hrv", fields: "time" }
         //   );
+
+       // deleteDb();
 
         var msg = {
             request: 'importFitFile', "fitfile": files[0]

@@ -120,3 +120,24 @@ white-space: nowrap;
     float: left;
     background: #ff6a00;
 }
+
+.FITdevice_info {
+    padding : 1px;
+    width: 5px;
+    float: left;
+    background: lightblue;
+}
+
+.FITevent {
+    padding : 1px;
+    width: 3px;
+    float: left;
+    background: #b200ff;
+}
+
+.FITfile_creator {
+    padding : 1px;
+    width: 3px;
+    float: left;
+    background: #b6ff00;
+}
