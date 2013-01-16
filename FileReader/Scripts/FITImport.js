@@ -86,6 +86,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var SESSION_OBJECTSTORE_NAME = 'session';
         var HRV_OBJECTSTORE_NAME = 'hrv';
         var ACTIVITY_OBJECTSTORE_NAME = 'activity';
+        var LENGTH_OBJECTSTORE_NAME = 'length';
 
         var db;
         var req;
@@ -178,6 +179,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 var sessionStore = evt.currentTarget.result.createObjectStore(SESSION_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                 var hrvStore = evt.currentTarget.result.createObjectStore(HRV_OBJECTSTORE_NAME, { keyPath: 'start_time', autoIncrement: false });
                 var activityStore = evt.currentTarget.result.createObjectStore(ACTIVITY_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                var lengthStore = evt.currentTarget.result.createObjectStore(LENGTH_OBJECTSTORE_NAME, { keyPath: 'start_time.value', autoIncrement: false });
 
                 //getRawdata();
                 
@@ -357,6 +359,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var sessionStore = getObjectStore(SESSION_OBJECTSTORE_NAME,"readwrite");
             var hrvStore = getObjectStore(HRV_OBJECTSTORE_NAME, "readwrite");
             var activityStore = getObjectStore(ACTIVITY_OBJECTSTORE_NAME, "readwrite");
+            var lengthStore = getObjectStore(LENGTH_OBJECTSTORE_NAME, "readwrite");
 
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
@@ -369,19 +372,20 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                     records.push(datarec.globalMessageType); // Store all data globalmessage types contained in FIT file
 
-                    if (datarec.message !== undefined)
-                        // Unknown global message 79 recorded by 910XT....
-                    {
+                    if (datarec.message !== undefined) {
                         if (rawdata[datarec.message] === undefined)
                             rawdata[datarec.message] = {};
 
                         //if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
 
                         // Presist data to indexedDB
-                        switch (datarec.message)
-                        {
+                        switch (datarec.message) {
                             case "record":
-                                addRawdata(recordStore, datarec);
+                                if (datarec.timestamp !== undefined)
+                                    addRawdata(recordStore, datarec);
+                                else
+                                    self.postMessage({ response: "error", data: "No timestamp found in message record (probably swim data - speed/distance), skipped saving" });
+
                                 break;
                             case "lap":
                                 addRawdata(lapStore, datarec);
@@ -392,9 +396,18 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             case "activity":
                                 addRawdata(activityStore, datarec);
                                 break;
+                            case "length":
+                                //self.postMessage({ response: "info", data: "Found length message" });
+                                //addRawdata(lengthStore, datarec);
+                                if (datarec.start_time !== undefined)
+                                    addRawdata(lengthStore, datarec);
+                                else
+                                    self.postMessage({ response: "error", data: "No start_time found in message : length, cannot save to indexedDB" });
+
+                                break;
                         }
 
-                        
+
                         // Build rawdata structure tailored for integration with highchart
 
                         for (var prop in datarec) {
@@ -420,7 +433,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             // }
                         }
                         //}
-                    }
+                    } else
+                        self.postMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
                 }
             }
 
@@ -468,11 +482,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var util = FITUtility();
 
 
-            if (globalMsg === undefined)
+            //if (globalMsg === undefined)
                 
-                self.postMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
+            //    self.postMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
                
-            else {
+            //else {
 
                 for (var i = 0; i < fieldNrs; i++) {
                     var field = "field" + i.toString();
@@ -565,10 +579,15 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
                             }
                         } else {
-                            self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() +"unknown field generated to store data" });
+                            self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() +" unknown field generated to store data" });
 
                             // Allow for auto generating unknown properties than have data (not defined in FITActivitiyFile.js)
-                            prop = "unknown" + fieldDefNr.toString();
+                            if (fieldDefNr === 253) { // Seems like field def. 253 is always a timestamp
+                                prop = "timestamp";
+                                rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                            } else
+                                prop = "unknown" + fieldDefNr.toString();
+
                             msg[prop] = { "value": rec.content[field].value};
 
                         }
@@ -586,7 +605,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
                 if (globalMsgType != FIT_MSG_RECORD && globalMsgType != FIT_MSG_HRV)
                     self.postMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
-            }
+            //}
 
             return msg;
 
