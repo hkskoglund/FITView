@@ -237,6 +237,23 @@ FIT.ActivityFile = function () {
 
     };
 
+    var lengthProperties = {
+        254: { "property": "message_index" },
+        253: { "property": "timestamp", "unit": "s" },
+        0: { "property": "event" },
+        1: { "property": "event_type" },
+        2: { "property": "start_time" },
+        3: { "property": "total_elapsed_time", "scale": 1000, "unit" : "s" },
+        4: { "property": "total_timer_time", "scale": 1000, "unit": "s" },
+        5: { "property": "total_strokes", "unit" : "strokes" },
+        6: { "property": "avg_speed", "scale" : 1000, "unit" : "m/s" },
+        7: { "property": "swim_stroke" }, 
+        9: { "property": "avg_swimming_cadence", unit: "strokes/min" },
+        10: { "property": "event_group" },
+        11: { "property": "total_calories", unit : "kcal" },
+        12: { property: "length_type" }
+    };
+
     // Expose functions
     return {
 
@@ -274,7 +291,11 @@ FIT.ActivityFile = function () {
 
         deviceInfo : function () {
         return deviceInfoProperties;
-    }
+        },
+
+        length: function () {
+            return lengthProperties;
+        }
     };
 
 

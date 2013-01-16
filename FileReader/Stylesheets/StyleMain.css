@@ -75,7 +75,7 @@ white-space: nowrap;
     padding : 1px;
     width : 1px;
     float : left;
-               background :   #000;
+    background :   #000;
 }
 
 
@@ -140,4 +140,11 @@ white-space: nowrap;
     width: 3px;
     float: left;
     background: #b6ff00;
+}
+
+.FITlength {
+    padding : 1px;
+    width: 3px;
+    float: left;
+    background: #0ff;
 }

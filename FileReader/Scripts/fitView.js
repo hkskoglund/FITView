@@ -599,6 +599,7 @@
         var FIT_MSG_FILE_CREATOR = 49;
         var FIT_MSG_HRV = 78;
         var FIT_MSG_DEVICE_INFO = 23;
+        var FIT_MSG_LENGTH = 101;
 
         // Clear div
         while (divMsgMap.firstChild) {
@@ -618,6 +619,7 @@
                 case FIT_MSG_HRV: styleClass = 'FIThrv'; break;
                 case FIT_MSG_EVENT: styleClass = 'FITevent'; break;
                 case FIT_MSG_FILE_CREATOR: styleClass = 'FITfile_creator'; break;
+                case FIT_MSG_LENGTH: styleClass = 'FITlength'; break;
                 default: styleClass = 'FITunknown'; break;
             }
 

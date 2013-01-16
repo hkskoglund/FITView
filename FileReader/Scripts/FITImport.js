@@ -105,6 +105,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var FIT_MSG_FILE_CREATOR = 49;
         var FIT_MSG_HRV = 78;
         var FIT_MSG_DEVICE_INFO = 23;
+        var FIT_MSG_LENGTH = 101;
         
 
 
@@ -176,7 +177,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 var lapStore = evt.currentTarget.result.createObjectStore(LAP_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                 var sessionStore = evt.currentTarget.result.createObjectStore(SESSION_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                 var hrvStore = evt.currentTarget.result.createObjectStore(HRV_OBJECTSTORE_NAME, { keyPath: 'start_time', autoIncrement: false });
-                var activityStore = evt.currentTarget.result.createObjectStore(ACTIVITY_OBJECTSTORE_NAME, { keyPath: 'timestamp', autoIncrement: false });
+                var activityStore = evt.currentTarget.result.createObjectStore(ACTIVITY_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
 
                 //getRawdata();
                 
@@ -480,8 +481,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     // Skip fields with invalid value
                     if (!rec.content[field].invalid) {
 
-                        if (globalMsg[fieldDefNr] !== undefined && globalMsg[fieldDefNr] !== null)
-                        {
+                        if (globalMsg[fieldDefNr] !== undefined && globalMsg[fieldDefNr] !== null) {
                             var prop = globalMsg[fieldDefNr].property;
 
                             var unit = globalMsg[fieldDefNr].unit;
@@ -509,7 +509,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     if (prop === "timestamp" || prop === "start_time")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
-                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; 
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
                                     break;
 
                                     // lap
@@ -521,7 +521,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
                                     // record
                                 case FIT_MSG_RECORD:
-                                   
+
                                     if (prop === "timestamp")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
@@ -554,14 +554,24 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
                                     break;
 
+                                case FIT_MSG_LENGTH:
+                                    if (prop === "timestamp" || prop === "start_time")
+                                        rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                                    msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                                    break;
+
                                 default:
                                     self.postMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
                                     break;
                             }
-                        } else
-                            
-                            self.postMessage({ response: "error", data: "Cannot read property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() });
+                        } else {
+                            self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() +"auto field generated to store data" });
 
+                            // Allow for auto generating unknown properties (not defined in FITActivitiyFile.js)
+                            prop = "auto" + fieldDefNr.toString();
+                            msg[prop] = { "value": rec.content[field].value};
+
+                        }
                           
                     }
 
@@ -672,6 +682,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     break;
                 case "device_info":
                     message.properties = fitActivity.deviceInfo();
+                    break;
+                case "length":
+                    message.properties = fitActivity.length();
                     break;
                 default:
                     self.postMessage({ response: "error", data: "No message properties found, global message name : " + name });
