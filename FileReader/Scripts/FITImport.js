@@ -415,8 +415,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
 
-                
-                
+
+                if (rec.header.messageType === FIT_DEFINITION_MSG)
+                    localMsgDef["localMsgDefinition" + rec.header.localMessageType.toString()] = rec; // If we got an definition message, store it as a property
+                else {
+
                     var datarec = getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
 
                     if (datarec !== undefined) {
@@ -487,7 +490,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         } else
                             self.postMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
                     }
-                
+                }
             }
 
             // Persist hrv data if any
@@ -535,6 +538,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var logger = "";
 
             var globalMsg = messageFactory(globalMsgType);
+
+            var msg = { "message": getGlobalMessageTypeName(globalMsgType) };
+            msg.globalMessageType = globalMsgType;
 
             var util = FITUtility();
 
@@ -908,9 +914,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             "baseType": dviewFit.getUint8(index++)
                         };
 
-                    record.content = recContent;
-
-                    localMsgDef["localMsgDefinition" + recHeader.localMessageType.toString()] = record; // If we got an definition message, store it as a property
+                   
 
                   
                     //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
@@ -929,9 +933,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                     var littleEndian = localMsgDefinition.content.littleEndian;
 
-                    var msg = { "message": getGlobalMessageTypeName(localMsgDefinition.content.globalMsgNr) };
-                    msg.globalMessageType = localMsgDefinition.content.globalMsgNr;
-
+                   
                     // var logging = "";
                     for (var fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
                         var currentField = "field" + fieldNr.toString();
