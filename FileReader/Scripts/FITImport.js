@@ -307,30 +307,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         
 
-        exposeFunc.readFitFile = function () {
-            fitFileReader = new FileReaderSync(); // For web worker
-
-            try {
-              fileBuffer = fitFileReader.readAsArrayBuffer(fitFile);
-
-            } catch (e) {
-                self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes"  });
-            }
-
-            headerInfo = getFITHeader(fileBuffer,fitFile.size);
-
-            self.postMessage({ response: "header", header: headerInfo });
-
-            deleteDb();
-
-           // openDb();
-
-           
-
-
-            
-           
-        }
+        
 
         getDataRecords = function () {
             var util = FITUtility();
@@ -864,6 +841,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var recContent = {};
             var record = {};
 
+
+            var FIT_NORMAL_HEADER = 0;
+            var FIT_COMPRESSED_TIMESTAMP = 1;
            
 
             // HEADER
@@ -880,14 +860,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             recHeader.headerType = (recHeader.byte & HEADERTYPE_FLAG) >> 7; // MSB 7 0 = normal header, 1 = compressed timestampheader
 
             switch (recHeader.headerType) {
-                case 0: // Normal header
+                case FIT_NORMAL_HEADER: // Normal header
                     recHeader.messageType = (recHeader.byte & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition, 0 = data msg.
                     // bit 5 = 0 reserved
                     // bit 4 = 0 reserved
                     recHeader.localMessageType = recHeader.byte & NORMAL_LOCAL_MESSAGE_TYPE_FLAGS; // bit 0-3
 
                     break;
-                case 1: // Compressed timestamp header - only for data records
+                case FIT_COMPRESSED_TIMESTAMP: // Compressed timestamp header - only for data records
                     recHeader.localMessageType = (recHeader.byte & COMPRESSED_TIMESTAMP_LOCAL_MESSAGE_TYPE_FLAGS) >> 5;
                     recHeader.timeOffset = (recHeader.byte & TIMEOFFSET_FLAGS); // bit 0-4 - in seconds since a fixed reference start time (max 32 secs)
                     break;
@@ -917,6 +897,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             "baseType": dviewFit.getUint8(index++)
                         };
 
+
+                  
                     //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
 
                     break;
@@ -939,14 +921,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         var bType = localMsgDefinition.content[currentField].baseType;
                         var bSize = localMsgDefinition.content[currentField].size;
 
-                        
-                           
-                        //  logging += fitBaseTypesInvalidValues[bType].name+" ";
-                        // Just skip reading values at the moment...
-                        // this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
-
                         recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
-
 
                         if (fitBaseTypesInvalidValues[bType] === undefined || fitBaseTypesInvalidValues[bType] === null) {
                             self.postMessage({ response: "error", data: "Base type not found for base type " + bType + " reported size is " + bSize + " bytes." });
@@ -1028,6 +1003,32 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             return record;
         }
 
+
+
+        exposeFunc.readFitFile = function () {
+            fitFileReader = new FileReaderSync(); // For web worker
+
+            try {
+                fileBuffer = fitFileReader.readAsArrayBuffer(fitFile);
+
+            } catch (e) {
+                self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes" });
+            }
+
+            headerInfo = getFITHeader(fileBuffer, fitFile.size);
+
+            self.postMessage({ response: "header", header: headerInfo });
+
+            deleteDb();
+
+            // openDb();
+
+
+
+
+
+
+        }
         return exposeFunc;
 
     }
