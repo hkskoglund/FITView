@@ -87,6 +87,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var HRV_OBJECTSTORE_NAME = 'hrv';
         var ACTIVITY_OBJECTSTORE_NAME = 'activity';
         var LENGTH_OBJECTSTORE_NAME = 'length';
+        var EVENT_OBJECTSTORE_NAME = 'event';
+        var FILEID_OBJECTSTORE_NAME = 'fileid';
+        var DEVICEINFO_OBJECTSTORE_NAME = 'deviceinfo';
 
         var db;
         var req;
@@ -191,6 +194,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             
             var req;
             
+            //indexedDB = indexedDB || mozIndexedDB;
             try {
                 req=  indexedDB.deleteDatabase(DB_NAME);
             } catch (e) {
@@ -228,6 +232,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 // db = req.result;
                 self.postMessage({ response: "info", data : "Success openDb(), version " + DB_VERSION.toString() });
                 db = this.result;
+
+                // Main handler for DB errors - takes care of bubbling events 
+                db.onerror = function (evt) {
+                    self.postMessage({
+                        response: "error", data: "Database error "});
+                            //+ evt.target.errorCode.toString()
+                   
+                }
                 // console.log("openDb DONE");
                 // getRawdata();
                
@@ -254,11 +266,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 var hrvStore = evt.currentTarget.result.createObjectStore(HRV_OBJECTSTORE_NAME, { keyPath: 'start_time', autoIncrement: false });
                 var activityStore = evt.currentTarget.result.createObjectStore(ACTIVITY_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                 var lengthStore = evt.currentTarget.result.createObjectStore(LENGTH_OBJECTSTORE_NAME, { keyPath: 'start_time.value', autoIncrement: false });
+                var eventStore = evt.currentTarget.result.createObjectStore(EVENT_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                var fileidStore = evt.currentTarget.result.createObjectStore(FILEID_OBJECTSTORE_NAME, { keyPath: 'time_created.value', autoIncrement: false });
+                var deviceinfoStore = evt.currentTarget.result.createObjectStore(DEVICEINFO_OBJECTSTORE_NAME, {  autoIncrement: true });
 
                 //getRawdata();
                 
 
-                //store.createIndex('timestamp', 'timestamp.value', { unique: true });
+                deviceinfoStore.createIndex('timestamp', 'timestamp.value', { unique: false });
                 //store.createIndex('title', 'title', { unique: false });
                 //store.createIndex('year', 'year', { unique: false });
             };
@@ -411,16 +426,27 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var hrvStore = getObjectStore(HRV_OBJECTSTORE_NAME, "readwrite");
             var activityStore = getObjectStore(ACTIVITY_OBJECTSTORE_NAME, "readwrite");
             var lengthStore = getObjectStore(LENGTH_OBJECTSTORE_NAME, "readwrite");
+            var eventStore = getObjectStore(EVENT_OBJECTSTORE_NAME, "readwrite");
+            var fileidStore = getObjectStore(FILEID_OBJECTSTORE_NAME, "readwrite");
+            //fileidStore.transaction.oncomplete = function (evt) {
+            //    self.postMessage({ response: "info", data: "file id transaction complete" });
+            //}
+            var deviceinfoStore = getObjectStore(DEVICEINFO_OBJECTSTORE_NAME, "readwrite");
+            //deviceinfoStore.transaction.oncomplete = function (evt) {
+            //    self.postMessage({ response: "info", data: "device info transaction complete" });
+            //}
 
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
-                var rec = getRecord(dvFITBuffer, maxReadToByte);
 
+                var rec = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
+                // Probably it would be possible to integrate the first and second-pass in a integrated pass, but it would
+                // complicate the code. A decision was made to stick with the current solution - it works -
 
                 if (rec.header.messageType === FIT_DEFINITION_MSG)
                     localMsgDef["localMsgDefinition" + rec.header.localMessageType.toString()] = rec; // If we got an definition message, store it as a property
                 else {
 
-                    var datarec = getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
+                    var datarec = getDataRecordContent(rec); // Do a second-pass and try to intepret content and generate messages with meaningfull properties
 
                     if (datarec !== undefined) {
 
@@ -429,8 +455,6 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         if (datarec.message !== undefined) {
                             if (rawdata[datarec.message] === undefined)
                                 rawdata[datarec.message] = {};
-
-                            //if (datarec.message === "hrv" || datarec.message === "file_id" || datarec.message === "record" || datarec.message === "session" || datarec.message === "lap") {
 
                             // Presist data to indexedDB
                             switch (datarec.message) {
@@ -459,8 +483,20 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                         self.postMessage({ response: "error", data: "No start_time found in message : length, cannot save to indexedDB" });
 
                                     break;
+                                case "event":
+                                    addRawdata(eventStore, datarec);
+                                    break;
+                                case "file_id":
+                                    addRawdata(fileidStore, datarec);
+                                    break;
+                                case "device_info":
+                                    // Hmmm. 910XT seems to record 2 set of identically device info records
+                                    // One record at the start, then one record just before storing only hrv 2 min recovery heart rate
+                                    //addRawdata(deviceinfoStore, { timestamp: { value: new Date().getTime() }});
+                                    
+                                    addRawdata(deviceinfoStore, datarec);
+                                    break;
                             }
-
 
                             // Build rawdata structure tailored for integration with highchart
 
@@ -648,15 +684,16 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
                             }
                         } else {
-                            self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() +" unknown field generated to store data" });
-
+                            
 
                             // Allow for auto generating unknown properties than have data (not defined in FITActivitiyFile.js)
                             if (fieldDefNr === 253) { // Seems like field def. 253 is always a timestamp
                                 prop = "timestamp";
                                 rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                            } else
+                            } else {
                                 prop = "unknown" + fieldDefNr.toString();
+                                self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() + " unknown field generated to store data" });
+                            }
 
                             msg[prop] = { "value": rec.content[field].value};
 

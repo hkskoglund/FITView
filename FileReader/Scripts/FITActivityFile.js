@@ -198,11 +198,13 @@ FIT.ActivityFile = function () {
     };
 
     var eventProperties = {
-        253: { "property": "timestamp", "unit": "s" },
-        0: { "property": "event" },
-        1: { "property": "event_type" },
-        2: { "property": "data16" },
-        3: { "property": "data" }  };
+        253: { property: "timestamp", "unit": "s" },
+        0: { property: "event" },
+        1: { property: "event_type" },
+        2: { property: "data16" },
+        3: { property: "data" },
+        4: { property: "event_group" }
+    };
 
 
     var activityProperties = {

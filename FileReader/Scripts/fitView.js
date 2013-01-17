@@ -509,17 +509,12 @@
                         FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;
                     default:
-                        console.warn("Unsupported fit file type ", rawData.file_id.type[0]);
+                        console.warn("Unsupported fit file type, expected 4 (activity file), but got ", rawData.file_id.type[0]);
                         break;
 
                 }
 
-                // Make sure we terminate previous worker
-                if (FITUI["fitFileManager"] !== undefined) {
-                    FITUI["fitFileManager"].removeEventListener('error', FITUI.onFITManagerError, false);
-                    FITUI["fitFileManager"].removeEventListener('message', FITUI.onFITManagerMsg, false);
-                    FITUI["fitFileManager"].terminate();
-                }
+              
 
                 break;
 
@@ -687,7 +682,12 @@
 
         };
 
-        
+        // Make sure we terminate previous worker
+        if (FITUI["fitFileManager"] !== undefined) {
+            FITUI["fitFileManager"].removeEventListener('error', FITUI.onFITManagerError, false);
+            FITUI["fitFileManager"].removeEventListener('message', FITUI.onFITManagerMsg, false);
+            FITUI["fitFileManager"].terminate();
+        }
 
         FITUI["fitFileManager"] = new Worker("Scripts/FITImport.js")
         FITUI["fitFileManager"].addEventListener('message', FITUI.onFITManagerMsg, false);
