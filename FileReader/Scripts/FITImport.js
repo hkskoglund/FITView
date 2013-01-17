@@ -108,6 +108,80 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var FIT_MSG_DEVICE_INFO = 23;
         var FIT_MSG_LENGTH = 101;
         
+        // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
+
+        var fitBaseTypesInvalidValues = {
+
+            0x00: {
+                "name": "enum",
+                "invalidValue": 0xFF
+            },
+
+            0x01: {
+                "name": "sint8",
+                "invalidValue": 0x7F
+            },
+
+            0x02: {
+                "name": "uint8",
+                "invalidValue": 0xFF
+            },
+
+            0x83: {
+                "name": "sint16",
+                "invalidValue": 0x7FFF
+            },
+
+            0x84: {
+                "name": "uint16",
+                "invalidValue": 0xFFFF
+            },
+
+            0x85: {
+                "name": "sint32",
+                "invalidValue": 0x7FFFFFFF
+            },
+
+            0x86: {
+                "name": "uint32",
+                "invalidValue": 0xFFFFFFFF
+            },
+
+            0x07: {
+                "name": "string",
+                "invalidValue": 0x00
+            },
+
+            0x88: {
+                "name": "float32",
+                "invalidValue": 0xFFFFFFFF
+            },
+
+            0x89: {
+                "name": "float64",
+                "invalidValue": 0xFFFFFFFFFFFFFFFF
+            },
+
+            0x0A: {
+                "name": "uint8z",
+                "invalidValue": 0x00
+            },
+
+            0x8B: {
+                "name": "uint16z",
+                "invalidValue": 0x0000
+            },
+
+            0x8C: {
+                "name": "uint32z",
+                "invalidValue": 0x00000000
+            },
+
+            0x0D: {
+                "name": "byte",
+                "invalidValue": 0xFF
+            }
+        }
 
 
         function deleteDb() {
@@ -342,9 +416,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 var rec = getRecord(dvFITBuffer, maxReadToByte);
 
                 
-                if (rec.header.messageType === FIT_DEFINITION_MSG)
-                    localMsgDef["localMsgDefinition" + rec.header.localMessageType.toString()] = rec; // If we got an definition message, store it as a property 
-                else {
+                
                     var datarec = getDataRecordContent(rec); // Data record RAW from device - no value conversion (besides scale and offset adjustment)
 
                     if (datarec !== undefined) {
@@ -415,7 +487,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         } else
                             self.postMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
                     }
-                }
+                
             }
 
             // Persist hrv data if any
@@ -458,8 +530,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var fieldNrs = definitionMsg.content.fieldNumbers;
 
-            var msg = { "message": getGlobalMessageTypeName(globalMsgType) };
-            msg.globalMessageType = globalMsgType;
+            
 
             var logger = "";
 
@@ -774,67 +845,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         getRecord = function (dviewFit, maxReadToByte) {
 
-            // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
-
-            var fitBaseTypesInvalidValues = {};
-            fitBaseTypesInvalidValues[0x00] = {
-                "name": "enum",
-                "invalidValue": 0xFF
-            };
-            fitBaseTypesInvalidValues[0x01] = {
-                "name": "sint8",
-                "invalidValue": 0x7F
-            };
-            fitBaseTypesInvalidValues[0x02] = {
-                "name": "uint8",
-                "invalidValue": 0xFF
-            };
-            fitBaseTypesInvalidValues[0x83] = {
-                "name": "sint16",
-                "invalidValue": 0x7FFF
-            };
-            fitBaseTypesInvalidValues[0x84] = {
-                "name": "uint16",
-                "invalidValue": 0xFFFF
-            };
-            fitBaseTypesInvalidValues[0x85] = {
-                "name": "sint32",
-                "invalidValue": 0x7FFFFFFF
-            };
-            fitBaseTypesInvalidValues[0x86] = {
-                "name": "uint32",
-                "invalidValue": 0xFFFFFFFF
-            };
-            fitBaseTypesInvalidValues[0x07] = {
-                "name": "string",
-                "invalidValue": 0x00
-            };
-            fitBaseTypesInvalidValues[0x88] = {
-                "name": "float32",
-                "invalidValue": 0xFFFFFFFF
-            };
-            fitBaseTypesInvalidValues[0x89] = {
-                "name": "float64",
-                "invalidValue": 0xFFFFFFFFFFFFFFFF
-            };
-
-            fitBaseTypesInvalidValues[0x0A] = {
-                "name": "uint8z",
-                "invalidValue": 0x00
-            };
-            fitBaseTypesInvalidValues[0x8B] = {
-                "name": "uint16z",
-                "invalidValue": 0x0000
-            };
-            fitBaseTypesInvalidValues[0x8C] = {
-                "name": "uint32z",
-                "invalidValue": 0x00000000
-            };
-            fitBaseTypesInvalidValues[0x0D] = {
-                "name": "byte",
-                "invalidValue": 0xFF
-            };
-
+            
 
 
             var recHeader = {};
@@ -897,6 +908,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             "baseType": dviewFit.getUint8(index++)
                         };
 
+                    record.content = recContent;
+
+                    localMsgDef["localMsgDefinition" + recHeader.localMessageType.toString()] = record; // If we got an definition message, store it as a property
 
                   
                     //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
@@ -914,6 +928,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     // Loop through all field definitions and read corresponding fields in data message
 
                     var littleEndian = localMsgDefinition.content.littleEndian;
+
+                    var msg = { "message": getGlobalMessageTypeName(localMsgDefinition.content.globalMsgNr) };
+                    msg.globalMessageType = localMsgDefinition.content.globalMsgNr;
 
                     // var logging = "";
                     for (var fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
@@ -935,20 +952,20 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             case 0x00:
                             case 0x0A:
                                 recContent[currentField].value = dviewFit.getUint8(index); break;
-                                //case 0x0A: recContent["field" + i.toString()] = { "value": dviewFit.getUint8(this.index++) }; break;
+                                
                             case 0x01: recContent[currentField].value = dviewFit.getInt8(index); break;
                             case 0x02: recContent[currentField].value = dviewFit.getUint8(index); break;
                             case 0x83: recContent[currentField].value = dviewFit.getInt16(index, littleEndian); break;
                             case 0x84:
                             case 0x8B:
                                 recContent[currentField].value = dviewFit.getUint16(index, littleEndian); break;
-                                // recContent["field" + i.toString()] = { "value": dviewFit.getUint16(this.index, littleEndian) }; this.index += 2; break;
+                                
                             case 0x85: recContent[currentField].value = dviewFit.getInt32(index, littleEndian); break;
                             case 0x86:
                             case 0x8C:
                                 recContent[currentField].value = dviewFit.getUint32(index, littleEndian); break;
-                                //recContent["field" + i.toString()] = { "value": dviewFit.getUint32(this.index, littleEndian) }; this.index += 4; break;
-                            case 0x07: //console.error("String not implemented yet!");
+                                
+                            case 0x07: 
                                 var stringStartIndex = index;
                                 var str = "";
                                 for (var charNr = 0; charNr < bSize; charNr++) {
@@ -958,24 +975,24 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     str += String.fromCharCode(char);
                                 }
 
-                                //console.log("Got a null terminated string " + str);
+                              
                                 recContent[currentField] = { "value": str };
                                 break;
 
-                                //this.index = this.index + localMsgDefinition.content["field" + i.toString()].size;
+                              
 
                             case 0x88: recContent[currentField].value = dviewFit.getFloat32(index, littleEndian); break;
                             case 0x89: recContent[currentField].value = dviewFit.getFloat64(index, littleEndian); break;
-                            case 0x0D: //console.error("Array of bytes not implemented yet!");
+                            case 0x0D: 
                                 var bytesStartIndex = index;
                                 var bytes = [];
                                 for (var byteNr = 0; byteNr < bSize; byteNr++)
                                     bytes.push(dviewFit.getUint8(bytesStartIndex++));
-                                //console.log("Got an byte array with " + bSize.toString() + " bytes");
+                                
                                 recContent[currentField] = { "value": bytes };
-                                //recContent["field" + i.toString()] = { "value" : dviewFit.getUint8(this.index++) }; break; // ARRAY OF BYTES FIX
+                                
                                 break;
-                            default: //throw new Error("Base type " + bType.toString() + " not found in lookup switch"); break;
+                            default: 
                                 self.postMessage({ response: "error", data: "Base type " + bType.toString() + " not found in lookup switch" });
                                 break;
                         }
