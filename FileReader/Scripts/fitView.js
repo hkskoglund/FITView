@@ -387,40 +387,65 @@
 
 
 
-    UIController.prototype.showMap = function (map, session) {
+    UIController.prototype.showMap = function (map, rawdata) {
         // Plot markers for start of each session
 
         var util = FITUtility();
 
+        var sessionStartPosFound = false;
 
-        if (session.start_position_lat == undefined)
-            return;
+        var session = rawdata.session;
+
+        setMapCenter = function (lat,long) {
+            var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
+            map.setCenter(latlong);
+
+            var marker = new google.maps.Marker({
+                position: latlong,
+               // title: startTimeDate.toLocaleTimeString(),
+                map: map
+            });
+        }
+        
+        if (session !== undefined)
+       
+            if (session.start_position_lat !== undefined)
+            {
+        
+
+                session.start_position_lat.forEach(function (element, index, array) {
+
+                    var lat = session.start_position_lat[index];
+                    var long = session.start_position_long[index];
 
 
-        session.start_position_lat.forEach(function (element, index, array) {
-
-            var lat = session.start_position_lat[index];
-            var long = session.start_position_long[index];
-
-
-            var startTimeDate = new Date();
-            startTimeDate.setTime(util.convertTimestampToUTC(session.timestamp[index]));
+                    //var startTimeDate = new Date();
+                    //startTimeDate.setTime(util.convertTimestampToUTC(session.timestamp[index]));
 
 
 
-            if (lat !== undefined && long !== undefined) {
-                var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
+                    if (lat !== undefined && long !== undefined) {
+                        
 
-                map.setCenter(latlong);
+                        sessionStartPosFound = true;
+                        setMapCenter(lat,long);
 
-                var marker = new google.maps.Marker({
-                    position: latlong,
-                    title: startTimeDate.toLocaleTimeString(),
-                    map: map
+                        
+                    }
                 });
             }
-        });
 
+
+        // Valid .FIT file have session record, but invalid fit may not....try to fetch from record head instead
+
+        if (!sessionStartPosFound)
+            if (rawdata.record !== undefined) {
+                var lat = rawdata.record.position_lat[0];
+                var long = rawdata.record.position_long[0];
+
+                if (lat !== undefined && long !== undefined)
+                    setMapCenter(lat, long);
+            }
 
 
     }
@@ -463,7 +488,8 @@
         var util = FITUtility();
 
         record.position_lat.forEach(function (element, index, array) {
-            activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
+            if (record.position_long[index] !== undefined)
+              activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
         })
 
         var activityPath = new google.maps.Polyline({
@@ -497,8 +523,8 @@
                 switch (rawData.file_id.type[0]) {
                     case 4: // Activity file
 
-                        if (rawData.session != undefined)
-                            FITUI.showMap(this.map, rawData.session);
+                        //if (rawData.session != undefined)
+                            FITUI.showMap(this.map, rawData);
 
                         if (rawData.record != undefined)
                             FITUI.showPolyline(this.map, rawData.record);

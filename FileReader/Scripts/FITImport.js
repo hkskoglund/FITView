@@ -273,7 +273,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //getRawdata();
                 
 
-                deviceinfoStore.createIndex('timestamp', 'timestamp.value', { unique: false });
+                deviceinfoStore.createIndex('timestamp', 'timestamp.value', { unique: false }); // Several device_indexes can have same timestamp
                 //store.createIndex('title', 'title', { unique: false });
                 //store.createIndex('year', 'year', { unique: false });
             };
@@ -311,7 +311,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //if (e.name == 'DataCloneError')
                 //    displayActionFailure("This engine doesn't know how to clone a Blob, " +
                 //                         "use Firefox");
-                throw e;
+                //throw e;
+                self.postMessage({ response: "error", data: "Could not write data to objectstore, message = "+datarec.message, event : e });
             }
 
             //req.transaction.oncompleted = function (evt) {
@@ -332,7 +333,15 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             };
 
             req.onerror = function (evt) {
-                self.postMessage({ response: "error", data : "Could not write object to store"});
+                var errMsg = datarec.message;
+                if (datarec.timestamp !== undefined)
+                    errMsg += " timestamp " + datarec.timestamp.value.toString();
+                if (datarec.time_created !== undefined)
+                    errMsg += " time_created " + datarec.time_created.value.toString();
+                if (datarec.start_time !== undefined)
+                    errMsg += " start_time " + datarec.start_time.value.toString();
+
+                self.postMessage({ response: "error", data : "Could not write object to store, message = "+errMsg});
                 //console.error("addPublication error", this.error);
                 //displayActionFailure(this.error);
             };
@@ -408,6 +417,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var rawdata = {}; // Facilitate easy integration with highchart series
 
+            var fileidRec; // Synthesis of fileid and filecreator (only has two properties; software/hardware)
+
+            var speedDistanceRecs = []; // Records of swim speed/distance record without timestamp --> try adding as property to session
+
             if (headerInfo === undefined)
                 return undefined;
 
@@ -436,6 +449,17 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             //    self.postMessage({ response: "info", data: "device info transaction complete" });
             //}
 
+            var prevTimestamp = undefined;
+            var TIMESTAMP_THRESHOLD = 60*60*1000; // 10 minute max. threshold for acceptable consequtive timestamps
+            var unacceptableTimestamp = false;
+
+            var prevLat = undefined;
+            var prevLong = undefined;
+
+            var SEMICIRCLE_THRESHOLD = 1520000;
+            var unacceptableLat = false;
+            var unacceptableLong = false;
+
             while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
 
                 var rec = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
@@ -456,23 +480,73 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             if (rawdata[datarec.message] === undefined)
                                 rawdata[datarec.message] = {};
 
+                            unacceptableTimestamp = false;
+                            unacceptableLat = false;
+                            unacceptableLong = false;
+
                             // Presist data to indexedDB
                             switch (datarec.message) {
                                 case "record":
-                                    if (datarec.timestamp !== undefined)
-                                        addRawdata(recordStore, datarec);
-                                    else
-                                        self.postMessage({ response: "error", data: "No timestamp found in message record (probably swim data - speed/distance), skipped saving" });
+                                    if (datarec.timestamp !== undefined) {
 
+                                        // Check timestamp
+                                        if (prevTimestamp !== undefined)
+                                            if (Math.abs(datarec.timestamp.value - prevTimestamp.value) >= TIMESTAMP_THRESHOLD) {
+                                                unacceptableTimestamp = true;
+                                                self.postMessage({ response: "error", data: "Unacceptable timestamp found, filtering out this" });
+                                            }
+                                        
+                                        // Check position_lat
+
+                                        if (datarec.position_lat !== undefined && datarec.position_long !== undefined) {
+                                            if (prevLat !== undefined)
+                                                if (Math.abs(datarec.position_lat.value - prevLat.value) >= SEMICIRCLE_THRESHOLD) {
+                                                    unacceptableLat = true;
+                                                    self.postMessage({ response: "error", data: "Unacceptable latitude found, filtering out this" });
+                                                }
+
+                                            // Check pos. long
+
+                                            if (prevLong !== undefined && datarec.position_long.value !== undefined)
+                                                if (Math.abs(datarec.position_long.value - prevLong.value) >= SEMICIRCLE_THRESHOLD) {
+                                                    unacceptableLong = true;
+                                                    self.postMessage({ response: "error", data: "Unacceptable longitude found, filtering out this" });
+                                                }
+                                        }
+
+                                        if (!unacceptableTimestamp && !unacceptableLat && !unacceptableLong) {
+                                            prevTimestamp = datarec.timestamp;
+                                            prevLat = datarec.position_lat;
+                                            prevLong = datarec.position_long;
+                                            addRawdata(recordStore, datarec);
+                                        }
+
+                                        
+                                    }
+                                    else {
+                                        speedDistanceRecs.push(datarec);
+                                        //self.postMessage({ response: "error", data: "No timestamp found in message record (probably swim data - speed/distance), skipped saving" });
+                                    }
                                     break;
                                 case "lap":
-                                    addRawdata(lapStore, datarec);
+                                    if (datarec.timestamp !== undefined)
+                                     addRawdata(lapStore, datarec);
+                                    else
+                                        self.postMessage({ response: "error", data: "No timestamp found in lap message, not written to indexedDB" });
                                     break;
                                 case "session":
+                                    if (speedDistanceRecs.length >= 1)
+                                        datarec.speedDistanceRecord = speedDistanceRecs;
+
                                     addRawdata(sessionStore, datarec);
                                     break;
                                 case "activity":
-                                    addRawdata(activityStore, datarec);
+                                    
+                                    if (datarec.timestamp !== undefined)
+                                        if (!isNaN(datarec.timestamp.value))
+                                            addRawdata(activityStore, datarec);
+                                        else
+                                            self.postMessage({ response: "error", data: "Got timestamp NaN, activity record not written to indexedDB" });
                                     break;
                                 case "length":
                                     //self.postMessage({ response: "info", data: "Found length message" });
@@ -484,10 +558,23 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                                     break;
                                 case "event":
-                                    addRawdata(eventStore, datarec);
+                                    if (datarec.timestamp !== undefined)
+                                        addRawdata(eventStore, datarec);
+                                    else
+                                        self.postMessage({ response: "error", data: "No timestamp in event message, not written to indexedDB" });
                                     break;
                                 case "file_id":
-                                    addRawdata(fileidStore, datarec);
+                                    // Well formed .FIT should have one file_id at the start
+                                    fileidRec = datarec;
+                                   // addRawdata(fileidStore, datarec);
+                                    break;
+                                case "file_creator":
+                                    // Seems rather redudant, same info. is also in device_info record
+                                    if (fileidRec !== undefined) {
+                                        fileidRec.file_creator = datarec;
+                                        
+                                    } else
+                                        self.postMessage({ response: "error", data: "file_creator msg. found, but not file_id, skipped saving" });
                                     break;
                                 case "device_info":
                                     // Hmmm. 910XT seems to record 2 set of identically device info records
@@ -500,27 +587,29 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                             // Build rawdata structure tailored for integration with highchart
 
-                            for (var prop in datarec) {
+                            if (!unacceptableTimestamp && !unacceptableLat && !unacceptableLong) {
+                                for (var prop in datarec) {
 
-                                //if (rec[prop] !== undefined) {
-                                //  console.log("Found field " + filter+" i = "+i.toString());
+                                    //if (rec[prop] !== undefined) {
+                                    //  console.log("Found field " + filter+" i = "+i.toString());
 
-                                //if (rec[prop].value !== undefined) {
+                                    //if (rec[prop].value !== undefined) {
 
-                                var val = datarec[prop].value;
-
-
-                                if (val !== undefined) {
-
-                                    if (rawdata[(datarec.message)][prop] === undefined)
-                                        rawdata[(datarec.message)][prop] = [];
+                                    var val = datarec[prop].value;
 
 
-                                    rawdata[datarec.message][prop].push(val);
+                                    if (val !== undefined) {
+
+                                        if (rawdata[(datarec.message)][prop] === undefined)
+                                            rawdata[(datarec.message)][prop] = [];
+
+
+                                        rawdata[datarec.message][prop].push(val);
+                                    }
+                                    //else
+                                    //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
+                                    // }
                                 }
-                                //else
-                                //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
-                                // }
                             }
                             //}
                         } else
@@ -528,6 +617,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     }
                 }
             }
+
+            // Persist file_id msg.
+
+            if (fileidRec !== undefined)
+                if (fileidRec.time_created != undefined)
+                    addRawdata(fileidStore, fileidRec);
+                else
+                    self.postMessage({ response: "error", data: "Undefined time_created in file_id record, cannot save to indexedDB, skipped" });
 
             // Persist hrv data if any
 
@@ -691,6 +788,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 prop = "timestamp";
                                 rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                             } else {
+                                if (fieldDefNr == undefined)
+                                    fieldDefNr = "undefined";
+
                                 prop = "unknown" + fieldDefNr.toString();
                                 self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() + " unknown field generated to store data" });
                             }
@@ -944,13 +1044,24 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                     // VARIABLE content - field definitions as properties
 
-                    for (var fieldNr = 0; fieldNr < recContent.fieldNumbers && index < maxReadToByte - 3 ; fieldNr++)
-                        recContent["field" + fieldNr.toString()] = {
-                            "fieldDefinitionNumber": dviewFit.getUint8(index++),
-                            "size": dviewFit.getUint8(index++),
-                            "baseType": dviewFit.getUint8(index++)
-                        };
+                    var fdefNr, fsize, fbtype;
+                    for (var fieldNr = 0; fieldNr < recContent.fieldNumbers && index < maxReadToByte - 3 ; fieldNr++) {
+                        
+                         fdefNr = dviewFit.getUint8(index++);
+                         fsize = dviewFit.getUint8(index++);
+                         fbtype = dviewFit.getUint8(index++);
 
+                         if (fdefNr === undefined || fsize === undefined || fbtype === undefined) {
+                             self.postMessage({ response: "error", data: "Undefined field - field def. nr/size/basetype, index is "+ index.toString() });
+                             break;
+                         }
+
+                        recContent["field" + fieldNr.toString()] = {
+                            fieldDefinitionNumber: fdefNr,
+                            size    : fsize,
+                            baseType: fbtype
+                        };
+                     }
                    
 
                   
@@ -972,10 +1083,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                    
                     // var logging = "";
+                    var currentField, bType, bSize;
                     for (var fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
-                        var currentField = "field" + fieldNr.toString();
-                        var bType = localMsgDefinition.content[currentField].baseType;
-                        var bSize = localMsgDefinition.content[currentField].size;
+                         currentField = "field" + fieldNr.toString();
+                         bType = localMsgDefinition.content[currentField].baseType;
+                         bSize = localMsgDefinition.content[currentField].size;
 
                         recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
 
@@ -985,6 +1097,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             // Advance to next field value position
                             index = index + bSize;
                             continue;
+                        }
+
+                        if (index+bSize > maxReadToByte) { 
+                            self.postMessage({ response: "error", data: "Attempt to read beyond end of file, index is "+index.toString()+ ", can max read to : "+maxReadToByte.toString()+", size of field is "+bSize.toString()+" bytes" });
+                            break;
                         }
 
                         switch (bType) {
