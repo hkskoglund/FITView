@@ -417,7 +417,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var rawdata = {}; // Facilitate easy integration with highchart series
 
-            var fileidRec; // Synthesis of fileid and filecreator (only has two properties; software/hardware)
+            var fileidRec; // Synthesis of file_id and file_creator messages (file_creator only has only two properties; software/hardware)
 
             var speedDistanceRecs = []; // Records of swim speed/distance record without timestamp --> try adding as property to session
 

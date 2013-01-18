@@ -440,8 +440,15 @@
 
         if (!sessionStartPosFound)
             if (rawdata.record !== undefined) {
-                var lat = rawdata.record.position_lat[0];
-                var long = rawdata.record.position_long[0];
+                var lat = undefined;
+
+                if (rawdata.record.position_lat != undefined && rawdata.record.position_lat.length > 0)
+                    lat = rawdata.record.position_lat[0];
+
+                var long = undefined;
+
+                if (rawdata.record.postition_long != undefined && rawdata.record.position_long.length > 0)
+                    long = rawdata.record.position_long[0];
 
                 if (lat !== undefined && long !== undefined)
                     setMapCenter(lat, long);
