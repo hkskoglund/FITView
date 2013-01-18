@@ -425,7 +425,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 return undefined;
 
             // while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
-            var maxReadToByte = headerInfo.fitFileSystemSize - 2 - prevIndex;
+            var maxReadToByte = headerInfo.fitFileSystemSize - 2;
 
             //var tx = db.transaction([RECORD_OBJECTSTORE_NAME,LAP_OBJECTSTORE_NAME, SESSION_OBJECTSTORE_NAME,HRV_OBJECTSTORE_NAME], "readwrite");
             
@@ -1099,10 +1099,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             continue;
                         }
 
-                        if (index+bSize > maxReadToByte) { 
-                            self.postMessage({ response: "error", data: "Attempt to read beyond end of file, index is "+index.toString()+ ", can max read to : "+maxReadToByte.toString()+", size of field is "+bSize.toString()+" bytes" });
+                        if (index+bSize -1 > maxReadToByte+1) {
+                            self.postMessage({ response: "error", data: "Attempt to read field beyond end of file, index is " + index.toString() + ", can max read to : " + maxReadToByte.toString() + ", size of field is " + bSize.toString() + " bytes" });
                             break;
                         }
+                       
 
                         switch (bType) {
                             case 0x00:
@@ -1165,7 +1166,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                         
                             
                         // Advance to next field value position
-                        index = index + bSize;
+                            index = index + bSize;
+
+                        
                     }
 
                     break;
