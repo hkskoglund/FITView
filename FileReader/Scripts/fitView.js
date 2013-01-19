@@ -273,6 +273,13 @@
 
                                     
                                 }
+                            },
+
+                            mouseOut: function () {
+                                if (prevMarker !== undefined || prevMarker !== null) {
+                                    prevMarker.setMap(null);
+                                    prevMarker = null; // GC takes over...
+                                }
                             }
                         }
 
