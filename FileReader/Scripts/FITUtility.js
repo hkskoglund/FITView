@@ -71,6 +71,9 @@
     }
 
 
+    expose.getTimezoneOffsetFromUTC = function () {
+        return timezoneOffset;
+    }
 
 
 

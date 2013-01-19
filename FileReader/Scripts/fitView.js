@@ -108,6 +108,7 @@
         values.forEach(function (element, index, array) {
             // combined.push([util.convertTimestampToLocalTime(timestamps[index]), element]);
             combined.push([util.addTimezoneOffsetToUTC(timestamps[index]), element]);
+           // combined.push([timestamps[index], element]);
         });
         return combined;
         //} else
@@ -130,11 +131,15 @@
 
     UIController.prototype.showChartsDatetime = function (rawData) {
 
+        var util = FITUtility();
+       
 
         var chartId = "testChart";
         var divChart = document.getElementById(chartId);
         divChart.style.visibility = "visible";
         var seriesSetup = [];
+
+        var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
 
         // Record data
 
@@ -221,8 +226,53 @@
                     point: {
 
                         events: {
+
                             select: function () {
                                 console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y)
+                            },
+
+                            mouseOver: function () {
+                                var lat, long;
+
+                                if (rawData.record != undefined) {
+                                    
+                                    var index = rawData.record.timestamp.indexOf(this.x-util.getTimezoneOffsetFromUTC());
+                                    if (index === -1) {
+                                        console.error("Could not find index of timestamp ", this.x);
+                                        return;
+                                    }
+
+                                    setMarker = function () {
+                                        prevMarker = new google.maps.Marker({
+                                            position: new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long)),
+                                            icon: {
+                                                path: google.maps.SymbolPath.CIRCLE,
+                                                scale: 5
+                                            },
+                                            draggable: true,
+                                            map: FITUI.map
+                                        });
+                                    }
+
+                                    if (rawData.record.position_lat != undefined)
+                                        lat = rawData.record.position_lat[index];
+
+                                    if (rawData.record.position_long != undefined)
+                                        long = rawData.record.position_long[index];
+
+                                    console.log("Lat, long ", lat, long);
+
+                                    if (prevMarker === null) {
+                                        setMarker();
+                                    } else {
+                                        // Clear previous marker
+                                        prevMarker.setMap(null);
+                                        prevMarker = null;
+                                        setMarker();
+                                    }
+
+                                    
+                                }
                             }
                         }
 
@@ -523,18 +573,18 @@
 
 
                 // Initialize map
-                if (this.map === undefined)
-                    this.map = FITUI.initMap();
+                if (FITUI.map === undefined)
+                    FITUI.map = FITUI.initMap();
 
 
                 switch (rawData.file_id.type[0]) {
                     case 4: // Activity file
 
                         //if (rawData.session != undefined)
-                            FITUI.showMap(this.map, rawData);
+                            FITUI.showMap(FITUI.map, rawData);
 
                         if (rawData.record != undefined)
-                            FITUI.showPolyline(this.map, rawData.record);
+                            FITUI.showPolyline(FITUI.map, rawData.record);
 
                         FITUI.showChartsDatetime(rawData);
                         FITUI.showChartHrv(rawData);
@@ -553,8 +603,8 @@
 
             case 'header':
                 var headerInfo = eventdata.header;
-                if (headerInfo.estimatedFitFileSize != headerInfo.fitFileSystemSize)
-                    console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFileSystemSize.toString() + " bytes.");
+                if (headerInfo.estimatedFitFileSize != headerInfo.fitFile.size)
+                    console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFile.size.toString() + " bytes.");
                 break;
 
             case 'error':

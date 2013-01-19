@@ -90,6 +90,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         var EVENT_OBJECTSTORE_NAME = 'event';
         var FILEID_OBJECTSTORE_NAME = 'fileid';
         var DEVICEINFO_OBJECTSTORE_NAME = 'deviceinfo';
+        var META_OBJECTSTORE_NAME = 'meta';
 
         var db;
         var req;
@@ -243,6 +244,11 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 // console.log("openDb DONE");
                 // getRawdata();
                
+
+             
+
+               
+
                 getRawdata();
 
                 
@@ -269,7 +275,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 var eventStore = evt.currentTarget.result.createObjectStore(EVENT_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                 var fileidStore = evt.currentTarget.result.createObjectStore(FILEID_OBJECTSTORE_NAME, { keyPath: 'time_created.value', autoIncrement: false });
                 var deviceinfoStore = evt.currentTarget.result.createObjectStore(DEVICEINFO_OBJECTSTORE_NAME, {  autoIncrement: true });
-
+                var metaStore = evt.currentTarget.result.createObjectStore(META_OBJECTSTORE_NAME, { keyPath: 'fitFile.name' });
                 //getRawdata();
                 
 
@@ -334,12 +340,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             req.onerror = function (evt) {
                 var errMsg = datarec.message;
-                if (datarec.timestamp !== undefined)
-                    errMsg += " timestamp " + datarec.timestamp.value.toString();
-                if (datarec.time_created !== undefined)
-                    errMsg += " time_created " + datarec.time_created.value.toString();
-                if (datarec.start_time !== undefined)
-                    errMsg += " start_time " + datarec.start_time.value.toString();
+                if (errMsg !== undefined) {
+                    if (datarec.timestamp !== undefined)
+                        errMsg += " timestamp " + datarec.timestamp.value.toString();
+                    if (datarec.time_created !== undefined)
+                        errMsg += " time_created " + datarec.time_created.value.toString();
+                    if (datarec.start_time !== undefined)
+                        errMsg += " start_time " + datarec.start_time.value.toString();
+                }
 
                 self.postMessage({ response: "error", data : "Could not write object to store, message = "+errMsg});
                 //console.error("addPublication error", this.error);
@@ -349,6 +357,16 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
 
         function getRawdata() {
+
+
+            headerInfo = getFITHeader(fileBuffer, fitFile);
+
+            self.postMessage({ response: "header", header: headerInfo });
+
+            // Store header to indexedDB
+            var metaStore = getObjectStore(META_OBJECTSTORE_NAME, "readwrite");
+            addRawdata(metaStore, headerInfo);
+
             var rawData = getDataRecords();
 
             self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records });
@@ -425,7 +443,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 return undefined;
 
             // while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
-            var maxReadToByte = headerInfo.fitFileSystemSize - 2;
+            var maxReadToByte = headerInfo.fitFile.size - 2;
 
             //var tx = db.transaction([RECORD_OBJECTSTORE_NAME,LAP_OBJECTSTORE_NAME, SESSION_OBJECTSTORE_NAME,HRV_OBJECTSTORE_NAME], "readwrite");
             
@@ -450,7 +468,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             //}
 
             var prevTimestamp = undefined;
-            var TIMESTAMP_THRESHOLD = 60*60*1000; // 10 minute max. threshold for acceptable consequtive timestamps
+            var TIMESTAMP_THRESHOLD = 60*60*1000; // 60 minute max. threshold for acceptable consequtive timestamps
             var unacceptableTimestamp = false;
 
             var prevLat = undefined;
@@ -460,7 +478,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var unacceptableLat = false;
             var unacceptableLong = false;
 
-            while (index < headerInfo.fitFileSystemSize - 2 - prevIndex) { // Try reading from file in case something is wrong with header (datasize/headersize) 
+            while (index < maxReadToByte) { // Try reading from file in case something is wrong with header (datasize/headersize) 
 
                 var rec = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
                 // Probably it would be possible to integrate the first and second-pass in a integrated pass, but it would
@@ -636,14 +654,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             //this.littleEndian = firstRecord.content.littleEndian; // The encoding used for records
 
-            // Unclear if last 2 bytes of FIT file is big/little endian, but based on FIT header CRC is stored in little endian, so
-            // it should be quite safe to assume the last two bytes is stored in little endian format
-            //var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
-
-            var CRC = dvFITBuffer.getUint16(aFITBuffer.byteLength - 2, true); // Force little endian
-            //console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
-
-            // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
+            
 
 
             //return JSON.stringify(data);
@@ -939,7 +950,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         }
 
-        getFITHeader = function (bufFitHeader, fitFileSystemSize) {
+        getFITHeader = function (bufFitHeader, fitFile) {
 
             var MAXFITHEADERLENGTH = 14; // FIT Protocol rev 1.3 p. 13
 
@@ -948,6 +959,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             // FIT file header protocol v. 1.3 stored as little endian
 
             var headerInfo = {
+                timestamp : new Date().getTime(),
+                fitFile : { size : fitFile.size,
+                    name : fitFile.name},
                 headerSize: dviewFitHeader.getUint8(0),
                 protocolVersion: dviewFitHeader.getUint8(1),       // FIT SDK v5.1 - fit.h - 4-bit MSB = major - 4-bit LSB = minor
                 profileVersion: dviewFitHeader.getUint16(2, true),  // FIT SDK v5.1: - fit h. -  major*100+minor
@@ -962,7 +976,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             headerInfo.profileVersionMinor = headerInfo.profileVersion - (headerInfo.profileVersionMajor * 100);
 
             headerInfo.estimatedFitFileSize = headerInfo.headerSize + headerInfo.dataSize + 2;  // 2 for last CRC
-            headerInfo.fitFileSystemSize = fitFileSystemSize;
+           // headerInfo.fitFileSystemSize = fsize;
 
             // this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
 
@@ -981,6 +995,16 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //    console.info("Header CRC was not stored in file");
 
             }
+
+
+            // Unclear if last 2 bytes of FIT file is big/little endian, but based on FIT header CRC is stored in little endian, so
+            // it should be quite safe to assume the last two bytes is stored in little endian format
+            //var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
+
+             headerInfo.CRC = dviewFitHeader.getUint16(bufFitHeader.byteLength - 2, true); // Force little endian
+            //console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
+
+            // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
 
             return headerInfo;
 
@@ -1191,9 +1215,6 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes" });
             }
 
-            headerInfo = getFITHeader(fileBuffer, fitFile.size);
-
-            self.postMessage({ response: "header", header: headerInfo });
 
             deleteDb();
 
