@@ -203,6 +203,7 @@
 
         var d = new Date();
         console.log("Starting highchart now " + d);
+
         chart1 = new Highcharts.Chart({
             chart: chartOptions,
             
@@ -444,7 +445,7 @@
 
 
 
-    UIController.prototype.showMap = function (map, rawdata) {
+    UIController.prototype.showSessionMarkers = function (map, rawdata) {
         // Plot markers for start of each session
 
         var util = FITUtility();
@@ -456,14 +457,28 @@
         setMapCenter = function (lat,long) {
             var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
             map.setCenter(latlong);
+            
+            if (FITUI.sessionMarkers === undefined || FITUI.sessionMarkers === null)
+                FITUI.sessionMarkers = [];
 
-            var marker = new google.maps.Marker({
+            FITUI.sessionMarkers.push(
+             new google.maps.Marker({
                 position: latlong,
                // title: startTimeDate.toLocaleTimeString(),
                 map: map
-            });
+            }));
         }
         
+        // Clear previous session markers
+        if (FITUI.sessionMarkers !== undefined && FITUI.sessionMarkers !== null)
+        {
+            FITUI.sessionMarkers.forEach(function (element, index, array) {
+                element.setMap(null);
+            });
+
+            FITUI.sessionMarkers = null;
+        }
+
         if (session !== undefined)
        
             if (session.start_position_lat !== undefined)
@@ -485,6 +500,7 @@
                         
 
                         sessionStartPosFound = true;
+                        
                         setMapCenter(lat,long);
 
                         
@@ -545,25 +561,32 @@
 
     UIController.prototype.showPolyline = function (map, record) {
 
-        if (record.position_lat === undefined || record.position_lat === null)
+        if (record.position_lat === undefined || record.position_lat === null) {
+            if (FITUI.activityPolyline !== undefined) {
+                
+                FITUI.activityPolyline.setMap(null);  // Clear, no GPS data
+                FITUI.activityPolyline = null;
+            }
             return;
+        }
 
         var activityCoordinates = [];
         var util = FITUtility();
 
+        // Build up polyline
         record.position_lat.forEach(function (element, index, array) {
             if (record.position_long[index] !== undefined)
               activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
         })
 
-        var activityPath = new google.maps.Polyline({
+        FITUI.activityPolyline = new google.maps.Polyline({
             path: activityCoordinates,
             strokeColor: "#FF0000",
             strokeOpacity: 1.0,
             strokeWeight: 2
         });
 
-        activityPath.setMap(map);
+        FITUI.activityPolyline.setMap(map);
 
     }
 
@@ -588,7 +611,7 @@
                     case 4: // Activity file
 
                         //if (rawData.session != undefined)
-                            FITUI.showMap(FITUI.map, rawData);
+                            FITUI.showSessionMarkers(FITUI.map, rawData);
 
                         if (rawData.record != undefined)
                             FITUI.showPolyline(FITUI.map, rawData.record);
