@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\bicycle_green_32.png" />
+    <Content Include="Images\blue-swimmer-icon-th.png" />
     <Content Include="Images\clicknrun.png" />
     <Content Include="Images\copyright.txt" />
     <Content Include="Images\iconlands.txt" />

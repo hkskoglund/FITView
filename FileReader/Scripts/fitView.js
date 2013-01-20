@@ -466,16 +466,32 @@
                 map: map
             };
 
+            var image = undefined;
+
+            function newMarkerImage(imageName) {
+                return new google.maps.MarkerImage(imageName,
+                        new google.maps.Size(32, 32),
+                        new google.maps.Point(0, 0),
+                        new google.maps.Point(0, 32));
+            }
+
             switch (sport) {
                 case FITSport.running:
-                    markerOptions.icon = 'Images/clicknrun.png';
+                    
+                    image = newMarkerImage('Images/clicknrun.png');
                     break;
                 case FITSport.cycling:
-                    markerOptions.icon = 'Images/bicycle_green_32.png';
+                    image = newMarkerImage('Images/bicycle_green_32.png');
                     break;
 
+                case FITSport.swimming:
+                    image = newMarkerImage('Images/blue-swimmer-icon-th.png');
+                    break;
                     // TO DO : Add more icons
             }
+
+            if (image !== undefined)
+                markerOptions.icon = image;
            
             FITUI.sessionMarkers.push(new google.maps.Marker(markerOptions));
         }
