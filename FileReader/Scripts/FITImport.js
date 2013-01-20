@@ -1212,7 +1212,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 fileBuffer = fitFileReader.readAsArrayBuffer(fitFile);
 
             } catch (e) {
-                self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes" });
+                self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes", event : e });
             }
 
 

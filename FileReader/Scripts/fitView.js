@@ -466,6 +466,7 @@
                 map: map
             };
 
+            // Select session marker according to sport mode
             var image = undefined;
 
             function newMarkerImage(imageName) {
@@ -665,7 +666,16 @@
                 break;
 
             case 'error':
-                console.error(eventdata.data);
+                var errMsg = eventdata.data;
+
+                if (eventdata.event != undefined) {
+                    errMsg += " Event; ";
+                    for (var prop in eventdata.event) {
+                        if (typeof prop === "string")
+                            errMsg += "property " + prop + " : " + eventdata.event.prop;
+                    }
+                }
+                console.error(errMsg);
                 break;
 
             case 'info':
