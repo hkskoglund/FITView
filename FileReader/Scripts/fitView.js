@@ -147,18 +147,18 @@
 
             if (rawData.record["heart_rate"] !== undefined)
                 seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record["heart_rate"], rawData.record["timestamp"]), id: 'heartrateseries' })
-            if (rawData.record["altitude"] !== undefined)
-                seriesSetup.push({ name: 'Altitude', data: 
-                    combine(rawData.record["altitude"], rawData.record["timestamp"]),
-                });
-            if (rawData.record["cadence"] !== undefined)
-                seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
-            if (rawData.record["speed"] !== undefined) {
-                rawData.record.speed.forEach(function (element, index, array) {
-                    array[index][0] = element[0] * 3.6;
-                });
-                seriesSetup.push({ name: 'Speed', data: combine(rawData.record["speed"], rawData.record["timestamp"]) });
-            }
+            //if (rawData.record["altitude"] !== undefined)
+            //    seriesSetup.push({ name: 'Altitude', data: 
+            //        combine(rawData.record["altitude"], rawData.record["timestamp"]),
+            //    });
+            //if (rawData.record["cadence"] !== undefined)
+            //    seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
+            //if (rawData.record["speed"] !== undefined) {
+            //    rawData.record.speed.forEach(function (element, index, array) {
+            //        array[index][0] = element[0] * 3.6;
+            //    });
+            //    seriesSetup.push({ name: 'Speed', data: combine(rawData.record["speed"], rawData.record["timestamp"]) });
+            //}
         }
 
         //if (rawData.lap != undefined) {
@@ -602,11 +602,36 @@
         var util = FITUtility();
 
         // Build up polyline
-        record.position_lat.forEach(function (element, index, array) {
-            if (record.position_long[index] !== undefined)
-              activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
-        })
+        
+            var latLength = record.position_lat.length;
+            console.info("Got GPS points (on property position_lat) : ", latLength);
 
+        
+            //var sampleInterval = Math.floor(latLength / 30);
+
+            //if (sampleInterval < 1)
+            //    sampleInterval = 1;
+
+            var sampleInterval = 15; // Max. sampling rate for 910XT is 1 second 
+
+            console.info("Sample length for polyline is ", sampleInterval);
+
+            var sample = 0;
+        
+            record.position_lat.forEach(function (element, index, array) {
+                if (sample === 0 || sample === sampleInterval || index === latLength - 1) {
+                    if (sample === sampleInterval)
+                        sample = 0;
+                    sample++;
+                    if (record.position_long[index] !== undefined)
+                        activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
+                }
+                else {
+                    sample++;
+                }
+            })
+
+        
         FITUI.activityPolyline = new google.maps.Polyline({
             path: activityCoordinates,
             strokeColor: "#FF0000",
