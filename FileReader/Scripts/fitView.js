@@ -454,19 +454,30 @@
 
         var session = rawdata.session;
 
-        setMapCenter = function (lat,long) {
+        setMapCenter = function (sport,lat,long) {
             var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
             map.setCenter(latlong);
             
             if (FITUI.sessionMarkers === undefined || FITUI.sessionMarkers === null)
                 FITUI.sessionMarkers = [];
 
-            FITUI.sessionMarkers.push(
-             new google.maps.Marker({
+            var markerOptions = {
                 position: latlong,
-               // title: startTimeDate.toLocaleTimeString(),
                 map: map
-            }));
+            };
+
+            switch (sport) {
+                case FITSport.running:
+                    markerOptions.icon = 'Images/clicknrun.png';
+                    break;
+                case FITSport.cycling:
+                    markerOptions.icon = 'Images/bicycle_green_32.png';
+                    break;
+
+                    // TO DO : Add more icons
+            }
+           
+            FITUI.sessionMarkers.push(new google.maps.Marker(markerOptions));
         }
         
         // Clear previous session markers
@@ -487,7 +498,7 @@
 
                 session.start_position_lat.forEach(function (element, index, array) {
 
-                    var lat = session.start_position_lat[index];
+                    var lat = element;
                     var long = session.start_position_long[index];
 
 
@@ -501,7 +512,7 @@
 
                         sessionStartPosFound = true;
                         
-                        setMapCenter(lat,long);
+                        setMapCenter(session.sport[index],lat,long);
 
                         
                     }
