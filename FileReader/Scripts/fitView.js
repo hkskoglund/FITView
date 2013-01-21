@@ -586,6 +586,48 @@
         return newMap;
     }
 
+    UIController.prototype.showLaps = function (rawData) {
+
+        // Overall viewmodel for this screen, along with initial state
+        function LapsViewModel() {
+            var self = this;
+
+            // Non-editable catalog data - would come from the server
+            //self.availableMeals = [
+            //    { mealName: "Standard (sandwich)", price: 0 },
+            //    { mealName: "Premium (lobster)", price: 34.95 },
+            //    { mealName: "Ultimate (whole zebra)", price: 290 }
+            //];
+
+            self.lap = rawData.lap
+
+           // self.timestamp = rawData.lap.timestamp[0].value;
+
+            // Editable data
+            //self.seats = ko.observableArray([
+            //    new SeatReservation("Steve", self.availableMeals[0]),
+            //    new SeatReservation("Bert", self.availableMeals[0])
+            //]);
+
+            // Operations
+            //self.addSeat = function () {
+            //    self.seats.push(new SeatReservation("", self.availableMeals[0]));
+            //}
+
+            //self.removeSeat = function (seat) { self.seats.remove(seat) }
+
+            //self.totalSurcharge = ko.computed(function () {
+            //    var total = 0;
+            //    for (var i = 0; i < self.seats().length; i++)
+            //        total += self.seats()[i].meal().price;
+            //    return total;
+            //});
+
+        }
+
+        ko.applyBindings(new LapsViewModel());
+    }
+
 
     UIController.prototype.showPolyline = function (map, record) {
 
@@ -665,6 +707,8 @@
 
                 switch (rawData.file_id.type[0]) {
                     case 4: // Activity file
+
+                            FITUI.showLaps(rawData);
 
                         //if (rawData.session != undefined)
                             FITUI.showSessionMarkers(FITUI.map, rawData);

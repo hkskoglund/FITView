@@ -8,7 +8,7 @@
     </script>
     <script defer="defer" src="Scripts/modernizr-2.6.2.js"></script>
     <script src="Scripts/jquery-1.9.0.min.js"></script>
-    
+    <script src="Scripts/knockout-2.2.1.js"></script>
     <script defer="defer" src="Scripts/highcharts.src.js"></script>
     <script src="Scripts/FITUtility.js"></script>
     <script defer="defer" src="Scripts/FITSport.js"></script>
@@ -44,6 +44,28 @@
         </section>
         
     </div> -->
+
+    <div id="divLaps">
+        <table>
+
+    <thead><tr>
+        <!--<th>Passenger name</th><th>Meal</th><th>Surcharge</th><th></th>-->
+    </tr></thead>
+    <!-- Todo: Generate table body -->
+   <!-- <tbody data-bind="foreach: $root.lap.timestamp[0]">-->
+       <tbody data-bind="foreach: $root.lap.timestamp">
+             <tr>
+           <td><input data-bind="value: $data" /></td>
+       <!-- <td><select data-bind="options: $root.availableMeals, value: meal, optionsText: 'mealName'"></select></td>
+            <td data-bind="text: formattedPrice"></td>
+            <td><a href="#" data-bind="click: $root.removeSeat">Remove</a></td>-->
+        </tr>
+    
+    </tbody>
+    
+    
+</table>
+    </div>
 
     <div id="activityMap"></div>
     
