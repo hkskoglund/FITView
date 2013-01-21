@@ -46,25 +46,40 @@
     </div> -->
 
     <div id="divLaps">
-        <table>
+        
+    <table >
 
-    <thead><tr>
-        <!--<th>Passenger name</th><th>Meal</th><th>Surcharge</th><th></th>-->
-    </tr></thead>
-    <!-- Todo: Generate table body -->
-   <!-- <tbody data-bind="foreach: $root.lap.timestamp[0]">-->
-       <tbody data-bind="foreach: $root.lap.timestamp">
-             <tr>
-           <td><input data-bind="value: $data" /></td>
-       <!-- <td><select data-bind="options: $root.availableMeals, value: meal, optionsText: 'mealName'"></select></td>
+        <thead>
+            <tr>
+                <th>timestamp</th>
+                <th>Avg. HR</th>
+                <th>Max. HR</th>
+               
+            </tr>
+
+        </thead>
+
+
+        <tbody data-bind="foreach: lap.timestamp">
+            <tr>
+                <td>
+                    <span data-bind="text: $root.lap.timestamp[$index()]" />
+                </td>
+                <td>
+                    <span data-bind="text: $root.lap.avg_heart_rate[$index()]"
+                </td>
+                <td>
+                    <span data-bind="text: $root.lap.max_heart_rate[$index()]"
+                </td>
+                <!-- <td><select data-bind="options: $root.availableMeals, value: meal, optionsText: 'mealName'"></select></td>
             <td data-bind="text: formattedPrice"></td>
             <td><a href="#" data-bind="click: $root.removeSeat">Remove</a></td>-->
-        </tr>
-    
-    </tbody>
-    
-    
-</table>
+            </tr>
+
+        </tbody>
+
+
+    </table>
     </div>
 
     <div id="activityMap"></div>
