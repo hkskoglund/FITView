@@ -548,7 +548,7 @@
 
                 var long = undefined;
 
-                if (rawdata.record.postition_long != undefined && rawdata.record.position_long.length > 0)
+                if (rawdata.record.position_long != undefined && rawdata.record.position_long.length > 0)
                     long = rawdata.record.position_long[0];
 
                 if (lat !== undefined && long !== undefined)
