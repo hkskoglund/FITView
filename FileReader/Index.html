@@ -51,10 +51,23 @@
 
         <thead>
             <tr>
-                <th>timestamp</th>
+                <th>Lap</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Elapsed time</th>
+                <th>Distance</th>
                 <th>Avg. HR</th>
                 <th>Max. HR</th>
-               
+                <th>Avg. speed</th>
+                <th>Max. speed</th>
+                <th>Avg. cadence</th>
+                <th>Max. cadence</th>
+                <th>Avg. power</th>
+                <th>Max. power</th>
+                <th>Cycles/strides</th>
+                <th>Calories</th>
+                <th>Total descent</th>
+                <th>Total ascent</th>
             </tr>
 
         </thead>
@@ -63,13 +76,55 @@
         <tbody data-bind="foreach: lap.timestamp">
             <tr>
                 <td>
+                    <span data-bind="text: ($index()+1)" />
+                </td>
+                <td data-bind="if: $root.lap.start_time">
+                    <span data-bind="text: $root.lap.start_time[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.total_elapsed_time">
                     <span data-bind="text: $root.lap.timestamp[$index()]" />
                 </td>
-                <td>
-                    <span data-bind="text: $root.lap.avg_heart_rate[$index()]"
+                <td data-bind="if: $root.lap.total_elapsed_time">
+                    <span data-bind="text: $root.lap.total_elapsed_time[$index()]" />
                 </td>
-                <td>
-                    <span data-bind="text: $root.lap.max_heart_rate[$index()]"
+                <td data-bind="if: $root.lap.total_distance">
+                    <span data-bind="text: $root.lap.total_distance[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.avg_heart_rate">
+                    <span data-bind="text: $root.lap.avg_heart_rate[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.max_heart_rate">
+                    <span data-bind="text: $root.lap.max_heart_rate[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.avg_speed">
+                    <span data-bind="text: $root.lap.avg_speed[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.max_speed">
+                    <span data-bind="text: $root.lap.max_speed[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.avg_cadence">
+                    <span data-bind="text: $root.lap.avg_cadence[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.max_cadence">
+                    <span data-bind="text: $root.lap.max_cadence[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.avg_power">
+                    <span data-bind="text: $root.lap.avg_power[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.max_power">
+                    <span data-bind="text: $root.lap.max_power[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.total_cycles_strides">
+                    <span data-bind="text: $root.lap.total_cycles_strides[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.total_calories">
+                    <span data-bind="text: $root.lap.total_calories[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.total_descent">
+                    <span data-bind="text: $root.lap.total_descent[$index()]" />
+                </td>
+                <td data-bind="if: $root.lap.total_ascent">
+                    <span data-bind="text: $root.lap.total_ascent[$index()]" />
                 </td>
                 <!-- <td><select data-bind="options: $root.availableMeals, value: meal, optionsText: 'mealName'"></select></td>
             <td data-bind="text: formattedPrice"></td>

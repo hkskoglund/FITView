@@ -625,7 +625,10 @@
 
         }
 
-        ko.applyBindings(new LapsViewModel());
+        if (rawData.lap !== undefined)
+            ko.applyBindings(new LapsViewModel());
+        else
+            console.warn("No lap information contained in FIT file");
     }
 
 
