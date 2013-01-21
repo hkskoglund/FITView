@@ -248,7 +248,7 @@
                                             position: new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long)),
                                             icon: {
                                                 path: google.maps.SymbolPath.CIRCLE,
-                                                scale: 5
+                                                scale: 3
                                             },
                                             draggable: true,
                                             map: FITUI.map
@@ -261,7 +261,7 @@
                                     if (rawData.record.position_long != undefined)
                                         long = rawData.record.position_long[index];
 
-                                    console.log("Lat, long ", lat, long);
+                                    //console.log("Lat, long ", lat, long);
 
                                     if (prevMarker === null) {
                                         setMarker();
@@ -564,7 +564,7 @@
 
         var mapOptions = {
 
-            zoom: 13,
+            zoom: 14,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
@@ -589,15 +589,18 @@
 
     UIController.prototype.showPolyline = function (map, record) {
 
-        if (record.position_lat === undefined || record.position_lat === null) {
-            if (FITUI.activityPolyline !== undefined) {
+       
+         // Clear previous polyline
+            if (FITUI.activityPolyline !== undefined && FITUI.activityPolyline !== null) {
                 
-                FITUI.activityPolyline.setMap(null);  // Clear, no GPS data
+                FITUI.activityPolyline.setMap(null); 
                 FITUI.activityPolyline = null;
             }
-            return;
-        }
 
+        // No need to render polyline if no position data is available
+            if (record.position_lat === undefined || record.position_lat === null) 
+              return;
+        
         var activityCoordinates = [];
         var util = FITUtility();
 
