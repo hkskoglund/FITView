@@ -148,3 +148,37 @@ white-space: nowrap;
     float: left;
     background: #0ff;
 }
+
+ul#lapList {
+    margin-left: 0;
+    padding-left: 0;
+    white-space: nowrap;
+}
+
+#lapList li {
+    display: inline;
+    list-style-type: none;
+    padding-right: 20px;
+    background-color:  #0094ff;
+}
+
+ul#sessionList {
+    margin-left: 0;
+    padding-left: 0;
+    white-space: nowrap;
+}
+
+#sessionList li {
+    display: inline;
+    list-style-type: none;
+    padding-right: 20px;
+    background-color:  #0094ff;
+}
+
+.SessionLapErrorUndefined {
+    background-color : red;
+}
+
+#divSessionLapContainer {
+    display: none;
+}

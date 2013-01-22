@@ -79,6 +79,7 @@
     <Content Include="Scripts\knockout-2.2.1.debug.js" />
     <Content Include="Scripts\knockout-2.2.1.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Snippets\LapDetails.html" />
     <Content Include="Stylesheets\StyleMain.css" />
     <Content Include="Web.config" />
   </ItemGroup>

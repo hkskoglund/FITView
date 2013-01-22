@@ -589,7 +589,7 @@
     UIController.prototype.showLaps = function (rawData) {
 
         // Overall viewmodel for this screen, along with initial state
-        function LapsViewModel() {
+        function ViewModel() {
             var self = this;
 
             // Non-editable catalog data - would come from the server
@@ -599,7 +599,25 @@
             //    { mealName: "Ultimate (whole zebra)", price: 290 }
             //];
 
+            self.session = rawData.session;
+
             self.lap = rawData.lap
+
+            self.lapTime = ko.computed(function () {
+                var minRaw = self.lap.total_timer_time[0] / 60;
+                var minPart = Math.floor(minRaw);
+                var secPart = (minRaw - minPart) * 60;
+
+                //return {
+                //    minutes: minPart,
+                //    seconds: secPart,
+                //    toString: minPart.toString() + ":" + secPart.toFixed(2)
+                //};
+
+                return minPart.toString() + ":" + secPart.toFixed(2);
+
+            });
+
 
            // self.timestamp = rawData.lap.timestamp[0].value;
 
@@ -625,10 +643,13 @@
 
         }
 
-        if (rawData.lap !== undefined)
-            ko.applyBindings(new LapsViewModel());
-        else
-            console.warn("No lap information contained in FIT file");
+            ko.applyBindings(new ViewModel());
+        
+            if (rawData.session === undefined)
+                console.warn("No session information found in FIT file");
+
+            if (rawData.lap === undefined)
+              console.warn("No lap information contained in FIT file");
     }
 
 
@@ -716,11 +737,11 @@
                         //if (rawData.session != undefined)
                             FITUI.showSessionMarkers(FITUI.map, rawData);
 
-                        if (rawData.record != undefined)
-                            FITUI.showPolyline(FITUI.map, rawData.record);
+                        //if (rawData.record != undefined)
+                        //    FITUI.showPolyline(FITUI.map, rawData.record);
 
-                        FITUI.showChartsDatetime(rawData);
-                        FITUI.showChartHrv(rawData);
+                        //FITUI.showChartsDatetime(rawData);
+                        //FITUI.showChartHrv(rawData);
 
                         FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;

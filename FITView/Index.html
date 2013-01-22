@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<!-- Basert på http://www.html5rocks.com/en/tutorials/file/dndfiles/#toc-selecting-files-dnd -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>FITView</title>
+   <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false">
+    </script>
+    <script defer="defer" src="Scripts/modernizr-2.6.2.js"></script>
+    <script src="Scripts/jquery-1.9.0.min.js"></script>
+    <script src="Scripts/knockout-2.2.1.js"></script>
+    <script defer="defer" src="Scripts/highcharts.src.js"></script>
+    <script src="Scripts/FITUtility.js"></script>
+    <script defer="defer" src="Scripts/FITSport.js"></script>
+    <script defer="defer" src="Scripts/FITView.js"></script>
+    
+    <link href="Stylesheets/StyleMain.css" rel="stylesheet"/>
+</head>
+<body>
+    <header >
+        <h1>FIT View</h1>
+       
+    </header>
+
+  <!--  <progress id="#progressLoading" max="180" value="0"></progress> -->
+
+    <div>
+        <input id="inpFITFile" type="file" />
+   
+        <output id="outConsole"></output>
+   
+    </div>
+
+ <!--   <div id="sessionTesting">
+        <section>Session 1
+            <header class="session">
+                <ul class="sessionList">
+            <li>Running</li>
+            <li>Start time</li>
+            <li>End time</li>
+        </ul>
+            </header>
+            
+        </section>
+        
+    </div> -->
+
+    
+    <div id="divSessions" data-bind="if: session !== undefined">
+        <ul id="sessionList" data-bind="foreach: session.timestamp">
+            <li data-bind="text: ($index()+1)"></li>
+        </ul>
+    </div>
+
+    <!-- Err msg. -->
+    <div class="SessionLapErrorUndefined" data-bind="visible: session===undefined">
+        <p>No sessions found</p>
+    </div>
+
+    <div id="divLaps" data-bind="if: lap !== undefined">
+
+        <ul id="lapList" data-bind="foreach: lap.timestamp">
+            <li data-bind="text: ($index()+1)"><a href="#" >Link</a></li>
+        </ul>
+    </div>
+
+    <!-- Error msg. -->
+    <div class="SessionLapErrorUndefined" data-bind="visible: lap === undefined">
+        <p>No laps found</p>
+    </div>
+
+
+    <div id="activityMap"></div>
+    
+    
+        <div id="testChart"></div>
+        <div id="hrvChart"></div>
+    
+    
+    <div>
+        
+         <div id="divMsgMap"></div>
+    </div>
+    <div >
+      <div id="speedVsHRChart"></div>
+      <div id="zonesChart"></div>
+    </div>
+    
+    
+<!--    <div id="divHRZones"  >
+        <h3 style="text-align:center">Heart Rate Zones</h3>
+        <button id="btnSaveZones" type="button">Save</button>
+        <button id="btnNewZone" type="button">New</button>
+   
+    </div>-->
+
+    <footer><h6 style="text-align: center">Henning Knut Skoglund, 2013</h6></footer>
+    
+    
+</body>
+
+</html>

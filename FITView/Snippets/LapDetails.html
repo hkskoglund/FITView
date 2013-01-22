@@ -1,53 +1,4 @@
-﻿<!DOCTYPE html>
-<!-- Basert på http://www.html5rocks.com/en/tutorials/file/dndfiles/#toc-selecting-files-dnd -->
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>FITView</title>
-   <script type="text/javascript"
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false">
-    </script>
-    <script defer="defer" src="Scripts/modernizr-2.6.2.js"></script>
-    <script src="Scripts/jquery-1.9.0.min.js"></script>
-    <script src="Scripts/knockout-2.2.1.js"></script>
-    <script defer="defer" src="Scripts/highcharts.src.js"></script>
-    <script src="Scripts/FITUtility.js"></script>
-    <script defer="defer" src="Scripts/FITSport.js"></script>
-    <script defer="defer" src="Scripts/FITView.js"></script>
-    
-    <link href="Stylesheets/StyleMain.css" rel="stylesheet"/>
-</head>
-<body>
-    <header >
-        <h1>FIT View</h1>
-       
-    </header>
-
-  <!--  <progress id="#progressLoading" max="180" value="0"></progress> -->
-
-    <div>
-        <input id="inpFITFile" type="file" />
-   
-        <output id="outConsole"></output>
-   
-    </div>
-
- <!--   <div id="sessionTesting">
-        <section>Session 1
-            <header class="session">
-                <ul class="sessionList">
-            <li>Running</li>
-            <li>Start time</li>
-            <li>End time</li>
-        </ul>
-            </header>
-            
-        </section>
-        
-    </div> -->
-
-    <div id="divLaps">
-        
-    <table >
+﻿<table >
 
         <thead>
             <tr>
@@ -55,6 +6,7 @@
                 <th>Start</th>
                 <th>End</th>
                 <th>Elapsed time</th>
+                <th>MM:SS</th>
                 <th>Distance</th>
                 <th>Avg. HR</th>
                 <th>Max. HR</th>
@@ -86,6 +38,9 @@
                 </td>
                 <td data-bind="if: $root.lap.total_elapsed_time">
                     <span data-bind="text: $root.lap.total_elapsed_time[$index()]" />
+                </td>
+                 <td data-bind="if: $root.lap.total_elapsed_time">
+                    <span data-bind="text: $root.lapTime" />
                 </td>
                 <td data-bind="if: $root.lap.total_distance">
                     <span data-bind="text: $root.lap.total_distance[$index()]" />
@@ -135,35 +90,3 @@
 
 
     </table>
-    </div>
-
-    <div id="activityMap"></div>
-    
-    
-        <div id="testChart"></div>
-        <div id="hrvChart"></div>
-    
-    
-    <div>
-        
-         <div id="divMsgMap"></div>
-    </div>
-    <div >
-      <div id="speedVsHRChart"></div>
-      <div id="zonesChart"></div>
-    </div>
-    
-    
-<!--    <div id="divHRZones"  >
-        <h3 style="text-align:center">Heart Rate Zones</h3>
-        <button id="btnSaveZones" type="button">Save</button>
-        <button id="btnNewZone" type="button">New</button>
-   
-    </div>-->
-
-    <footer><h6 style="text-align: center">Henning Knut Skoglund, 2013</h6></footer>
-    
-    
-</body>
-
-</html>
