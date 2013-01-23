@@ -36,10 +36,10 @@
         return crc;
     }
 
-    function fitCRC(payloadview, start, end, crcSeed) {
+    expose.fitCRC = function (payloadview, start, end, crcSeed) {
         var crc = crcSeed;
 
-        for (var i = start; i <= end; i++) {
+        for (var i = start; i < end; i++) {
             crc = fitCRC_Get16(crc, payloadview.getUint8(i));
         }
 

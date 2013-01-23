@@ -45,30 +45,32 @@
         
     </div> -->
 
-    
-    <div id="divSessions" data-bind="if: session !== undefined">
-        <ul id="sessionList" data-bind="foreach: session.timestamp">
-            <li data-bind="text: ($index()+1)"></li>
-        </ul>
+    <div id="divSessionLap">
+
+        <div id="divSessions" data-bind="if: session !== undefined">
+            <ul id="sessionList" data-bind="foreach: session.timestamp">
+                <li data-bind="text: ($index()+1)"></li>
+            </ul>
+        </div>
+
+        <!-- Err msg. -->
+        <div class="SessionLapErrorUndefined" data-bind="visible: session===undefined">
+            <p>No sessions found</p>
+        </div>
+
+        <div id="divLaps" data-bind="if: lap !== undefined">
+
+            <ul id="lapList" data-bind="foreach: lap.timestamp">
+                <li data-bind="text: ($index()+1)"><a href="#">Link</a></li>
+            </ul>
+        </div>
+
+        <!-- Error msg. -->
+        <div class="SessionLapErrorUndefined" data-bind="visible: lap === undefined">
+            <p>No laps found</p>
+        </div>
+
     </div>
-
-    <!-- Err msg. -->
-    <div class="SessionLapErrorUndefined" data-bind="visible: session===undefined">
-        <p>No sessions found</p>
-    </div>
-
-    <div id="divLaps" data-bind="if: lap !== undefined">
-
-        <ul id="lapList" data-bind="foreach: lap.timestamp">
-            <li data-bind="text: ($index()+1)"><a href="#" >Link</a></li>
-        </ul>
-    </div>
-
-    <!-- Error msg. -->
-    <div class="SessionLapErrorUndefined" data-bind="visible: lap === undefined">
-        <p>No laps found</p>
-    </div>
-
 
     <div id="activityMap"></div>
     

@@ -101,7 +101,7 @@
         }
 
         if (values.length !== timestamps.length)
-            console.warn("Length of arrays to comine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString());
+            console.warn("Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString());
 
         
         //if (verifyTimestamps(timestamps)) {
@@ -645,6 +645,11 @@
 
             ko.applyBindings(new ViewModel());
         
+            //var divLapSession = document.getElementById("divLapSession");
+          
+            var divSessionLap = $('#divSessionLap');
+            divSessionLap.show();
+
             if (rawData.session === undefined)
                 console.warn("No session information found in FIT file");
 
@@ -688,16 +693,9 @@
             var sample = 0;
         
             record.position_lat.forEach(function (element, index, array) {
-                if (sample === 0 || sample === sampleInterval || index === latLength - 1) {
-                    if (sample === sampleInterval)
-                        sample = 0;
-                    sample++;
+                if (sample === 0 || (sample++ % sampleInterval === 0) || index === latLength - 1) 
                     if (record.position_long[index] !== undefined)
                         activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
-                }
-                else {
-                    sample++;
-                }
             })
 
         
@@ -737,8 +735,8 @@
                         //if (rawData.session != undefined)
                             FITUI.showSessionMarkers(FITUI.map, rawData);
 
-                        //if (rawData.record != undefined)
-                        //    FITUI.showPolyline(FITUI.map, rawData.record);
+                        if (rawData.record != undefined)
+                            FITUI.showPolyline(FITUI.map, rawData.record);
 
                         //FITUI.showChartsDatetime(rawData);
                         //FITUI.showChartHrv(rawData);

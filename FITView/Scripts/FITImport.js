@@ -944,17 +944,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         }
 
-        getFITCRC = function (aCRCBuffer, littleEndian) {
-            var dviewFITCRC = new DataView(aCRCBuffer); // Last 2 bytes of .FIT file contains CRC
-            return dviewFITCRC.getUint16(0, littleEndian);
-
-        }
-
-        getFITHeader = function (bufFitHeader, fitFile) {
+        
+        getFITHeader = function (arrayBufferFITFile, fitFile) {
 
             var MAXFITHEADERLENGTH = 14; // FIT Protocol rev 1.3 p. 13
 
-            var dviewFitHeader = new DataView(bufFitHeader);
+            var dviewFitHeader = new DataView(arrayBufferFITFile);
             // DataView defaults to bigendian MSB --- LSB
             // FIT file header protocol v. 1.3 stored as little endian
 
@@ -976,10 +971,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             headerInfo.profileVersionMinor = headerInfo.profileVersion - (headerInfo.profileVersionMajor * 100);
 
             headerInfo.estimatedFitFileSize = headerInfo.headerSize + headerInfo.dataSize + 2;  // 2 for last CRC
-           // headerInfo.fitFileSystemSize = fsize;
-
-            // this.dataType = ab2str(bufFitHeader.slice(8, 12)); // Should be .FIT ASCII codes
-
+          
             headerInfo.dataType = "";
             for (var indx = 8; indx < 12; indx++)
                 headerInfo.dataType += String.fromCharCode(dviewFitHeader.getUint8(indx));
@@ -991,20 +983,26 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             if (headerInfo.headerSize >= MAXFITHEADERLENGTH) {
                 headerInfo.headerCRC = dviewFitHeader.getUint16(12, true);
                 index += 2;
-                //if (this.headerCRC === 0)
-                //    console.info("Header CRC was not stored in file");
+                if (this.headerCRC === 0)
+                    self.postMessage({ response: "info", data: "Header CRC was not stored in file" });
 
             }
 
-
             // Unclear if last 2 bytes of FIT file is big/little endian, but based on FIT header CRC is stored in little endian, so
             // it should be quite safe to assume the last two bytes is stored in little endian format
-            //var CRC = this.getFITCRC(aFITBuffer.slice(-2), true);
 
-             headerInfo.CRC = dviewFitHeader.getUint16(bufFitHeader.byteLength - 2, true); // Force little endian
-            //console.log("Stored 2-byte is CRC in file is : " + CRC.toString());
+            var fileLength = arrayBufferFITFile.byteLength;
+            var CRCbytesLength = 2;
 
-            // Not debugged yet...var verifyCRC = fitCRC(dvFITBuffer, 0, this.headerSize + this.dataSize, 0);
+             headerInfo.CRC = dviewFitHeader.getUint16(fileLength - CRCbytesLength, true); // Force little endian
+             self.postMessage({ response: "info", data: "Stored 2-byte is CRC at end FIT file is (little endian) : " + headerInfo.CRC.toString(16) });
+
+             var util = FITUtility();
+
+            headerInfo.verifyCRC  = util.fitCRC(dviewFitHeader, 0, fileLength-CRCbytesLength,  0);
+
+            if (headerInfo.CRC !== headerInfo.verifyCRC)
+                self.postMessage({ response: "error", data: "Verification of CRC gives a value of : " + headerInfo.verifyCRC.toString(16)+ " that does not match CRC stored at end of file." });
 
             return headerInfo;
 
