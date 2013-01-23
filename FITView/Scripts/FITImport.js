@@ -480,6 +480,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             while (index < maxReadToByte) { // Try reading from file in case something is wrong with header (datasize/headersize) 
 
+                self.postMessage({ response: "progress", data: Math.floor(index / maxReadToByte * 100) });
+
                 var rec = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
                 // Probably it would be possible to integrate the first and second-pass in a integrated pass, but it would
                 // complicate the code. A decision was made to stick with the current solution - it works -
@@ -995,14 +997,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var CRCbytesLength = 2;
 
              headerInfo.CRC = dviewFitHeader.getUint16(fileLength - CRCbytesLength, true); // Force little endian
-             self.postMessage({ response: "info", data: "Stored 2-byte is CRC at end FIT file is (little endian) : " + headerInfo.CRC.toString(16) });
+             self.postMessage({ response: "info", data: "Stored 2-byteCRC at end FIT file is (MSBLSB=bigendian) : " + headerInfo.CRC.toString(16) });
 
              var util = FITUtility();
 
             headerInfo.verifyCRC  = util.fitCRC(dviewFitHeader, 0, fileLength-CRCbytesLength,  0);
 
             if (headerInfo.CRC !== headerInfo.verifyCRC)
-                self.postMessage({ response: "error", data: "Verification of CRC gives a value of : " + headerInfo.verifyCRC.toString(16)+ " that does not match CRC stored at end of file." });
+                self.postMessage({ response: "error", data: "Verification of CRC gives a value of (MSBLSB=bigendian) : " + headerInfo.verifyCRC.toString(16) + " that does not match CRC stored at end of file." });
 
             return headerInfo;
 

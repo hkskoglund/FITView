@@ -776,6 +776,11 @@
                 console.info(eventdata.data);
                 break;
 
+            case 'progress':
+                // TO DO : probably use data-binding instead in viewmodel....
+                FITUI.progressFITImport.setAttribute("value", eventdata.data);
+                break;
+
             default:
                 console.error("Received unrecognized message from worker " + eventdata.response);
                 break;
@@ -822,6 +827,9 @@
         //FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
 
         FITUI.divMsgMap = document.getElementById('divMsgMap');
+
+        FITUI.progressFITImport = document.getElementById('progressFITImport');
+        
 
 
 
