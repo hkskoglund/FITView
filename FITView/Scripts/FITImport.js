@@ -978,15 +978,24 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             for (var indx = 8; indx < 12; indx++)
                 headerInfo.dataType += String.fromCharCode(dviewFitHeader.getUint8(indx));
 
-            index = 12;
+            if (headerInfo.dataType !== ".FIT")
+                self.postMessage({ response: "error", data: "Header reports data type " + headerInfo.dataType.toString() + ", expected .FIT." });
 
-            // Optional header info
+            var firstPartOfHeaderLength = 12;
+            index = firstPartOfHeaderLength;
+
+            // Optional header info, header CRC
 
             if (headerInfo.headerSize >= MAXFITHEADERLENGTH) {
                 headerInfo.headerCRC = dviewFitHeader.getUint16(12, true);
                 index += 2;
-                if (this.headerCRC === 0)
-                    self.postMessage({ response: "info", data: "Header CRC was not stored in file" });
+                if (headerInfo.headerCRC === 0)
+                    self.postMessage({ response: "info", data: "Header CRC was not stored in the file" });
+                else {
+                    headerInfo.verifyHeaderCRC = util.fitCRC(dviewFitHeader, 0, firstPartOfHeaderLength, 0);
+                    if (headerInfo.verifyHeaderCRC !== headerInfo.headerCRC)
+                        self.postMessage({ response: "error", data: "Header CRC (bigendian) =" + headerInfo.headerCRC.toString(16) + ", but verified CRC (bigendian) =" + headerInfo.verifyHeaderCRC.toString(16) });
+                }
 
             }
 
@@ -997,7 +1006,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var CRCbytesLength = 2;
 
              headerInfo.CRC = dviewFitHeader.getUint16(fileLength - CRCbytesLength, true); // Force little endian
-             self.postMessage({ response: "info", data: "Stored 2-byteCRC at end FIT file is (MSBLSB=bigendian) : " + headerInfo.CRC.toString(16) });
+             self.postMessage({ response: "info", data: "Stored 16-bit CRC at end FIT file is (MSBLSB=bigendian) : " + headerInfo.CRC.toString(16) });
 
              var util = FITUtility();
 
