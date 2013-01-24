@@ -692,8 +692,8 @@
                         if (rawData.record != undefined)
                             FITUI.showPolyline(FITUI.map, rawData.record);
 
-                        //FITUI.showChartsDatetime(rawData);
-                        //FITUI.showChartHrv(rawData);
+                        FITUI.showChartsDatetime(rawData);
+                        FITUI.showChartHrv(rawData);
 
                         FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;

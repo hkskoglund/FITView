@@ -51,6 +51,7 @@
     <div id="divSessionLap" >
 
         <div id="divSessions"  >
+            <h4>Sessions</h4>
             <ul id="sessionList" data-bind="foreach: timestamp">
                 <li data-bind="text: ($index()+1)"></li>
             </ul>
@@ -62,9 +63,21 @@
         </div> -->
 
         <div id="divLaps" >
+            <h4>Laps</h4>
+            <hr/>
+
+<div data-bind="text: ko.toJSON($root)"></div>
 
             <ul id="lapList" data-bind="foreach: timestamp">
-                <li data-bind="text: ($index()+1)"><a href="#">Link</a></li>
+                <li>
+                  <div style="display: inline">
+                      <span data-bind="text: $parent.total_distance()[$index()]"></span>
+                  <span data-bind="text: $parent.start_time()[$index()]"></span>
+                  <span data-bind="text: $parent.timestamp()[$index()]"></span>
+                  </div>
+                  
+                   <!-- Max heart rate <span data-bind="text: timestamp.value"></span>-->
+                </li>
             </ul>
         </div>
 
