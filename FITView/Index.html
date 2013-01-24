@@ -51,7 +51,7 @@
     <div id="divSessionLap" >
 
         <div id="divSessions"  >
-            <ul id="sessionList" data-bind="foreach: session.timestamp">
+            <ul id="sessionList" data-bind="foreach: timestamp">
                 <li data-bind="text: ($index()+1)"></li>
             </ul>
         </div>
@@ -63,7 +63,7 @@
 
         <div id="divLaps" >
 
-            <ul id="lapList" data-bind="foreach: lap.timestamp">
+            <ul id="lapList" data-bind="foreach: timestamp">
                 <li data-bind="text: ($index()+1)"><a href="#">Link</a></li>
             </ul>
         </div>

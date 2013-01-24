@@ -588,25 +588,10 @@
 
     UIController.prototype.showLaps = function (rawData) {
 
-       
-        
-
-        
-
-       
-        //FITUI.viewmodel.lap = rawData.lap;
-
-
-       
-       
 
         FITUI.divSessionLap.show();
 
-            if (rawData.session === undefined)
-                console.warn("No session information found in FIT file");
-
-            if (rawData.lap === undefined)
-              console.warn("No lap information contained in FIT file");
+            
     }
 
 
@@ -673,14 +658,23 @@
                 //var rawData = JSON.parse(data.rawdata);
                 $("#progressFITimport").hide();
                 FITUI.progressFITimportViewModel.progressFITimport(0);
+
                 var rawData = eventdata.rawdata;
 
-                if (FITUI.masterViewModel === undefined) {
-                    FITUI.masterViewModel = ko.mapping.fromJS(rawData);
-                    ko.applyBindings(FITUI.masterViewModel, $('#divSessionLap')[0]);
+                if (FITUI.sessionViewModel === undefined) {
+                    FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session);
+                    ko.applyBindings(FITUI.sessionViewModel, $('#divSessions')[0]);
                 }
                 else
-                    ko.mapping.fromJS(rawData, FITUI.masterViewModel);
+                    ko.mapping.fromJS(rawData.session, FITUI.sessionViewModel);
+
+
+                if (FITUI.lapViewModel === undefined) {
+                    FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap);
+                    ko.applyBindings(FITUI.lapViewModel, $('#divLaps')[0]);
+                }
+                else
+                    ko.mapping.fromJS(rawData.lap, FITUI.lapViewModel);
 
                 // Initialize map
                 if (FITUI.map === undefined)
