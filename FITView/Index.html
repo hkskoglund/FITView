@@ -7,8 +7,10 @@
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false">
     </script>
     <script defer="defer" src="Scripts/modernizr-2.6.2.js"></script>
-    <script src="Scripts/jquery-1.9.0.min.js"></script>
-    <script src="Scripts/knockout-2.2.1.js"></script>
+    <script src="Scripts/jquery-1.9.0.js"></script>
+   
+    <script src="Scripts/knockout-2.2.1.debug.js"></script>
+    <script src="Scripts/knockout.mapping-latest.debug.js"></script>
     <script defer="defer" src="Scripts/highcharts.src.js"></script>
     <script src="Scripts/FITUtility.js"></script>
     <script defer="defer" src="Scripts/FITSport.js"></script>
@@ -22,7 +24,7 @@
        
     </header>
 
-    <progress id="progressFITImport" max="100" value="0"></progress>
+    <progress id="progressFITimport" max="100" data-bind="value: progressFITimport" style="display: none"></progress>
 
     <div>
         <input id="inpFITFile" type="file" />
@@ -44,31 +46,32 @@
         </section>
         
     </div> -->
+    <!--<span data-bind="text: testvalue.session"></span>-->
+    
+    <div id="divSessionLap" >
 
-    <div id="divSessionLap">
-
-        <div id="divSessions" data-bind="if: session !== undefined">
+        <div id="divSessions"  >
             <ul id="sessionList" data-bind="foreach: session.timestamp">
                 <li data-bind="text: ($index()+1)"></li>
             </ul>
         </div>
 
-        <!-- Err msg. -->
-        <div class="SessionLapErrorUndefined" data-bind="visible: session===undefined">
+        <!-- 
+        <div class="SessionLapErrorUndefined" data-bind="if: !hasSession" >
             <p>No sessions found</p>
-        </div>
+        </div> -->
 
-        <div id="divLaps" data-bind="if: lap !== undefined">
+        <div id="divLaps" >
 
             <ul id="lapList" data-bind="foreach: lap.timestamp">
                 <li data-bind="text: ($index()+1)"><a href="#">Link</a></li>
             </ul>
         </div>
 
-        <!-- Error msg. -->
-        <div class="SessionLapErrorUndefined" data-bind="visible: lap === undefined">
+       <!-- 
+        <div class="SessionLapErrorUndefined" data-bind="if: !hasLap" >
             <p>No laps found</p>
-        </div>
+        </div>-->
 
     </div>
 

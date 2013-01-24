@@ -588,67 +588,19 @@
 
     UIController.prototype.showLaps = function (rawData) {
 
-        // Overall viewmodel for this screen, along with initial state
-        function ViewModel() {
-            var self = this;
-
-            // Non-editable catalog data - would come from the server
-            //self.availableMeals = [
-            //    { mealName: "Standard (sandwich)", price: 0 },
-            //    { mealName: "Premium (lobster)", price: 34.95 },
-            //    { mealName: "Ultimate (whole zebra)", price: 290 }
-            //];
-
-            self.session = rawData.session;
-
-            self.lap = rawData.lap
-
-            self.lapTime = ko.computed(function () {
-                var minRaw = self.lap.total_timer_time[0] / 60;
-                var minPart = Math.floor(minRaw);
-                var secPart = (minRaw - minPart) * 60;
-
-                //return {
-                //    minutes: minPart,
-                //    seconds: secPart,
-                //    toString: minPart.toString() + ":" + secPart.toFixed(2)
-                //};
-
-                return minPart.toString() + ":" + secPart.toFixed(2);
-
-            });
-
-
-           // self.timestamp = rawData.lap.timestamp[0].value;
-
-            // Editable data
-            //self.seats = ko.observableArray([
-            //    new SeatReservation("Steve", self.availableMeals[0]),
-            //    new SeatReservation("Bert", self.availableMeals[0])
-            //]);
-
-            // Operations
-            //self.addSeat = function () {
-            //    self.seats.push(new SeatReservation("", self.availableMeals[0]));
-            //}
-
-            //self.removeSeat = function (seat) { self.seats.remove(seat) }
-
-            //self.totalSurcharge = ko.computed(function () {
-            //    var total = 0;
-            //    for (var i = 0; i < self.seats().length; i++)
-            //        total += self.seats()[i].meal().price;
-            //    return total;
-            //});
-
-        }
-
-            ko.applyBindings(new ViewModel());
+       
         
-            //var divLapSession = document.getElementById("divLapSession");
-          
-            var divSessionLap = $('#divSessionLap');
-            divSessionLap.show();
+
+        
+
+       
+        //FITUI.viewmodel.lap = rawData.lap;
+
+
+       
+       
+
+        FITUI.divSessionLap.show();
 
             if (rawData.session === undefined)
                 console.warn("No session information found in FIT file");
@@ -719,8 +671,16 @@
 
             case 'rawData':
                 //var rawData = JSON.parse(data.rawdata);
+                $("#progressFITimport").hide();
+                FITUI.progressFITimportViewModel.progressFITimport(0);
                 var rawData = eventdata.rawdata;
 
+                if (FITUI.masterViewModel === undefined) {
+                    FITUI.masterViewModel = ko.mapping.fromJS(rawData);
+                    ko.applyBindings(FITUI.masterViewModel, $('#divSessionLap')[0]);
+                }
+                else
+                    ko.mapping.fromJS(rawData, FITUI.masterViewModel);
 
                 // Initialize map
                 if (FITUI.map === undefined)
@@ -777,8 +737,10 @@
                 break;
 
             case 'progress':
-                // TO DO : probably use data-binding instead in viewmodel....
-                FITUI.progressFITImport.setAttribute("value", eventdata.data);
+               
+                FITUI.progressFITimportViewModel.progressFITimport(eventdata.data);
+
+                //FITUI.progressFITImport.setAttribute("value", eventdata.data);
                 break;
 
             default:
@@ -792,6 +754,124 @@
 
     UIController.prototype.onFITManagerError = function (e) {
         console.error("Error in worker, status " + e.toString());
+    }
+
+    function progressFITimportViewModel() {
+        var self = this;
+
+        self.progressFITimport = ko.observable(0);
+    }
+
+    function lapViewModel(lap) {
+        var self = this;
+
+        self.lap = lap;
+
+        // Non-editable catalog data - would come from the server
+        //self.availableMeals = [
+        //    { mealName: "Standard (sandwich)", price: 0 },
+        //    { mealName: "Premium (lobster)", price: 34.95 },
+        //    { mealName: "Ultimate (whole zebra)", price: 290 }
+        //];
+
+
+
+        self.hasLap = ko.computed(function () {
+            if (self.lap !== undefined)
+                return true;
+            else
+                return false;
+        });
+
+    }
+
+    function sessionViewModel(session) {
+        var self = this;
+
+        self.session = session;
+
+        // Non-editable catalog data - would come from the server
+        //self.availableMeals = [
+        //    { mealName: "Standard (sandwich)", price: 0 },
+        //    { mealName: "Premium (lobster)", price: 34.95 },
+        //    { mealName: "Ultimate (whole zebra)", price: 290 }
+        //];
+
+       
+        self.hasSession = ko.computed(function () {
+            if (self.session !== undefined)
+                return true;
+            else
+                return false;
+        });
+
+
+
+        //self.resetLapSession = function () {
+
+        //    self.session = ko.observable(undefined);
+
+        //    self.lap = ko.observable(undefined);
+
+        //}
+
+        //self.resetLapSession();
+
+        ////self.rawDataAvailable = ko.observable(false);
+
+        //self.sessionAvailable = ko.computed(function () {
+        //    if (self.session === undefined)
+        //        return false;
+        //    else
+        //        return true;
+        //});
+
+        //self.lapAvailable = ko.computed(function () {
+        //    if (self.lap === undefined)
+        //        return false;
+        //    else
+        //        return true;
+        //});
+        //self.lapTime = ko.computed(function () {
+        //    var minRaw = self.lap.total_timer_time[0] / 60;
+        //    var minPart = Math.floor(minRaw);
+        //    var secPart = (minRaw - minPart) * 60;
+
+        //    //return {
+        //    //    minutes: minPart,
+        //    //    seconds: secPart,
+        //    //    toString: minPart.toString() + ":" + secPart.toFixed(2)
+        //    //};
+
+        //    return minPart.toString() + ":" + secPart.toFixed(2);
+
+        //});
+
+
+        // self.timestamp = rawData.lap.timestamp[0].value;
+
+        // Editable data
+        //self.seats = ko.observableArray([
+        //    new SeatReservation("Steve", self.availableMeals[0]),
+        //    new SeatReservation("Bert", self.availableMeals[0])
+        //]);
+
+        // Operations
+        //self.addSeat = function () {
+        //    self.seats.push(new SeatReservation("", self.availableMeals[0]));
+        //}
+
+        //self.removeSeat = function (seat) { self.seats.remove(seat) }
+
+        //self.totalSurcharge = ko.computed(function () {
+        //    var total = 0;
+        //    for (var i = 0; i < self.seats().length; i++)
+        //        total += self.seats()[i].meal().price;
+        //    return total;
+        //});
+
+
+
     }
 
     UIController.prototype.setup = function () {
@@ -829,8 +909,18 @@
         FITUI.divMsgMap = document.getElementById('divMsgMap');
 
         FITUI.progressFITImport = document.getElementById('progressFITImport');
+
+        FITUI.divSessionLap = $('#divSessionLap');
+        
+       
+         
+       
+
         
 
+        
+        //ko.applyBindings(FITUI.viewmodel);
+        
 
 
     }
@@ -970,6 +1060,14 @@
             request: 'importFitFile', "fitfile": files[0]
             //, "query": query
         };
+
+        
+        if (FITUI.progressFITimportViewModel !== undefined)
+            FITUI.progressFITimportViewModel = null;
+
+        FITUI.progressFITimportViewModel = new progressFITimportViewModel();
+        ko.applyBindings(FITUI.progressFITimportViewModel, document.getElementById("progressFITimport"));
+        $("#progressFITimport").show();
 
         FITUI["fitFileManager"].postMessage(msg);
 
