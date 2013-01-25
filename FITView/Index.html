@@ -52,6 +52,12 @@
 
         <div id="divSessions"  >
             <h4>Sessions</h4>
+
+           
+         <div data-bind="text: ko.toJSON($root)"></div>
+
+             <hr/>
+
             <ul id="sessionList" data-bind="foreach: timestamp">
                 <li data-bind="text: ($index()+1)"></li>
             </ul>
@@ -66,30 +72,61 @@
             <h4>Laps</h4>
             <hr/>
 
-<div data-bind="text: ko.toJSON($root)"></div>
+            <div data-bind="text: ko.toJSON($root)"></div>
 
             <ul id="lapList" data-bind="foreach: timestamp">
                 <li>
-                  <a href="#">
-                     
-                    <img class="lapSport" data-bind="if: $parent.sport()[$index()]===2" src="Images/bicycle_green_32.png" />
-                      
-                      <span class="lapNr" data-bind="text: $index()+1"></span><br />
-                      <span data-bind="text: $parent.total_distance()[$index()]"></span> m<br />
-                  <span class="" data-bind="text: $parent.total_elapsed_time()[$index()]"></span> s<br />
-                  <span class="" data-bind="text: $parent.total_calories()[$index()]"></span> kcal<br />
-                      <div data-bind="if: $parent.total_fat_calories()[$index()] != 0">
-                          <span class="" data-bind="text: $parent.total_fat_calories()[$index()]"></span> kcal<br />
-                      </div>
-                  </a>
-                      
-                  
-                   <!-- Max heart rate <span data-bind="text: timestamp.value"></span>-->
+                    <a href="#">
+
+                        
+                        <!-- ko if: $parent.sport()[$index()] === 2 -->
+                        <img class="lapSport" src="Images/bicycle_green_32.png" />
+                        <!-- /ko -->
+                        
+                        <!-- ko if: $parent.sport()[$index()] === 1 -->
+                        <img class="lapSport" src="Images/clicknrun.png" />
+                        <!-- /ko -->
+
+                        <span class="lapNr" data-bind="text: $index()+1"></span>
+                        <br />
+
+                        <!-- ko if: $parent.total_distance()[$index()] > 0 -->
+                            <span data-bind="text: $parent.total_distance()[$index()]"></span>m<br />
+                        <!-- /ko -->
+
+                          <!-- ko if:  $parent.total_elapsed_time()[$index()] > 0 -->
+                        <span data-bind="text: $parent.total_elapsed_time()[$index()]"></span>s
+                        <!-- /ko -->
+
+                        <div>
+
+                           
+                        <!-- ko if:  $parent.total_calories()[$index()] > 0 -->
+                        <span style="float : left" data-bind="text: $parent.total_calories()[$index()]"></span>kcal
+                        <!-- /ko -->
+
+                        <!-- ko if:  $parent.total_fat_calories()[$index()] > 0 -->
+                        <span style="float : left" data-bind="text: $parent.total_fat_calories()[$index()]"></span>kcal
+                        <!-- /ko -->
+
+                         <!-- ko if: $parent.lap_trigger()[$index()] === 7 -->
+                        <img class="lapTrigger" src="Images/laptrigger/stop.png" />
+                        <!-- /ko -->
+
+                        <!-- ko if: $parent.lap_trigger()[$index()] === 2 -->
+                        <img class="lapTrigger" src="Images/laptrigger/distance.png" />
+                        <!-- /ko -->
+                             </div>
+                       
+                    </a>
+
+
+                    <!-- Max heart rate <span data-bind="text: timestamp.value"></span>-->
                 </li>
             </ul>
         </div>
 
-       <!-- 
+        <!-- 
         <div class="SessionLapErrorUndefined" data-bind="if: !hasLap" >
             <p>No laps found</p>
         </div>-->

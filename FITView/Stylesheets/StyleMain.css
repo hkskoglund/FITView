@@ -180,6 +180,12 @@ ul#lapList {
   float : left;
 }
 
+.lapTrigger {
+    float: right;
+    height : 16px;
+    width : 16px;
+}
+
 ul#sessionList {
     margin-left: 0;
     padding-left: 0;

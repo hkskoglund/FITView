@@ -62,11 +62,14 @@
     <Content Include="Images\clicknrun.png" />
     <Content Include="Images\copyright.txt" />
     <Content Include="Images\iconlands.txt" />
+    <Content Include="Images\laptrigger\distance.png" />
+    <Content Include="Images\laptrigger\stop.png" />
     <Content Include="Index.html" />
     <Content Include="Scripts\FITImport.js" />
     <Content Include="Scripts\FITSport.js" />
     <Content Include="Scripts\FITView.js" />
     <Content Include="packages.config" />
+    <Content Include="Images\laptrigger\License.pdf" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
     <Content Include="Scripts\highcharts.js" />
