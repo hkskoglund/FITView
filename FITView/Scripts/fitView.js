@@ -886,8 +886,6 @@
             alert("This application will not work due to lack of geolocation");
         }
 
-        FITUI.outConsole = document.getElementById('outConsole');
-
         // Capturing = false -> bubbling event
         FITUI.inpFITFile = document.getElementById('inpFITFile');
         FITUI.inpFITFile.addEventListener('change', FITUI.onFitFileSelected, false);

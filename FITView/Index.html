@@ -29,7 +29,7 @@
     <div>
         <input id="inpFITFile" type="file" />
    
-        <output id="outConsole"></output>
+        
    
     </div>
 
@@ -70,11 +70,19 @@
 
             <ul id="lapList" data-bind="foreach: timestamp">
                 <li>
-                  <div style="display: inline">
-                      <span data-bind="text: $parent.total_distance()[$index()]"></span>
-                  <span data-bind="text: $parent.start_time()[$index()]"></span>
-                  <span data-bind="text: $parent.timestamp()[$index()]"></span>
-                  </div>
+                  <a href="#">
+                     
+                    <img class="lapSport" data-bind="if: $parent.sport()[$index()]===2" src="Images/bicycle_green_32.png" />
+                      
+                      <span class="lapNr" data-bind="text: $index()+1"></span><br />
+                      <span data-bind="text: $parent.total_distance()[$index()]"></span> m<br />
+                  <span class="" data-bind="text: $parent.total_elapsed_time()[$index()]"></span> s<br />
+                  <span class="" data-bind="text: $parent.total_calories()[$index()]"></span> kcal<br />
+                      <div data-bind="if: $parent.total_fat_calories()[$index()] != 0">
+                          <span class="" data-bind="text: $parent.total_fat_calories()[$index()]"></span> kcal<br />
+                      </div>
+                  </a>
+                      
                   
                    <!-- Max heart rate <span data-bind="text: timestamp.value"></span>-->
                 </li>

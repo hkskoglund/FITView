@@ -152,14 +152,32 @@ white-space: nowrap;
 ul#lapList {
     margin-left: 0;
     padding-left: 0;
-    white-space: nowrap;
+    
 }
 
 #lapList li {
-    display: inline;
+    float : left;
+    text-align : center;
+
     list-style-type: none;
-    padding-right: 20px;
+
+    padding-right: 10px;
     background-color:  #0094ff;
+    border : 1px solid black;
+    padding : 5px;
+    margin : 5px;
+}
+
+    #lapList li a {
+        text-decoration: none;
+    }
+
+.lapNr {
+    font-size : x-large;
+}
+
+.lapSport {
+  float : left;
 }
 
 ul#sessionList {
@@ -169,9 +187,9 @@ ul#sessionList {
 }
 
 #sessionList li {
-    display: inline;
+    
     list-style-type: none;
-    padding-right: 20px;
+    padding-right: 10px;
     background-color:  #0094ff;
 }
 
