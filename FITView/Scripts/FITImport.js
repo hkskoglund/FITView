@@ -478,6 +478,15 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var unacceptableLat = false;
             var unacceptableLong = false;
 
+            var lapCounter = 0;
+            var sessionCounter = 0;
+            var fileIdCounter = 0;
+            var fileCreatorCounter = 0;
+            var lengthCounter = 0;
+            var deviceInfoCounter = 0;
+            var activityCounter = 0;
+            var eventCounter = 0;
+
             while (index < maxReadToByte) { // Try reading from file in case something is wrong with header (datasize/headersize) 
 
                 self.postMessage({ response: "progress", data: Math.floor(index / maxReadToByte * 100) });
@@ -549,19 +558,21 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     }
                                     break;
                                 case "lap":
+                                    lapCounter++;
                                     if (datarec.timestamp !== undefined)
                                      addRawdata(lapStore, datarec);
                                     else
                                         self.postMessage({ response: "error", data: "No timestamp found in lap message, not written to indexedDB" });
                                     break;
                                 case "session":
+                                    sessionCounter++;
                                     if (speedDistanceRecs.length >= 1)
                                         datarec.speedDistanceRecord = speedDistanceRecs;
 
                                     addRawdata(sessionStore, datarec);
                                     break;
                                 case "activity":
-                                    
+                                    activityCounter++;
                                     if (datarec.timestamp !== undefined)
                                         if (!isNaN(datarec.timestamp.value))
                                             addRawdata(activityStore, datarec);
@@ -571,6 +582,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 case "length":
                                     //self.postMessage({ response: "info", data: "Found length message" });
                                     //addRawdata(lengthStore, datarec);
+                                    lengthCounter++;
                                     if (datarec.start_time !== undefined)
                                         addRawdata(lengthStore, datarec);
                                     else
@@ -578,6 +590,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                                     break;
                                 case "event":
+                                    eventCounter++;
                                     if (datarec.timestamp !== undefined)
                                         addRawdata(eventStore, datarec);
                                     else
@@ -585,10 +598,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
                                 case "file_id":
                                     // Well formed .FIT should have one file_id at the start
+                                    fileIdCounter++;
                                     fileidRec = datarec;
                                    // addRawdata(fileidStore, datarec);
                                     break;
                                 case "file_creator":
+                                    fileCreatorCounter++;
                                     // Seems rather redudant, same info. is also in device_info record
                                     if (fileidRec !== undefined) {
                                         fileidRec.file_creator = datarec;
@@ -597,6 +612,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                         self.postMessage({ response: "error", data: "file_creator msg. found, but not file_id, skipped saving" });
                                     break;
                                 case "device_info":
+                                    deviceInfoCounter++;
                                     // Hmmm. 910XT seems to record 2 set of identically device info records
                                     // One record at the start, then one record just before storing only hrv 2 min recovery heart rate
                                     //addRawdata(deviceinfoStore, { timestamp: { value: new Date().getTime() }});
@@ -623,8 +639,35 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                         if (rawdata[(datarec.message)][prop] === undefined)
                                             rawdata[(datarec.message)][prop] = [];
 
-
-                                        rawdata[datarec.message][prop].push(val);
+                                        switch (datarec.message) {
+                                            case "lap":
+                                                // Make sure we insert property at the right position
+                                                rawdata[datarec.message][prop][lapCounter - 1] = val;
+                                                break;
+                                            case "session":
+                                                rawdata[datarec.message][prop][sessionCounter - 1] = val;
+                                                break;
+                                            case "file_id":
+                                                rawdata[datarec.message][prop][fileIdCounter - 1] = val;
+                                                break;
+                                            case "file_creator":
+                                                rawdata[datarec.message][prop][fileCreatorCounter - 1] = val;
+                                                break;
+                                            case "length":
+                                                rawdata[datarec.message][prop][lengthCounter - 1] = val;
+                                            case "device_info":
+                                                rawdata[datarec.message][prop][deviceInfoCounter - 1] = val;
+                                                break;
+                                            case "activity":
+                                                rawdata[datarec.message][prop][activityCounter - 1] = val;
+                                                break;
+                                            case "event":
+                                                rawdata[datarec.message][prop][eventCounter - 1] = val;
+                                                break;
+                                            default:
+                                                rawdata[datarec.message][prop].push(val);
+                                                break;
+                                        }
                                     }
                                     //else
                                     //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);

@@ -476,17 +476,31 @@
                         new google.maps.Point(0, 32));
             }
 
+            //generic 0
+            //running 1
+            //cycling 2
+            //transition 3 - Multisport transition
+            //fitness_equipment 4
+            //swimming 5
+            //basketball 6
+            //soccer 7
+            //tennis 8
+            //american_football 9
+            //training 10
+            //all 254 All is for goals only to include all sports.
+
+            
             switch (sport) {
                 case FITSport.running:
                     
-                    image = newMarkerImage('Images/clicknrun.png');
+                    image = newMarkerImage('Images/sport/running.png');
                     break;
                 case FITSport.cycling:
-                    image = newMarkerImage('Images/bicycle_green_32.png');
+                    image = newMarkerImage('Images/sport/cycling.png');
                     break;
 
                 case FITSport.swimming:
-                    image = newMarkerImage('Images/blue-swimmer-icon-th.png');
+                    image = newMarkerImage('Images/sport/swimming.png');
                     break;
                     // TO DO : Add more icons
             }

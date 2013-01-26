@@ -57,19 +57,24 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\bicycle_green_32.png" />
-    <Content Include="Images\blue-swimmer-icon-th.png" />
-    <Content Include="Images\clicknrun.png" />
-    <Content Include="Images\copyright.txt" />
-    <Content Include="Images\iconlands.txt" />
+    <Content Include="Images\sport\cycling.png" />
+    <Content Include="Images\sport\swimming.png" />
+    <Content Include="Images\sport\running.png" />
+    <Content Include="Images\sport\copyright.txt" />
+    <Content Include="Images\sport\iconlands.txt" />
+    <Content Include="Images\laptrigger\session_end.png" />
+    <Content Include="Images\laptrigger\position_marked.png" />
+    <Content Include="Images\laptrigger\position_waypoint.png" />
+    <Content Include="Images\laptrigger\position_lap.png" />
+    <Content Include="Images\laptrigger\position_start.png" />
+    <Content Include="Images\laptrigger\time.png" />
     <Content Include="Images\laptrigger\distance.png" />
-    <Content Include="Images\laptrigger\stop.png" />
+    <Content Include="Images\laptrigger\manual.png" />
     <Content Include="Index.html" />
     <Content Include="Scripts\FITImport.js" />
     <Content Include="Scripts\FITSport.js" />
     <Content Include="Scripts\FITView.js" />
     <Content Include="packages.config" />
-    <Content Include="Images\laptrigger\License.pdf" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
     <Content Include="Scripts\highcharts.js" />
