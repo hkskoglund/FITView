@@ -101,17 +101,19 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
         // Global msg types.
 
-        var FIT_MSG_FILEID = 0;
-        var FIT_MSG_SESSION = 18;
-        var FIT_MSG_LAP = 19;
-        var FIT_MSG_RECORD = 20;
-        var FIT_MSG_EVENT = 21;
-        var FIT_MSG_ACTIVITY = 34;
-        var FIT_MSG_FILE_CREATOR = 49;
-        var FIT_MSG_HRV = 78;
-        var FIT_MSG_DEVICE_INFO = 23;
-        var FIT_MSG_LENGTH = 101;
-        
+        var GLOBAL_FIT_MSG = {
+            FILEID: 0,
+            SESSION: 18,
+            LAP: 19,
+            RECORD: 20,
+            EVENT: 21,
+            ACTIVITY: 34,
+            FILE_CREATOR: 49,
+            HRV: 78,
+            DEVICE_INFO: 23,
+            LENGTH: 101
+        };
+
         // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
 
         var fitBaseTypesInvalidValues = {
@@ -318,7 +320,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 //    displayActionFailure("This engine doesn't know how to clone a Blob, " +
                 //                         "use Firefox");
                 //throw e;
-                self.postMessage({ response: "error", data: "Could not write data to objectstore, message = "+datarec.message, event : e });
+                self.postMessage({ response: "error", data: "Could not write data to objectstore, global msg. = "+datarec.message+", event = "+ e.toString(), event : e });
             }
 
             //req.transaction.oncompleted = function (evt) {
@@ -772,12 +774,12 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             // Duplication of code, maybe later do some value conversions here for specific messages
                             switch (globalMsgType) {
                                 // file_id
-                                case FIT_MSG_FILEID:
+                                case GLOBAL_FIT_MSG.FILEID:
                                     if (prop === "time_created")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
                                     // session
-                                case FIT_MSG_SESSION:
+                                case GLOBAL_FIT_MSG.SESSION:
                                     if (prop === "timestamp" || prop === "start_time")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
@@ -785,14 +787,14 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
 
                                     // lap
-                                case FIT_MSG_LAP:
+                                case GLOBAL_FIT_MSG.LAP:
                                     if (prop === "timestamp" || prop === "start_time")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
                                     break;
                                     // record
-                                case FIT_MSG_RECORD:
+                                case GLOBAL_FIT_MSG.RECORD:
 
                                     if (prop === "timestamp")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
@@ -801,32 +803,32 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     break;
 
                                     // activity
-                                case FIT_MSG_ACTIVITY:
+                                case GLOBAL_FIT_MSG.ACTIVITY:
                                     if (prop === "timestamp")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
                                     //  file_creator
-                                case FIT_MSG_FILE_CREATOR: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case GLOBAL_FIT_MSG.FILE_CREATOR: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
                                     // hrv
-                                case FIT_MSG_HRV: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                case GLOBAL_FIT_MSG.HRV: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
                                     // event
-                                case FIT_MSG_EVENT:
+                                case GLOBAL_FIT_MSG.EVENT:
                                     if (prop === "timestamp")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
                                     break;
 
-                                case FIT_MSG_DEVICE_INFO:
+                                case GLOBAL_FIT_MSG.DEVICE_INFO:
                                     if (prop === "timestamp")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
                                     break;
 
-                                case FIT_MSG_LENGTH:
+                                case GLOBAL_FIT_MSG.LENGTH:
                                     if (prop === "timestamp" || prop === "start_time")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
@@ -873,7 +875,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 }
 
                 // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
-                if (globalMsgType != FIT_MSG_RECORD && globalMsgType != FIT_MSG_HRV)
+                if (globalMsgType != GLOBAL_FIT_MSG.RECORD && globalMsgType != GLOBAL_FIT_MSG.HRV)
                     self.postMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + this.getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
             //}
 

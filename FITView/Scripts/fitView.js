@@ -684,7 +684,62 @@
 
 
                 if (FITUI.lapViewModel === undefined) {
-                    FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap);
+
+                    var mappingOptions = {
+                        'total_elapsed_time': {
+                            create: function (options) {
+                                return new myTETModel(options.data);
+                            }
+                        }
+                    }
+
+                    var myTETModel = function (totalSec) {
+                        //  ko.mapping.fromJS(totalSec, {}, this); Maybe not needed on scalar object
+                        
+                        this.value = totalSec;
+                        this.toHHMMSS = ko.computed(function () {
+                            // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
+
+                            var hours = parseInt(totalSec / 3600) % 24;
+                            var minutes = parseInt(totalSec / 60) % 60;
+                            var seconds = parseInt(totalSec % 60, 10);
+
+                            var hourResult;
+                            if (hours != 0)
+                                hourResult = (hours < 10 ? "0" + hours : hours) + ":";
+                            else
+                                hourResult = "";
+
+                            var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                            return result;
+                        }, this);
+                    };
+
+
+
+                    FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap,mappingOptions);
+
+ 
+                    //FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap);
+
+                    // Value converter to HH MM SS, maybe it weill be more appropiate to apply it down in the mapping logic to knockout
+                    // but this way seemed simpler at the momement. It will be a problem for f.ex. editing lap times with update...., but
+                    // for just viewing its ok.
+
+                    //if (FITUI.lapViewModel.total_elapsed_time_hhmmss !== undefined)
+
+                    //    FITUI.lapViewModel.total_elapsed_time_hhmmss().removeAll();
+                    //else
+                    //    FITUI.lapViewModel.total_elapsed_time_hhmmss = ko.observableArray();
+
+                    //ko.utils.arrayForEach(FITUI.lapViewModel.total_elapsed_time(), function (totalSec) {
+
+                        
+
+                    //    FITUI.lapViewModel.total_elapsed_time_hhmmss.push(result);
+
+                    //});
+
                     ko.applyBindings(FITUI.lapViewModel, $('#divLaps')[0]);
                 }
                 else

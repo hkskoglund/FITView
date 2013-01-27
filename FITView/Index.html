@@ -44,7 +44,67 @@
                <h4>Sessions</h4>
          
             <ul id="sessionList" data-bind="foreach: timestamp">
-                <li data-bind="text: ($index()+1)"></li>
+                <li >
+                   
+
+                    
+                    <a href="#">
+                        <!-- ko if: $parent.sport()[$index()] === 1 -->
+                        <img class="sessionSport" src="Images/sport/running.png"  />
+                        <!-- /ko -->
+                        
+                        <!-- ko if: $parent.sport()[$index()] === 2 -->
+                        <img class="sessionSport" src="Images/sport/cycling.png"   />
+                        <!-- /ko -->
+                        
+                        <!-- ko if: $parent.sport()[$index()] === 5 -->
+                        <img class="sessionSport" src="Images/sport/swimming.png"  />
+                        <!-- /ko -->
+
+                         <!-- ko if:  $parent.total_elapsed_time()[$index()] > 0 -->
+                        <span data-bind="text: $parent.total_elapsed_time()[$index()]"></span>s
+                        <!-- /ko -->
+
+                        <!-- ko if:  $parent.total_calories()[$index()] > 0 -->
+                        <span data-bind="text: $parent.total_calories()[$index()]"></span>kcal
+                        <!-- /ko -->
+
+
+                         <!-- ko if:  $parent.total_ascent()[$index()]  >= 0 -->
+                        <span data-bind="text: $parent.total_ascent()[$index()]"></span>
+                        <!-- /ko -->
+
+                         <!-- ko if:  $parent.total_descent()[$index()] >= 0 -->
+                        <span data-bind="text: $parent.total_descent()[$index()]"></span>
+                        <!-- /ko -->
+
+
+                        <!-- Session trigger -->
+
+                        <div data-bind="if: $parent.trigger">
+                             <!-- ko if: $parent.trigger()[$index()] === 0 -->
+                        <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end"/>
+                        <!-- /ko -->
+
+                              <!-- ko if: $parent.trigger()[$index()] === 1 -->
+                        <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)"/>
+                        <!-- /ko -->
+
+                            <!-- ko if: $parent.trigger()[$index()] === 2 -->
+                        <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
+                        <!-- /ko -->
+
+                            <!-- ko if: $parent.trigger()[$index()] === 3 -->
+                        <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
+                        <!-- /ko -->
+
+                        </div>
+                       
+                        
+
+                        </a>
+                    
+                </li>
             </ul>
         </div>
 
@@ -63,7 +123,7 @@
             
             <ul id="lapList" data-bind="foreach: timestamp">
                 <li>
-                    <a href="#">
+                    <a href="#" >
 
           <!--   Sport enum
             //generic 0
@@ -96,13 +156,16 @@
                         <span class="lapNr" data-bind="text: $index()+1"></span>
                         <br />
 
+                        <!-- ko if:  $parent.total_elapsed_time()[$index()].value > 0 -->
+                       <!-- <span data-bind="text: $parent.toHHMMSS.bind($data,$parent.total_elapsed_time()[$index()])"></span>s-->
+                         <span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span>
+                        <!-- /ko -->
+
                         <!-- ko if: $parent.total_distance()[$index()] > 0 -->
                             <span data-bind="text: $parent.total_distance()[$index()]"></span>m<br />
                         <!-- /ko -->
 
-                          <!-- ko if:  $parent.total_elapsed_time()[$index()] > 0 -->
-                        <span data-bind="text: $parent.total_elapsed_time()[$index()]"></span>s
-                        <!-- /ko -->
+                          
 
                         <div>
 
@@ -111,7 +174,7 @@
                         <span style="float : left" data-bind="text: $parent.total_calories()[$index()]"></span>kcal
                         <!-- /ko -->
 
-                        <!-- ko if:  $parent.total_fat_calories()[$index()] > 0 -->
+                        <!-- ko if:  $parent.total_fat_calories !== undefined && $parent.total_fat_calories()[$index()] > 0 -->
                         <span style="float : left" data-bind="text: $parent.total_fat_calories()[$index()]"></span>kcal
                         <!-- /ko -->
 
@@ -129,7 +192,7 @@
                                  -->
 
                             <!-- ko if: $parent.lap_trigger()[$index()] === 0 -->
-                        <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual"/>
+                        <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed"/>
                         <!-- /ko -->
 
                              
