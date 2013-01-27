@@ -57,6 +57,10 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\sessiontrigger\activity_end.png" />
+    <Content Include="Images\sessiontrigger\auto_multi_sport.png" />
+    <Content Include="Images\sessiontrigger\fitness_equipment.png" />
+    <Content Include="Images\sessiontrigger\manual.png" />
     <Content Include="Images\sport\cycling.png" />
     <Content Include="Images\sport\swimming.png" />
     <Content Include="Images\sport\running.png" />

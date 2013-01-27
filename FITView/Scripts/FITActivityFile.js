@@ -159,6 +159,15 @@ FIT.ActivityFile = function () {
         24: { "property": "lap_trigger" },
         25: { "property": "sport" },
         26: { "property": "event_group" },
+
+        // Next 4 properties not documented in profile.xls pr. 27 january 2013, but based on real data from 910XT
+
+        27: { "property": "nec_lat", "unit": "semicirles" },
+        28: { "property": "nec_long", "unit": "semicirles" },
+        29: { "property": "swc_lat", "unit": "semicirles" },
+        30: { "property": "swc_long", "unit": "semicirles" },
+
+        
         32: { "property": "num_lengths", "unit": "lengths" }, // # lengths in swim pool
         33: { "property": "normalized_power", "unit": "watts" },
         34: { "property": "left_right_balance", "unit": "watts" },

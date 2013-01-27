@@ -33,31 +33,16 @@
    
     </div>
 
- <!--   <div id="sessionTesting">
-        <section>Session 1
-            <header class="session">
-                <ul class="sessionList">
-            <li>Running</li>
-            <li>Start time</li>
-            <li>End time</li>
-        </ul>
-            </header>
-            
-        </section>
-        
-    </div> -->
-    <!--<span data-bind="text: testvalue.session"></span>-->
-    
     <div id="divSessionLap" >
 
         <div id="divSessions"  >
-            <h4>Sessions</h4>
-
-           
-         <div data-bind="text: ko.toJSON($root)"></div>
+         
+            <div data-bind="text: ko.toJSON($root)"></div>
 
              <hr/>
 
+               <h4>Sessions</h4>
+         
             <ul id="sessionList" data-bind="foreach: timestamp">
                 <li data-bind="text: ($index()+1)"></li>
             </ul>
@@ -69,16 +54,19 @@
         </div> -->
 
         <div id="divLaps" >
-            <h4>Laps</h4>
-            <hr/>
-
+            
             <div data-bind="text: ko.toJSON($root)"></div>
 
+            <hr/>
+
+            <h4>Laps</h4>
+            
             <ul id="lapList" data-bind="foreach: timestamp">
                 <li>
                     <a href="#">
 
-          <!--               //generic 0
+          <!--   Sport enum
+            //generic 0
             //running 1
             //cycling 2
             //transition 3 - Multisport transition
@@ -138,7 +126,6 @@
                             position_marked 6
                             session_end 7
 
-                                
                                  -->
 
                             <!-- ko if: $parent.lap_trigger()[$index()] === 0 -->
@@ -181,7 +168,7 @@
                     </a>
 
 
-                    <!-- Max heart rate <span data-bind="text: timestamp.value"></span>-->
+                   
                 </li>
             </ul>
         </div>
