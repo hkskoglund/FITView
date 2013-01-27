@@ -675,13 +675,15 @@
 
                 var rawData = eventdata.rawdata;
 
-                if (FITUI.sessionViewModel === undefined) {
-                    FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session);
-                    ko.applyBindings(FITUI.sessionViewModel, $('#divSessions')[0]);
-                }
-                else
-                    ko.mapping.fromJS(rawData.session, FITUI.sessionViewModel);
-
+                if (rawData.session !== undefined) {
+                    if (FITUI.sessionViewModel === undefined) {
+                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session);
+                        ko.applyBindings(FITUI.sessionViewModel, $('#divSessions')[0]);
+                    }
+                    else
+                        ko.mapping.fromJS(rawData.session, FITUI.sessionViewModel);
+                } else
+                    console.error("No sessions available in rawdata");
 
                 if (FITUI.lapViewModel === undefined) {
 
