@@ -565,8 +565,12 @@
                 if (rawdata.record.position_long != undefined && rawdata.record.position_long.length > 0)
                     long = rawdata.record.position_long[0];
 
+                var sport = rawdata.lap.sport[0];
+                if (sport === undefined)
+                    sport = 0; // Default to generic
+
                 if (lat !== undefined && long !== undefined)
-                    setMapCenter(lat, long);
+                    setMapCenter(sport,lat, long);
             }
 
 
@@ -629,7 +633,7 @@
         // Build up polyline
         
             var latLength = record.position_lat.length;
-            console.info("Got GPS points (on property position_lat) : ", latLength);
+            console.info("Total GPS points available (on property position_lat) : ", latLength);
 
         
             //var sampleInterval = Math.floor(latLength / 30);
@@ -641,15 +645,20 @@
 
             console.info("Sample length for polyline is ", sampleInterval);
 
-            var sample = 0;
+            //var sample = 0;
+
+            var sampleLimit = 100;
         
             record.position_lat.forEach(function (element, index, array) {
-                if (sample === 0 || (sample++ % sampleInterval === 0) || index === latLength - 1) 
+                if (index === 0 || (index % sampleInterval === 0) || index === latLength - 1) 
                     if (record.position_long[index] !== undefined)
                         activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
             })
 
-        
+            console.info("Total length of polyline array with coordinates is : ", activityCoordinates.length.toString());
+
+           // var testarr = activityCoordinates.slice(0, sampleLimit);
+
         FITUI.activityPolyline = new google.maps.Polyline({
             path: activityCoordinates,
             strokeColor: "#FF0000",
@@ -760,11 +769,16 @@
                         //if (rawData.session != undefined)
                             FITUI.showSessionMarkers(FITUI.map, rawData);
 
-                        if (rawData.record != undefined)
-                            FITUI.showPolyline(FITUI.map, rawData.record);
+                            if (rawData.record === undefined) {
+                                console.info("No record msg. available to extract data from");
+                            } else {
 
-                        FITUI.showChartsDatetime(rawData);
-                        FITUI.showChartHrv(rawData);
+                                FITUI.showPolyline(FITUI.map, rawData.record);
+
+                             //   FITUI.showChartsDatetime(rawData);
+                            }
+
+                        //FITUI.showChartHrv(rawData);
 
                         FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;
