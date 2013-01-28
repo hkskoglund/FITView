@@ -641,7 +641,7 @@
             //if (sampleInterval < 1)
             //    sampleInterval = 1;
 
-            var sampleInterval = 15; // Max. sampling rate for 910XT is 1 second 
+            var sampleInterval = 2; // Max. sampling rate for 910XT is 1 second 
 
             console.info("Sample length for polyline is ", sampleInterval);
 
@@ -675,6 +675,25 @@
 
         var eventdata = e.data;
 
+        intepretCounters = function (counter) {
+            if (counter.fileIdCounter != 1)
+                console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
+            if (counter.fileIdCounter != 1)
+                console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
+            if (counter.sessionCounter === 0)
+                console.error("Session msg. should be at least 1, but is ",counter.sessionCounter);
+            if (counter.lapCounter === 0)
+                console.error("Lap msg. should be at least 1, but is ",counter.lapCounter);
+            if (counter.activityCounter !== 1)
+                console.error("Activity msg. should be 1, but is ", counter.activityCounter);
+            if (counter.deviceInfoCounter === 0)
+                console.error("Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
+            if (counter.recordCounter === 0)
+                console.error("No record msg. ", counter.lapCounter);
+
+        }
+
+
         switch (eventdata.response) {
 
             case 'rawData':
@@ -683,79 +702,60 @@
                 FITUI.progressFITimportViewModel.progressFITimport(0);
 
                 var rawData = eventdata.rawdata;
+                intepretCounters(rawData.counter);
 
                 if (rawData.session !== undefined) {
-                    if (FITUI.sessionViewModel === undefined) {
+                    //if (FITUI.sessionViewModel === undefined) {
                         FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session);
                         ko.applyBindings(FITUI.sessionViewModel, $('#divSessions')[0]);
-                    }
-                    else
-                        ko.mapping.fromJS(rawData.session, FITUI.sessionViewModel);
+                    //}
+                    //else
+                    //    ko.mapping.fromJS(rawData.session, FITUI.sessionViewModel);
                 } else
                     console.error("No sessions available in rawdata");
 
-                if (FITUI.lapViewModel === undefined) {
 
-                    var mappingOptions = {
-                        'total_elapsed_time': {
-                            create: function (options) {
-                                return new myTETModel(options.data);
-                            }
+                var mappingOptions = {
+                    'total_elapsed_time': {
+                        create: function (options) {
+                            return new myTETModel(options.data);
                         }
                     }
+                }
 
-                    var myTETModel = function (totalSec) {
-                        //  ko.mapping.fromJS(totalSec, {}, this); Maybe not needed on scalar object
-                        
-                        this.value = totalSec;
-                        this.toHHMMSS = ko.computed(function () {
-                            // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
+                var myTETModel = function (totalSec) {
+                    //  ko.mapping.fromJS(totalSec, {}, this); Maybe not needed on scalar object
 
-                            var hours = parseInt(totalSec / 3600) % 24;
-                            var minutes = parseInt(totalSec / 60) % 60;
-                            var seconds = parseInt(totalSec % 60, 10);
+                    this.value = totalSec;
+                    this.toHHMMSS = ko.computed(function () {
+                        // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
 
-                            var hourResult;
-                            if (hours != 0)
-                                hourResult = (hours < 10 ? "0" + hours : hours) + ":";
-                            else
-                                hourResult = "";
+                        var hours = parseInt(totalSec / 3600) % 24;
+                        var minutes = parseInt(totalSec / 60) % 60;
+                        var seconds = parseInt(totalSec % 60, 10);
 
-                            var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                            return result;
-                        }, this);
-                    };
+                        var hourResult;
+                        if (hours != 0)
+                            hourResult = (hours < 10 ? "0" + hours : hours) + ":";
+                        else
+                            hourResult = "";
 
+                        var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                        return result;
+                    }, this);
+                };
 
+                if (FITUI.lapViewModel === undefined) {
 
-                    FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap,mappingOptions);
-
- 
-                    //FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap);
-
-                    // Value converter to HH MM SS, maybe it weill be more appropiate to apply it down in the mapping logic to knockout
-                    // but this way seemed simpler at the momement. It will be a problem for f.ex. editing lap times with update...., but
-                    // for just viewing its ok.
-
-                    //if (FITUI.lapViewModel.total_elapsed_time_hhmmss !== undefined)
-
-                    //    FITUI.lapViewModel.total_elapsed_time_hhmmss().removeAll();
-                    //else
-                    //    FITUI.lapViewModel.total_elapsed_time_hhmmss = ko.observableArray();
-
-                    //ko.utils.arrayForEach(FITUI.lapViewModel.total_elapsed_time(), function (totalSec) {
-
-                        
-
-                    //    FITUI.lapViewModel.total_elapsed_time_hhmmss.push(result);
-
-                    //});
-
+                    
+                    FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
+                    // ApplyBindings should only be run once
                     ko.applyBindings(FITUI.lapViewModel, $('#divLaps')[0]);
                 }
-                else
-                    ko.mapping.fromJS(rawData.lap, FITUI.lapViewModel);
-
+                else {
+                   
+                    ko.mapping.fromJS(rawData.lap, mappingOptions,FITUI.lapViewModel);
+                }
                 // Initialize map
                 if (FITUI.map === undefined)
                     FITUI.map = FITUI.initMap();

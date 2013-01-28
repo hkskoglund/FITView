@@ -156,7 +156,7 @@
                         <span class="lapNr" data-bind="text: $index()+1"></span>
                         <br />
 
-                        <!-- ko if:  $parent.total_elapsed_time()[$index()].value > 0 -->
+                        <!-- ko if: $parent.total_elapsed_time()[$index()] !== undefined && $parent.total_elapsed_time()[$index()].value > 0 -->
                        <!-- <span data-bind="text: $parent.toHHMMSS.bind($data,$parent.total_elapsed_time()[$index()])"></span>s-->
                          <span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span>
                         <!-- /ko -->
