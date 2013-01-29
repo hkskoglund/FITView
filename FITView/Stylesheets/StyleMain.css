@@ -1,16 +1,15 @@
 ﻿header, footer {
  
-    background-color : lightblue;
+   
     /*background-image: -webkit-linear-gradient( left, #ff0000, #ffa500 13.0%,#ffff00 26.0%,#0000ff 39.0%,#008000 52.0%,#4b0082 65.0%,#ee82ee 78.0%)*/
+     background-color : lightblue;
     background-image : -webkit-linear-gradient( 45deg, lightblue  , blue );
     background-image : -ms-linear-gradient( 45deg,lightblue,blue);
     background-image:  -moz-linear-gradient( 45deg, lightblue,blue);
     background-image : linear-gradient(45deg, lightblue,blue);
+  
 }
 
-    header.session {
-    
-    }
 
 .sessionList li { 
 display: inline;
@@ -153,26 +152,30 @@ white-space: nowrap;
     background: #0ff;
 }
 
-ul#lapList {
+section#lapList {
     margin-left: 0;
     padding-left: 0;
+    clear: both;
     
 }
 
-#lapList li {
+#lapList article {
     float : left;
     text-align : center;
 
-    list-style-type: none;
+    /*list-style-type: none;*/
 
     padding-right: 10px;
     background-color:  #0094ff;
     border : 1px solid black;
-    padding : 5px;
-    margin : 5px;
+    /*padding : 5px;*/
+    margin-top : 5px;
+    margin-left: 0px;
+    margin-right: 5px;
+    margin-bottom : 5px;
 }
 
-    #lapList li a {
+    #lapList article a {
         text-decoration: none;
     }
 
@@ -201,23 +204,27 @@ ul#lapList {
     padding-right : 5px;
 }
 
-ul#sessionList {
+section#sessionList {
     margin-left: 0;
     padding-left: 0;
     white-space: nowrap;
     background-color: lightgrey;
 }
 
-#sessionList li {
+#sessionList article {
   
     float : left;
-    list-style-type: none;
-    padding-right: 10px;
+    /*list-style-type: none;*/
+    /*padding-right: 10px;*/
     background-color:  lightgrey;
+     margin-top : 5px;
+    margin-left: 0px;
+    margin-right: 5px;
+    margin-bottom : 5px;
     clear : both; /*Added to force newline*/
 }
 
-#sessionList li a {
+#sessionList article a {
     text-decoration: none;
 }
 
@@ -235,4 +242,15 @@ ul#sessionList {
 
 #divSessionLap {
     display: none;
+}
+
+.inlineIcon {
+    padding-top: 2px;
+    border : none; /* Turn off default IE 10 border*/
+}
+
+.FITprogressImport {
+    display: none;
+    float : right;
+    
 }

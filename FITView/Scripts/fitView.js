@@ -702,29 +702,25 @@
                 FITUI.progressFITimportViewModel.progressFITimport(0);
 
                 var rawData = eventdata.rawdata;
+
                 intepretCounters(rawData.counter);
-
-                if (rawData.session !== undefined) {
-                    //if (FITUI.sessionViewModel === undefined) {
-                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session);
-                        ko.applyBindings(FITUI.sessionViewModel, $('#divSessions')[0]);
-                    //}
-                    //else
-                    //    ko.mapping.fromJS(rawData.session, FITUI.sessionViewModel);
-                } else
-                    console.error("No sessions available in rawdata");
-
 
                 var mappingOptions = {
                     'total_elapsed_time': {
                         create: function (options) {
-                            return new myTETModel(options.data);
+                            return new mySecsToHHMMSSModel(options.data);
+                        }},
+                     'total_timer_time': {
+                            create: function (options) {
+                                return new mySecsToHHMMSSModel(options.data);
+                            }
                         }
                     }
-                }
+                
+                
 
-                var myTETModel = function (totalSec) {
-                    //  ko.mapping.fromJS(totalSec, {}, this); Maybe not needed on scalar object
+                var mySecsToHHMMSSModel = function (totalSec) {
+                    //  ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
 
                     this.value = totalSec;
                     this.toHHMMSS = ko.computed(function () {
@@ -744,6 +740,18 @@
                         return result;
                     }, this);
                 };
+
+
+                //if (rawData.session !== undefined) {
+                    if (FITUI.sessionViewModel === undefined) {
+                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
+                          ko.applyBindings(FITUI.sessionViewModel, $('#divSessions')[0]); // Initialize model with DOM
+                    }
+                    else
+                        ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
+                //} else
+                   
+
 
                 if (FITUI.lapViewModel === undefined) {
 
@@ -775,10 +783,10 @@
 
                                 FITUI.showPolyline(FITUI.map, rawData.record);
 
-                             //   FITUI.showChartsDatetime(rawData);
+                                FITUI.showChartsDatetime(rawData);
                             }
 
-                        //FITUI.showChartHrv(rawData);
+                        FITUI.showChartHrv(rawData);
 
                         FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;

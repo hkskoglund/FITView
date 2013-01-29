@@ -1033,6 +1033,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var firstPartOfHeaderLength = 12;
             index = firstPartOfHeaderLength;
 
+            var util = FITUtility();
+
             // Optional header info, header CRC
 
             if (headerInfo.headerSize >= MAXFITHEADERLENGTH) {
@@ -1057,7 +1059,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
              headerInfo.CRC = dviewFitHeader.getUint16(fileLength - CRCbytesLength, true); // Force little endian
              self.postMessage({ response: "info", data: "Stored 16-bit CRC at end FIT file is (MSBLSB=bigendian) : " + headerInfo.CRC.toString(16) });
 
-             var util = FITUtility();
+            
 
             headerInfo.verifyCRC  = util.fitCRC(dviewFitHeader, 0, fileLength-CRCbytesLength,  0);
 

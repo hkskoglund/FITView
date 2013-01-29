@@ -21,67 +21,76 @@
 <body>
     <header >
         <h1>FIT View</h1>
-       
     </header>
 
-    <progress id="progressFITimport" max="100" data-bind="value: progressFITimport" style="display: none"></progress>
-
     <div>
-        <input id="inpFITFile" type="file" />
-   
-        
-   
-    </div>
+        <input style="display:inline; float : left" id="inpFITFile" type="file" />
+    <progress  class="FITprogressImport"  id="progressFITimport" max="100" data-bind="value: progressFITimport" ></progress>
 
+    </div>
+    
     <div id="divSessionLap" >
 
-        <div id="divSessions"  >
+        <section id="divSessions"  >
          
-            <div data-bind="text: ko.toJSON($root)"></div>
-
-             <hr/>
-
-               <h4>Sessions</h4>
+              <!-- <h4>Sessions</h4>-->
          
-            <ul id="sessionList" data-bind="foreach: timestamp">
-                <li >
+            <!-- ko if: $root !== undefined && $root.timestamp !== undefined -->
+            <section id="sessionList" data-bind="foreach: timestamp">
+                <article>
                    
-
-                    
                     <a href="#">
-                        <!-- ko if: $parent.sport()[$index()] === 1 -->
+                        <!-- ko if: $parent.sport !== undefined &&  $parent.sport()[$index()] === 1 -->
                         <img class="sessionSport" src="Images/sport/running.png"  />
                         <!-- /ko -->
                         
-                        <!-- ko if: $parent.sport()[$index()] === 2 -->
+                        <!-- ko if: $parent.sport !== undefined && $parent.sport()[$index()] === 2 -->
                         <img class="sessionSport" src="Images/sport/cycling.png"   />
                         <!-- /ko -->
                         
-                        <!-- ko if: $parent.sport()[$index()] === 5 -->
+                        <!-- ko if: $parent.sport !== undefined && $parent.sport()[$index()] === 5 -->
                         <img class="sessionSport" src="Images/sport/swimming.png"  />
                         <!-- /ko -->
 
-                         <!-- ko if:  $parent.total_elapsed_time()[$index()] > 0 -->
-                        <span data-bind="text: $parent.total_elapsed_time()[$index()]"></span>s
+                         <!-- ko if: $parent.total_elapsed_time !== undefined && $parent.total_elapsed_time()[$index()] > 0 -->
+                        <time><span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span>s</time>
                         <!-- /ko -->
 
-                        <!-- ko if:  $parent.total_calories()[$index()] > 0 -->
+                        <!-- ko if: $parent.total_calories !== undefined && $parent.total_calories()[$index()] > 0 -->
                         <span data-bind="text: $parent.total_calories()[$index()]"></span>kcal
                         <!-- /ko -->
 
+                        <!-- ko if: $parent.avg_heart_rate !== undefined  || $parent.max_heart_rate !== undefined -->
+                        <img class="inlineIcon" src="Images/heart.png"  />
+                        <!-- /ko -->
+                        
+                         <!-- ko if: $parent.avg_heart_rate !== undefined &&  $parent.avg_heart_rate()[$index()]  >= 0 -->
+                        <span data-bind="text: $parent.avg_heart_rate()[$index()]"></span>
+                        <!-- /ko -->
+                       
+                         <!-- ko if:  $parent.max_heart_rate !== undefined && $parent.max_heart_rate()[$index()] >= 0 -->
+                        <span data-bind="text: $parent.max_heart_rate()[$index()]"></span>
+                        <!-- /ko -->
 
-                         <!-- ko if:  $parent.total_ascent()[$index()]  >= 0 -->
+                        <!-- ko if:  $parent.total_ascent !== undefined || $parent.total_descent !== undefined  -->
+                        <img  class="inlineIcon" src="Images/ascent.png"  />
+                        <!-- /ko -->
+
+                         <!-- ko if: $parent.total_ascent !== undefined && $parent.total_ascent()[$index()]  >= 0 -->
                         <span data-bind="text: $parent.total_ascent()[$index()]"></span>
                         <!-- /ko -->
 
-                         <!-- ko if:  $parent.total_descent()[$index()] >= 0 -->
+                         <!-- ko if: $parent.total_descent !== undefined && $parent.total_descent()[$index()] >= 0 -->
                         <span data-bind="text: $parent.total_descent()[$index()]"></span>
                         <!-- /ko -->
 
+                         <!-- ko if:  $parent.total_training_effect !== undefined -->
+                        <meter value="0" high="4" low="1.5" min="1" max="5" data-bind="value: $parent.total_training_effect()[$index()]"></meter>
+                        <!-- /ko -->
 
                         <!-- Session trigger -->
 
-                        <div data-bind="if: $parent.trigger">
+                        <!-- ko if: $parent.trigger -->
                              <!-- ko if: $parent.trigger()[$index()] === 0 -->
                         <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end"/>
                         <!-- /ko -->
@@ -96,33 +105,36 @@
 
                             <!-- ko if: $parent.trigger()[$index()] === 3 -->
                         <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
+                         <!-- /ko -->
                         <!-- /ko -->
-
-                        </div>
+                        
                        
                         
 
                         </a>
                     
-                </li>
-            </ul>
-        </div>
+                </article>
+            </section>
+             <!-- /ko -->
+
+            <div data-bind="text: ko.toJSON($root)"></div>
+
+             <hr/> 
+        </section>
 
         <!-- 
         <div class="SessionLapErrorUndefined" data-bind="if: !hasSession" >
             <p>No sessions found</p>
         </div> -->
 
-        <div id="divLaps" >
+        <section id="divLaps" >
             
-            <div data-bind="text: ko.toJSON($root)"></div>
-
-            <hr/>
-
-            <h4>Laps</h4>
             
-            <ul id="lapList" data-bind="foreach: timestamp">
-                <li>
+
+           <!-- <h4>Laps</h4>-->
+            
+            <section id="lapList" data-bind="foreach: timestamp">
+                <article>
                     <a href="#" >
 
           <!--   Sport enum
@@ -158,7 +170,7 @@
 
                         <!-- ko if: $parent.total_elapsed_time()[$index()] !== undefined && $parent.total_elapsed_time()[$index()].value > 0 -->
                        <!-- <span data-bind="text: $parent.toHHMMSS.bind($data,$parent.total_elapsed_time()[$index()])"></span>s-->
-                         <span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span>
+                        <time> <span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span></time>
                         <!-- /ko -->
 
                         <!-- ko if: $parent.total_distance()[$index()] > 0 -->
@@ -232,9 +244,14 @@
 
 
                    
-                </li>
-            </ul>
-        </div>
+                </article>
+            </section>
+
+            <div data-bind="text: ko.toJSON($root)"></div>
+
+            <hr/> 
+
+        </section>
 
         <!-- 
         <div class="SessionLapErrorUndefined" data-bind="if: !hasLap" >
@@ -243,11 +260,11 @@
 
     </div>
 
-    <div id="activityMap"></div>
+    <section id="activityMap"></section>
     
     
-        <div id="testChart"></div>
-        <div id="hrvChart"></div>
+    <section id="testChart"></section>
+    <section id="hrvChart"></section>
     
     
     <div>
@@ -267,7 +284,7 @@
    
     </div>-->
 
-    <footer><h6 style="text-align: center">Henning Knut Skoglund, 2013</h6></footer>
+   
     
     
 </body>
