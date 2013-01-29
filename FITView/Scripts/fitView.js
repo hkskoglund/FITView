@@ -693,6 +693,17 @@
 
         }
 
+        resetViewModel = function (viewModel) {
+            // Set arrays to []
+            for (var observableArray in viewModel) {
+
+                if (observableArray !== "__ko_mapping__" && viewModel[observableArray].removeAll) {
+                    console.log("RemoveAll() on ", observableArray);
+                    viewModel[observableArray].removeAll();
+                }
+            }
+        }
+
 
         switch (eventdata.response) {
 
@@ -741,29 +752,75 @@
                     }, this);
                 };
 
+                var rawdataSession1 = {
+                    avg_heart_rate: [121],
+                    max_heart_rate: [170],
+                    timestamp: [1, 2, 3, 4]
+                    };
 
+                var rawdataSession2 = {
+                    avg_heart_rate: [131],
+                    timestamp: [1, 2]
+                };
+
+                
+
+                sessionModel1 = ko.mapping.fromJS(rawdataSession1);
+
+
+                //for (var prop in sessionModel1) {
+                //    console.log("Trying to remove property : ", prop);
+                //    if (sessionModel1[prop].removeAll)
+                //        sessionModel1[prop].removeAll();
+                //}
+                ////if (sessionModel1.max_heart_rate)
+                ////   sessionModel1.max_heart_rate.removeAll();
+
+                //if (sessionModel1.max_heart_rate)
+                //    sessionModel1.max_heart_rate([]); // I would like delete sessionModel1.max_heart_rate....,but that would probably mess up knockoutjs bindings, is there a function to delete??
+                
+                //ko.mapping.fromJS(rawdataSession2,sessionModel1);
+
+                var sessionElement = $('#divSessions')[0];
+               // ko.cleanNode(sessionElement);
                 //if (rawData.session !== undefined) {
-                    if (FITUI.sessionViewModel === undefined) {
-                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
-                          ko.applyBindings(FITUI.sessionViewModel, $('#divSessions')[0]); // Initialize model with DOM
-                    }
-                    else
-                        ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
-                //} else
+                if (FITUI.sessionViewModel === undefined) {
+                    // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
+                   
+                    FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
+                   
+                    ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM
+                }
+                else {
+                    // FITUI.sessionViewModel.mappedDestroyAll();
+
+                    
+                    // ko.cleanNode(sessionElement);
+
+                   resetViewModel(FITUI.sessionViewModel);
+
+                    ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
+                }
+                        //} else
                    
 
+
+                var lapNode = $('#divLaps')[0];
+                //ko.cleanNode(lapNode);
 
                 if (FITUI.lapViewModel === undefined) {
 
                     
+                    
                     FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
-                    // ApplyBindings should only be run once
-                    ko.applyBindings(FITUI.lapViewModel, $('#divLaps')[0]);
+                    
+                    ko.applyBindings(FITUI.lapViewModel, lapNode);
                 }
                 else {
-                   
+                    resetViewModel(FITUI.lapViewModel);
                     ko.mapping.fromJS(rawData.lap, mappingOptions,FITUI.lapViewModel);
                 }
+
                 // Initialize map
                 if (FITUI.map === undefined)
                     FITUI.map = FITUI.initMap();
@@ -781,12 +838,12 @@
                                 console.info("No record msg. available to extract data from");
                             } else {
 
-                                FITUI.showPolyline(FITUI.map, rawData.record);
+                               // FITUI.showPolyline(FITUI.map, rawData.record);
 
-                                FITUI.showChartsDatetime(rawData);
+                               // FITUI.showChartsDatetime(rawData);
                             }
 
-                        FITUI.showChartHrv(rawData);
+                        //FITUI.showChartHrv(rawData);
 
                         FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;

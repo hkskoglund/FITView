@@ -37,6 +37,8 @@
          
             <!-- ko if: $root !== undefined && $root.timestamp !== undefined -->
             <section id="sessionList" data-bind="foreach: timestamp">
+                
+                
                 <article>
                    
                     <a href="#">
@@ -52,8 +54,13 @@
                         <img class="sessionSport" src="Images/sport/swimming.png"  />
                         <!-- /ko -->
 
-                         <!-- ko if: $parent.total_elapsed_time !== undefined && $parent.total_elapsed_time()[$index()] > 0 -->
+                         <!-- ko if: $parent.total_elapsed_time !== undefined  && $parent.total_elapsed_time().length > 0  -->
                         <time><span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span>s</time>
+                        <!-- /ko -->
+
+                        
+                         <!-- ko if: $parent.total_timer_time !== undefined  && $parent.total_timer_time().length > 0 && $parent.total_timer_time()[$index()].value !== $parent.total_elapsed_time()[$index()].value -->
+                        <time><span data-bind="text: $parent.total_timer_time()[$index()].toHHMMSS()"></span>s</time>
                         <!-- /ko -->
 
                         <!-- ko if: $parent.total_calories !== undefined && $parent.total_calories()[$index()] > 0 -->
@@ -72,7 +79,8 @@
                         <span data-bind="text: $parent.max_heart_rate()[$index()]"></span>
                         <!-- /ko -->
 
-                        <!-- ko if:  $parent.total_ascent !== undefined || $parent.total_descent !== undefined  -->
+                        <!-- ko if:  ($parent.total_ascent !== undefined && $parent.total_ascent() !== undefined && $parent.total_ascent()[$index()] >= 0) &&
+                             ($parent.total_descent !== undefined && $parent.total_descent() !== undefined && $parent.total_descent()[$index()] >= 0) -->
                         <img  class="inlineIcon" src="Images/ascent.png"  />
                         <!-- /ko -->
 
@@ -84,8 +92,14 @@
                         <span data-bind="text: $parent.total_descent()[$index()]"></span>
                         <!-- /ko -->
 
+                        <!-- ko if:  $parent.total_training_effect !== undefined && $parent.total_training_effect() !== undefined -->
+                        TE
+                        <span  data-bind="text: $parent.total_training_effect()[$index()]"></span>
+                        <!-- /ko -->
+
+                        <!-- meter tag ignored in  IE 10, but works in Chrome -->
                          <!-- ko if:  $parent.total_training_effect !== undefined -->
-                        <meter value="0" high="4" low="1.5" min="1" max="5" data-bind="value: $parent.total_training_effect()[$index()]"></meter>
+                        <meter style="padding-left:5px" high="4" low="1.5" min="1" max="5" data-bind="value: $parent.total_training_effect()[$index()]"></meter>
                         <!-- /ko -->
 
                         <!-- Session trigger -->
@@ -152,15 +166,15 @@
             //all 254 All is for goals only to include all sports.-->
                         
 
-                        <!-- ko if: $parent.sport()[$index()] === 1 -->
+                        <!-- ko if: $parent.sport !== undefined && $parent.sport()[$index()] === 1 -->
                         <img class="lapSport" src="Images/sport/running.png" title="Running" alt="Running"/>
                         <!-- /ko -->
                         
-                        <!-- ko if: $parent.sport()[$index()] === 2 -->
+                        <!-- ko if: $parent.sport !== undefined && $parent.sport()[$index()] === 2 -->
                         <img class="lapSport" src="Images/sport/cycling.png" title="Cycling" alt="Cycling" />
                         <!-- /ko -->
                         
-                        <!-- ko if: $parent.sport()[$index()] === 5 -->
+                        <!-- ko if: $parent.sport !== undefined && $parent.sport()[$index()] === 5 -->
                         <img class="lapSport" src="Images/sport/swimming.png" title="Swimming" alt="Swimming" />
                         <!-- /ko -->
                         
@@ -168,12 +182,12 @@
                         <span class="lapNr" data-bind="text: $index()+1"></span>
                         <br />
 
-                        <!-- ko if: $parent.total_elapsed_time()[$index()] !== undefined && $parent.total_elapsed_time()[$index()].value > 0 -->
-                       <!-- <span data-bind="text: $parent.toHHMMSS.bind($data,$parent.total_elapsed_time()[$index()])"></span>s-->
-                        <time> <span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span></time>
+                        <!-- ko if: $parent.total_elapsed_time !== undefined && $parent.total_elapsed_time().length > 0 && $parent.total_elapsed_time()[$index()].value > 0 -->
+                       
+                        <time ><span data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span></time>
                         <!-- /ko -->
 
-                        <!-- ko if: $parent.total_distance()[$index()] > 0 -->
+                        <!-- ko if: $parent.total_distance !== undefined && $parent.total_distance()[$index()] > 0 -->
                             <span data-bind="text: $parent.total_distance()[$index()]"></span>m<br />
                         <!-- /ko -->
 
@@ -182,7 +196,7 @@
                         <div>
 
                            
-                        <!-- ko if:  $parent.total_calories()[$index()] > 0 -->
+                        <!-- ko if: $parent.total_calories !== undefined && $parent.total_calories()[$index()] > 0 -->
                         <span style="float : left" data-bind="text: $parent.total_calories()[$index()]"></span>kcal
                         <!-- /ko -->
 
@@ -190,7 +204,11 @@
                         <span style="float : left" data-bind="text: $parent.total_fat_calories()[$index()]"></span>kcal
                         <!-- /ko -->
 
-                            <!-- Lap triggers
+                            
+                            
+                             
+
+                                 <!-- Lap triggers
                                 
                             manual 0
                             time 1
@@ -203,40 +221,40 @@
 
                                  -->
 
-                            <!-- ko if: $parent.lap_trigger()[$index()] === 0 -->
+                            <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 0 -->
                         <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed"/>
                         <!-- /ko -->
 
                              
 
-                              <!-- ko if: $parent.lap_trigger()[$index()] === 1 -->
+                              <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 1 -->
                         <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time"/>
                         <!-- /ko -->
 
-                            <!-- ko if: $parent.lap_trigger()[$index()] === 2 -->
+                            <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 2 -->
                         <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
                         <!-- /ko -->
 
-                            <!-- ko if: $parent.lap_trigger()[$index()] === 3 -->
+                            <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 3 -->
                         <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
                         <!-- /ko -->
 
-                            <!-- ko if: $parent.lap_trigger()[$index()] === 4 -->
+                            <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 4 -->
                         <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
                         <!-- /ko -->
 
-                            <!-- ko if: $parent.lap_trigger()[$index()] === 5 -->
+                            <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 5 -->
                         <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
                         <!-- /ko -->
 
-                            <!-- ko if: $parent.lap_trigger()[$index()] === 6 -->
+                            <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 6 -->
                         <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
                         <!-- /ko -->
 
-                         <!-- ko if: $parent.lap_trigger()[$index()] === 7 -->
+                         <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 7 -->
                         <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
                         <!-- /ko -->
-
+                              
                         
                              </div>
                        
