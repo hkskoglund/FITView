@@ -91,7 +91,7 @@
 
     }
 
-    function combine(values, timestamps) {
+    function combine(values, timestamps,startTimestamp,endTimestamp) {
         var util = FITUtility();
         var combined = [];
 
@@ -107,7 +107,9 @@
         //if (verifyTimestamps(timestamps)) {
         values.forEach(function (element, index, array) {
             // combined.push([util.convertTimestampToLocalTime(timestamps[index]), element]);
-            combined.push([util.addTimezoneOffsetToUTC(timestamps[index]), element]);
+            var timestamp = timestamps[index];
+            if (timestamp >= startTimestamp && timestamp <= endTimestamp)
+              combined.push([util.addTimezoneOffsetToUTC(timestamps[index]), element]);
            // combined.push([timestamps[index], element]);
         });
         return combined;
@@ -129,7 +131,7 @@
     }
 
 
-    UIController.prototype.showChartsDatetime = function (rawData) {
+    UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp) {
 
         var util = FITUtility();
        
@@ -145,8 +147,8 @@
 
         if (rawData.record !== undefined) {
 
-            if (rawData.record["heart_rate"] !== undefined)
-                seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record["heart_rate"], rawData.record["timestamp"]), id: 'heartrateseries' })
+            if (rawData.record.heart_rate)
+                seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp), id: 'heartrateseries' })
             //if (rawData.record["altitude"] !== undefined)
             //    seriesSetup.push({ name: 'Altitude', data: 
             //        combine(rawData.record["altitude"], rawData.record["timestamp"]),
@@ -830,6 +832,7 @@
 
                 intepretCounters(rawData.counter);
 
+                // Value converters that are run on "create"-event/callback in knockout
                 var mappingOptions = {
                     'total_elapsed_time': {
                         create: function (options) {
@@ -991,7 +994,7 @@
 
                                 FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
 
-                               // FITUI.showChartsDatetime(rawData);
+                                FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                             }
 
                         //FITUI.showChartHrv(rawData);
