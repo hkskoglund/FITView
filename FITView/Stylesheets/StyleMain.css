@@ -156,6 +156,7 @@ section#lapList {
     margin-left: 0;
     padding-left: 0;
     clear: both;
+    /*display : none;*/
     
 }
 
@@ -201,7 +202,15 @@ section#lapList {
     border : none;  /* IE 10 sets border by default*/
     width: 24px;
     height: 24px;
-    padding-right : 5px;
+    padding : 2px;
+}
+
+.sessionHHMMSS  {
+    font-size: x-large;
+}
+
+.sessionTOTALDISTANCE {
+    font-size: x-large;
 }
 
 section#sessionList {
@@ -209,10 +218,12 @@ section#sessionList {
     padding-left: 0;
     white-space: nowrap;
     background-color: lightgrey;
+   
+    /*display : none;*/
 }
 
 #sessionList article {
-  
+    font-size : x-large;
     float : left;
     /*list-style-type: none;*/
     /*padding-right: 10px;*/
@@ -221,7 +232,8 @@ section#sessionList {
     margin-left: 0px;
     margin-right: 5px;
     margin-bottom : 5px;
-    clear : both; /*Added to force newline*/
+    height : 40px;
+    /*clear : both;*/ /*Added to force newline*/
 }
 
 #sessionList article a {
@@ -247,6 +259,8 @@ section#sessionList {
 .inlineIcon {
     padding-top: 2px;
     border : none; /* Turn off default IE 10 border*/
+    height : 24px;
+    width : 24px;
 }
 
 .FITprogressImport {

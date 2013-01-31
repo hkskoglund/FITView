@@ -447,6 +447,7 @@
 
     UIController.prototype.showSessionMarkers = function (map, rawdata) {
         // Plot markers for start of each session
+        var self = this;
 
         var util = FITUtility();
 
@@ -458,8 +459,8 @@
             var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
             map.setCenter(latlong);
             
-            if (FITUI.sessionMarkers === undefined || FITUI.sessionMarkers === null)
-                FITUI.sessionMarkers = [];
+            if (self.sessionMarkers === undefined || self.sessionMarkers === null)
+                self.sessionMarkers = [];
 
             var markerOptions = {
                 position: latlong,
@@ -508,17 +509,17 @@
             if (image !== undefined)
                 markerOptions.icon = image;
            
-            FITUI.sessionMarkers.push(new google.maps.Marker(markerOptions));
+            self.sessionMarkers.push(new google.maps.Marker(markerOptions));
         }
         
         // Clear previous session markers
-        if (FITUI.sessionMarkers !== undefined && FITUI.sessionMarkers !== null)
+        if (self.sessionMarkers !== undefined && self.sessionMarkers !== null)
         {
-            FITUI.sessionMarkers.forEach(function (element, index, array) {
+            self.sessionMarkers.forEach(function (element, index, array) {
                 element.setMap(null);
             });
 
-            FITUI.sessionMarkers = null;
+            self.sessionMarkers = null;
         }
 
         if (session !== undefined)
@@ -576,6 +577,83 @@
 
     }
 
+    UIController.prototype.showSessionsAsOverlay = function (map, rawdata) {
+        var self = this;
+        var util = FITUtility();
+
+        var session = rawdata.session;
+
+        // Remove previous overlays
+        if (this.sessionRectangles !== undefined) {
+            this.sessionRectangles.forEach(function (element, index, array) {
+                self.sessionRectangles[index].setMap(null)
+            });
+        }
+
+        if (session === undefined)
+            return;
+
+        if (session.swc_lat === undefined || session.swc_long === undefined || session.nec_lat === undefined || session.nec_long === undefined) {
+            console.info("No swc/nec data available in session");
+            return;
+        }
+
+        
+
+        
+
+        var sessionCoords = [];
+        self.sessionRectangles = [];
+        var fillColors = [];
+
+        
+
+        session.swc_lat.forEach(function (value, index, array) {
+
+            var sessionRectangle;
+
+            if (session.swc_lat[index] !== undefined ||
+                session.swc_long[index] !== undefined ||
+                session.nec_lat[index] !== undefined ||
+                session.nec_long[index] !== undefined) {
+                sessionCoords.push([
+            new google.maps.LatLng(util.semiCirclesToDegrees(session.swc_lat[index]), util.semiCirclesToDegrees(session.swc_long[index])),
+            new google.maps.LatLng(util.semiCirclesToDegrees(session.swc_lat[index]), util.semiCirclesToDegrees(session.nec_long[index])),
+            new google.maps.LatLng(util.semiCirclesToDegrees(session.nec_lat[index]), util.semiCirclesToDegrees(session.nec_long[index])),
+            new google.maps.LatLng(util.semiCirclesToDegrees(session.nec_lat[index]), util.semiCirclesToDegrees(session.swc_long[index]))]);
+            }
+
+            switch (session.sport[index]) {
+                case FITSport.running:
+                    fillColors.push("#339933");
+                    break;
+                case FITSport.cycling:
+                    fillColors.push("#999");
+                    break;
+                case FITSport.swimming:
+                    fillColors.push("#0066CC");
+                    break;
+                default:
+                    fillColors.push("#339933");
+                    break;
+            }
+
+            self.sessionRectangles.push( new google.maps.Polygon({
+                paths: sessionCoords[index],
+                strokeColor: "#000000",
+                strokeOpacity: 0.10,
+                strokeWeight: 1,
+                fillColor: fillColors[index],
+                fillOpacity: 0.10
+            }));
+
+            self.sessionRectangles[index].setMap(map);
+
+        }
+            );
+
+    }
+
     UIController.prototype.initMap = function () {
 
         var myCurrentPosition, newMap = undefined;
@@ -613,19 +691,29 @@
     }
 
 
-    UIController.prototype.showPolyline = function (map, record) {
+    UIController.prototype.showPolyline = function (map, record, startTimestamp, endTimestamp) {
+      
+        var self = this;
 
-       
-         // Clear previous polyline
-            if (FITUI.activityPolyline !== undefined && FITUI.activityPolyline !== null) {
-                
-                FITUI.activityPolyline.setMap(null); 
-                FITUI.activityPolyline = null;
-            }
+        // Clear previous polyline
+        if (self.activityPolyline) {
 
-        // No need to render polyline if no position data is available
-            if (record.position_lat === undefined || record.position_lat === null) 
-              return;
+            self.activityPolyline.setMap(null);
+            self.activityPolyline = null;
+        }
+
+        if (!record) {
+            console.info("No record msg. to based plot of polyline data for session,lap etc.");
+            return;
+        }
+
+        if (!record.position_lat) {
+            console.info("No position data (position_lat), cannot render polyline data");
+            return;
+        }
+
+          
+
         
         var activityCoordinates = [];
         var util = FITUtility();
@@ -648,25 +736,46 @@
             //var sample = 0;
 
             var sampleLimit = 100;
-        
-            record.position_lat.forEach(function (element, index, array) {
-                if (index === 0 || (index % sampleInterval === 0) || index === latLength - 1) 
+
+            var findNearestTimestamp = function(timestamp) {
+                var indxNr;
+                for (indxNr = 0; indxNr < latLength; indxNr++) {
+                    if (record.timestamp[indxNr] >= timestamp)
+                        break;
+                }
+                return indxNr;
+            }
+
+            var indexStartTime = record.timestamp.indexOf(startTimestamp);
+            if (indexStartTime === -1) {
+                console.warn("Starttime not found for timestamp ", startTimestamp, " looping through available timestamps to find nearest");
+                indexStartTime = findNearestTimestamp(startTimestamp);
+            }
+
+            var indexEndTime = record.timestamp.indexOf(endTimestamp);
+            if (indexEndTime === -1) {
+                console.warn("Endtime not found for timestamp ",endTimestamp," looping through available timestamps to find nearest");
+                indexEndTime = findNearestTimestamp(endTimestamp);
+            }
+
+            for (var index = indexStartTime; index <= indexEndTime; index++) {
+                if (index === indexStartTime || (index % sampleInterval === 0) || index === indexEndTime)
                     if (record.position_long[index] !== undefined)
-                        activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(element), util.semiCirclesToDegrees(record.position_long[index])));
-            })
+                        activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(record.position_lat[index]), util.semiCirclesToDegrees(record.position_long[index])));
+            }
 
             console.info("Total length of polyline array with coordinates is : ", activityCoordinates.length.toString());
 
            // var testarr = activityCoordinates.slice(0, sampleLimit);
 
-        FITUI.activityPolyline = new google.maps.Polyline({
+        self.activityPolyline = new google.maps.Polyline({
             path: activityCoordinates,
             strokeColor: "#FF0000",
             strokeOpacity: 1.0,
             strokeWeight: 2
         });
 
-        FITUI.activityPolyline.setMap(map);
+        self.activityPolyline.setMap(map);
 
     }
 
@@ -697,11 +806,16 @@
             // Set arrays to []
             for (var observableArray in viewModel) {
 
-                if (observableArray !== "__ko_mapping__" && viewModel[observableArray].removeAll) {
-                    console.log("RemoveAll() on ", observableArray);
+                if (observableArray !== "timestamp" && observableArray !== "__ko_mapping__" && viewModel[observableArray] !== undefined && viewModel[observableArray].removeAll) {
+                   // console.log("RemoveAll() on ", observableArray);
                     viewModel[observableArray].removeAll();
                 }
             }
+
+            // Take timestamp in the end, due to a foreach: timestamp in databinding, better be carefull about bindings....
+            if (viewModel.timestamp !== undefined)
+                viewModel.timestamp.removeAll();
+
         }
 
 
@@ -720,15 +834,44 @@
                     'total_elapsed_time': {
                         create: function (options) {
                             return new mySecsToHHMMSSModel(options.data);
-                        }},
-                     'total_timer_time': {
-                            create: function (options) {
-                                return new mySecsToHHMMSSModel(options.data);
-                            }
+                        }
+                    },
+                    'total_timer_time': {
+                        create: function (options) {
+                            return new mySecsToHHMMSSModel(options.data);
+                        }
+                    },
+                    'avg_speed': {
+                        create: function (options) {
+                            return new mySpeedConverterModel(options.data);
+                        }
+                    },
+                    'max_speed': {
+                        create: function (options) {
+                            return new mySpeedConverterModel(options.data);
                         }
                     }
+                };
                 
                 
+                var mySpeedConverterModel = function (speedMprSEC) {
+                    var self = this;
+                    self.value = speedMprSEC;
+                    
+                    self.toMINprKM = ko.computed(function () {
+                        var minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
+                        var minutes = Math.floor(minPrKM);
+                        var seconds = ((minPrKM - minutes) * 60).toFixed(); // implicit rounding
+
+                        var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                        return result;
+                    }, self);
+
+                    self.toKMprH = ko.computed(function () {
+                        var kmPrH = (speedMprSEC * 3.6).toFixed(1);
+                        return kmPrH;
+                    }, self);
+                };
 
                 var mySecsToHHMMSSModel = function (totalSec) {
                     //  ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
@@ -752,20 +895,20 @@
                     }, this);
                 };
 
-                var rawdataSession1 = {
-                    avg_heart_rate: [121],
-                    max_heart_rate: [170],
-                    timestamp: [1, 2, 3, 4]
-                    };
+                //var rawdataSession1 = {
+                //    avg_heart_rate: [121],
+                //    max_heart_rate: [170],
+                //    timestamp: [1, 2, 3, 4]
+                //    };
 
-                var rawdataSession2 = {
-                    avg_heart_rate: [131],
-                    timestamp: [1, 2]
-                };
+                //var rawdataSession2 = {
+                //    avg_heart_rate: [131],
+                //    timestamp: [1, 2]
+                //};
 
                 
 
-                sessionModel1 = ko.mapping.fromJS(rawdataSession1);
+                //sessionModel1 = ko.mapping.fromJS(rawdataSession1);
 
 
                 //for (var prop in sessionModel1) {
@@ -781,44 +924,50 @@
                 
                 //ko.mapping.fromJS(rawdataSession2,sessionModel1);
 
-                var sessionElement = $('#divSessions')[0];
-               // ko.cleanNode(sessionElement);
+                var jquerySessionElement = $('#divSessions');
+                var sessionElement = jquerySessionElement[0];
+               
                 //if (rawData.session !== undefined) {
                 if (FITUI.sessionViewModel === undefined) {
+
+
                     // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
-                   
-                    FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
-                   
-                    ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM
+
+                    if (rawData.session !== undefined) {   // Skip mapping and apply bindings only on available data
+
+                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
+
+                        FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
+
+                       // jquerySessionElement.show();
+                        ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM 
+                        
+                    }
                 }
                 else {
-                    // FITUI.sessionViewModel.mappedDestroyAll();
 
-                    
-                    // ko.cleanNode(sessionElement);
+                    // Discussion: https://groups.google.com/forum/?fromgroups=#!topic/knockoutjs/LWsxAJ3m97s
 
-                   resetViewModel(FITUI.sessionViewModel);
+                    resetViewModel(FITUI.sessionViewModel);
 
                     ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
                 }
-                        //} else
+
                    
-
-
-                var lapNode = $('#divLaps')[0];
-                //ko.cleanNode(lapNode);
+                var jqueryLapNode = $('#divLaps');
+                var lapNode = jqueryLapNode[0];
 
                 if (FITUI.lapViewModel === undefined) {
-
-                    
-                    
-                    FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
-                    
-                    ko.applyBindings(FITUI.lapViewModel, lapNode);
+                    if (rawData.lap !== undefined) {
+                        FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
+                       // jqueryLapNode.show();
+                        ko.applyBindings(FITUI.lapViewModel, lapNode);
+                       
+                    }
                 }
                 else {
                     resetViewModel(FITUI.lapViewModel);
-                    ko.mapping.fromJS(rawData.lap, mappingOptions,FITUI.lapViewModel);
+                    ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
                 }
 
                 // Initialize map
@@ -838,7 +987,9 @@
                                 console.info("No record msg. available to extract data from");
                             } else {
 
-                               // FITUI.showPolyline(FITUI.map, rawData.record);
+                                FITUI.showSessionsAsOverlay(FITUI.map, rawData);
+
+                                FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
 
                                // FITUI.showChartsDatetime(rawData);
                             }

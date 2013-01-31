@@ -314,7 +314,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var req;
             try {
-                req = store.add(datarec);
+                req = {};
+                // req = store.add(datarec);
             } catch (e) {
                 //if (e.name == 'DataCloneError')
                 //    displayActionFailure("This engine doesn't know how to clone a Blob, " +
