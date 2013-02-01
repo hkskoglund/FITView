@@ -135,6 +135,7 @@
 
     UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp) {
 
+        var self = this;
         var util = FITUtility();
        
 
@@ -255,7 +256,7 @@
                                                 scale: 3
                                             },
                                             draggable: true,
-                                            map: this.map
+                                            map: self.map
                                         });
                                     }
 
