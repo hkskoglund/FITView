@@ -152,18 +152,21 @@
 
             if (rawData.record.heart_rate)
                 seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp), id: 'heartrateseries' });
-            //if (rawData.record["altitude"] !== undefined)
-            //    seriesSetup.push({ name: 'Altitude', data: 
-            //        combine(rawData.record["altitude"], rawData.record["timestamp"]),
-            //    });
+            
+            if (rawData.record.altitude)
+                seriesSetup.push({ name: 'Altitude', data: 
+                    combine(rawData.record.altitude, rawData.record.timestamp,startTimestamp,endTimestamp),
+                });
+            
             //if (rawData.record["cadence"] !== undefined)
             //    seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
-            //if (rawData.record["speed"] !== undefined) {
-            //    rawData.record.speed.forEach(function (element, index, array) {
-            //        array[index][0] = element[0] * 3.6;
-            //    });
-            //    seriesSetup.push({ name: 'Speed', data: combine(rawData.record["speed"], rawData.record["timestamp"]) });
-            //}
+            
+            if (rawData.record.speed) {
+               // Convert to km/h
+               for (var relTimestamp = 0; relTimestamp <=  rawData.record.speed.length; relTimestamp++)
+                  rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
+                seriesSetup.push({ name: 'Speed', data: combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp) });
+            }
         }
 
         //if (rawData.lap != undefined) {
