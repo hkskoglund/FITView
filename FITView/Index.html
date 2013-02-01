@@ -123,11 +123,11 @@
 
                         <!-- ko if: $parent.sport()[$index()] === 1 || $parent.tempoOrSpeed() === 0 -->
                          
-                        <!-- ko if:  $parent.avg_speed()[$index()] -->
+                        <!-- ko if: $parent.avg_speed && $parent.avg_speed()[$index()] -->
                         <span data-bind="text: $parent.avg_speed()[$index()].toMINprKM()"></span>
                          <!-- /ko -->
 
-                        <!-- ko if:  $parent.max_speed()[$index()] -->
+                        <!-- ko if: $parent.max_speed && $parent.max_speed()[$index()] -->
                         <span data-bind="text: $parent.max_speed()[$index()].toMINprKM()"></span>
                          <!-- /ko -->
                        <!-- /ko -->

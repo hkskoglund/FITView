@@ -148,25 +148,25 @@
 
         // Record data
 
-        if (rawData.record !== undefined) {
+        if (rawData.record) {
 
             if (rawData.record.heart_rate)
                 seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp), id: 'heartrateseries' });
             
-            if (rawData.record.altitude)
-                seriesSetup.push({ name: 'Altitude', data: 
-                    combine(rawData.record.altitude, rawData.record.timestamp,startTimestamp,endTimestamp),
-                });
+            //if (rawData.record.altitude)
+            //    seriesSetup.push({ name: 'Altitude', data: 
+            //        combine(rawData.record.altitude, rawData.record.timestamp,startTimestamp,endTimestamp),
+            //    });
             
             //if (rawData.record["cadence"] !== undefined)
             //    seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
             
-            if (rawData.record.speed) {
-               // Convert to km/h
-               for (var relTimestamp = 0; relTimestamp <=  rawData.record.speed.length; relTimestamp++)
-                  rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
-                seriesSetup.push({ name: 'Speed', data: combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp) });
-            }
+            //if (rawData.record.speed) {
+            //   // Convert to km/h
+            //   for (var relTimestamp = 0; relTimestamp <=  rawData.record.speed.length; relTimestamp++)
+            //      rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
+            //    seriesSetup.push({ name: 'Speed', data: combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp) });
+            //}
         }
 
         //if (rawData.lap != undefined) {
@@ -204,8 +204,8 @@
             type: 'line',
             // Allow zooming
             zoomType: 'xy'
-            
-    };
+
+        };
         //if (rawData.hrv !== undefined)
         //    chartOptions.inverted = true;
 
@@ -870,7 +870,12 @@
                     self.value = speedMprSEC;
                     
                     self.toMINprKM = ko.computed(function () {
-                        var minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
+                        var minPrKM;
+                        if (speedMprSEC > 0)  
+                            minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
+                        else 
+                            minPrKM = 0;
+
                         var minutes = Math.floor(minPrKM);
                         var seconds = ((minPrKM - minutes) * 60).toFixed(); // implicit rounding
 
