@@ -825,7 +825,7 @@
             case 'rawData':
                 //var rawData = JSON.parse(data.rawdata);
                 $("#progressFITimport").hide();
-                this.progressFITimportViewModel.progressFITimport(0);
+                FITUI.progressFITimportViewModel.progressFITimport(0);
 
                 var rawData = eventdata.rawdata;
 
@@ -931,19 +931,19 @@
                 var sessionElement = jquerySessionElement[0];
                
                 //if (rawData.session !== undefined) {
-                if (this.sessionViewModel === undefined) {
+                if (FITUI.sessionViewModel === undefined) {
 
 
                     // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
 
                     if (rawData.session !== undefined) {   // Skip mapping and apply bindings only on available data
 
-                        this.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
+                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
 
-                        this.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
+                        FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
 
                        // jquerySessionElement.show();
-                        ko.applyBindings(this.sessionViewModel, sessionElement); // Initialize model with DOM 
+                        ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM 
                         
                     }
                 }
@@ -951,55 +951,55 @@
 
                     // Discussion: https://groups.google.com/forum/?fromgroups=#!topic/knockoutjs/LWsxAJ3m97s
 
-                    resetViewModel(this.sessionViewModel);
+                    resetViewModel(FITUI.sessionViewModel);
 
-                    ko.mapping.fromJS(rawData.session, mappingOptions, this.sessionViewModel); // Just update model with new data
+                    ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
                 }
 
                    
                 var jqueryLapNode = $('#divLaps');
                 var lapNode = jqueryLapNode[0];
 
-                if (this.lapViewModel === undefined) {
+                if (FITUI.lapViewModel === undefined) {
                     if (rawData.lap !== undefined) {
-                        this.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
+                        FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
                        // jqueryLapNode.show();
-                        ko.applyBindings(this.lapViewModel, lapNode);
+                        ko.applyBindings(FITUI.lapViewModel, lapNode);
                        
                     }
                 }
                 else {
-                    resetViewModel(this.lapViewModel);
-                    ko.mapping.fromJS(rawData.lap, mappingOptions, this.lapViewModel);
+                    resetViewModel(FITUI.lapViewModel);
+                    ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
                 }
 
                 // Initialize map
-                if (this.map === undefined)
-                    this.map = this.initMap();
+                if (FITUI.map === undefined)
+                FITUI.map = FITUI.initMap();
 
 
                 switch (rawData.file_id.type[0]) {
                     case 4: // Activity file
 
-                            this.showLaps(rawData);
+                        FITUI.showLaps(rawData);
 
                         //if (rawData.session != undefined)
-                            this.showSessionMarkers(this.map, rawData);
+                        FITUI.showSessionMarkers(FITUI.map, rawData);
 
                             if (rawData.record === undefined) {
                                 console.info("No record msg. available to extract data from");
                             } else {
 
-                                this.showSessionsAsOverlay(this.map, rawData);
+                                FITUI.showSessionsAsOverlay(FITUI.map, rawData);
 
-                                this.showPolyline(this.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
+                                FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
 
-                                this.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
+                                FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                             }
 
                         //FITUI.showChartHrv(rawData);
 
-                        this.showDataRecordsOnMap(eventdata.datamessages);
+                        FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;
                     default:
                         console.warn("Unsupported fit file type, expected 4 (activity file), but got ", rawData.file_id.type[0]);
@@ -1036,7 +1036,7 @@
 
             case 'progress':
                
-                this.progressFITimportViewModel.progressFITimport(eventdata.data);
+            FITUI.progressFITimportViewModel.progressFITimport(eventdata.data);
 
                 //FITUI.progressFITImport.setAttribute("value", eventdata.data);
                 break;
@@ -1308,9 +1308,9 @@ var self = this;
 
         
 
-        this.selectedFiles = e.target.files;
+        FITUI.selectedFiles = e.target.files;
 
-        var files = this.selectedFiles;
+        var files = FITUI.selectedFiles;
 
         // Setup mutiple/batch workers
         console.log("Setup of " + files.length + " workers.");
@@ -1322,15 +1322,15 @@ var self = this;
         }
 
         // Make sure we terminate previous worker
-        if (this.fitFileManager !== undefined) {
-            this.fitFileManager.removeEventListener('error', this.onFITManagerError, false);
-            this.fitFileManager.removeEventListener('message', this.onFITManagerMsg, false);
-            this.fitFileManager.terminate();
+        if (FITUI.fitFileManager !== undefined) {
+            FITUI.fitFileManager.removeEventListener('error', FITUI.onFITManagerError, false);
+            FITUI.fitFileManager.removeEventListener('message', FITUI.onFITManagerMsg, false);
+            FITUI.fitFileManager.terminate();
         }
 
-        this.fitFileManager = new Worker("Scripts/FITImport.js");
-        this.fitFileManager.addEventListener('message', this.onFITManagerMsg, false);
-        this.fitFileManager.addEventListener('error', this.onFITManagerError, false);
+        FITUI.fitFileManager = new Worker("Scripts/FITImport.js");
+        FITUI.fitFileManager.addEventListener('message', FITUI.onFITManagerMsg, false);
+        FITUI.fitFileManager.addEventListener('error', FITUI.onFITManagerError, false);
 
 
         // Need to adjust timestamps in the underlying data from Garmin time/System time
@@ -1359,14 +1359,14 @@ var self = this;
         };
 
         
-        if (this.progressFITimportViewModel !== undefined)
-            this.progressFITimportViewModel = null;
+        if (FITUI.progressFITimportViewModel !== undefined)
+         FITUI.progressFITimportViewModel = null;
 
-        this.progressFITimportViewModel = new progressFITimportViewModel();
-        ko.applyBindings(this.progressFITimportViewModel, document.getElementById("progressFITimport"));
+        FITUI.progressFITimportViewModel = new progressFITimportViewModel();
+        ko.applyBindings(FITUI.progressFITimportViewModel, document.getElementById("progressFITimport"));
         $("#progressFITimport").show();
 
-        this.fitFileManager.postMessage(msg);
+        FITUI.fitFileManager.postMessage(msg);
 
 
 
