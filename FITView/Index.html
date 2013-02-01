@@ -96,7 +96,7 @@
 
                         <!-- SPEED -->
 
-                        <!-- ko if: ($parent.avg_speed  && $parent.avg_speed().length > 0) || ($parent.max_speed !== undefined && $parent.max_speed().length > 0) -->
+                        <!-- ko if: ($parent.avg_speed  && $parent.avg_speed().length > 0) || ($parent.max_speed && $parent.max_speed().length > 0) -->
                         <img class="inlineIcon" src="Images/speed.png"  />
                         <!-- /ko -->
                         
@@ -131,6 +131,9 @@
                         <span data-bind="text: $parent.max_speed()[$index()].toMINprKM()"></span>
                          <!-- /ko -->
                        <!-- /ko -->
+
+                        <!-- SWIMMING TO DO .... -->
+
                        
                         <!-- CADENCE/STRIDES -->
 

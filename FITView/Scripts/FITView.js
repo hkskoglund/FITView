@@ -6,14 +6,38 @@
 
     window.onload = function () {
         FITUI = new UIController();
-        FITUI.setup();
+        
     };
 
     function UIController() {
 
-        this.map = undefined;
+        if (!Modernizr.webworkers) {
+            alert("This application will not work due to lack of webworker functionality");
+        }
 
-    }
+        if (!Modernizr.indexeddb) {
+            alert("This application will not work due to lack of indexedDB");
+        }
+
+        if (!Modernizr.geolocation) {
+            alert("This application will not work due to lack of geolocation");
+        }
+
+      
+        this.inpFITFile = document.getElementById('inpFITFile');
+        this.inpFITFile.addEventListener('change', this.onFitFileSelected, false);
+
+        //FITUI.btnSaveZones = document.getElementById('btnSaveZones')
+        //FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
+
+        this.divMsgMap = document.getElementById('divMsgMap');
+
+        this.progressFITImport = document.getElementById('progressFITImport');
+
+        this.divSessionLap = $('#divSessionLap');
+
+    };
+
 
     UIController.prototype.showSpeedVsHeartRate = function (rawData) {
         var seriesSpeedVsHR = [];
@@ -153,10 +177,10 @@
             if (rawData.record.heart_rate)
                 seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp), id: 'heartrateseries' });
             
-            //if (rawData.record.altitude)
-            //    seriesSetup.push({ name: 'Altitude', data: 
-            //        combine(rawData.record.altitude, rawData.record.timestamp,startTimestamp,endTimestamp),
-            //    });
+            if (rawData.record.altitude)
+                seriesSetup.push({ name: 'Altitude', data: 
+                    combine(rawData.record.altitude, rawData.record.timestamp,startTimestamp,endTimestamp),
+                });
             
             //if (rawData.record["cadence"] !== undefined)
             //    seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
@@ -164,7 +188,8 @@
             //if (rawData.record.speed) {
             //   // Convert to km/h
             //   for (var relTimestamp = 0; relTimestamp <=  rawData.record.speed.length; relTimestamp++)
-            //      rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
+            //       rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
+
             //    seriesSetup.push({ name: 'Speed', data: combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp) });
             //}
         }
@@ -478,7 +503,7 @@
             };
 
             // Select session marker according to sport mode
-            var image = undefined;
+            var image;
 
             function newMarkerImage(imageName) {
                 return new google.maps.MarkerImage(imageName,
@@ -516,14 +541,14 @@
                     // TO DO : Add more icons
             }
 
-            if (image !== undefined)
+            if (image)
                 markerOptions.icon = image;
            
             self.sessionMarkers.push(new google.maps.Marker(markerOptions));
         };
         
         // Clear previous session markers
-        if (self.sessionMarkers !== undefined && self.sessionMarkers !== null)
+        if (self.sessionMarkers)
         {
             self.sessionMarkers.forEach(function (element, index, array) {
                 element.setMap(null);
@@ -532,23 +557,15 @@
             self.sessionMarkers = null;
         }
 
-        if (session !== undefined)
-       
-            if (session.start_position_lat !== undefined)
+        if (session && session.start_position_lat)
             {
         
-
                 session.start_position_lat.forEach(function (element, index, array) {
 
                     var lat = element;
                     var long = session.start_position_long[index];
 
-
-                    //var startTimeDate = new Date();
-                    //startTimeDate.setTime(util.convertTimestampToUTC(session.timestamp[index]));
-
-
-                    if (lat !== undefined && long !== undefined) {
+                    if (lat  && long ) {
                     
                         sessionStartPosFound = true;
                         
@@ -564,23 +581,24 @@
 
         // Valid .FIT file have session record, but invalid fit may not....try to fetch from record head instead
 
-        if (!sessionStartPosFound)
-            if (rawdata.record !== undefined) {
+        if (!sessionStartPosFound && rawdata.record)
+            {
                 var lat;
 
-                if (rawdata.record.position_lat != undefined && rawdata.record.position_lat.length > 0)
+                if (rawdata.record.position_lat  && rawdata.record.position_lat.length > 0)
                     lat = rawdata.record.position_lat[0];
 
                 var long;
 
-                if (rawdata.record.position_long !== undefined && rawdata.record.position_long.length > 0)
+                if (rawdata.record.position_long  && rawdata.record.position_long.length > 0)
                     long = rawdata.record.position_long[0];
 
                 var sport = rawdata.lap.sport[0];
                 if (sport === undefined)
                     sport = 0; // Default to generic
 
-                if (lat !== undefined && long !== undefined) {
+                if (lat && long) {
+                    console.info("No start position was found in session data, got a position at start of record messages.", lat,long);
                     setMapCenter(sport, lat, long);
                     mapCenterSet = true;
                 }
@@ -619,10 +637,10 @@
         session.swc_lat.forEach(function (value, index, array) {
 
           
-            if (session.swc_lat[index] !== undefined ||
-                session.swc_long[index] !== undefined ||
-                session.nec_lat[index] !== undefined ||
-                session.nec_long[index] !== undefined) {
+            if (session.swc_lat[index] &&
+                session.swc_long[index] &&
+                session.nec_lat[index] &&
+                session.nec_long[index] ) {
                 sessionCoords.push([
             new google.maps.LatLng(util.semiCirclesToDegrees(session.swc_lat[index]), util.semiCirclesToDegrees(session.swc_long[index])),
             new google.maps.LatLng(util.semiCirclesToDegrees(session.swc_lat[index]), util.semiCirclesToDegrees(session.nec_long[index])),
@@ -708,12 +726,12 @@
             self.activityPolyline = null;
         }
 
-        if (!record) {
+        if (record === undefined) {
             console.info("No record msg. to based plot of polyline data for session,lap etc.");
             return false;
         }
 
-        if (!record.position_lat) {
+        if (record.position_lat === undefined) {
             console.info("No position data (position_lat), cannot render polyline data");
             return false;
         }
@@ -911,34 +929,7 @@
                     }, this);
                 };
 
-                //var rawdataSession1 = {
-                //    avg_heart_rate: [121],
-                //    max_heart_rate: [170],
-                //    timestamp: [1, 2, 3, 4]
-                //    };
-
-                //var rawdataSession2 = {
-                //    avg_heart_rate: [131],
-                //    timestamp: [1, 2]
-                //};
-
-                
-
-                //sessionModel1 = ko.mapping.fromJS(rawdataSession1);
-
-
-                //for (var prop in sessionModel1) {
-                //    console.log("Trying to remove property : ", prop);
-                //    if (sessionModel1[prop].removeAll)
-                //        sessionModel1[prop].removeAll();
-                //}
-                ////if (sessionModel1.max_heart_rate)
-                ////   sessionModel1.max_heart_rate.removeAll();
-
-                //if (sessionModel1.max_heart_rate)
-                //    sessionModel1.max_heart_rate([]); // I would like delete sessionModel1.max_heart_rate....,but that would probably mess up knockoutjs bindings, is there a function to delete??
-                
-                //ko.mapping.fromJS(rawdataSession2,sessionModel1);
+               
 
                 var jquerySessionElement = $('#divSessions');
                 var sessionElement = jquerySessionElement[0];
@@ -949,7 +940,7 @@
 
                     // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
 
-                    if (rawData.session !== undefined) {   // Skip mapping and apply bindings only on available data
+                    if (rawData.session) {   // Skip mapping and apply bindings only on available data
 
                         FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
 
@@ -973,13 +964,12 @@
                 var jqueryLapNode = $('#divLaps');
                 var lapNode = jqueryLapNode[0];
 
-                if (FITUI.lapViewModel === undefined) {
-                    if (rawData.lap !== undefined) {
+                if (FITUI.lapViewModel === undefined && rawData.lap) {
                         FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
                        // jqueryLapNode.show();
                         ko.applyBindings(FITUI.lapViewModel, lapNode);
                        
-                    }
+                    
                 }
                 else {
                     resetViewModel(FITUI.lapViewModel);
@@ -996,34 +986,28 @@
 
                         FITUI.showLaps(rawData);
 
-                        //if (rawData.session != undefined)
+                        
                         var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
 
-                            if (rawData.record === undefined) {
-                                console.info("No record msg. available to extract data from");
-                            } else {
-                                
-                                var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
+                        var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
 
-                                var polylinePlotted = FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
+                        var polylinePlotted = FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
 
-                                if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
-                                    $('#activityMap').show();
+                        //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
+                        //   $('#activityMap').show();
 
-                                FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
-                            }
-
+                         FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
+                         
                         //FITUI.showChartHrv(rawData);
 
                         FITUI.showDataRecordsOnMap(eventdata.datamessages);
                         break;
+
                     default:
                         console.warn("Unsupported fit file type, expected 4 (activity file), but got ", rawData.file_id.type[0]);
                         break;
 
                 }
-
-              
 
                 break;
 
@@ -1080,39 +1064,6 @@
 
     
 
-    UIController.prototype.setup = function () {
-    
-        if (!Modernizr.webworkers) {
-            alert("This application will not work due to lack of webworker functionality");
-        }
-
-        if (!Modernizr.indexeddb) {
-            alert("This application will not work due to lack of indexedDB");
-        }
-
-        if (!Modernizr.geolocation) {
-            alert("This application will not work due to lack of geolocation");
-        }
-
-        // Capturing = false -> bubbling event
-        this.inpFITFile = document.getElementById('inpFITFile');
-        this.inpFITFile.addEventListener('change', this.onFitFileSelected, false);
-
-
-        //FITUI.btnParse = document.getElementById('btnParse')
-        //FITUI.btnParse.addEventListener('click', FITUI.onbtnParseClick, false);
-
-
-        //FITUI.btnSaveZones = document.getElementById('btnSaveZones')
-        //FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
-
-        this.divMsgMap = document.getElementById('divMsgMap');
-
-        this.progressFITImport = document.getElementById('progressFITImport');
-
-        this.divSessionLap = $('#divSessionLap');
-        
-    };
 
     UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
 
@@ -1199,7 +1150,7 @@ var self = this;
         // console.log(e);
         e.preventDefault();
 
-        $('#activityMap').hide();
+        //$('#activityMap').hide();
 
         FITUI.selectedFiles = e.target.files;
 

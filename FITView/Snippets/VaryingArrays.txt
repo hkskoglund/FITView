@@ -1,0 +1,28 @@
+﻿ //var rawdataSession1 = {
+                //    avg_heart_rate: [121],
+                //    max_heart_rate: [170],
+                //    timestamp: [1, 2, 3, 4]
+                //    };
+
+                //var rawdataSession2 = {
+                //    avg_heart_rate: [131],
+                //    timestamp: [1, 2]
+                //};
+
+                
+
+                //sessionModel1 = ko.mapping.fromJS(rawdataSession1);
+
+
+                //for (var prop in sessionModel1) {
+                //    console.log("Trying to remove property : ", prop);
+                //    if (sessionModel1[prop].removeAll)
+                //        sessionModel1[prop].removeAll();
+                //}
+                ////if (sessionModel1.max_heart_rate)
+                ////   sessionModel1.max_heart_rate.removeAll();
+
+                //if (sessionModel1.max_heart_rate)
+                //    sessionModel1.max_heart_rate([]); // I would like delete sessionModel1.max_heart_rate....,but that would probably mess up knockoutjs bindings, is there a function to delete??
+                
+                //ko.mapping.fromJS(rawdataSession2,sessionModel1);
