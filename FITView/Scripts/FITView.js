@@ -600,15 +600,10 @@
             return;
         }
 
-        
-
-        
-
+    
         var sessionCoords = [];
         self.sessionRectangles = [];
         var fillColors = [];
-
-        
 
         session.swc_lat.forEach(function (value, index, array) {
 
@@ -1060,128 +1055,16 @@
         self.progressFITimport = ko.observable(0);
     }
 
-    function lapViewModel(lap) {
-        var self = this;
+    
 
-        self.lap = lap;
-
-        // Non-editable catalog data - would come from the server
-        //self.availableMeals = [
-        //    { mealName: "Standard (sandwich)", price: 0 },
-        //    { mealName: "Premium (lobster)", price: 34.95 },
-        //    { mealName: "Ultimate (whole zebra)", price: 290 }
-        //];
-
-
-
-        self.hasLap = ko.computed(function () {
-            if (self.lap !== undefined)
-                return true;
-            else
-                return false;
-        });
-
-    }
-
-    function sessionViewModel(session) {
-        var self = this;
-
-        self.session = session;
-
-        // Non-editable catalog data - would come from the server
-        //self.availableMeals = [
-        //    { mealName: "Standard (sandwich)", price: 0 },
-        //    { mealName: "Premium (lobster)", price: 34.95 },
-        //    { mealName: "Ultimate (whole zebra)", price: 290 }
-        //];
-
-       
-        self.hasSession = ko.computed(function () {
-            if (self.session !== undefined)
-                return true;
-            else
-                return false;
-        });
-
-
-
-        //self.resetLapSession = function () {
-
-        //    self.session = ko.observable(undefined);
-
-        //    self.lap = ko.observable(undefined);
-
-        //}
-
-        //self.resetLapSession();
-
-        ////self.rawDataAvailable = ko.observable(false);
-
-        //self.sessionAvailable = ko.computed(function () {
-        //    if (self.session === undefined)
-        //        return false;
-        //    else
-        //        return true;
-        //});
-
-        //self.lapAvailable = ko.computed(function () {
-        //    if (self.lap === undefined)
-        //        return false;
-        //    else
-        //        return true;
-        //});
-        //self.lapTime = ko.computed(function () {
-        //    var minRaw = self.lap.total_timer_time[0] / 60;
-        //    var minPart = Math.floor(minRaw);
-        //    var secPart = (minRaw - minPart) * 60;
-
-        //    //return {
-        //    //    minutes: minPart,
-        //    //    seconds: secPart,
-        //    //    toString: minPart.toString() + ":" + secPart.toFixed(2)
-        //    //};
-
-        //    return minPart.toString() + ":" + secPart.toFixed(2);
-
-        //});
-
-
-        // self.timestamp = rawData.lap.timestamp[0].value;
-
-        // Editable data
-        //self.seats = ko.observableArray([
-        //    new SeatReservation("Steve", self.availableMeals[0]),
-        //    new SeatReservation("Bert", self.availableMeals[0])
-        //]);
-
-        // Operations
-        //self.addSeat = function () {
-        //    self.seats.push(new SeatReservation("", self.availableMeals[0]));
-        //}
-
-        //self.removeSeat = function (seat) { self.seats.remove(seat) }
-
-        //self.totalSurcharge = ko.computed(function () {
-        //    var total = 0;
-        //    for (var i = 0; i < self.seats().length; i++)
-        //        total += self.seats()[i].meal().price;
-        //    return total;
-        //});
-
-
-
-    }
+    
 
     UIController.prototype.setup = function () {
-        // Setup DOM event handling
-
-        // this = #document by default since we are called from $(document).ready event handler
-
+    
         if (!Modernizr.webworkers) {
             alert("This application will not work due to lack of webworker functionality");
         }
 
-        
         if (!Modernizr.indexeddb) {
             alert("This application will not work due to lack of indexedDB");
         }
@@ -1208,17 +1091,6 @@
 
         this.divSessionLap = $('#divSessionLap');
         
-       
-         
-       
-
-        
-
-        
-        //ko.applyBindings(FITUI.viewmodel);
-        
-
-
     };
 
     UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
