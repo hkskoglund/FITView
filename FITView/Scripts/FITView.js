@@ -1,4 +1,4 @@
-﻿//use strict
+//use strict
 
 (function () {
 
@@ -7,7 +7,7 @@
     window.onload = function () {
         FITUI = new UIController();
         FITUI.setup();
-    }
+    };
 
     function UIController() {
 
@@ -37,7 +37,7 @@
         if (hrLength >= speedLength) // Arrays could be of different sizes, cut off
             minLength = speedLength;
         else
-            minLengt = hrLength;
+            minLength = hrLength;
 
 
         var myZones = getHRZones();
@@ -148,7 +148,7 @@
         if (rawData.record !== undefined) {
 
             if (rawData.record.heart_rate)
-                seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp), id: 'heartrateseries' })
+                seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp), id: 'heartrateseries' });
             //if (rawData.record["altitude"] !== undefined)
             //    seriesSetup.push({ name: 'Altitude', data: 
             //        combine(rawData.record["altitude"], rawData.record["timestamp"]),
@@ -191,7 +191,7 @@
         //    showInLegend: false
         //});
 
-        var xAxisType = 'datetime'
+        var xAxisType = 'datetime';
 
         var chartOptions = {
             renderTo: chartId,
@@ -199,7 +199,7 @@
             // Allow zooming
             zoomType: 'xy'
             
-    }
+    };
         //if (rawData.hrv !== undefined)
         //    chartOptions.inverted = true;
 
@@ -253,7 +253,7 @@
                                                 scale: 3
                                             },
                                             draggable: true,
-                                            map: FITUI.map
+                                            map: this.map
                                         });
                                     }
 
@@ -312,7 +312,7 @@
         //FITUI.showHRZones(rawData);
 
 
-    }
+    };
 
     UIController.prototype.showChartHrv = function (rawData) {
         var chartId = "hrvChart";
@@ -327,7 +327,7 @@
                 // Seems like line rendering is much faster than bar...
                 //divChart.style.visibility = 'visible';
                 divChart.style.display = 'block';
-                seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time })
+                seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time });
             }
 
         }
@@ -336,17 +336,17 @@
             return;
         }
 
-        var xAxisType = ''
+        var xAxisType = '';
 
         var chartOptions = {
             renderTo: chartId,
             type: 'line',
             // Allow zooming
             zoomType: 'xy'
-        }
+        };
 
 
-        chart1 = new Highcharts.Chart({
+        var chart1 = new Highcharts.Chart({
             chart: chartOptions,
             title: {
                 text: 'Heart rate variability'
@@ -377,7 +377,7 @@
         });
 
 
-    }
+    };
 
     UIController.prototype.showHRZones = function (rawData) {
         var divChart = document.getElementById("zonesChart");
@@ -512,7 +512,7 @@
                 markerOptions.icon = image;
            
             self.sessionMarkers.push(new google.maps.Marker(markerOptions));
-        }
+        };
         
         // Clear previous session markers
         if (self.sessionMarkers !== undefined && self.sessionMarkers !== null)
@@ -558,14 +558,14 @@
 
         if (!sessionStartPosFound)
             if (rawdata.record !== undefined) {
-                var lat = undefined;
+                var lat;
 
                 if (rawdata.record.position_lat != undefined && rawdata.record.position_lat.length > 0)
                     lat = rawdata.record.position_lat[0];
 
-                var long = undefined;
+                var long;
 
-                if (rawdata.record.position_long != undefined && rawdata.record.position_long.length > 0)
+                if (rawdata.record.position_long !== undefined && rawdata.record.position_long.length > 0)
                     long = rawdata.record.position_long[0];
 
                 var sport = rawdata.lap.sport[0];
@@ -577,7 +577,7 @@
             }
 
 
-    }
+    };
 
     UIController.prototype.showSessionsAsOverlay = function (map, rawdata) {
         var self = this;
@@ -588,7 +588,7 @@
         // Remove previous overlays
         if (this.sessionRectangles !== undefined) {
             this.sessionRectangles.forEach(function (element, index, array) {
-                self.sessionRectangles[index].setMap(null)
+                self.sessionRectangles[index].setMap(null);
             });
         }
 
@@ -612,8 +612,7 @@
 
         session.swc_lat.forEach(function (value, index, array) {
 
-            var sessionRectangle;
-
+          
             if (session.swc_lat[index] !== undefined ||
                 session.swc_long[index] !== undefined ||
                 session.nec_lat[index] !== undefined ||
@@ -654,7 +653,7 @@
         }
             );
 
-    }
+    };
 
     UIController.prototype.initMap = function () {
 
@@ -668,13 +667,13 @@
 
         newMap = new google.maps.Map(document.getElementById("activityMap"), mapOptions);
 
-        var prevCenter = newMap.getCenter();
+       
 
         if (navigator.geolocation) {
             // Async call with anonymous callback..
             navigator.geolocation.getCurrentPosition(function (position) {
                 myCurrentPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                currentCenter = newMap.getCenter();
+              var  currentCenter = newMap.getCenter();
 
                 if (currentCenter === undefined)
                     newMap.setCenter(myCurrentPosition);
@@ -682,15 +681,15 @@
         }
 
         return newMap;
-    }
+    };
 
     UIController.prototype.showLaps = function (rawData) {
 
 
-        FITUI.divSessionLap.show();
+   this.divSessionLap.show();
 
             
-    }
+    };
 
 
     UIController.prototype.showPolyline = function (map, record, startTimestamp, endTimestamp) {
@@ -737,7 +736,7 @@
 
             //var sample = 0;
 
-            var sampleLimit = 100;
+            //var sampleLimit = 100;
 
             var findNearestTimestamp = function(timestamp) {
                 var indxNr;
@@ -746,7 +745,7 @@
                         break;
                 }
                 return indxNr;
-            }
+            };
 
             var indexStartTime = record.timestamp.indexOf(startTimestamp);
             if (indexStartTime === -1) {
@@ -779,14 +778,14 @@
 
         self.activityPolyline.setMap(map);
 
-    }
+    };
 
 
     UIController.prototype.onFITManagerMsg = function (e) {
 
         var eventdata = e.data;
 
-        intepretCounters = function (counter) {
+        var intepretCounters = function (counter) {
             if (counter.fileIdCounter != 1)
                 console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
             if (counter.fileIdCounter != 1)
@@ -802,9 +801,9 @@
             if (counter.recordCounter === 0)
                 console.error("No record msg. ", counter.lapCounter);
 
-        }
+        };
 
-        resetViewModel = function (viewModel) {
+        var resetViewModel = function (viewModel) {
             // Set arrays to []
             for (var observableArray in viewModel) {
 
@@ -818,7 +817,7 @@
             if (viewModel.timestamp !== undefined)
                 viewModel.timestamp.removeAll();
 
-        }
+        };
 
 
         switch (eventdata.response) {
@@ -826,7 +825,7 @@
             case 'rawData':
                 //var rawData = JSON.parse(data.rawdata);
                 $("#progressFITimport").hide();
-                FITUI.progressFITimportViewModel.progressFITimport(0);
+                this.progressFITimportViewModel.progressFITimport(0);
 
                 var rawData = eventdata.rawdata;
 
@@ -884,8 +883,8 @@
                     this.toHHMMSS = ko.computed(function () {
                         // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
 
-                        var hours = parseInt(totalSec / 3600) % 24;
-                        var minutes = parseInt(totalSec / 60) % 60;
+                        var hours = parseInt(totalSec / 3600,10) % 24;
+                        var minutes = parseInt(totalSec / 60,10) % 60;
                         var seconds = parseInt(totalSec % 60, 10);
 
                         var hourResult;
@@ -932,19 +931,19 @@
                 var sessionElement = jquerySessionElement[0];
                
                 //if (rawData.session !== undefined) {
-                if (FITUI.sessionViewModel === undefined) {
+                if (this.sessionViewModel === undefined) {
 
 
                     // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
 
                     if (rawData.session !== undefined) {   // Skip mapping and apply bindings only on available data
 
-                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
+                        this.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
 
-                        FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
+                        this.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
 
                        // jquerySessionElement.show();
-                        ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM 
+                        ko.applyBindings(this.sessionViewModel, sessionElement); // Initialize model with DOM 
                         
                     }
                 }
@@ -952,55 +951,55 @@
 
                     // Discussion: https://groups.google.com/forum/?fromgroups=#!topic/knockoutjs/LWsxAJ3m97s
 
-                    resetViewModel(FITUI.sessionViewModel);
+                    resetViewModel(this.sessionViewModel);
 
-                    ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
+                    ko.mapping.fromJS(rawData.session, mappingOptions, this.sessionViewModel); // Just update model with new data
                 }
 
                    
                 var jqueryLapNode = $('#divLaps');
                 var lapNode = jqueryLapNode[0];
 
-                if (FITUI.lapViewModel === undefined) {
+                if (this.lapViewModel === undefined) {
                     if (rawData.lap !== undefined) {
-                        FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
+                        this.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
                        // jqueryLapNode.show();
-                        ko.applyBindings(FITUI.lapViewModel, lapNode);
+                        ko.applyBindings(this.lapViewModel, lapNode);
                        
                     }
                 }
                 else {
-                    resetViewModel(FITUI.lapViewModel);
-                    ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
+                    resetViewModel(this.lapViewModel);
+                    ko.mapping.fromJS(rawData.lap, mappingOptions, this.lapViewModel);
                 }
 
                 // Initialize map
-                if (FITUI.map === undefined)
-                    FITUI.map = FITUI.initMap();
+                if (this.map === undefined)
+                    this.map = this.initMap();
 
 
                 switch (rawData.file_id.type[0]) {
                     case 4: // Activity file
 
-                            FITUI.showLaps(rawData);
+                            this.showLaps(rawData);
 
                         //if (rawData.session != undefined)
-                            FITUI.showSessionMarkers(FITUI.map, rawData);
+                            this.showSessionMarkers(this.map, rawData);
 
                             if (rawData.record === undefined) {
                                 console.info("No record msg. available to extract data from");
                             } else {
 
-                                FITUI.showSessionsAsOverlay(FITUI.map, rawData);
+                                this.showSessionsAsOverlay(this.map, rawData);
 
-                                FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
+                                this.showPolyline(this.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
 
-                                FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
+                                this.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                             }
 
                         //FITUI.showChartHrv(rawData);
 
-                        FITUI.showDataRecordsOnMap(eventdata.datamessages);
+                        this.showDataRecordsOnMap(eventdata.datamessages);
                         break;
                     default:
                         console.warn("Unsupported fit file type, expected 4 (activity file), but got ", rawData.file_id.type[0]);
@@ -1037,7 +1036,7 @@
 
             case 'progress':
                
-                FITUI.progressFITimportViewModel.progressFITimport(eventdata.data);
+                this.progressFITimportViewModel.progressFITimport(eventdata.data);
 
                 //FITUI.progressFITImport.setAttribute("value", eventdata.data);
                 break;
@@ -1049,11 +1048,11 @@
 
 
 
-    }
+    };
 
     UIController.prototype.onFITManagerError = function (e) {
         console.error("Error in worker, status " + e.toString());
-    }
+    };
 
     function progressFITimportViewModel() {
         var self = this;
@@ -1192,8 +1191,8 @@
         }
 
         // Capturing = false -> bubbling event
-        FITUI.inpFITFile = document.getElementById('inpFITFile');
-        FITUI.inpFITFile.addEventListener('change', FITUI.onFitFileSelected, false);
+        this.inpFITFile = document.getElementById('inpFITFile');
+        this.inpFITFile.addEventListener('change', this.onFitFileSelected, false);
 
 
         //FITUI.btnParse = document.getElementById('btnParse')
@@ -1203,11 +1202,11 @@
         //FITUI.btnSaveZones = document.getElementById('btnSaveZones')
         //FITUI.btnSaveZones.addEventListener('click', saveHRZones, false);
 
-        FITUI.divMsgMap = document.getElementById('divMsgMap');
+        this.divMsgMap = document.getElementById('divMsgMap');
 
-        FITUI.progressFITImport = document.getElementById('progressFITImport');
+        this.progressFITImport = document.getElementById('progressFITImport');
 
-        FITUI.divSessionLap = $('#divSessionLap');
+        this.divSessionLap = $('#divSessionLap');
         
        
          
@@ -1220,10 +1219,11 @@
         
 
 
-    }
+    };
 
     UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
 
+var self = this;
         var FIT_MSG_FILEID = 0;
         var FIT_MSG_SESSION = 18;
         var FIT_MSG_LAP = 19;
@@ -1236,8 +1236,8 @@
         var FIT_MSG_LENGTH = 101;
 
         // Clear div
-        while (divMsgMap.firstChild) {
-            divMsgMap.removeChild(divMsgMap.firstChild);
+        while (this.divMsgMap.firstChild) {
+            this.divMsgMap.removeChild(this.divMsgMap.firstChild);
         }
 
         dataRecords.forEach(function (element, index, array) { // forEach takes a callback
@@ -1257,9 +1257,9 @@
                 default: styleClass = 'FITunknown'; break;
             }
 
-            divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
-        })
-    }
+            self.divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
+        });
+    };
 
     //UIController.prototype.showFITHeader = function () {
     //    var headerHtml = '<p>Header size : ' + FITUI.fitFileManager.headerSize.toString() + ' bytes ' +
@@ -1308,9 +1308,9 @@
 
         
 
-        FITUI.selectedFiles = e.target.files;
+        this.selectedFiles = e.target.files;
 
-        var files = FITUI.selectedFiles;
+        var files = this.selectedFiles;
 
         // Setup mutiple/batch workers
         console.log("Setup of " + files.length + " workers.");
@@ -1319,18 +1319,18 @@
             //FITUI["fitFileManager" + fileNr.toString()].addEventListener('message', FITUI.onFITManagerMsg, false);
             //FITUI["fitFileManager" + fileNr.toString()].addEventListener('error', FITUI.onFITManagerError, false);
 
-        };
-
-        // Make sure we terminate previous worker
-        if (FITUI["fitFileManager"] !== undefined) {
-            FITUI["fitFileManager"].removeEventListener('error', FITUI.onFITManagerError, false);
-            FITUI["fitFileManager"].removeEventListener('message', FITUI.onFITManagerMsg, false);
-            FITUI["fitFileManager"].terminate();
         }
 
-        FITUI["fitFileManager"] = new Worker("Scripts/FITImport.js")
-        FITUI["fitFileManager"].addEventListener('message', FITUI.onFITManagerMsg, false);
-        FITUI["fitFileManager"].addEventListener('error', FITUI.onFITManagerError, false);
+        // Make sure we terminate previous worker
+        if (this.fitFileManager !== undefined) {
+            this.fitFileManager.removeEventListener('error', this.onFITManagerError, false);
+            this.fitFileManager.removeEventListener('message', this.onFITManagerMsg, false);
+            this.fitFileManager.terminate();
+        }
+
+        this.fitFileManager = new Worker("Scripts/FITImport.js");
+        this.fitFileManager.addEventListener('message', this.onFITManagerMsg, false);
+        this.fitFileManager.addEventListener('error', this.onFITManagerError, false);
 
 
         // Need to adjust timestamps in the underlying data from Garmin time/System time
@@ -1359,18 +1359,18 @@
         };
 
         
-        if (FITUI.progressFITimportViewModel !== undefined)
-            FITUI.progressFITimportViewModel = null;
+        if (this.progressFITimportViewModel !== undefined)
+            this.progressFITimportViewModel = null;
 
-        FITUI.progressFITimportViewModel = new progressFITimportViewModel();
-        ko.applyBindings(FITUI.progressFITimportViewModel, document.getElementById("progressFITimport"));
+        this.progressFITimportViewModel = new progressFITimportViewModel();
+        ko.applyBindings(this.progressFITimportViewModel, document.getElementById("progressFITimport"));
         $("#progressFITimport").show();
 
-        FITUI["fitFileManager"].postMessage(msg);
+        this.fitFileManager.postMessage(msg);
 
 
 
-    }
+    };
 
 
     function saveHRZones(e) {
