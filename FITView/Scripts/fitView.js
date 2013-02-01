@@ -662,7 +662,7 @@
 
         var mapOptions = {
 
-            zoom: 14,
+            zoom: 11,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
@@ -858,6 +858,7 @@
                 
                 
                 var mySpeedConverterModel = function (speedMprSEC) {
+                    //ko.mapping.fromJS(speedMprSEC, {}, this);
                     var self = this;
                     self.value = speedMprSEC;
                     
@@ -877,7 +878,7 @@
                 };
 
                 var mySecsToHHMMSSModel = function (totalSec) {
-                    //  ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
+                    //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
 
                     this.value = totalSec;
                     this.toHHMMSS = ko.computed(function () {

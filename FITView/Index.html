@@ -35,32 +35,32 @@
          
               <!-- <h4>Sessions</h4>-->
          
-            <!-- ko if: $root !== undefined && $root.timestamp !== undefined && $root.timestamp().length > 0 -->
+            <!-- ko if: $root && $root.timestamp -->
             <section id="sessionList" data-bind="foreach: timestamp">
                 
                 
                 <article>
                    
                     <a href="#">
-                        <!-- ko if: $parent.sport !== undefined &&  $parent.sport()[$index()] === 1 -->
+                        <!-- ko if: $parent.sport  &&  $parent.sport()[$index()] === 1 -->
                         <img class="sessionSport" src="Images/sport/running.png"  />
                         <!-- /ko -->
                         
-                        <!-- ko if: $parent.sport !== undefined && $parent.sport()[$index()] === 2 -->
+                        <!-- ko if: $parent.sport && $parent.sport()[$index()] === 2 -->
                         <img class="sessionSport" src="Images/sport/cycling.png"   />
                         <!-- /ko -->
                         
-                        <!-- ko if: $parent.sport !== undefined && $parent.sport()[$index()] === 5 -->
+                        <!-- ko if: $parent.sport  && $parent.sport()[$index()] === 5 -->
                         <img class="sessionSport" src="Images/sport/swimming.png"  />
                         <!-- /ko -->
 
                         
-                         <!-- ko if: $parent.total_elapsed_time !== undefined  && $parent.total_elapsed_time().length > 0  -->
+                         <!-- ko if: $parent.total_elapsed_time  && $parent.total_elapsed_time().length > 0  -->
                         <time><span class="sessionHHMMSS" data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span></time>
                         <!-- /ko -->
 
                         
-                         <!-- ko if: $parent.total_timer_time !== undefined  && 
+                         <!-- ko if: $parent.total_timer_time   && 
                              $parent.total_timer_time().length > 0
                             -->
                        
@@ -69,34 +69,34 @@
                    
                        
 
-                        <!-- ko if: $parent.total_distance !== undefined && $parent.total_distance().length > 0 -->
+                        <!-- ko if: $parent.total_distance  && $parent.total_distance().length > 0 -->
                             <span class="sessionTOTALDISTANCE" data-bind="text: $parent.total_distance()[$index()]"></span>m
                         <!-- /ko -->
                        
                        
-                         <!-- ko if: $parent.total_calories !== undefined && $parent.total_calories()[$index()] > 0 -->
+                         <!-- ko if: $parent.total_calories  && $parent.total_calories()[$index()] > 0 -->
                         <img class="inlineIcon" src="Images/kcalorie.png"  />
                        
                         <span data-bind="text: $parent.total_calories()[$index()]"></span>
                         <!-- /ko -->
 
-                        <!-- ko if: ($parent.avg_heart_rate !== undefined && $parent.avg_heart_rate().length > 0) || ($parent.max_heart_rate !== undefined && $parent.max_heart_rate().length > 0) -->
+                        <!-- ko if: ($parent.avg_heart_rate && $parent.avg_heart_rate().length > 0) || ($parent.max_heart_rate  && $parent.max_heart_rate().length > 0) -->
                         <img class="inlineIcon" src="Images/heart.png"  />
                         <!-- /ko -->
                         
                         <!-- HEART RATE -->
 
-                         <!-- ko if: $parent.avg_heart_rate !== undefined &&  $parent.avg_heart_rate()[$index()]  >= 0 -->
+                         <!-- ko if: $parent.avg_heart_rate  &&  $parent.avg_heart_rate()[$index()]  >= 0 -->
                         <span data-bind="text: $parent.avg_heart_rate()[$index()]"></span>
                         <!-- /ko -->
                        
-                         <!-- ko if:  $parent.max_heart_rate !== undefined && $parent.max_heart_rate()[$index()] >= 0 -->
+                         <!-- ko if:  $parent.max_heart_rate  && $parent.max_heart_rate()[$index()] >= 0 -->
                         <span data-bind="text: $parent.max_heart_rate()[$index()]"></span>
                         <!-- /ko -->
 
                         <!-- SPEED -->
 
-                        <!-- ko if: ($parent.avg_speed !== undefined && $parent.avg_speed().length > 0) || ($parent.max_speed !== undefined && $parent.max_speed().length > 0) -->
+                        <!-- ko if: ($parent.avg_speed  && $parent.avg_speed().length > 0) || ($parent.max_speed !== undefined && $parent.max_speed().length > 0) -->
                         <img class="inlineIcon" src="Images/speed.png"  />
                         <!-- /ko -->
                         
@@ -104,14 +104,14 @@
                         <!-- BIKING/GENERIC -->
                         <!-- ko if: $parent.sport()[$index()] === 2 || $parent.sport()[$index()] === 0 || $parent.tempoOrSpeed() === 1 -->
 
-                        <!-- ko if: $parent.avg_speed !== undefined &&
+                        <!-- ko if: $parent.avg_speed  &&
                             $parent.avg_speed().length > 0 -->
                         <!-- ko with: $parent.avg_speed()[$index()].toKMprH() -->
                         <span data-bind="text: $data"></span>
                         <!-- /ko -->
                         <!-- /ko -->
 
-                        <!-- ko if: $parent.max_speed !== undefined &&
+                        <!-- ko if: $parent.max_speed  &&
                             $parent.max_speed().length > 0 -->
                         <!-- ko with: $parent.max_speed()[$index()].toKMprH() -->
                         <span data-bind="text: $data"></span>
@@ -123,49 +123,60 @@
 
                         <!-- ko if: $parent.sport()[$index()] === 1 || $parent.tempoOrSpeed() === 0 -->
                          
-                        <!-- ko if: $parent.avg_speed !== undefined && $parent.avg_speed()[$index()] -->
+                        <!-- ko if:  $parent.avg_speed()[$index()] -->
                         <span data-bind="text: $parent.avg_speed()[$index()].toMINprKM()"></span>
                          <!-- /ko -->
 
-                        <!-- ko if: $parent.max_speed !== undefined && $parent.max_speed()[$index()] -->
+                        <!-- ko if:  $parent.max_speed()[$index()] -->
                         <span data-bind="text: $parent.max_speed()[$index()].toMINprKM()"></span>
                          <!-- /ko -->
                        <!-- /ko -->
                        
                         <!-- CADENCE/STRIDES -->
 
-                        <!-- ko if: ($parent.avg_cadence !== undefined && $parent.avg_cadence().length > 0) || ($parent.max_cadence !== undefined && $parent.max_cadence().length > 0) -->
+                       <!-- ko if: ($parent.avg_cadence && $parent.avg_cadence()[$index]) ||
+                           ( $parent.max_cadence && $parent.max_cadence()[$index()]) ||
+                           ( $parent.total_cycles_strides && $parent.total_cycles_strides()[$index()]) -->
                         <img class="inlineIcon" src="Images/cadence.png"  />
                         <!-- /ko -->
 
-                        <!-- ko if: $parent.avg_cadence !== undefined && $parent.avg_cadence()[$index()] -->
+                        <!-- ko if: $parent.avg_cadence -->
+                        
+                        <!-- ko if: $parent.avg_cadence()[$index()] -->
                         <span data-bind="text: $parent.avg_cadence()[$index()]"></span>
                          <!-- /ko -->
-
-                        <!-- ko if: $parent.max_cadence !== undefined && $parent.max_cadence()[$index()] -->
+                        <!-- /ko -->
+                      
+                        
+                        <!-- ko if: $parent.max_cadence -->
+                        
+                        <!-- ko if: $parent.max_cadence()[$index()] -->
                         <span data-bind="text: $parent.max_cadence()[$index()]"></span>
                          <!-- /ko -->
+                        <!-- /ko -->
+                      
 
-                        <!-- ko if: $parent.total_cycles_strides !== undefined && $parent.total_cycles_strides()[$index()] -->
+                      <!-- ko if: $parent.total_cycles_strides -->
+                        
+                        <!-- ko if: $parent.total_cycles_strides()[$index()] -->
                         <span data-bind="text: $parent.total_cycles_strides()[$index()]"></span>
-                         <!-- /ko -->
+                      
+                      <!-- /ko -->
+                        <!-- /ko -->
 
                         <!-- ASCENT/DESCENT -->
 
-                        <!-- ko if:  ($parent.total_ascent !== undefined && $parent.total_ascent() !== undefined && $parent.total_ascent()[$index()] >= 0) &&
-                             ($parent.total_descent !== undefined && $parent.total_descent() !== undefined && $parent.total_descent()[$index()] >= 0) -->
+                        <!-- ko if: ($parent.total_ascent &&  $parent.total_ascent()[$index()])  || ($parent.total_descent && $parent.total_descent()[$index()])  -->
+                                      
                         <img  class="inlineIcon" src="Images/ascent.png"  />
-                        <!-- /ko -->
-
-                         <!-- ko if: $parent.total_ascent !== undefined && $parent.total_ascent().length  > 0 -->
+                        
                         <span data-bind="text: $parent.total_ascent()[$index()]"></span>
-                        <!-- /ko -->
-
-                         <!-- ko if: $parent.total_descent !== undefined && $parent.total_descent().length > 0 -->
+                        
                         <span data-bind="text: $parent.total_descent()[$index()]"></span>
+                        
                         <!-- /ko -->
 
-                        <!-- ko if:  $parent.total_training_effect !== undefined && $parent.total_training_effect().length > 0 -->
+                        <!-- ko if: $parent.total_training_effect &&  $parent.total_training_effect()[$index()] -->
                         TE
                         <span  data-bind="text: $parent.total_training_effect()[$index()]"></span>
                         
@@ -175,7 +186,7 @@
 
                         <!-- Session trigger -->
 
-                        <!-- ko if: $parent.trigger -->
+                       
                              <!-- ko if: $parent.trigger()[$index()] === 0 -->
                         <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end"/>
                         <!-- /ko -->
@@ -191,7 +202,7 @@
                             <!-- ko if: $parent.trigger()[$index()] === 3 -->
                         <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
                          <!-- /ko -->
-                        <!-- /ko -->
+                       
                         
                        
                         
