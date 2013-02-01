@@ -104,17 +104,19 @@
             console.warn("Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString());
 
         
-        //if (verifyTimestamps(timestamps)) {
-        values.forEach(function (element, index, array) {
-            // combined.push([util.convertTimestampToLocalTime(timestamps[index]), element]);
-            var timestamp = timestamps[index];
+       
+        for (var nr = 0; nr <= values.length; nr++) {
+            
+            var timestamp = timestamps[nr];
             if (timestamp >= startTimestamp && timestamp <= endTimestamp)
-              combined.push([util.addTimezoneOffsetToUTC(timestamps[index]), element]);
-           // combined.push([timestamps[index], element]);
-        });
+                combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), values[nr]]);
+            if (timestamp > endTimestamp)
+                break;
+           
+        }
+
         return combined;
-        //} else
-        //    return values;
+      
     }
 
     function verifyTimestamps(timestamps) {
@@ -455,6 +457,8 @@
 
         var sessionStartPosFound = false;
 
+        var mapCenterSet = false;
+
         var session = rawdata.session;
 
         setMapCenter = function (sport,lat,long) {
@@ -540,13 +544,13 @@
                     //startTimeDate.setTime(util.convertTimestampToUTC(session.timestamp[index]));
 
 
-
                     if (lat !== undefined && long !== undefined) {
-                        
-
+                    
                         sessionStartPosFound = true;
                         
-                        setMapCenter(session.sport[index],lat,long);
+                        setMapCenter(session.sport[index], lat, long);
+
+                        mapCenterSet = true;
 
                         
                     }
@@ -572,10 +576,13 @@
                 if (sport === undefined)
                     sport = 0; // Default to generic
 
-                if (lat !== undefined && long !== undefined)
-                    setMapCenter(sport,lat, long);
+                if (lat !== undefined && long !== undefined) {
+                    setMapCenter(sport, lat, long);
+                    mapCenterSet = true;
+                }
             }
 
+        return mapCenterSet;
 
     };
 
@@ -593,11 +600,11 @@
         }
 
         if (session === undefined)
-            return;
+            return false;
 
         if (session.swc_lat === undefined || session.swc_long === undefined || session.nec_lat === undefined || session.nec_long === undefined) {
             console.info("No swc/nec data available in session");
-            return;
+            return false;
         }
 
     
@@ -648,21 +655,20 @@
         }
             );
 
+        return true;
     };
 
     UIController.prototype.initMap = function () {
 
-        var myCurrentPosition, newMap = undefined;
+        var myCurrentPosition, newMap;
 
         var mapOptions = {
-
             zoom: 11,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         };
 
         newMap = new google.maps.Map(document.getElementById("activityMap"), mapOptions);
 
-       
 
         if (navigator.geolocation) {
             // Async call with anonymous callback..
@@ -700,12 +706,12 @@
 
         if (!record) {
             console.info("No record msg. to based plot of polyline data for session,lap etc.");
-            return;
+            return false;
         }
 
         if (!record.position_lat) {
             console.info("No position data (position_lat), cannot render polyline data");
-            return;
+            return false;
         }
 
           
@@ -772,6 +778,9 @@
         });
 
         self.activityPolyline.setMap(map);
+
+        return true;
+      
 
     };
 
@@ -970,7 +979,7 @@
 
                 // Initialize map
                 if (FITUI.map === undefined)
-                FITUI.map = FITUI.initMap();
+                  FITUI.map = FITUI.initMap();
 
 
                 switch (rawData.file_id.type[0]) {
@@ -979,15 +988,18 @@
                         FITUI.showLaps(rawData);
 
                         //if (rawData.session != undefined)
-                        FITUI.showSessionMarkers(FITUI.map, rawData);
+                        var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
 
                             if (rawData.record === undefined) {
                                 console.info("No record msg. available to extract data from");
                             } else {
+                                
+                                var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
 
-                                FITUI.showSessionsAsOverlay(FITUI.map, rawData);
+                                var polylinePlotted = FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
 
-                                FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
+                                if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
+                                    $('#activityMap').show();
 
                                 FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                             }
@@ -1178,7 +1190,7 @@ var self = this;
         // console.log(e);
         e.preventDefault();
 
-        
+        $('#activityMap').hide();
 
         FITUI.selectedFiles = e.target.files;
 
