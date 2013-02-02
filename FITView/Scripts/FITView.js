@@ -38,7 +38,6 @@
 
     };
 
-
     UIController.prototype.showSpeedVsHeartRate = function (rawData) {
         var seriesSpeedVsHR = [];
         var minLength;
@@ -155,7 +154,6 @@
 
         return valid;
     }
-
 
     UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp) {
 
@@ -474,10 +472,6 @@
         var chart3 = new Highcharts.Chart(options);
     }
 
-    //UIController.prototype.showFileInfo = function () { outConsole.innerHTML = '<p>File size: ' + FITUI.fitFileManager.fitFile.size.toString() + ' bytes, last modified: ' + FITUI.fitFileManager.fitFile.lastModifiedDate.toLocaleDateString() + '</p>'; }
-
-
-
     UIController.prototype.showSessionMarkers = function (map, rawdata) {
         // Plot markers for start of each session
         var self = this;
@@ -714,7 +708,6 @@
             
     };
 
-
     UIController.prototype.showPolyline = function (map, record, startTimestamp, endTimestamp) {
       
         var self = this;
@@ -806,130 +799,131 @@
 
     };
 
+    UIController.prototype.convertSpeedConverterModel = function (speedMprSEC) {
+        // Callback on "create" from knockout
+        //ko.mapping.fromJS(speedMprSEC, {}, this);
+        var self = this;
+        self.value = speedMprSEC;
+
+        self.toMINprKM = ko.computed(function () {
+            var minPrKM;
+            if (speedMprSEC > 0)
+                minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
+            else
+                minPrKM = 0;
+
+            var minutes = Math.floor(minPrKM);
+            var seconds = ((minPrKM - minutes) * 60).toFixed(); // implicit rounding
+
+            var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+            return result;
+        }, self);
+
+        self.toKMprH = ko.computed(function () {
+            var kmPrH = (speedMprSEC * 3.6).toFixed(1);
+            return kmPrH;
+        }, self);
+    };
+
+    UIController.prototype.convertSecsToHHMMSSModel = function (totalSec) {
+        // Callback on "create" from knockout
+        //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
+
+        this.value = totalSec;
+        this.toHHMMSS = ko.computed(function () {
+            // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
+
+            var hours = parseInt(totalSec / 3600, 10) % 24;
+            var minutes = parseInt(totalSec / 60, 10) % 60;
+            var seconds = parseInt(totalSec % 60, 10);
+
+            var hourResult;
+            if (hours != 0)
+                hourResult = (hours < 10 ? "0" + hours : hours) + ":";
+            else
+                hourResult = "";
+
+            var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+            return result;
+        }, this);
+    };
+
+    UIController.prototype.intepretCounters  = function (counter) {
+        if (counter.fileIdCounter != 1)
+            console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
+        if (counter.fileIdCounter != 1)
+            console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
+        if (counter.sessionCounter === 0)
+            console.error("Session msg. should be at least 1, but is ",counter.sessionCounter);
+        if (counter.lapCounter === 0)
+            console.error("Lap msg. should be at least 1, but is ",counter.lapCounter);
+        if (counter.activityCounter !== 1)
+            console.error("Activity msg. should be 1, but is ", counter.activityCounter);
+        if (counter.deviceInfoCounter === 0)
+            console.error("Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
+        if (counter.recordCounter === 0)
+            console.error("No record msg. ", counter.lapCounter);
+
+    };
+
+    UIController.prototype.resetViewModel = function (viewModel) {
+        // Set arrays to []
+        for (var observableArray in viewModel) {
+
+            if (observableArray !== "timestamp" && observableArray !== "__ko_mapping__" && viewModel[observableArray] && viewModel[observableArray].removeAll) {
+                // console.log("RemoveAll() on ", observableArray);
+                viewModel[observableArray].removeAll();
+            }
+        }
+
+        // Take timestamp in the end, due to a foreach: timestamp in databinding, better be carefull about bindings....
+        if (viewModel.timestamp)
+            viewModel.timestamp.removeAll();
+
+    };
 
     UIController.prototype.onFITManagerMsg = function (e) {
 
         var eventdata = e.data;
 
-        var intepretCounters = function (counter) {
-            if (counter.fileIdCounter != 1)
-                console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
-            if (counter.fileIdCounter != 1)
-                console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
-            if (counter.sessionCounter === 0)
-                console.error("Session msg. should be at least 1, but is ",counter.sessionCounter);
-            if (counter.lapCounter === 0)
-                console.error("Lap msg. should be at least 1, but is ",counter.lapCounter);
-            if (counter.activityCounter !== 1)
-                console.error("Activity msg. should be 1, but is ", counter.activityCounter);
-            if (counter.deviceInfoCounter === 0)
-                console.error("Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
-            if (counter.recordCounter === 0)
-                console.error("No record msg. ", counter.lapCounter);
+      
 
-        };
-
-        var resetViewModel = function (viewModel) {
-            // Set arrays to []
-            for (var observableArray in viewModel) {
-
-                if (observableArray !== "timestamp" && observableArray !== "__ko_mapping__" && viewModel[observableArray] !== undefined && viewModel[observableArray].removeAll) {
-                   // console.log("RemoveAll() on ", observableArray);
-                    viewModel[observableArray].removeAll();
-                }
-            }
-
-            // Take timestamp in the end, due to a foreach: timestamp in databinding, better be carefull about bindings....
-            if (viewModel.timestamp !== undefined)
-                viewModel.timestamp.removeAll();
-
-        };
-
+       
 
         switch (eventdata.response) {
 
             case 'rawData':
                 //var rawData = JSON.parse(data.rawdata);
-                $("#progressFITimport").hide();
-                FITUI.progressFITimportViewModel.progressFITimport(0);
+               
 
                 var rawData = eventdata.rawdata;
 
-                intepretCounters(rawData.counter);
+                FITUI.intepretCounters(rawData.counter);
 
                 // Value converters that are run on "create"-event/callback in knockout
                 var mappingOptions = {
                     'total_elapsed_time': {
                         create: function (options) {
-                            return new mySecsToHHMMSSModel(options.data);
+                            return new FITUI.convertSecsToHHMMSSModel(options.data);
                         }
                     },
                     'total_timer_time': {
                         create: function (options) {
-                            return new mySecsToHHMMSSModel(options.data);
+                            return new FITUI.convertSecsToHHMMSSModel(options.data);
                         }
                     },
                     'avg_speed': {
                         create: function (options) {
-                            return new mySpeedConverterModel(options.data);
+                            return new FITUI.convertSpeedConverterModel(options.data);
                         }
                     },
                     'max_speed': {
                         create: function (options) {
-                            return new mySpeedConverterModel(options.data);
+                            return new FITUI.convertSpeedConverterModel(options.data);
                         }
                     }
                 };
                 
-                
-                var mySpeedConverterModel = function (speedMprSEC) {
-                    //ko.mapping.fromJS(speedMprSEC, {}, this);
-                    var self = this;
-                    self.value = speedMprSEC;
-                    
-                    self.toMINprKM = ko.computed(function () {
-                        var minPrKM;
-                        if (speedMprSEC > 0)  
-                            minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
-                        else 
-                            minPrKM = 0;
-
-                        var minutes = Math.floor(minPrKM);
-                        var seconds = ((minPrKM - minutes) * 60).toFixed(); // implicit rounding
-
-                        var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                        return result;
-                    }, self);
-
-                    self.toKMprH = ko.computed(function () {
-                        var kmPrH = (speedMprSEC * 3.6).toFixed(1);
-                        return kmPrH;
-                    }, self);
-                };
-
-                var mySecsToHHMMSSModel = function (totalSec) {
-                    //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
-
-                    this.value = totalSec;
-                    this.toHHMMSS = ko.computed(function () {
-                        // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
-
-                        var hours = parseInt(totalSec / 3600,10) % 24;
-                        var minutes = parseInt(totalSec / 60,10) % 60;
-                        var seconds = parseInt(totalSec % 60, 10);
-
-                        var hourResult;
-                        if (hours != 0)
-                            hourResult = (hours < 10 ? "0" + hours : hours) + ":";
-                        else
-                            hourResult = "";
-
-                        var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                        return result;
-                    }, this);
-                };
-
-               
 
                 var jquerySessionElement = $('#divSessions');
                 var sessionElement = jquerySessionElement[0];
@@ -955,7 +949,7 @@
 
                     // Discussion: https://groups.google.com/forum/?fromgroups=#!topic/knockoutjs/LWsxAJ3m97s
 
-                    resetViewModel(FITUI.sessionViewModel);
+                    FITUI.resetViewModel(FITUI.sessionViewModel);
 
                     ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
                 }
@@ -972,7 +966,7 @@
                     
                 }
                 else {
-                    resetViewModel(FITUI.lapViewModel);
+                    FITUI.resetViewModel(FITUI.lapViewModel);
                     ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
                 }
 
@@ -986,7 +980,6 @@
 
                         FITUI.showLaps(rawData);
 
-                        
                         var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
 
                         var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
@@ -1034,12 +1027,19 @@
                 console.info(eventdata.data);
                 break;
 
-            case 'progress':
+            case 'importProgress':
                
             FITUI.progressFITimportViewModel.progressFITimport(eventdata.data);
 
                 //FITUI.progressFITImport.setAttribute("value", eventdata.data);
+            break;
+
+            case 'importFinished':
+                $("#progressFITimport").hide();
+                FITUI.progressFITimportViewModel.progressFITimport(0);
+
                 break;
+
 
             default:
                 console.error("Received unrecognized message from worker " + eventdata.response);
@@ -1053,98 +1053,6 @@
     UIController.prototype.onFITManagerError = function (e) {
         console.error("Error in worker, status " + e.toString());
     };
-
-    function progressFITimportViewModel() {
-        var self = this;
-
-        self.progressFITimport = ko.observable(0);
-    }
-
-    
-
-    
-
-
-    UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
-
-var self = this;
-        var FIT_MSG_FILEID = 0;
-        var FIT_MSG_SESSION = 18;
-        var FIT_MSG_LAP = 19;
-        var FIT_MSG_RECORD = 20;
-        var FIT_MSG_EVENT = 21;
-        var FIT_MSG_ACTIVITY = 34;
-        var FIT_MSG_FILE_CREATOR = 49;
-        var FIT_MSG_HRV = 78;
-        var FIT_MSG_DEVICE_INFO = 23;
-        var FIT_MSG_LENGTH = 101;
-
-        // Clear div
-        while (this.divMsgMap.firstChild) {
-            this.divMsgMap.removeChild(this.divMsgMap.firstChild);
-        }
-
-        dataRecords.forEach(function (element, index, array) { // forEach takes a callback
-
-            var styleClass = "";
-            switch (element) {
-                case FIT_MSG_FILEID: styleClass = 'FITfile_id'; break;
-                case FIT_MSG_SESSION: styleClass = 'FITsession'; break;
-                case FIT_MSG_LAP: styleClass = 'FITlap'; break;
-                case FIT_MSG_RECORD: styleClass = 'FITrecord'; break;
-                case FIT_MSG_DEVICE_INFO: styleClass = 'FITdevice_info'; break;
-                case FIT_MSG_ACTIVITY: styleClass = 'FITactivity'; break;
-                case FIT_MSG_HRV: styleClass = 'FIThrv'; break;
-                case FIT_MSG_EVENT: styleClass = 'FITevent'; break;
-                case FIT_MSG_FILE_CREATOR: styleClass = 'FITfile_creator'; break;
-                case FIT_MSG_LENGTH: styleClass = 'FITlength'; break;
-                default: styleClass = 'FITunknown'; break;
-            }
-
-            self.divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
-        });
-    };
-
-    //UIController.prototype.showFITHeader = function () {
-    //    var headerHtml = '<p>Header size : ' + FITUI.fitFileManager.headerSize.toString() + ' bytes ' +
-    //'Protocol version : ' + FITUI.fitFileManager.protocolVersion.toString() +
-    //' Profile version : ' + FITUI.fitFileManager.profileVersion.toString() +
-    //' Data size: ' + FITUI.fitFileManager.dataSize.toString() + ' bytes' +
-    //' Data type: ' + FITUI.fitFileManager.dataType;
-    //    if (FITUI.fitFileManager.headerCRC != undefined) {
-    //        headerHtml += ' CRC: ' + parseInt(FITUI.fitFileManager.headerCRC, 10).toString(16);
-    //    }
-
-    //    return headerHtml;
-    //}
-
-    function deleteDb() {
-        // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
-        // Problem : can only delete indexeddb one time in the same tab
-        //self.postMessage({ response: "info", data: "deleteDb()" });
-
-        var req;
-
-        try {
-            req = indexedDB.deleteDatabase("fit-import");
-        } catch (e) {
-            console.error(e.message);
-        }
-        //req.onblocked = function (evt) {
-        //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
-        //}
-
-
-        req.onsuccess = function (evt) {
-            console.info("Delete "+evt.currentTarget.readyState);
-            
-        };
-
-        req.onerror = function (evt) {
-            console.error("Error deleting database");
-        };
-
-    }
 
     UIController.prototype.onFitFileSelected = function (e) {
         // console.log(e);
@@ -1195,16 +1103,16 @@ var self = this;
         //  { message: "hrv", fields: "time" }
         //   );
 
-       // deleteDb();
+        // deleteDb();
 
         var msg = {
             request: 'importFitFile', "fitfile": files[0]
             //, "query": query
         };
 
-        
+
         if (FITUI.progressFITimportViewModel !== undefined)
-         FITUI.progressFITimportViewModel = null;
+            FITUI.progressFITimportViewModel = null;
 
         FITUI.progressFITimportViewModel = new progressFITimportViewModel();
         ko.applyBindings(FITUI.progressFITimportViewModel, document.getElementById("progressFITimport"));
@@ -1216,15 +1124,83 @@ var self = this;
 
     };
 
+    UIController.prototype.showDataRecordsOnMap = function (dataRecords) {
+
+var self = this;
+        var FIT_MSG_FILEID = 0;
+        var FIT_MSG_SESSION = 18;
+        var FIT_MSG_LAP = 19;
+        var FIT_MSG_RECORD = 20;
+        var FIT_MSG_EVENT = 21;
+        var FIT_MSG_ACTIVITY = 34;
+        var FIT_MSG_FILE_CREATOR = 49;
+        var FIT_MSG_HRV = 78;
+        var FIT_MSG_DEVICE_INFO = 23;
+        var FIT_MSG_LENGTH = 101;
+
+        // Clear div
+        while (this.divMsgMap.firstChild) {
+            this.divMsgMap.removeChild(this.divMsgMap.firstChild);
+        }
+
+        dataRecords.forEach(function (element, index, array) { // forEach takes a callback
+
+            var styleClass = "";
+            switch (element) {
+                case FIT_MSG_FILEID: styleClass = 'FITfile_id'; break;
+                case FIT_MSG_SESSION: styleClass = 'FITsession'; break;
+                case FIT_MSG_LAP: styleClass = 'FITlap'; break;
+                case FIT_MSG_RECORD: styleClass = 'FITrecord'; break;
+                case FIT_MSG_DEVICE_INFO: styleClass = 'FITdevice_info'; break;
+                case FIT_MSG_ACTIVITY: styleClass = 'FITactivity'; break;
+                case FIT_MSG_HRV: styleClass = 'FIThrv'; break;
+                case FIT_MSG_EVENT: styleClass = 'FITevent'; break;
+                case FIT_MSG_FILE_CREATOR: styleClass = 'FITfile_creator'; break;
+                case FIT_MSG_LENGTH: styleClass = 'FITlength'; break;
+                default: styleClass = 'FITunknown'; break;
+            }
+
+            self.divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
+        });
+    };
+
+    function progressFITimportViewModel() {
+        var self = this;
+
+        self.progressFITimport = ko.observable(0);
+    }
+
+    function deleteDb() {
+        // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
+        // Problem : can only delete indexeddb one time in the same tab
+        //self.postMessage({ response: "info", data: "deleteDb()" });
+
+        var req;
+
+        try {
+            req = indexedDB.deleteDatabase("fit-import");
+        } catch (e) {
+            console.error(e.message);
+        }
+        //req.onblocked = function (evt) {
+        //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+        //}
+
+
+        req.onsuccess = function (evt) {
+            console.info("Delete "+evt.currentTarget.readyState);
+            
+        };
+
+        req.onerror = function (evt) {
+            console.error("Error deleting database");
+        };
+
+    }
 
     function saveHRZones(e) {
 
     }
-
-
-
-
-
 
     function getHRZones() {
         // Assume browser supports localStorage

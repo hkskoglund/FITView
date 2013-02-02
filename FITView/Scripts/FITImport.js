@@ -494,7 +494,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             while (index < maxReadToByte) { // Try reading from file in case something is wrong with header (datasize/headersize) 
 
-                self.postMessage({ response: "progress", data: Math.floor(index / maxReadToByte * 100) });
+                self.postMessage({ response: "importProgress", data: Math.floor(index / maxReadToByte * 100) });
 
                 var rec = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
                 // Probably it would be possible to integrate the first and second-pass in a integrated pass, but it would
@@ -685,6 +685,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                     }
                 }
             }
+
+            self.postMessage({ response: "importFinished", data: 100 });
 
             rawdata.counter = counter;  
 
