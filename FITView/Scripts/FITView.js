@@ -848,7 +848,7 @@
         }, this);
     };
 
-    UIController.prototype.intepretCounters  = function (counter) {
+    UIController.prototype.intepretMessageCounters  = function (counter) {
         if (counter.fileIdCounter != 1)
             console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
         if (counter.fileIdCounter != 1)
@@ -868,37 +868,53 @@
 
     UIController.prototype.resetViewModel = function (viewModel) {
         // Set arrays to []
+
+        // Take timestamp first to collapse DOM outline to make other collapses "hidden"
+
+        if (viewModel.timestamp)
+            viewModel.timestamp([]);
+
+        var mappingProperty = "__ko_mapping__";
         for (var observableArray in viewModel) {
 
-            if (observableArray !== "timestamp" && observableArray !== "__ko_mapping__" && viewModel[observableArray] && viewModel[observableArray].removeAll) {
+            if (observableArray !== "timestamp" && observableArray !== mappingProperty && viewModel[observableArray] ) {
                 // console.log("RemoveAll() on ", observableArray);
-                viewModel[observableArray].removeAll();
+                viewModel[observableArray]([]);
             }
         }
 
-        // Take timestamp in the end, due to a foreach: timestamp in databinding, better be carefull about bindings....
-        if (viewModel.timestamp)
-            viewModel.timestamp.removeAll();
+       
 
     };
 
     UIController.prototype.onFITManagerMsg = function (e) {
 
-        var eventdata = e.data;
-
-      
-
        
+        // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
+        // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
+        // virtual elements and something with "changed" value notification. Introducing empty observables on unused properties gives a performance penalty.
+        emptyViewModel = function (msg) {
+            var ViewModel = {};
+            
+            for (var fieldDefNr in msg) 
+                ViewModel[msg[fieldDefNr].property] = ko.observableArray([]);
+        
+            return ViewModel;
+            
+        }
+
+        var fitActivity = FIT.ActivityFile();
+
+        var eventdata = e.data;
 
         switch (eventdata.response) {
 
             case 'rawData':
                 //var rawData = JSON.parse(data.rawdata);
                
-
                 var rawData = eventdata.rawdata;
 
-                FITUI.intepretCounters(rawData.counter);
+                FITUI.intepretMessageCounters(rawData.counter);
 
                 // Value converters that are run on "create"-event/callback in knockout
                 var mappingOptions = {
@@ -928,22 +944,21 @@
                 var jquerySessionElement = $('#divSessions');
                 var sessionElement = jquerySessionElement[0];
                
-                //if (rawData.session !== undefined) {
-                if (FITUI.sessionViewModel === undefined) {
-
+                if (FITUI.sessionViewModel === undefined && rawData.session) {
 
                     // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
 
-                    if (rawData.session) {   // Skip mapping and apply bindings only on available data
+                       // Skip mapping and apply bindings only on available data
 
-                        FITUI.sessionViewModel = ko.mapping.fromJS(rawData.session, mappingOptions);
+                    FITUI.sessionViewModel = emptyViewModel(fitActivity.session());
+
+                    ko.mapping.fromJS(rawData.session, mappingOptions,FITUI.sessionViewModel);
 
                         FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
 
                        // jquerySessionElement.show();
                         ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM 
-                        
-                    }
+                    
                 }
                 else {
 
@@ -959,11 +974,11 @@
                 var lapNode = jqueryLapNode[0];
 
                 if (FITUI.lapViewModel === undefined && rawData.lap) {
+                    FITUI.lapViewModel = emptyViewModel(fitActivity.lap());
                         FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
                        // jqueryLapNode.show();
                         ko.applyBindings(FITUI.lapViewModel, lapNode);
                        
-                    
                 }
                 else {
                     FITUI.resetViewModel(FITUI.lapViewModel);
@@ -973,7 +988,6 @@
                 // Initialize map
                 if (FITUI.map === undefined)
                   FITUI.map = FITUI.initMap();
-
 
                 switch (rawData.file_id.type[0]) {
                     case 4: // Activity file
