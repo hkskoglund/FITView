@@ -36,7 +36,7 @@
 
         this.divSessionLap = $('#divSessionLap');
 
-    };
+    }
 
     UIController.prototype.showSpeedVsHeartRate = function (rawData) {
         var seriesSpeedVsHR = [];
@@ -112,7 +112,7 @@
 
         });
 
-    }
+    };
 
     function combine(values, timestamps,startTimestamp,endTimestamp) {
         var util = FITUtility();
@@ -901,7 +901,7 @@
         
             return ViewModel;
             
-        }
+        };
 
         var fitActivity = FIT.ActivityFile();
 
@@ -1242,11 +1242,3 @@ var self = this;
 // We have created a socalled Immediately-Invoked Function Expression (IIFE)
 
 (); // Run it
-
-
-
-
-
-
-
-
