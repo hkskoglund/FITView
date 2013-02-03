@@ -131,9 +131,13 @@
         for (var nr = 0; nr <= values.length; nr++) {
             
             var timestamp = timestamps[nr];
-            if (timestamp >= startTimestamp && timestamp <= endTimestamp)
-                combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), values[nr]]);
-            if (timestamp > endTimestamp)
+            if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
+                if (values[nr] !== undefined)
+                    combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), values[nr]]);
+                else
+                    console.log("Timestamp ", timestamp, " value is undefined at index",nr);
+            }
+                if (timestamp > endTimestamp)
                 break;
            
         }
@@ -338,7 +342,7 @@
 
         //FITUI.showSpeedVsHeartRate(rawData);
 
-        //FITUI.showHRZones(rawData);
+        FITUI.showHRZones(rawData,startTimestamp,endTimestamp);
 
 
     };
@@ -408,7 +412,7 @@
 
     };
 
-    UIController.prototype.showHRZones = function (rawData) {
+    UIController.prototype.showHRZones = function (rawdata,startTimestamp,endTimestamp) {
         var divChart = document.getElementById("zonesChart");
         divChart.style.visibility = "visible";
 
@@ -438,21 +442,27 @@
 
         var myZones = getHRZones();
 
-        for (var datap = 0; datap < rawData["heart_rate"].length; datap++) {
+        var startIndex = getIndexOfTimestamp(rawdata.record,startTimestamp);
+        var endIndex = getIndexOfTimestamp(rawdata.record,endTimestamp);
 
-            var hry = rawData["heart_rate"][datap][1];
+
+        for (var zone = 0; zone < myZones.length; zone++) 
+            myZones[zone].count = 0;
+
+        for (var datap = startIndex; datap < endIndex; datap++) {
+
+           // var hry = rawData["heart_rate"][datap][1];
+
+            var hry = rawdata.record.heart_rate[datap];
+
             if (hry == undefined || hry == null)
-                console.error("Could not access raw data for data point nr. " + datap.toString());
+                console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString()+" at index "+datap.toString());
             else {
                 // Count Heart rate data points in zone
-                for (var zone = 0; zone < myZones.length; zone++) {
+                for (var zone = 0; zone < myZones.length; zone++) 
                     if (hry <= myZones[zone].max && hry >= myZones[zone].min)
-                        if (myZones[zone].count == undefined)
-                            myZones[zone].count = 1
-                        else
                             myZones[zone].count++;
-                }
-            }
+             }
         }
 
         var s1 = {};
@@ -709,6 +719,30 @@
             
     };
 
+    getIndexOfTimestamp = function (record,timestamp) {
+
+        var findNearestTimestamp = function (timestamp) {
+            var indxNr = -1;
+            var len = record.timestamp.length;
+            for (indxNr = 0; indxNr < len; indxNr++) {
+                if (record.timestamp[indxNr] >= timestamp)
+                    break;
+            }
+            return indxNr;
+        };
+
+        var indexTimestamp;
+
+        indexTimestamp = record.timestamp.indexOf(timestamp);
+        if (indexTimestamp === -1) {
+            console.warn("Direct lookup for timestamp ", timestamp, " not found, looping through available timestamps on message property record.timestamp to find nearest");
+            indexTimestamp = findNearestTimestamp(timestamp);
+        }
+
+        return indexTimestamp;
+
+    }
+
     UIController.prototype.showPolyline = function (map, record, startTimestamp, endTimestamp) {
       
         var self = this;
@@ -755,26 +789,19 @@
 
             //var sampleLimit = 100;
 
-            var findNearestTimestamp = function(timestamp) {
-                var indxNr;
-                for (indxNr = 0; indxNr < latLength; indxNr++) {
-                    if (record.timestamp[indxNr] >= timestamp)
-                        break;
-                }
-                return indxNr;
-            };
+            //var findNearestTimestamp = function(timestamp) {
+            //    var indxNr;
+            //    for (indxNr = 0; indxNr < latLength; indxNr++) {
+            //        if (record.timestamp[indxNr] >= timestamp)
+            //            break;
+            //    }
+            //    return indxNr;
+            //};
 
-            var indexStartTime = record.timestamp.indexOf(startTimestamp);
-            if (indexStartTime === -1) {
-                console.warn("Starttime not found for timestamp ", startTimestamp, " looping through available timestamps to find nearest");
-                indexStartTime = findNearestTimestamp(startTimestamp);
-            }
+            var indexStartTime = getIndexOfTimestamp(record,startTimestamp);
 
-            var indexEndTime = record.timestamp.indexOf(endTimestamp);
-            if (indexEndTime === -1) {
-                console.warn("Endtime not found for timestamp ",endTimestamp," looping through available timestamps to find nearest");
-                indexEndTime = findNearestTimestamp(endTimestamp);
-            }
+            var indexEndTime = getIndexOfTimestamp(record,endTimestamp);
+          
 
             for (var index = indexStartTime; index <= indexEndTime; index++) {
                 if (index === indexStartTime || (index % sampleInterval === 0) || index === indexEndTime)
@@ -1247,11 +1274,11 @@ var self = this;
             myZones = JSON.parse(myZonesJSONString);
         else {
             console.info("Local storage of " + key + " not found, using default HR Zones");
-            myZones = [{ name: 'Zone 1', min: 110, max: 120 },   // No storage found use default
-                     { name: 'Zone 2', min: 121, max: 140 },
-                     { name: 'Zone 3', min: 141, max: 150 },
-                     { name: 'Zone 4', min: 151, max: 165 },
-                     { name: 'Zone 5', min: 166, max: 256 }];
+            myZones = [{ name: 'Zone 1', min: 106, max: 140 },   // No storage found use default
+                     { name: 'Zone 2', min: 141, max: 150 },
+                     { name: 'Zone 3', min: 151, max: 159 },
+                     { name: 'Zone 4', min: 160, max: 170 },
+                     { name: 'Zone 5', min: 171, max: 256 }];
         }
 
         return myZones;

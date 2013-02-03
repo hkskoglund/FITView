@@ -489,7 +489,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 lengthCounter: 0,
                 deviceInfoCounter: 0,
                 activityCounter: 0,
-                eventCounter: 0
+                eventCounter: 0,
+                recordCounter : 0
             };
 
             while (index < maxReadToByte) { // Try reading from file in case something is wrong with header (datasize/headersize) 
@@ -549,6 +550,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                         }
 
                                         if (!unacceptableTimestamp && !unacceptableLat && !unacceptableLong) {
+                                            counter.recordCounter++;
                                             prevTimestamp = datarec.timestamp;
                                             prevLat = datarec.position_lat;
                                             prevLong = datarec.position_long;
@@ -668,6 +670,9 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                                 break;
                                             case "event":
                                                 rawdata[datarec.message][prop][counter.eventCounter - 1] = val;
+                                                break;
+                                            case "record":
+                                                rawdata[datarec.message][prop][counter.recordCounter - 1] = val;
                                                 break;
                                             default:
                                                 rawdata[datarec.message][prop].push(val);

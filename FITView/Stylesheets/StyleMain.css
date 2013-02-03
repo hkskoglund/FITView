@@ -39,7 +39,7 @@ white-space: nowrap;
 
 #testChart {
     visibility : hidden;
-    width: 100%;
+    width: 70%;
     /*height : 300px;*/
 }
 
@@ -62,9 +62,9 @@ white-space: nowrap;
 
 #zonesChart {
     visibility : hidden;
-    width : 50%;
+    width : 29%;
     /*height: 200px;*/
-    float : left;
+    /*float : left;*/
     
 }
 
@@ -207,11 +207,11 @@ section#lapList {
 }
 
 .sessionHHMMSS  {
-    font-size: x-large;
+    font-size: large;
 }
 
 .sessionTOTALDISTANCE {
-    font-size: x-large;
+    font-size: large;
 }
 
 section#sessionList {
@@ -224,7 +224,7 @@ section#sessionList {
 }
 
 #sessionList article {
-    font-size : x-large;
+    font-size :medium;
     float : left;
     /*list-style-type: none;*/
     /*padding-right: 10px;*/

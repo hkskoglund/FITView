@@ -62,6 +62,7 @@
     <Content Include="Images\kcalorie.png" />
     <Content Include="Images\heart.png" />
     <Content Include="Images\kcalorie.txt" />
+    <Content Include="Images\power.png" />
     <Content Include="Images\sessiontrigger\activity_end.png" />
     <Content Include="Images\sessiontrigger\auto_multi_sport.png" />
     <Content Include="Images\sessiontrigger\fitness_equipment.png" />

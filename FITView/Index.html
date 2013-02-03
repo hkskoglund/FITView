@@ -148,7 +148,7 @@
 
                         <!-- ASCENT/DESCENT -->
 
-                        <!-- ko if: $parent.total_ascent()[$index()]  ||  $parent.total_descent()[$index()]  -->
+                        <!-- ko if: $parent.total_ascent()[$index()] >= 0  ||  $parent.total_descent()[$index()] >= 0 -->
                                       
                         <img  class="inlineIcon" src="Images/ascent.png"  />
                         
@@ -179,7 +179,21 @@
 
                         <!-- /ko -->
 
-                        <!-- ko if:  $parent.total_training_effect()[$index()] -->
+                        <!-- POWER -->
+
+                        <!-- ko if: $parent.avg_power()[$index()] >= 0  ||  $parent.max_power()[$index()] >= 0  -->
+                                      
+                        <img  class="inlineIcon" src="Images/power.png"  />
+                        
+                        <span data-bind="text: $parent.avg_power()[$index()]"></span>
+                        
+                        <span data-bind="text: $parent.max_power()[$index()]"></span>
+                        
+                        <!-- /ko -->
+
+
+
+                        <!-- ko if:  $parent.total_training_effect()[$index()] >= 1 -->
                         TE
                         <span  data-bind="text: $parent.total_training_effect()[$index()]"></span>
                         
@@ -368,18 +382,20 @@
 
     <section id="activityMap"></section>
     
-    
-    <section id="testChart"></section>
-    <section id="hrvChart"></section>
-    
-    
     <div>
-        
-         <div id="divMsgMap"></div>
+        <section style="float : left; display : inline" id="testChart"></section>
+     <section style="float : right; display : inline" id="zonesChart"></section>
     </div>
+
+    
+    <section style="clear : both" id="hrvChart"></section>
+    
+        
+    <div id="divMsgMap"></div>
+   
     <div >
       <div id="speedVsHRChart"></div>
-      <div id="zonesChart"></div>
+      <!--<div id="zonesChart"></div>-->
     </div>
     
     
