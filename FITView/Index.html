@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!-- Basert på http://www.html5rocks.com/en/tutorials/file/dndfiles/#toc-selecting-files-dnd -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -85,7 +85,7 @@
                         <span data-bind="text: $parent.total_calories()[$index()]"></span>
                         <!-- /ko -->
 
-                        <!-- ko if: ($parent.avg_heart_rate && $parent.avg_heart_rate().length > 0) || ($parent.max_heart_rate  && $parent.max_heart_rate().length > 0) -->
+                        <!-- ko if: $parent.avg_heart_rate()[$index()] ||  $parent.max_heart_rate()[$index()] -->
                         <img class="inlineIcon" src="Images/heart.png"  />
                         <!-- /ko -->
                         
@@ -101,7 +101,7 @@
 
                         <!-- SPEED -->
 
-                        <!-- ko if: $parent.avg_speed()[$index()] >= 0 || $parent.max_speed()[$index()] >= 0 -->
+                        <!-- ko if: $parent.avg_speed()[$index()]  || $parent.max_speed()[$index()]  -->
                         <img class="inlineIcon" src="Images/speed.png"  />
                         <!-- /ko -->
                         
@@ -110,13 +110,11 @@
                         <!-- ko if: $parent.sport()[$index()] === 2 || $parent.sport()[$index()] === 0 || $parent.tempoOrSpeed() === 1 -->
 
                         
-                        <!-- ko if: $parent.avg_speed()[$index()] >= 0 -->
+                        <!-- ko if: $parent.avg_speed()[$index()] -->
                         <span data-bind="text: $parent.avg_speed()[$index()].toKMprH()"></span>
                         <!-- /ko -->
-                        
-
                      
-                        <!-- ko if: $parent.max_speed()[$index()] >= 0 -->
+                        <!-- ko if: $parent.max_speed()[$index()]  -->
                         <span data-bind="text: $parent.max_speed()[$index()].toKMprH()"></span>
                         <!-- /ko -->
                         <!-- /ko -->
@@ -136,7 +134,16 @@
 
                         <!-- SWIMMING TO DO .... -->
 
-                       
+                       <!-- ko if: $parent.sport()[$index()] === 5  -->
+                         
+                        <!-- ko if: $parent.avg_speed()[$index()] -->
+                        <span data-bind="text: $parent.avg_speed()[$index()].toMINpr100M()"></span>
+                         <!-- /ko -->
+
+                        <!-- ko if: $parent.max_speed()[$index()] -->
+                        <span data-bind="text: $parent.max_speed()[$index()].toMINpr100M()"></span>
+                         <!-- /ko -->
+                       <!-- /ko -->
                         
 
                         <!-- ASCENT/DESCENT -->

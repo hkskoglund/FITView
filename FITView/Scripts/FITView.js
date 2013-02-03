@@ -486,6 +486,7 @@
 
         setMapCenter = function (sport,lat,long) {
             var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
+            console.info("Setting map center for sport ",sport," at ",latlong);
             map.setCenter(latlong);
             
             if (self.sessionMarkers === undefined || self.sessionMarkers === null)
@@ -800,13 +801,30 @@
     };
 
     UIController.prototype.convertSpeedConverterModel = function (speedMprSEC) {
-        // Callback on "create" from knockout
+       
         //ko.mapping.fromJS(speedMprSEC, {}, this);
         var self = this;
+        var minPrKM;
+        var minPr100M;
+        
         self.value = speedMprSEC;
 
+         self.toMINpr100M = ko.computed(function () {
+           
+            if (speedMprSEC > 0)
+                minPr100M = 1 / (speedMprSEC * 60 / 100); // min/100m
+            else
+                minPr100M = 0;
+
+            var minutes = Math.floor(minPr100M);
+            var seconds = ((minPr100M - minutes) * 60).toFixed(); // implicit rounding
+
+            var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+            return result;
+        }, self);
+
         self.toMINprKM = ko.computed(function () {
-            var minPrKM;
+           
             if (speedMprSEC > 0)
                 minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
             else
@@ -823,6 +841,8 @@
             var kmPrH = (speedMprSEC * 3.6).toFixed(1);
             return kmPrH;
         }, self);
+        
+        
     };
 
     UIController.prototype.convertSecsToHHMMSSModel = function (totalSec) {
