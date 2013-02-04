@@ -102,6 +102,8 @@
     <Content Include="Scripts\knockout.mapping-latest.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Snippets\LapDetails.html" />
+    <Content Include="Snippets\LapView.html" />
+    <Content Include="Snippets\SessionView.html" />
     <Content Include="Snippets\VaryingArrays.txt" />
     <Content Include="Stylesheets\StyleMain.css" />
     <Content Include="Web.config" />

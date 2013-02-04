@@ -524,7 +524,12 @@
 
            // var hry = rawData["heart_rate"][datap][1];
 
-            var hry = rawdata.record.heart_rate[datap];
+            var hry;
+            
+            if (rawdata.record.heart_rate !== undefined)
+                hry = rawdata.record.heart_rate[datap];
+            else
+                hrv = undefined;
 
             if (hry === undefined || hry === null)
                 console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString()+" at index "+datap.toString());
@@ -845,9 +850,6 @@
             return false;
         }
 
-          
-
-        
         var activityCoordinates = [];
         var util = FITUtility();
 
@@ -1071,6 +1073,7 @@
 
                 var jquerySessionElement = $('#divSessions');
                 var sessionElement = jquerySessionElement[0];
+                console.log("#divSession for data binding", sessionElement);
                
                 if (FITUI.sessionViewModel === undefined && rawData.session) {
 
@@ -1082,7 +1085,20 @@
 
                     ko.mapping.fromJS(rawData.session, mappingOptions,FITUI.sessionViewModel);
 
-                        FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
+                    FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
+                    FITUI.sessionViewModel.showDetails = function (data,event) {
+                        // In callback from knockoutjs, this = first argument to showDetails.bind(...), then $data and event is pushed
+                        var index = this;
+                        var polylinePlotted = FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[index], rawData.session.timestamp[index]);
+
+                        // Rendering charts can take quite a while....,
+
+                       // window.setTimeout(function () {
+                            FITUI.showChartsDatetime(rawData, rawData.session.start_time[index], rawData.session.timestamp[index]);
+                        //},
+                        //    500);
+
+                    }
 
                        // jquerySessionElement.show();
                         ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM 
@@ -1100,6 +1116,7 @@
                    
                 var jqueryLapNode = $('#divLaps');
                 var lapNode = jqueryLapNode[0];
+                console.log("#divLaps for data binding", lapNode);
 
                 if (FITUI.lapViewModel === undefined && rawData.lap) {
                     FITUI.lapViewModel = emptyViewModel(fitActivity.lap());

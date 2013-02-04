@@ -1,0 +1,186 @@
+﻿<ul data-bind="foreach: timestamp">
+
+    <li>
+
+        <a href="#" data-bind="click: $parent.showDetails.bind($index())">
+
+            <!-- ko if: $parent.sport  &&  $parent.sport()[$index()] === 1 -->
+            <img class="sessionSport" src="Images/sport/running.png" />
+            <!-- /ko -->
+
+            <!-- ko if: $parent.sport && $parent.sport()[$index()] === 2 -->
+            <img class="sessionSport" src="Images/sport/cycling.png" />
+            <!-- /ko -->
+
+            <!-- ko if: $parent.sport  && $parent.sport()[$index()] === 5 -->
+            <img class="sessionSport" src="Images/sport/swimming.png" />
+            <!-- /ko -->
+
+
+        </a>
+
+    </li>
+</ul>
+
+
+
+<!-- ko if: $parent.total_elapsed_time  && $parent.total_elapsed_time().length > 0  -->
+<time><span class="sessionHHMMSS" data-bind="text: $parent.total_elapsed_time()[$index()].toHHMMSS()"></span></time>
+<!-- /ko -->
+
+
+<!-- ko if: $parent.total_timer_time   &&   $parent.total_timer_time().length > 0
+                            -->
+
+<time><span class="sessionHHMMSS" data-bind="text: $parent.total_timer_time()[$index()].toHHMMSS()"></span></time>
+<!-- /ko -->
+
+
+
+<!-- ko if: $parent.total_distance  && $parent.total_distance().length > 0 -->
+<span class="sessionTOTALDISTANCE" data-bind="text: $parent.total_distance()[$index()]"></span>m
+                        <!-- /ko -->
+
+
+<!-- ko if: $parent.total_calories  && $parent.total_calories()[$index()] > 0 -->
+<img class="inlineIcon" src="Images/kcalorie.png" />
+
+<span data-bind="text: $parent.total_calories()[$index()]"></span>
+<!-- /ko -->
+
+<!-- ko if: $parent.avg_heart_rate()[$index()] ||  $parent.max_heart_rate()[$index()] -->
+<img class="inlineIcon" src="Images/heart.png" />
+<!-- /ko -->
+
+<!-- HEART RATE -->
+
+<!-- ko if:  $parent.avg_heart_rate()[$index()]  >= 0 -->
+<span data-bind="text: $parent.avg_heart_rate()[$index()]"></span>
+<!-- /ko -->
+
+<!-- ko if:  $parent.max_heart_rate()[$index()] >= 0 -->
+<span data-bind="text: $parent.max_heart_rate()[$index()]"></span>
+<!-- /ko -->
+
+<!-- SPEED -->
+
+<!-- ko if: $parent.avg_speed()[$index()]  || $parent.max_speed()[$index()]  -->
+<img class="inlineIcon" src="Images/speed.png" />
+<!-- /ko -->
+
+
+<!-- BIKING/GENERIC -->
+<!-- ko if: $parent.sport()[$index()] === 2 || $parent.sport()[$index()] === 0 || $parent.tempoOrSpeed() === 1 -->
+
+
+<!-- ko if: $parent.avg_speed()[$index()] -->
+<span data-bind="text: $parent.avg_speed()[$index()].toKMprH()"></span>
+<!-- /ko -->
+
+<!-- ko if: $parent.max_speed()[$index()]  -->
+<span data-bind="text: $parent.max_speed()[$index()].toKMprH()"></span>
+<!-- /ko -->
+<!-- /ko -->
+
+<!-- RUNNING -->
+
+<!-- ko if: $parent.sport()[$index()] === 1 || $parent.tempoOrSpeed() === 0 -->
+
+<!-- ko if: $parent.avg_speed()[$index()] -->
+<span data-bind="text: $parent.avg_speed()[$index()].toMINprKM()"></span>
+<!-- /ko -->
+
+<!-- ko if: $parent.max_speed()[$index()] -->
+<span data-bind="text: $parent.max_speed()[$index()].toMINprKM()"></span>
+<!-- /ko -->
+<!-- /ko -->
+
+<!-- SWIMMING TO DO .... -->
+
+<!-- ko if: $parent.sport()[$index()] === 5  -->
+
+<!-- ko if: $parent.avg_speed()[$index()] -->
+<span data-bind="text: $parent.avg_speed()[$index()].toMINpr100M()"></span>
+<!-- /ko -->
+
+<!-- ko if: $parent.max_speed()[$index()] -->
+<span data-bind="text: $parent.max_speed()[$index()].toMINpr100M()"></span>
+<!-- /ko -->
+<!-- /ko -->
+
+
+<!-- ASCENT/DESCENT -->
+
+<!-- ko if: $parent.total_ascent()[$index()] >= 0  ||  $parent.total_descent()[$index()] >= 0 -->
+
+<img class="inlineIcon" src="Images/ascent.png" />
+
+<span data-bind="text: $parent.total_ascent()[$index()]"></span>
+
+<span data-bind="text: $parent.total_descent()[$index()]"></span>
+
+<!-- /ko -->
+
+<!-- CADENCE/STRIDES -->
+
+<!-- ko if: $parent.avg_cadence()[$index()] >= 0 || 
+                             $parent.max_cadence()[$index()] >= 0 ||  
+                          $parent.total_cycles_strides()[$index()] >=0 -->
+<img class="inlineIcon" src="Images/cadence.png" />
+<!-- /ko -->
+
+<!-- ko if:  $parent.avg_cadence().length > 0  -->
+<span data-bind="text: $parent.avg_cadence()[$index()]"></span>
+<!-- /ko -->
+
+<!-- ko if: $parent.max_cadence().length > 0  -->
+<span data-bind="text: $parent.max_cadence()[$index()]"></span>
+<!-- /ko -->
+
+<!-- ko if: $parent.total_cycles_strides().length > 0  -->
+<span data-bind="text: $parent.total_cycles_strides()[$index()]"></span>
+
+<!-- /ko -->
+
+<!-- POWER -->
+
+<!-- ko if: $parent.avg_power()[$index()] >= 0  ||  $parent.max_power()[$index()] >= 0  -->
+
+<img class="inlineIcon" src="Images/power.png" />
+
+<span data-bind="text: $parent.avg_power()[$index()]"></span>
+
+<span data-bind="text: $parent.max_power()[$index()]"></span>
+
+<!-- /ko -->
+
+
+
+<!-- ko if:  $parent.total_training_effect()[$index()] >= 1 -->
+TE
+                        <span data-bind="text: $parent.total_training_effect()[$index()]"></span>
+
+<!-- meter tag ignored in  IE 10, but works in Chrome -->
+<meter style="padding-left: 5px" high="4" low="1.5" min="1" max="5" data-bind="value: $parent.total_training_effect()[$index()]"></meter>
+<!-- /ko -->
+
+<!-- Session trigger -->
+
+
+
+<!-- ko if: $parent.trigger()[$index()] === 0 -->
+<img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" />
+<!-- /ko -->
+
+<!-- ko if: $parent.trigger()[$index()] === 1 -->
+<img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" />
+<!-- /ko -->
+
+<!-- ko if: $parent.trigger()[$index()] === 2 -->
+<img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
+<!-- /ko -->
+
+<!-- ko if: $parent.trigger()[$index()] === 3 -->
+<img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
+<!-- /ko -->
+
