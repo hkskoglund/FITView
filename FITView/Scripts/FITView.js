@@ -419,27 +419,95 @@
         var divChart = document.getElementById("zonesChart");
         divChart.style.visibility = "visible";
 
+        //var options = {
+        //    chart: {
+        //        renderTo: 'zonesChart',
+        //        type: 'bar'
+        //    },
+        //    title: {
+        //        text: ''
+        //    },
+        //    xAxis: {
+
+        //        //categories: [myZones[0].name, myZones[1].name, myZones[2].name, myZones[3].name, myZones[4].name]
+        //        //type : 'datetime'
+        //    },
+        //    yAxis: {
+        //        title: {
+        //            text: 'Minutes'
+        //        }
+        //    }
+
+        //    // Assuming 1 sec. sampling of data point -> divide by 60 to get number of minutes in zone
+        //    //series: []
+        //};
+
+        // http://highcharts.com/demo/column-stacked
         var options = {
             chart: {
                 renderTo: 'zonesChart',
-                type: 'bar'
+                type: 'column'
             },
             title: {
                 text: ''
             },
             xAxis: {
-
-                //categories: [myZones[0].name, myZones[1].name, myZones[2].name, myZones[3].name, myZones[4].name]
-                //type : 'datetime'
+                
+                //categories: ['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
+                categories: ['HR Zones']
             },
             yAxis: {
+                min: 0,
                 title: {
                     text: 'Minutes'
+                },
+                stackLabels: {
+                    enabled: false,
+                    style: {
+                        fontWeight: 'bold',
+                        color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                    }
+                }
+            },
+            legend: {
+                enabled : false },
+            //legend: {
+            //    align: 'right',
+            //    x: -100,
+            //    verticalAlign: 'top',
+            //    y: 20,
+            //    floating: true,
+            //    backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColorSolid) || 'white',
+            //    borderColor: '#CCC',
+            //    borderWidth: 1,
+            //    shadow: false
+            //},
+            //tooltip: {
+            //    formatter: function() {
+            //        return '<b>'+ this.x +'</b><br/>'+
+            //            this.series.name +': '+ this.y +'<br/>'+
+            //            'Total: '+ this.point.stackTotal;
+            //    }
+            //},
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: false,
+                        color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+                    }
                 }
             }
-
-            // Assuming 1 sec. sampling of data point -> divide by 60 to get number of minutes in zone
-            //series: []
+            //series: [{
+            //    name: 'John',
+            //    data: [5, 3, 4, 7, 2]
+            //}, {
+            //    name: 'Jane',
+            //    data: [2, 2, 3, 2, 1]
+            //}, {
+            //    name: 'Joe',
+            //    data: [3, 4, 4, 2, 5]
+            //}]
         };
 
 
@@ -470,17 +538,21 @@
 
         var s1 = {};
 
-        s1.name = "Heart rate zones";
-        s1.data = [];
-        options.xAxis.categories = [];
+        //s1.name = "Heart rate zones";
+        //s1.data = [];
+       // options.xAxis.categories = [];
         options.series = [];
 
-        for (var catNr = 0; catNr < myZones.length; catNr++) {
-            options.xAxis.categories.push(myZones[catNr].name);
-            s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
+        for (var catNr = myZones.length-1; catNr >= 0; catNr--) {
+           // options.xAxis.categories.push(myZones[catNr].name);
+           // s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
+            options.series.push({
+                name: myZones[catNr].name ,
+                data: [myZones[catNr].count / 60]
+            });
         }
 
-        options.series.push(s1);
+        //options.series.push(s1);
 
         var chart3 = new Highcharts.Chart(options);
     }
