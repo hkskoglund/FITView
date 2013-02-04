@@ -279,6 +279,9 @@
                                     }
 
                                     setMarker = function () {
+                                        if (typeof (google) === "undefined") // Allows working without map
+                                            return;
+
                                         prevMarker = new google.maps.Marker({
                                             position: new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long)),
                                             icon: {
@@ -312,7 +315,7 @@
                             },
 
                             mouseOut: function () {
-                                if (prevMarker !== undefined || prevMarker !== null) {
+                                if (prevMarker !== undefined && prevMarker !== null) {
                                     prevMarker.setMap(null);
                                     prevMarker = null; // GC takes over...
                                 }
@@ -455,7 +458,7 @@
 
             var hry = rawdata.record.heart_rate[datap];
 
-            if (hry == undefined || hry == null)
+            if (hry === undefined || hry === null)
                 console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString()+" at index "+datap.toString());
             else {
                 // Count Heart rate data points in zone
@@ -686,6 +689,12 @@
     };
 
     UIController.prototype.initMap = function () {
+
+        // f.ex in case google maps api is not downloaded due to network problems....
+        // http://joshua-go.blogspot.no/2010/07/javascript-checking-for-undeclared-and.html
+
+        if (typeof (google) === "undefined")
+            return undefined;
 
         var myCurrentPosition, newMap;
 
@@ -1041,12 +1050,13 @@
 
                         FITUI.showLaps(rawData);
 
-                        var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
+                        if (FITUI.map) {
+                            var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
 
-                        var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
+                            var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
 
-                        var polylinePlotted = FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0],rawData.session.timestamp[0]);
-
+                            var polylinePlotted = FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[0], rawData.session.timestamp[0]);
+                        }
                         //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
                         //   $('#activityMap').show();
 
