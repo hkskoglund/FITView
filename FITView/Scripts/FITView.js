@@ -36,6 +36,8 @@
 
         this.divSessionLap = $('#divSessionLap');
 
+        
+
     }
 
     UIController.prototype.showSpeedVsHeartRate = function (rawData) {
@@ -324,15 +326,16 @@
 
                                     //console.log("Lat, long ", lat, long);
 
-                                    if (prevMarker === null) {
-                                        setMarker();
-                                    } else {
-                                        // Clear previous marker
-                                        prevMarker.setMap(null);
-                                        prevMarker = null;
-                                        setMarker();
-                                    }
-
+                                    if (lat && long) {
+                                        if (prevMarker === null) {
+                                            setMarker();
+                                        } else {
+                                            // Clear previous marker
+                                            prevMarker.setMap(null);
+                                            prevMarker = null;
+                                            setMarker();
+                                        }
+                                    } 
                                     
                                 }
                             },
@@ -857,7 +860,16 @@
 
     getIndexOfTimestamp = function (record,timestamp) {
 
+      
         var findNearestTimestamp = function (timestamp) {
+
+            // Try to get from cache first
+            
+            for (var cacheItem = 0; cacheItem < FITUI.timestampIndexCache.length; cacheItem++)
+                if (FITUI.timestampIndexCache[cacheItem].key === timestamp)
+                    return FITUI.timestampIndexCache[cacheItem].value;
+                
+
             var indxNr = -1;
             var breaked = false;
             var len = record.timestamp.length;
@@ -867,10 +879,15 @@
                     break;
                 }
             }
-            if (breaked)
+
+            if (breaked) {
+                FITUI.timestampIndexCache.push({ key: timestamp, value: indxNr });
                 return indxNr;
-            else
+            }
+            else {
+                FITUI.timestampIndexCache.push({ key: timestamp, value: indxNr - 1 });
                 return indxNr - 1;
+            }
         };
 
         var indexTimestamp;
@@ -1100,6 +1117,8 @@
                
                 var rawData = eventdata.rawdata;
 
+                // Holds index of previously lookedup timestamps in rawdata.record.timestamp array
+                FITUI.timestampIndexCache = [];
                 FITUI.intepretMessageCounters(rawData.counter);
 
                 // Value converters that are run on "create"-event/callback in knockout

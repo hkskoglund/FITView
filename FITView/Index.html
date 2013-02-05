@@ -73,7 +73,7 @@
                              <!-- /ko -->
 
                              <!-- ko if: total_distance().length > 0 -->
-                             <span class="sessionTOTALDISTANCE" data-bind="text: total_distance()[$index()]"></span>m
+                             <span class="sessionTOTALDISTANCE" data-bind="text: total_distance()[$index()].toFixed(0)"></span>m
                              <!-- /ko -->
 
                              <!-- ko if: total_calories()[$index()] > 0 -->
