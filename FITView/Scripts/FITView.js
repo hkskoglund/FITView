@@ -238,6 +238,14 @@
 
         var d = new Date();
         console.log("Starting highchart now " + d);
+        //var progressInSec = 0;
+        //$("#progressFITimport").show();
+        //var intervalTimerID = setInterval(function () {
+        //    FITUI.progressFITimportViewModel.progressFITimport(++progressInSec);
+        //},2000);
+            
+       
+
 
         chart1 = new Highcharts.Chart({
             chart: chartOptions,
@@ -257,15 +265,16 @@
             },
 
             tooltip: {
+                //xDateFormat: '%Y-%m-%d',
                 formatter: function () {
                     //http://stackoverflow.com/questions/3885817/how-to-check-if-a-number-is-float-or-integer
                     function isInt(n) {
                         return n % 1 === 0;
                     }
                     if (isInt(this.y))
-                        return this.series.name + ': ' + this.y;
+                        return Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' + this.series.name + '</b>' + ': ' + this.y;
                     else
-                       return this.series.name + ': ' + Highcharts.numberFormat(this.y, 1);
+                        return Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' + this.series.name + '</b>' + ': ' + Highcharts.numberFormat(this.y, 1);
 
                 }
             },
@@ -353,6 +362,8 @@
     //    }
     );
 
+        //clearInterval(intervalTimerID);
+       
         d = new Date();
         console.log("Finishing highcharts now " + d);
 
