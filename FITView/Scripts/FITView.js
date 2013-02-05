@@ -256,6 +256,20 @@
                 }
             },
 
+            tooltip: {
+                formatter: function () {
+                    //http://stackoverflow.com/questions/3885817/how-to-check-if-a-number-is-float-or-integer
+                    function isInt(n) {
+                        return n % 1 === 0;
+                    }
+                    if (isInt(this.y))
+                        return this.series.name + ': ' + this.y;
+                    else
+                       return this.series.name + ': ' + Highcharts.numberFormat(this.y, 1);
+
+                }
+            },
+
             plotOptions: {
                 series: {
                     allowPointSelect: true,
@@ -415,8 +429,9 @@
 
     };
 
-    UIController.prototype.showHRZones = function (rawdata,startTimestamp,endTimestamp) {
-        var divChart = document.getElementById("zonesChart");
+    UIController.prototype.showHRZones = function (rawdata, startTimestamp, endTimestamp) {
+        var divChartId = 'zonesChart';
+        var divChart = document.getElementById(divChartId);
         divChart.style.visibility = "visible";
 
         //var options = {
@@ -445,7 +460,7 @@
         // http://highcharts.com/demo/column-stacked
         var options = {
             chart: {
-                renderTo: 'zonesChart',
+                renderTo: divChartId,
                 type: 'column'
             },
             title: {
@@ -459,7 +474,7 @@
             yAxis: {
                 min: 0,
                 title: {
-                    text: 'Minutes'
+                    text: ''
                 },
                 stackLabels: {
                     enabled: false,
@@ -482,13 +497,12 @@
             //    borderWidth: 1,
             //    shadow: false
             //},
-            //tooltip: {
-            //    formatter: function() {
-            //        return '<b>'+ this.x +'</b><br/>'+
-            //            this.series.name +': '+ this.y +'<br/>'+
-            //            'Total: '+ this.point.stackTotal;
-            //    }
-            //},
+            tooltip: {
+                formatter: function() {
+                    return this.series.name + ': ' + Highcharts.numberFormat(this.y, 1);
+                        
+                }
+            },
             plotOptions: {
                 column: {
                     stacking: 'normal',
@@ -518,47 +532,72 @@
 
 
         for (var zone = 0; zone < myZones.length; zone++) 
-            myZones[zone].count = 0;
+            myZones[zone].timeInZone = 0;
 
-        for (var datap = startIndex; datap < endIndex; datap++) {
+        var timeInZoneMillisec;
+        var maxTimeDifference = 60000;  
 
-           // var hry = rawData["heart_rate"][datap][1];
+        for (var datap = startIndex; datap <= endIndex; datap++) {
+
+            // var hry = rawData["heart_rate"][datap][1];
+
+           
+
+            if (datap < endIndex) {
+                timeInZoneMillisec = rawdata.record.timestamp[datap + 1] - rawdata.record.timestamp[datap];
+                // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/isNaN
+
+                if (isNaN(timeInZoneMillisec)) {// Should not happen....
+                    console.error("Time in zone is NaN");
+                    break;
+                }
+
+                if (timeInZoneMillisec > maxTimeDifference) {
+                    console.warn("Greater than ", maxTimeDifference, "ms difference between timestamps, skipped");
+                    continue;
+                }
+
+            } else if (datap === endIndex)
+                timeInZoneMillisec = 1000;
+
 
             var hry;
             
             if (rawdata.record.heart_rate !== undefined)
                 hry = rawdata.record.heart_rate[datap];
             else
-                hrv = undefined;
+                hry = undefined;
 
             if (hry === undefined || hry === null)
                 console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString()+" at index "+datap.toString());
             else {
                 // Count Heart rate data points in zone
                 for (var zone = 0; zone < myZones.length; zone++) 
-                    if (hry <= myZones[zone].max && hry >= myZones[zone].min)
-                            myZones[zone].count++;
+                    if (hry <= myZones[zone].max && hry >= myZones[zone].min) {
+
+                        myZones[zone].timeInZone += timeInZoneMillisec;
+                    //    console.log("HR ", hry, " time in zone", timeInZone, " zone ", zone, " total time (ms) ", myZones[zone].timeInZone);
+                    }
              }
         }
 
-        var s1 = {};
-
-        //s1.name = "Heart rate zones";
-        //s1.data = [];
-       // options.xAxis.categories = [];
         options.series = [];
 
+        var timeInSecs;
         for (var catNr = myZones.length-1; catNr >= 0; catNr--) {
-           // options.xAxis.categories.push(myZones[catNr].name);
+        
            // s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
+           // timeInSecs = parseFloat(((myZones[catNr].timeInZone) / 60000).toFixed(1));
+            
+            timeInSecs = myZones[catNr].timeInZone / 60000;
+
             options.series.push({
                 name: myZones[catNr].name ,
-                data: [myZones[catNr].count / 60]
+                data: [timeInSecs]
             });
         }
 
-        //options.series.push(s1);
-
+      
         var chart3 = new Highcharts.Chart(options);
     }
 
@@ -809,12 +848,18 @@
 
         var findNearestTimestamp = function (timestamp) {
             var indxNr = -1;
+            var breaked = false;
             var len = record.timestamp.length;
             for (indxNr = 0; indxNr < len; indxNr++) {
-                if (record.timestamp[indxNr] >= timestamp)
+                if (record.timestamp[indxNr] >= timestamp) {
+                    breaked = true;
                     break;
+                }
             }
-            return indxNr;
+            if (breaked)
+                return indxNr;
+            else
+                return indxNr - 1;
         };
 
         var indexTimestamp;
@@ -1071,9 +1116,10 @@
                 };
                 
 
-                var jquerySessionElement = $('#divSessions');
+                var liId = '#liSessions';
+                var jquerySessionElement = $(liId);
                 var sessionElement = jquerySessionElement[0];
-                console.log("#divSession for data binding", sessionElement);
+                console.log(liId+" for data binding", sessionElement);
                
                 if (FITUI.sessionViewModel === undefined && rawData.session) {
 
@@ -1086,6 +1132,7 @@
                     ko.mapping.fromJS(rawData.session, mappingOptions,FITUI.sessionViewModel);
 
                     FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
+
                     FITUI.sessionViewModel.showDetails = function (data,event) {
                         // In callback from knockoutjs, this = first argument to showDetails.bind(...), then $data and event is pushed
                         var index = this;

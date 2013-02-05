@@ -3,18 +3,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>FITView</title>
-   <script type="text/javascript"
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false">
-    </script>
+   <script  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false"></script>
     <script src="Scripts/jquery-1.9.0.js"></script>
     <script src="Scripts/knockout-2.2.1.debug.js"></script>
     <script src="Scripts/knockout.mapping-latest.debug.js"></script>
     <script src="Scripts/modernizr-2.6.2.js"></script>
     <script src="Scripts/highcharts.src.js"></script>
     
-    <script defer="defer" src="Scripts/FITUtility.js"></script>
-    <script defer="defer" src="Scripts/FITActivityFile.js"></script>
-    <script defer="defer" src="Scripts/FITSport.js"></script>
+    <script src="Scripts/FITUtility.js"></script>
+    <script src="Scripts/FITActivityFile.js"></script>
+    <script src="Scripts/FITSport.js"></script>
     <script defer="defer" src="Scripts/FITView.js"></script>
     
     <link href="Stylesheets/StyleMain.css" rel="stylesheet"/>
@@ -25,12 +23,13 @@
     </header>
  <div id="divSessionLap" >
 
-     <div id="divSessions">
-
+     
+     
          
-         <ul class="menu">
+         <ul class="menu" >
 
-             <li><a href="#">Sessions</a>
+             <li id="liSessions" style="display : none" data-bind="visible: timestamp().length > 0"><a href="#">Sessions</a>
+                 
                  <ul data-bind="foreach: timestamp">
 
                      <li data-bind="with: $parent">
@@ -211,7 +210,7 @@
 
                      </li>
                  </ul>
-
+                 
              </li>
 
              <li><a href="#">testing</a>
@@ -245,7 +244,7 @@
 
          </ul>
 
-     </div>
+    
         
      
      <progress class="FITprogressImport" id="progressFITimport" max="100" data-bind="value: progressFITimport"></progress>

@@ -150,8 +150,16 @@ white-space: nowrap;
 
 #testChart {
     visibility : hidden;
-    width: 90%;
+    width: 90%
     /*height : 300px;*/
+}
+
+#zonesChart {
+    visibility : hidden;
+    width : 10%;
+    /*height: 200px;*/
+    /*float : left;*/
+    
 }
 
 #hrvChart {
@@ -167,13 +175,7 @@ white-space: nowrap;
     
 }
 
-#zonesChart {
-    visibility : hidden;
-    width : 9%;
-    /*height: 200px;*/
-    /*float : left;*/
-    
-}
+
 
 #divHRZones {
     visibility: hidden;
@@ -359,6 +361,9 @@ ul#sessionList {
 .SessionLapErrorUndefined {
     background-color : red;
 }
+
+
+
 
 #divSessionLap {
     /*display: none;*/
