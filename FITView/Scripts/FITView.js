@@ -3,10 +3,11 @@
 (function () {
 
     var FITUI;
+    var FITUtil;
 
     window.onload = function () {
         FITUI = new UIController();
-        
+        FITUtil = new FITUIUtility();
     };
 
     function UIController() {
@@ -36,9 +37,15 @@
 
         this.divSessionLap = $('#divSessionLap');
 
-        
+        // Initialize map
+        if (this.map === undefined)
+            this.map = this.initMap();
 
     }
+
+    function FITUIUtility() {
+    }
+
 
     UIController.prototype.showSpeedVsHeartRate = function (rawData) {
         var seriesSpeedVsHR = [];
@@ -116,7 +123,7 @@
 
     };
 
-    function combine(values, timestamps,startTimestamp,endTimestamp) {
+    FITUIUtility.prototype.combine = function (values, timestamps,startTimestamp,endTimestamp) {
         var util = FITUtility();
         var combined = [];
 
@@ -129,7 +136,11 @@
             console.warn("Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString());
 
         
-       
+        if (startTimestamp === undefined || endTimestamp === undefined) {
+            console.error("Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps");
+            return values;
+        }
+
         for (var nr = 0; nr <= values.length; nr++) {
             
             var timestamp = timestamps[nr];
@@ -148,7 +159,7 @@
       
     }
 
-    function verifyTimestamps(timestamps) {
+    FITUIUtility.prototype.verifyTimestamps = function(timestamps) {
         var valid = true;
         var len = timestamps.length;
 
@@ -161,6 +172,154 @@
         return valid;
     }
 
+    FITUIUtility.prototype.restoreSession = function (rawData) {
+        var prevSession = rawData.session;
+        
+        rawData.session = {};
+        rawData.session.sport = [];
+        rawData.session.start_time = [];
+        rawData.session.timestamp = [];
+        rawData.session.total_elapsed_time = [];
+        rawData.session.total_timer_time = [];
+        rawData.session.total_distance = [];
+        rawData.session.total_calories = [];
+
+
+        // Try to restore session from available lap data
+        if (rawData.lap) {
+            var numberOfLaps = rawData.lap.timestamp.length;
+            var currentSport;
+            var prevSport;
+            var lastEndtimstamp;
+            var total_elapsed_time;
+            var total_timer_time;
+            var total_distance;
+            var total_calories;
+
+
+            for (var lapNr = 0; lapNr < numberOfLaps; lapNr++) {
+                currentSport = rawData.lap.sport[lapNr];
+
+                if (currentSport !== prevSport) {
+                    if (total_elapsed_time)
+                        rawData.session.total_elapsed_time.push(total_elapsed_time);
+                    total_elapsed_time = rawData.lap.total_elapsed_time[lapNr];
+
+                    if (total_timer_time)
+                        rawData.session.total_timer_time.push(total_timer_time);
+                    total_timer_time = rawData.lap.total_timer_time[lapNr];
+
+                    if (total_distance)
+                        rawData.session.total_distance.push(total_distance);
+                    total_distance = rawData.lap.total_distance[lapNr];
+
+                    if (total_calories)
+                        rawData.session.total_calories.push(total_calories);
+                    total_calories = rawData.lap.total_calories[lapNr];
+
+                    
+
+                    if (lastEndtimstamp !== undefined) 
+                        rawData.session.timestamp.push(rawData.lap.timestamp[lapNr - 1]);
+
+                        if (numberOfLaps === 1)
+                            lastEndtimstamp = rawData.lap.timestamp[lapNr];
+                          
+
+                    rawData.session.sport.push(currentSport);
+                    rawData.session.start_time.push(rawData.lap.start_time[lapNr])
+
+
+                } else {
+                    total_elapsed_time += rawData.lap.total_elapsed_time[lapNr];
+                    total_timer_time += rawData.lap.total_timer_time[lapNr];
+                    total_distance += rawData.lap.total_distance[lapNr];
+                    total_calories += rawData.lap.total_calories[lapNr];
+
+                    lastEndtimstamp = rawData.lap.timestamp[lapNr - 1];
+                }
+                prevSport = currentSport;
+            }
+
+            if (total_elapsed_time)
+                rawData.session.total_elapsed_time.push(total_elapsed_time);
+
+            if (total_timer_time)
+                rawData.session.total_timer_time.push(total_timer_time);
+
+            if (total_distance)
+                rawData.session.total_distance.push(total_distance);
+
+            if (total_calories)
+                rawData.session.total_calories.push(total_calories);
+
+            if (lastEndtimstamp)
+                rawData.session.timestamp.push(rawData.lap.timestamp[lapNr - 1]);
+
+        } else { // Create a generic session of all data
+
+            rawData.session.sport.push(0);
+            rawData.session.sport.push(sport);
+
+            var timestamp = rawData.record.timestamp[rawData.record.timestamp.length - 1];
+            rawData.session.timestamp.push(timestamp);
+
+            var start_time = rawData.record.timestamp[0];
+            rawData.session.start_time.push(start_time);
+        }
+
+        return rawData.session;
+    }
+
+    FITUIUtility.prototype.getIndexOfTimestamp = function (record, timestamp) {
+
+
+        var findNearestTimestamp = function (timestamp) {
+
+            // Try to get from cache first
+
+            for (var cacheItem = 0; cacheItem < FITUI.timestampIndexCache.length; cacheItem++)
+                if (FITUI.timestampIndexCache[cacheItem].key === timestamp)
+                    return FITUI.timestampIndexCache[cacheItem].value;
+
+
+            var indxNr = -1;
+            var breaked = false;
+            var len = record.timestamp.length;
+            for (indxNr = 0; indxNr < len; indxNr++) {
+                if (record.timestamp[indxNr] >= timestamp) {
+                    breaked = true;
+                    break;
+                }
+            }
+
+            if (breaked) {
+                FITUI.timestampIndexCache.push({ key: timestamp, value: indxNr });
+                return indxNr;
+            }
+            else {
+                FITUI.timestampIndexCache.push({ key: timestamp, value: indxNr - 1 });
+                return indxNr - 1;
+            }
+        };
+
+        if (timestamp === undefined) {
+            console.error("Cannot lookup/find index in timestamp array of an undefined timestamp");
+            return -1;
+        }
+
+        var indexTimestamp;
+
+        indexTimestamp = record.timestamp.indexOf(timestamp);
+        if (indexTimestamp === -1) {
+            console.warn("Direct lookup for timestamp ", timestamp, " not found, looping through available timestamps on message property record.timestamp to find nearest");
+            indexTimestamp = findNearestTimestamp(timestamp);
+        }
+
+        return indexTimestamp;
+
+    }
+
     UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp) {
 
         var self = this;
@@ -171,31 +330,44 @@
         var divChart = document.getElementById(chartId);
         divChart.style.visibility = "visible";
         var seriesSetup = [];
-
+        var heartRateSeries;
+        var heartRateSeriesData;
+        var altitudeSeries;
+        var altitudeSeriesData;
+        var speedSeries;
+        var speedSeriesData;
         var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
 
         // Record data
 
         if (rawData.record) {
 
-            if (rawData.record.heart_rate)
-                seriesSetup.push({ name: 'Heart rate', data: combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp), id: 'heartrateseries' });
-            
-            if (rawData.record.altitude)
-                seriesSetup.push({ name: 'Altitude', data: 
-                    combine(rawData.record.altitude, rawData.record.timestamp,startTimestamp,endTimestamp),
-                });
-            
+            if (rawData.record.heart_rate) {
+                heartRateSeries = { name: 'Heart rate', id: 'heartrateseries' };
+                heartRateSeriesData = FITUtil.combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp);
+                seriesSetup.push(heartRateSeries);
+            }
+
+            if (rawData.record.altitude) {
+                altitudeSeries = { name: 'Altitude', id: 'altitudeseries'  };
+                altitudeSeriesData = FITUtil.combine(rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp);
+                seriesSetup.push(altitudeSeries);
+            }
+
+
+            if (rawData.record.speed) {
+               //// Convert to km/h
+               //for (var relTimestamp = 0; relTimestamp <=  rawData.record.speed.length; relTimestamp++)
+               //    rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
+               speedSeries = { name: 'Speed', id: 'speedseries' };
+               speedSeriesData = FITUtil.combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp);
+                seriesSetup.push(speedSeries);
+            }
+
             //if (rawData.record["cadence"] !== undefined)
             //    seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
             
-            //if (rawData.record.speed) {
-            //   // Convert to km/h
-            //   for (var relTimestamp = 0; relTimestamp <=  rawData.record.speed.length; relTimestamp++)
-            //       rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
-
-            //    seriesSetup.push({ name: 'Speed', data: combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp) });
-            //}
+            
         }
 
         //if (rawData.lap != undefined) {
@@ -232,7 +404,10 @@
             renderTo: chartId,
             type: 'line',
             // Allow zooming
-            zoomType: 'xy'
+            zoomType: 'xy',
+            lang: {
+                loading: 'Loading data...'
+            }
 
         };
         //if (rawData.hrv !== undefined)
@@ -365,6 +540,13 @@
     //    }
     );
 
+        chart1.showLoading();
+        // http://api.highcharts.com/highcharts#Series.setData()
+        chart1.series[0].setData(heartRateSeriesData,false);
+        //chart1.series[1].setData(altitudeSeriesData, false);
+        //chart1.series[2].setData(speedSeriesData, false);
+        chart1.redraw();
+        chart1.hideLoading();
         //clearInterval(intervalTimerID);
        
         d = new Date();
@@ -373,7 +555,7 @@
 
         //FITUI.showSpeedVsHeartRate(rawData);
 
-        FITUI.showHRZones(rawData,startTimestamp,endTimestamp);
+       
 
 
     };
@@ -541,8 +723,8 @@
 
         var myZones = getHRZones();
 
-        var startIndex = getIndexOfTimestamp(rawdata.record,startTimestamp);
-        var endIndex = getIndexOfTimestamp(rawdata.record,endTimestamp);
+        var startIndex = FITUtil.getIndexOfTimestamp(rawdata.record,startTimestamp);
+        var endIndex = FITUtil.getIndexOfTimestamp(rawdata.record,endTimestamp);
 
 
         for (var zone = 0; zone < myZones.length; zone++) 
@@ -858,50 +1040,7 @@
             
     };
 
-    getIndexOfTimestamp = function (record,timestamp) {
-
-      
-        var findNearestTimestamp = function (timestamp) {
-
-            // Try to get from cache first
-            
-            for (var cacheItem = 0; cacheItem < FITUI.timestampIndexCache.length; cacheItem++)
-                if (FITUI.timestampIndexCache[cacheItem].key === timestamp)
-                    return FITUI.timestampIndexCache[cacheItem].value;
-                
-
-            var indxNr = -1;
-            var breaked = false;
-            var len = record.timestamp.length;
-            for (indxNr = 0; indxNr < len; indxNr++) {
-                if (record.timestamp[indxNr] >= timestamp) {
-                    breaked = true;
-                    break;
-                }
-            }
-
-            if (breaked) {
-                FITUI.timestampIndexCache.push({ key: timestamp, value: indxNr });
-                return indxNr;
-            }
-            else {
-                FITUI.timestampIndexCache.push({ key: timestamp, value: indxNr - 1 });
-                return indxNr - 1;
-            }
-        };
-
-        var indexTimestamp;
-
-        indexTimestamp = record.timestamp.indexOf(timestamp);
-        if (indexTimestamp === -1) {
-            console.warn("Direct lookup for timestamp ", timestamp, " not found, looping through available timestamps on message property record.timestamp to find nearest");
-            indexTimestamp = findNearestTimestamp(timestamp);
-        }
-
-        return indexTimestamp;
-
-    }
-
+    
     UIController.prototype.showPolyline = function (map, record, startTimestamp, endTimestamp) {
       
         var self = this;
@@ -954,9 +1093,9 @@
             //    return indxNr;
             //};
 
-            var indexStartTime = getIndexOfTimestamp(record,startTimestamp);
+            var indexStartTime = FITUtil.getIndexOfTimestamp(record,startTimestamp);
 
-            var indexEndTime = getIndexOfTimestamp(record,endTimestamp);
+            var indexEndTime = FITUtil.getIndexOfTimestamp(record,endTimestamp);
           
 
             for (var index = indexStartTime; index <= indexEndTime; index++) {
@@ -1090,6 +1229,8 @@
 
     };
 
+    
+
     UIController.prototype.onFITManagerMsg = function (e) {
 
        
@@ -1149,13 +1290,14 @@
                 var liId = '#liSessions';
                 var jquerySessionElement = $(liId);
                 var sessionElement = jquerySessionElement[0];
-                console.log(liId+" for data binding", sessionElement);
+                console.log(liId + " for data binding", sessionElement);
+
+                if (rawData.session === undefined)
+                    rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
                
                 if (FITUI.sessionViewModel === undefined && rawData.session) {
 
                     // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
-
-                       // Skip mapping and apply bindings only on available data
 
                     FITUI.sessionViewModel = emptyViewModel(fitActivity.session());
 
@@ -1171,7 +1313,9 @@
                         // Rendering charts can take quite a while....,
 
                        // window.setTimeout(function () {
-                            FITUI.showChartsDatetime(rawData, rawData.session.start_time[index], rawData.session.timestamp[index]);
+                        FITUI.showHRZones(rawData, rawData.session.start_time[index], rawData.session.timestamp[index]);
+
+                        FITUI.showChartsDatetime(rawData, rawData.session.start_time[index], rawData.session.timestamp[index]);
                         //},
                         //    500);
 
@@ -1207,9 +1351,7 @@
                     ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
                 }
 
-                // Initialize map
-                if (FITUI.map === undefined)
-                  FITUI.map = FITUI.initMap();
+              
 
                 switch (rawData.file_id.type[0]) {
                     case 4: // Activity file
@@ -1226,11 +1368,13 @@
                         //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
                         //   $('#activityMap').show();
 
+                        FITUI.showDataRecordsOnMap(eventdata.datamessages);
+                        FITUI.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                          FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                          
                         //FITUI.showChartHrv(rawData);
 
-                        FITUI.showDataRecordsOnMap(eventdata.datamessages);
+                        
                         break;
 
                     default:

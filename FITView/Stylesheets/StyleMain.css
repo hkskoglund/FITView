@@ -148,9 +148,24 @@ white-space: nowrap;
     /*display : none; */
 }
 
+.loadButton {
+    
+    /*height: 30px;
+    width: 30px;*/
+}
+
+#divLoading {
+  width: 35px;
+ 
+}
+
+#divChartWrapper {
+margin-top : 5px;
+}
+
 #testChart {
     visibility : hidden;
-    width: 90%
+    width : 83%;
     /*height : 300px;*/
 }
 
