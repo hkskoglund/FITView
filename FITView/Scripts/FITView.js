@@ -1251,19 +1251,21 @@
     };
 
     UIController.prototype.resetViewModel = function (viewModel) {
-        // Set arrays to []
 
-        // Take timestamp first to collapse DOM outline to make other collapses "hidden"
+        var fitActivity = FIT.ActivityFile();
+        var sessionFieldDef = fitActivity.session();
+       
+        // Take timestamp first to collapse DOM outline and hopefully make other collapses "hidden"
 
         if (viewModel.timestamp)
             viewModel.timestamp([]);
 
-        var mappingProperty = "__ko_mapping__";
-        for (var observableArray in viewModel) {
-
-            if (observableArray !== "timestamp" && observableArray !== mappingProperty && viewModel[observableArray] ) {
+        var fieldDefProperty;
+        for (var fieldDefNr in sessionFieldDef) {
+            fieldDefProperty = sessionFieldDef[fieldDefNr].property;
+            if (viewModel[fieldDefProperty] && fieldDefProperty !== "timestamp" ) {
                 // console.log("RemoveAll() on ", observableArray);
-                viewModel[observableArray]([]);
+                viewModel[fieldDefProperty]([]);
             }
         }
 
@@ -1272,7 +1274,6 @@
     };
 
     
-
     UIController.prototype.onFITManagerMsg = function (e) {
 
        
