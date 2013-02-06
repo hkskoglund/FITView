@@ -225,13 +225,34 @@
                      </li>
                  </ul>
                  
+                 
              </li>
 
+              <li id="liLoad" style="display : none">
+                  <a href="#">Load</a>
+                  <ul>
+                     <li>
+                         <div id="divLoading">
+                             <button class="loadButton" data-bind="click: loadChart.bind('heartrateseries')">
+                                 <img class="inlineIcon" src="Images/heart.png" /></button>
+                             <button class="loadButton" data-bind="click: loadChart.bind('altitudeseries')">
+                                 <img class="inlineIcon" src="Images/ascent.png" /></button>
+                             <button class="loadButton" data-bind="click: loadChart.bind('speedseries')">
+                                 <img class="inlineIcon" src="Images/speed.png" /></button>
+                         </div>
+                     </li>
+                 </ul>
+              </li>
+
              
-             <!--        <hr/> 
+
+             <!--<li>
+                  
             <div data-bind="text: ko.toJSON($root)"></div>
 
-             <hr/> -->
+           
+             </li>-->
+            
 
          </ul>
 
@@ -273,11 +294,7 @@
     <section id="activityMap"></section>
     
     <div id="divChartWrapper">
-        <div id="divLoading" style="float: left" >
-          <button class="loadButton"><img class="inlineIcon" src="Images/heart.png" /></button>  
-          <button class="loadButton"><img class="inlineIcon" src="Images/ascent.png" /></button>  
-          <button class="loadButton"><img class="inlineIcon" src="Images/speed.png" /></button>  
-        </div>
+        
         <section style="float: left; display: inline" id="testChart"></section>
         <section style="float: right; display: inline" id="zonesChart"></section>
     </div>

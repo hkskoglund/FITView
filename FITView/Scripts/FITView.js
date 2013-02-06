@@ -41,6 +41,8 @@
         if (this.map === undefined)
             this.map = this.initMap();
 
+        
+
     }
 
     function FITUIUtility() {
@@ -329,7 +331,8 @@
         var chartId = "testChart";
         var divChart = document.getElementById(chartId);
         divChart.style.visibility = "visible";
-        var seriesSetup = [];
+        var seriesSetup = []; // Options name,id
+        var seriesData = []; // Actual data in chart
         var heartRateSeries;
         var heartRateSeriesData;
         var altitudeSeries;
@@ -343,14 +346,16 @@
         if (rawData.record) {
 
             if (rawData.record.heart_rate) {
-                heartRateSeries = { name: 'Heart rate', id: 'heartrateseries' };
+                heartRateSeries = { id: 'heartrateseries',name: 'Heart rate' };
                 heartRateSeriesData = FITUtil.combine(rawData.record.heart_rate, rawData.record.timestamp,startTimestamp,endTimestamp);
+                seriesData['heartrateseries'] = heartRateSeriesData;
                 seriesSetup.push(heartRateSeries);
             }
 
             if (rawData.record.altitude) {
                 altitudeSeries = { name: 'Altitude', id: 'altitudeseries'  };
                 altitudeSeriesData = FITUtil.combine(rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp);
+                seriesData['altitudeseries'] = altitudeSeriesData;
                 seriesSetup.push(altitudeSeries);
             }
 
@@ -361,7 +366,8 @@
                //    rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
                speedSeries = { name: 'Speed', id: 'speedseries' };
                speedSeriesData = FITUtil.combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp);
-                seriesSetup.push(speedSeries);
+               seriesData['speedseries'] = speedSeriesData;
+               seriesSetup.push(speedSeries);
             }
 
             //if (rawData.record["cadence"] !== undefined)
@@ -540,13 +546,47 @@
     //    }
     );
 
-        chart1.showLoading();
+       // var test = chart1.get('heartrateseries');
+
+        var divLoadingId = '#liLoad';
+        var jquerydivLoadingElement = $(divLoadingId);
+        var divLoadingElement = jquerydivLoadingElement[0];
+        console.log(divLoadingId + " for data binding ", divLoadingElement);
+
+        function loadSeriesViaButtonViewModel(chart,seriesData) {
+            var self = this;
+            var chart, seriesData;
+
+            chart = chart;
+            seriesData = seriesData;
+            
+            self.loadChart = function () {
+                // this is highchart series id.
+                var id = this.toString(); // this has added prototype : "", must convert toString()
+                var series = chart.get(id);
+                if (series && series.data.length === 0) {
+                    // Add only fresh data
+
+                    series.setData(seriesData[id]);
+
+                }
+                else
+                    console.error("Series id", id, " series length ", series.data.length);
+            }
+
+        }
+
+        FITUI.loadChartVM = new loadSeriesViaButtonViewModel(chart1,seriesData);
+        ko.applyBindings(FITUI.loadChartVM, divLoadingElement);
+        jquerydivLoadingElement.show();
+
+        //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
-        chart1.series[0].setData(heartRateSeriesData,false);
+        chart1.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
         //chart1.series[1].setData(altitudeSeriesData, false);
         //chart1.series[2].setData(speedSeriesData, false);
-        chart1.redraw();
-        chart1.hideLoading();
+       // chart1.redraw();
+        //chart1.hideLoading();
         //clearInterval(intervalTimerID);
        
         d = new Date();
@@ -559,6 +599,9 @@
 
 
     };
+
+
+   
 
     UIController.prototype.showChartHrv = function (rawData) {
         var chartId = "hrvChart";
@@ -1040,7 +1083,6 @@
             
     };
 
-    
     UIController.prototype.showPolyline = function (map, record, startTimestamp, endTimestamp) {
       
         var self = this;
@@ -1321,6 +1363,9 @@
 
                     }
 
+                    
+
+                     
                        // jquerySessionElement.show();
                         ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM 
                     
