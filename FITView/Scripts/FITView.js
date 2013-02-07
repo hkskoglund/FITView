@@ -324,6 +324,10 @@
 
     UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp) {
 
+        // http://api.highcharts.com/highcharts#Chart.destroy()
+        if (FITUI.multiChart)
+            FITUI.multiChart.destroy();
+
         var self = this;
         var util = FITUtility();
        
@@ -410,10 +414,8 @@
             renderTo: chartId,
             type: 'line',
             // Allow zooming
-            zoomType: 'xy',
-            lang: {
-                loading: 'Loading data...'
-            }
+            zoomType: 'xy'
+            
 
         };
         //if (rawData.hrv !== undefined)
@@ -430,7 +432,7 @@
        
 
 
-        chart1 = new Highcharts.Chart({
+        FITUI.multiChart = new Highcharts.Chart({
             chart: chartOptions,
             
             title: {
@@ -555,19 +557,25 @@
 
         function loadSeriesViaButtonViewModel(chart,seriesData) {
             var self = this;
-            var chart, seriesData;
+           // var chart, seriesData;
 
-            chart = chart;
-            seriesData = seriesData;
+            self.chart = chart;
+            self.seriesData = seriesData;
             
+            self.setNewChartAndSeriesData = function (chart, seriesData) {
+                self.chart = chart;
+                self.seriesData = seriesData;
+            }
+
             self.loadChart = function () {
                 // this is highchart series id.
                 var id = this.toString(); // this has added prototype : "", must convert toString()
-                var series = chart.get(id);
+                var series = self.chart.get(id);
+
                 if (series && series.data.length === 0) {
                     // Add only fresh data
 
-                    series.setData(seriesData[id]);
+                    series.setData(self.seriesData[id]);
 
                 }
                 else
@@ -576,13 +584,17 @@
 
         }
 
-        FITUI.loadChartVM = new loadSeriesViaButtonViewModel(chart1,seriesData);
-        ko.applyBindings(FITUI.loadChartVM, divLoadingElement);
-        jquerydivLoadingElement.show();
+        if (FITUI.loadChartVM === undefined) {
+
+            FITUI.loadChartVM = new loadSeriesViaButtonViewModel(FITUI.multiChart, seriesData);
+            ko.applyBindings(FITUI.loadChartVM, divLoadingElement);
+            jquerydivLoadingElement.show();
+        } else
+            FITUI.loadChartVM.setNewChartAndSeriesData(FITUI.multiChart, seriesData);
 
         //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
-        chart1.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
+        FITUI.multiChart.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
         //chart1.series[1].setData(altitudeSeriesData, false);
         //chart1.series[2].setData(speedSeriesData, false);
        // chart1.redraw();
@@ -599,9 +611,6 @@
 
 
     };
-
-
-   
 
     UIController.prototype.showChartHrv = function (rawData) {
         var chartId = "hrvChart";
@@ -669,6 +678,10 @@
     };
 
     UIController.prototype.showHRZones = function (rawdata, startTimestamp, endTimestamp) {
+
+        if (FITUI.HRZonesChart)
+            FITUI.HRZonesChart.destroy();
+
         var divChartId = 'zonesChart';
         var divChart = document.getElementById(divChartId);
         divChart.style.visibility = "visible";
@@ -837,7 +850,7 @@
         }
 
       
-        var chart3 = new Highcharts.Chart(options);
+        FITUI.HRZonesChart = new Highcharts.Chart(options);
     }
 
     UIController.prototype.showSessionMarkers = function (map, rawdata) {
