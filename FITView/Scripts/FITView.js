@@ -141,8 +141,10 @@
         if (startTimestamp === undefined || endTimestamp === undefined) {
             console.error("Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps");
             return values;
+            // But, could perhaps add relative start time...?
         }
 
+       
         for (var nr = 0; nr <= values.length; nr++) {
             
             var timestamp = timestamps[nr];
@@ -150,7 +152,7 @@
                 if (values[nr] !== undefined)
                     combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), values[nr]]);
                 else
-                    console.log("Timestamp ", timestamp, " value is undefined at index",nr);
+                    console.log("Tried to combine timestamp ", timestamp, " with undefined value at index",nr);
             }
                 if (timestamp > endTimestamp)
                 break;
