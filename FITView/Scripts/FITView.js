@@ -1427,13 +1427,13 @@
                         //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
                         //   $('#activityMap').show();
 
-                        FITUI.showDataRecordsOnMap(eventdata.datamessages);
+                       
                         FITUI.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                          FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
                          
                         //FITUI.showChartHrv(rawData);
 
-                        
+                        //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
                         break;
 
                     default:
