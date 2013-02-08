@@ -1407,7 +1407,7 @@
 
                 ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.masterVM.sessionVM);
 
-                FITUI.masterVM.sessionVM.selectedSession(0);
+                FITUI.masterVM.sessionVM.selectedSession(0);  // Start with first session, there is no session object but an common index for a timestamp to all arrays 
 
                    
                 //var jqueryLapNode = $('#divLaps');

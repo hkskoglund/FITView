@@ -342,11 +342,20 @@ section#lapList {
 }
 
 .sessionHHMMSS  {
-    font-size: large;
+    color : white;
+    font-size: x-large;
 }
 
 .sessionTOTALDISTANCE {
-    font-size: large;
+    color: white;
+    font-size: x-large;
+}
+
+#sessionDetails {
+   color: white;
+   font-size: x-large;
+   padding-bottom: 10px;
+   padding-left : 5px;
 }
 
 ul#sessionList {

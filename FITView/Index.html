@@ -36,9 +36,9 @@
                  <ul>
                      <li><a href="#">
                          <input id="inpFITFile" type="file" />
-                         <!-- ko with: progressVM -->
-                         <progress class="FITprogressImport" id="progressFITimport" max="100" data-bind="value: progress"></progress>
-                          <!-- /ko -->
+                        
+                         <progress class="FITprogressImport" id="progressFITimport" max="100" data-bind="value: progressVM.progress"></progress>
+                          
 
                           </a>
                      </li>
@@ -71,18 +71,9 @@
                              <time><span class="sessionHHMMSS" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
                              <!-- /ko -->
 
-
-                             <!-- ko if: total_timer_time().length > 0   -->
-
-                             <time><span class="sessionHHMMSS" data-bind="text: total_timer_time()[$index()].toHHMMSS()"></span></time>
-                             <!-- /ko -->
-
-                             <!-- ko if: total_distance().length > 0 -->
+                            <!-- ko if: total_distance().length > 0 -->
                              <span class="sessionTOTALDISTANCE" data-bind="text: total_distance()[$index()].toFixed(0)"></span>m
                              <!-- /ko -->
-
-                             
-                             
 
 
                          </a>
@@ -90,18 +81,82 @@
                      </li>
                  </ul>
                  
-                 <div >
+                
+                 
+                 
+
+             </li>
+         <!-- /ko -->
+
+             <!-- ko with: loadChartVM -->
+          
+
+             <li id="liLoad" style="display: none">
+                 <a href="#">Load</a>
+                 <ul>
+                     <li>
+                         <button class="loadButton" title="Load heartrate" data-bind="click: loadChart.bind('heartrateseries')">
+                             <img class="inlineIcon" src="Images/heart.png" /></button>
+                     </li>
+                     <li>
+                         <button class="loadButton" title="Load altitude" data-bind="click: loadChart.bind('altitudeseries')">
+                             <img class="inlineIcon" src="Images/ascent.png" /></button>
+
+                     </li>
+                     <li>
+                         <button class="loadButton" title="Load speed" data-bind="click: loadChart.bind('speedseries')">
+                             <img class="inlineIcon" src="Images/speed.png" /></button>
+
+                     </li>
+                 </ul>
+
+             </li>
+         
+             <!-- /ko -->
+
+             <li>
+                 <a href="#"></a>
+                 <!-- ko with: sessionVM -->
+                  <div id="sessionDetails" >
                      <!--<div data-bind="text: ko.toJSON($root)"></div>-->
                    
                      <!-- ko if: selectedSession() !== undefined -->
+
+                       <!-- ko if: sport()[selectedSession()] === 1 -->
+                             <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
+                             <!-- /ko -->
+
+                             <!-- ko if: sport()[selectedSession()] === 2 -->
+                             <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
+                             <!-- /ko -->
+
+                             <!-- ko if: sport()[selectedSession()] === 5 -->
+                             <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
+                             <!-- /ko -->
+
+                             <!-- ko if: total_elapsed_time().length > 0  -->
+                             <time><span class="sessionHHMMSS" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
+                             <!-- /ko -->
+
+
+                             <!-- ko if: total_timer_time().length > 0   -->
+
+                             <time><span class="sessionHHMMSS" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
+                             <!-- /ko -->
+
+                             <!-- ko if: total_distance().length > 0 -->
+                             <span class="sessionTOTALDISTANCE" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>m
+                             <!-- /ko -->
+
+
                      <!-- ko if: total_calories()[selectedSession()] > 0 -->
-                             <img class="inlineIcon" src="Images/kcalorie.png" />
+                             <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
                              <span data-bind="text: total_calories()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
-                             <img class="inlineIcon" src="Images/heart.png" />
+                             <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
                              <!-- /ko -->
 
                              <!-- HEART RATE -->
@@ -117,7 +172,7 @@
                              <!-- SPEED -->
 
                              <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
-                             <img class="inlineIcon" src="Images/speed.png" />
+                             <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
                              <!-- /ko -->
 
 
@@ -165,7 +220,7 @@
 
                              <!-- ko if: total_ascent()[selectedSession()] >= 0  ||  total_descent()[selectedSession()] >= 0 -->
 
-                             <img class="inlineIcon" src="Images/ascent.png" />
+                             <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
 
                              <span data-bind="text: total_ascent()[selectedSession()]"></span>
 
@@ -178,7 +233,7 @@
                              <!-- ko if: avg_cadence()[selectedSession()] >= 0 || 
                             max_cadence()[selectedSession()] >= 0 ||  
                           total_cycles_strides()[selectedSession()] >=0 -->
-                             <img class="inlineIcon" src="Images/cadence.png" />
+                             <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
                              <!-- /ko -->
 
                              <!-- ko if:  avg_cadence().length > 0  -->
@@ -198,7 +253,7 @@
 
                              <!-- ko if: avg_power()[selectedSession()] >= 0  ||  max_power()[selectedSession()] >= 0  -->
 
-                             <img class="inlineIcon" src="Images/power.png" />
+                             <img class="inlineIcon" alt="Power" title="Power" src="Images/power.png" />
 
                              <span data-bind="text: avg_power()[selectedSession()]"></span>
 
@@ -213,7 +268,7 @@
                         <span data-bind="text: total_training_effect()[selectedSession()]"></span>
 
                              <!-- meter tag ignored in  IE 10, but works in Chrome -->
-                             <meter style="padding-left: 5px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect()[selectedSession()]"></meter>
+                             <meter title="Training effect" style="padding-left: 5px; padding-bottom: 6px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect()[selectedSession()]"></meter>
                              <!-- /ko -->
 
                        
@@ -241,28 +296,8 @@
                   <!-- /ko -->
 
                  </div>
-                 
-                 
-
+                 <!-- /ko -->
              </li>
-         <!-- /ko -->
-
-             <!-- ko with: loadChartVM -->
-          
-
-             <li id="liLoad" style="display: none">
-                 <a href="#"></a>
-                 <button class="loadButton" title="Load heartrate" data-bind="click: loadChart.bind('heartrateseries')">
-                     <img class="inlineIcon" src="Images/heart.png" /></button>
-                 <button class="loadButton" title="Load altitude" data-bind="click: loadChart.bind('altitudeseries')">
-                     <img class="inlineIcon" src="Images/ascent.png" /></button>
-                 <button class="loadButton" title="Load speed" data-bind="click: loadChart.bind('speedseries')">
-                     <img class="inlineIcon" src="Images/speed.png" /></button>
-                 
-
-             </li>
-         
-             <!-- /ko -->
 
              <!--<li>
                   
