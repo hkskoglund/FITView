@@ -56,25 +56,47 @@
                          <a href="#" data-bind="click: showSession.bind($index())">
 
                              <!-- ko if: sport()[$index()] === 1 -->
-                             <img class="sessionSport" src="Images/sport/running.png" />
+                             <img class="sessionSport" alt="Running" title="Running" src="Images/sport/running.png" />
                              <!-- /ko -->
 
                              <!-- ko if: sport()[$index()] === 2 -->
-                             <img class="sessionSport" src="Images/sport/cycling.png" />
+                             <img class="sessionSport" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
                              <!-- /ko -->
 
                              <!-- ko if: sport()[$index()] === 5 -->
-                             <img class="sessionSport" src="Images/sport/swimming.png" />
+                             <img class="sessionSport" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
                              <!-- /ko -->
 
                              <!-- ko if: total_elapsed_time().length > 0  -->
-                             <time><span class="sessionHHMMSS" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
+                             <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
                              <!-- /ko -->
 
                             <!-- ko if: total_distance().length > 0 -->
-                             <span class="sessionTOTALDISTANCE" data-bind="text: total_distance()[$index()].toFixed(0)"></span>m
+                             <span class="sessionTOTALDISTANCE"  title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
                              <!-- /ko -->
 
+                             
+                     <!-- Session trigger -->
+
+
+
+                             <!-- ko if: trigger()[$index()] === 0 -->
+                             <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" />
+                             <!-- /ko -->
+
+                             <!-- ko if: trigger()[$index()] === 1 -->
+                             <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" />
+                             <!-- /ko -->
+
+                             <!-- ko if: trigger()[$index()] === 2 -->
+                             <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
+                             <!-- /ko -->
+
+                             <!-- ko if: trigger()[$index()] === 3 -->
+                             <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
+                             <!-- /ko -->
+               
+                  <!-- /ko -->
 
                          </a>
 
@@ -115,7 +137,7 @@
              <!-- /ko -->
 
              <li>
-                 <a href="#"></a>
+               <!--  <a href="#"></a>-->
                  <!-- ko with: sessionVM -->
                   <div id="sessionDetails" >
                      <!--<div data-bind="text: ko.toJSON($root)"></div>-->
@@ -135,24 +157,24 @@
                              <!-- /ko -->
 
                              <!-- ko if: total_elapsed_time().length > 0  -->
-                             <time><span class="sessionHHMMSS" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
+                             <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
                              <!-- /ko -->
 
 
                              <!-- ko if: total_timer_time().length > 0   -->
 
-                             <time><span class="sessionHHMMSS" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
+                             <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
                              <!-- /ko -->
 
                              <!-- ko if: total_distance().length > 0 -->
-                             <span class="sessionTOTALDISTANCE" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>m
+                             <span class="sessionTOTALDISTANCE" title="Total ditance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
                              <!-- /ko -->
 
 
                      <!-- ko if: total_calories()[selectedSession()] > 0 -->
                              <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
-                             <span data-bind="text: total_calories()[selectedSession()]"></span>
+                             <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
@@ -162,11 +184,11 @@
                              <!-- HEART RATE -->
 
                              <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
-                             <span data-bind="text: avg_heart_rate()[selectedSession()]"></span>
+                             <span title="Average heart rate" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
-                             <span data-bind="text: max_heart_rate()[selectedSession()]"></span>
+                             <span  title="Max heart rate" data-bind="text: max_heart_rate()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- SPEED -->
@@ -181,11 +203,11 @@
 
 
                              <!-- ko if: avg_speed()[selectedSession()] -->
-                             <span data-bind="text: avg_speed()[selectedSession()].toKMprH()"></span>
+                             <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toKMprH()"></span>
                              <!-- /ko -->
 
                              <!-- ko if: max_speed()[selectedSession()]  -->
-                             <span data-bind="text: max_speed()[selectedSession()].toKMprH()"></span>
+                             <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toKMprH()"></span>
                              <!-- /ko -->
                              <!-- /ko -->
 
@@ -194,11 +216,11 @@
                              <!-- ko if: sport()[selectedSession()] === 1 || tempoOrSpeed() === 0 -->
 
                              <!-- ko if: avg_speed()[selectedSession()] -->
-                             <span data-bind="text: avg_speed()[selectedSession()].toMINprKM()"></span>
+                             <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toMINprKM()"></span>
                              <!-- /ko -->
 
                              <!-- ko if: max_speed()[selectedSession()] -->
-                             <span data-bind="text: max_speed()[selectedSession()].toMINprKM()"></span>
+                             <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINprKM()"></span>
                              <!-- /ko -->
                              <!-- /ko -->
 
@@ -207,11 +229,11 @@
                              <!-- ko if: sport()[selectedSession()] === 5  -->
 
                              <!-- ko if: avg_speed()[selectedSession()] -->
-                             <span data-bind="text: avg_speed()[selectedSession()].toMINpr100M()"></span>
+                             <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toMINpr100M()"></span>
                              <!-- /ko -->
 
                              <!-- ko if: max_speed()[selectedSession()] -->
-                             <span data-bind="text: max_speed()[selectedSession()].toMINpr100M()"></span>
+                             <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINpr100M()"></span>
                              <!-- /ko -->
                              <!-- /ko -->
 
@@ -237,15 +259,15 @@
                              <!-- /ko -->
 
                              <!-- ko if:  avg_cadence().length > 0  -->
-                             <span data-bind="text: avg_cadence()[selectedSession()]"></span>
+                             <span title="Average cadence" data-bind="text: avg_cadence()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- ko if: max_cadence().length > 0  -->
-                             <span data-bind="text: max_cadence()[selectedSession()]"></span>
+                             <span title="Max cadence" data-bind="text: max_cadence()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- ko if: total_cycles_strides().length > 0  -->
-                             <span data-bind="text: total_cycles_strides()[selectedSession()]"></span>
+                             <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[selectedSession()]"></span>
 
                              <!-- /ko -->
 
@@ -255,9 +277,9 @@
 
                              <img class="inlineIcon" alt="Power" title="Power" src="Images/power.png" />
 
-                             <span data-bind="text: avg_power()[selectedSession()]"></span>
+                             <span title="Average power" data-bind="text: avg_power()[selectedSession()]"></span>
 
-                             <span data-bind="text: max_power()[selectedSession()]"></span>
+                             <span title="Max power" data-bind="text: max_power()[selectedSession()]"></span>
 
                              <!-- /ko -->
 

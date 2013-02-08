@@ -92,7 +92,7 @@
          
         };
 
-        var bodyId = '#body';
+        var bodyId = '#divSessionLap';
         var jqueryBodyElement = $(bodyId);
         var bodyElement = jqueryBodyElement[0];
 
@@ -123,6 +123,7 @@
         }
 
         ko.applyBindings(this.masterVM, bodyElement); // Initialize model with DOM 
+        jqueryBodyElement.show();
 
         // Initialize map
         if (this.map === undefined)

@@ -36,6 +36,8 @@
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
+    margin-top:2px;
+    margin-bottom:2px;
 }
  
 .menu li {
@@ -343,19 +345,20 @@ section#lapList {
 
 .sessionHHMMSS  {
     color : white;
-    font-size: x-large;
+    font-size: larger;
 }
 
 .sessionTOTALDISTANCE {
     color: white;
-    font-size: x-large;
+    font-size: larger;
 }
 
 #sessionDetails {
    color: white;
-   font-size: x-large;
+   /*font-size: larger;*/
    padding-bottom: 10px;
    padding-left : 5px;
+   padding-top: 7px;
 }
 
 ul#sessionList {
@@ -401,14 +404,16 @@ ul#sessionList {
 
 
 #divSessionLap {
-    /*display: none;*/
+    display: none;  /* Turn off to allow for Applybindings (Knockoutjs data-binding) to get effect ...*/
 }
 
 .inlineIcon {
-    padding-top: 2px;
+    padding-top: 3px;
     border : none; /* Turn off default IE 10 border*/
-    height : 24px;
-    width : 24px;
+    height : 16px;
+    padding-right: 5px;
+    padding-left: 5px;
+    
 }
 
 .FITprogressImport {
