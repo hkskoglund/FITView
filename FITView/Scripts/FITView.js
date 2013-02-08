@@ -12,6 +12,53 @@
 
     function UIController() {
 
+        var fitActivity = FIT.ActivityFile();
+
+        // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
+        // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
+        // virtual elements and something with "changed" value notification. Introducing empty observables on unused properties gives a performance penalty.
+        getEmptyViewModel = function (msg) {
+            var ViewModel = {};
+
+            for (var fieldDefNr in msg)
+                ViewModel[msg[fieldDefNr].property] = ko.observableArray([]);
+
+            return ViewModel;
+
+        };
+
+        loadSeriesViaButtonViewModel = function () {
+            var self = this;
+            // var chart, seriesData;
+
+            //self.chart = chart;
+            //self.seriesData = seriesData;
+
+            self.setNewChartAndSeriesData = function (chart, seriesData) {
+                self.chart = chart;
+                self.seriesData = seriesData;
+            }
+
+            self.loadChart = function () {
+                // this is highchart series id.
+                var id = this.toString(); // this has added prototype : "", must convert toString()
+                var series = self.chart.get(id);
+
+                if (series && series.data.length === 0) {
+                    // Add only fresh data
+
+                    series.setData(self.seriesData[id]);
+
+                }
+                else
+                    console.error("Series id", id, " series length ", series.data.length);
+            }
+
+        }
+
+
+
+
         if (!Modernizr.webworkers) {
             alert("This application will not work due to lack of webworker functionality");
         }
@@ -37,6 +84,46 @@
 
         this.divSessionLap = $('#divSessionLap');
 
+
+        this.masterVM = {
+            progressVM: { progress : ko.observable(0) },
+            sessionVM: getEmptyViewModel(fitActivity.session()),
+            loadChartVM: new loadSeriesViaButtonViewModel()
+         
+        };
+
+        var bodyId = '#body';
+        var jqueryBodyElement = $(bodyId);
+        var bodyElement = jqueryBodyElement[0];
+
+
+        this.masterVM.sessionVM.selectedSession = ko.observable(undefined);
+        this.masterVM.sessionVM.tempoOrSpeed = ko.observable(undefined);
+
+        var self = this;
+
+        this.masterVM.sessionVM.setRawdata = function(self,rawData)
+        {
+            self.masterVM.sessionVM.rawData = rawData;
+        }
+
+        this.masterVM.sessionVM.showSession = function (data, event) {
+            // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
+            var index = this;
+            var VM = self.masterVM.sessionVM;
+            VM.selectedSession(index);
+
+            var polylinePlotted = self.showPolyline(self.map, VM.rawData.record, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
+
+            self.showHRZones(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
+
+            self.showChartsDatetime(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
+
+
+        }
+
+        ko.applyBindings(this.masterVM, bodyElement); // Initialize model with DOM 
+
         // Initialize map
         if (this.map === undefined)
             this.map = this.initMap();
@@ -44,6 +131,7 @@
         
 
     }
+
 
     function FITUIUtility() {
     }
@@ -557,42 +645,16 @@
         var divLoadingElement = jquerydivLoadingElement[0];
         console.log(divLoadingId + " for data binding ", divLoadingElement);
 
-        function loadSeriesViaButtonViewModel(chart,seriesData) {
-            var self = this;
-           // var chart, seriesData;
+        
+        //if (FITUI.loadChartVM === undefined) {
 
-            self.chart = chart;
-            self.seriesData = seriesData;
-            
-            self.setNewChartAndSeriesData = function (chart, seriesData) {
-                self.chart = chart;
-                self.seriesData = seriesData;
-            }
+        //    //FITUI.masterVM.loadChartVM = new loadSeriesViaButtonViewModel(FITUI.multiChart, seriesData);
+        //   // ko.applyBindings(FITUI.loadChartVM, divLoadingElement);
+           
+        //} else
 
-            self.loadChart = function () {
-                // this is highchart series id.
-                var id = this.toString(); // this has added prototype : "", must convert toString()
-                var series = self.chart.get(id);
-
-                if (series && series.data.length === 0) {
-                    // Add only fresh data
-
-                    series.setData(self.seriesData[id]);
-
-                }
-                else
-                    console.error("Series id", id, " series length ", series.data.length);
-            }
-
-        }
-
-        if (FITUI.loadChartVM === undefined) {
-
-            FITUI.loadChartVM = new loadSeriesViaButtonViewModel(FITUI.multiChart, seriesData);
-            ko.applyBindings(FITUI.loadChartVM, divLoadingElement);
             jquerydivLoadingElement.show();
-        } else
-            FITUI.loadChartVM.setNewChartAndSeriesData(FITUI.multiChart, seriesData);
+            FITUI.masterVM.loadChartVM.setNewChartAndSeriesData(FITUI.multiChart, seriesData);
 
         //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
@@ -1288,22 +1350,10 @@
 
     };
 
-    
     UIController.prototype.onFITManagerMsg = function (e) {
 
        
-        // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
-        // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
-        // virtual elements and something with "changed" value notification. Introducing empty observables on unused properties gives a performance penalty.
-        emptyViewModel = function (msg) {
-            var ViewModel = {};
-            
-            for (var fieldDefNr in msg) 
-                ViewModel[msg[fieldDefNr].property] = ko.observableArray([]);
         
-            return ViewModel;
-            
-        };
 
         var fitActivity = FIT.ActivityFile();
 
@@ -1345,72 +1395,36 @@
                 };
                 
 
-                var liId = '#liSessions';
-                var jquerySessionElement = $(liId);
-                var sessionElement = jquerySessionElement[0];
-                console.log(liId + " for data binding", sessionElement);
+                //var liId = '#liSessions';
+                //var jquerySessionElement = $(liId);
+                //var sessionElement = jquerySessionElement[0];
+                //console.log(liId + " for data binding", sessionElement);
 
                 if (rawData.session === undefined)
                     rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
-               
-                if (FITUI.sessionViewModel === undefined && rawData.session) {
 
-                    // http://stackoverflow.com/questions/10048485/how-to-clear-remove-observable-bindings-in-knockout-js
+                FITUI.masterVM.sessionVM.setRawdata(FITUI, rawData);
 
-                    FITUI.sessionViewModel = emptyViewModel(fitActivity.session());
+                ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.masterVM.sessionVM);
 
-                    ko.mapping.fromJS(rawData.session, mappingOptions,FITUI.sessionViewModel);
-
-                    FITUI.sessionViewModel.tempoOrSpeed = ko.observable(undefined);
-
-                    FITUI.sessionViewModel.showDetails = function (data,event) {
-                        // In callback from knockoutjs, this = first argument to showDetails.bind(...), then $data and event is pushed
-                        var index = this;
-                        var polylinePlotted = FITUI.showPolyline(FITUI.map, rawData.record, rawData.session.start_time[index], rawData.session.timestamp[index]);
-
-                        // Rendering charts can take quite a while....,
-
-                       // window.setTimeout(function () {
-                        FITUI.showHRZones(rawData, rawData.session.start_time[index], rawData.session.timestamp[index]);
-
-                        FITUI.showChartsDatetime(rawData, rawData.session.start_time[index], rawData.session.timestamp[index]);
-                        //},
-                        //    500);
-
-                    }
-
-                    
-
-                     
-                       // jquerySessionElement.show();
-                        ko.applyBindings(FITUI.sessionViewModel, sessionElement); // Initialize model with DOM 
-                    
-                }
-                else {
-
-                    // Discussion: https://groups.google.com/forum/?fromgroups=#!topic/knockoutjs/LWsxAJ3m97s
-
-                    FITUI.resetViewModel(FITUI.sessionViewModel);
-
-                    ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.sessionViewModel); // Just update model with new data
-                }
+                FITUI.masterVM.sessionVM.selectedSession(0);
 
                    
-                var jqueryLapNode = $('#divLaps');
-                var lapNode = jqueryLapNode[0];
-                console.log("#divLaps for data binding", lapNode);
+                //var jqueryLapNode = $('#divLaps');
+                //var lapNode = jqueryLapNode[0];
+                //console.log("#divLaps for data binding", lapNode);
 
-                if (FITUI.lapViewModel === undefined && rawData.lap) {
-                    FITUI.lapViewModel = emptyViewModel(fitActivity.lap());
-                        FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
-                       // jqueryLapNode.show();
-                        ko.applyBindings(FITUI.lapViewModel, lapNode);
+                //if (FITUI.lapViewModel === undefined && rawData.lap) {
+                //    FITUI.lapViewModel = emptyViewModel(fitActivity.lap());
+                //        FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
+                //       // jqueryLapNode.show();
+                //        ko.applyBindings(FITUI.lapViewModel, lapNode);
                        
-                }
-                else {
-                    FITUI.resetViewModel(FITUI.lapViewModel);
-                    ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
-                }
+                //}
+                //else {
+                //    FITUI.resetViewModel(FITUI.lapViewModel);
+                //    ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
+                //}
 
               
 
@@ -1471,14 +1485,15 @@
 
             case 'importProgress':
                
-            FITUI.progressFITimportViewModel.progressFITimport(eventdata.data);
+            FITUI.masterVM.progressVM.progress(eventdata.data);
 
                 //FITUI.progressFITImport.setAttribute("value", eventdata.data);
             break;
 
             case 'importFinished':
+                //FITUI.masterVM.progressVM.progress(100);
                 $("#progressFITimport").hide();
-                FITUI.progressFITimportViewModel.progressFITimport(0);
+                FITUI.masterVM.progressVM.progress(0);
 
                 break;
 
@@ -1501,6 +1516,8 @@
         e.preventDefault();
 
         //$('#activityMap').hide();
+
+        FITUI.resetViewModel(FITUI.masterVM.sessionVM);
 
         FITUI.selectedFiles = e.target.files;
 
@@ -1553,11 +1570,7 @@
         };
 
 
-        if (FITUI.progressFITimportViewModel !== undefined)
-            FITUI.progressFITimportViewModel = null;
-
-        FITUI.progressFITimportViewModel = new progressFITimportViewModel();
-        ko.applyBindings(FITUI.progressFITimportViewModel, document.getElementById("progressFITimport"));
+        
         $("#progressFITimport").show();
 
         FITUI.fitFileManager.postMessage(msg);
@@ -1606,11 +1619,7 @@ var self = this;
         });
     };
 
-    function progressFITimportViewModel() {
-        var self = this;
-
-        self.progressFITimport = ko.observable(0);
-    }
+    
 
     function deleteDb() {
         // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
