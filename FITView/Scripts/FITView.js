@@ -1518,6 +1518,7 @@
 
         //$('#activityMap').hide();
 
+        FITUI.masterVM.sessionVM.selectedSession(undefined);
         FITUI.resetViewModel(FITUI.masterVM.sessionVM);
 
         FITUI.selectedFiles = e.target.files;
