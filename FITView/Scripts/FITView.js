@@ -436,6 +436,8 @@
         var speedSeriesData;
         var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
 
+        var allRawdata = rawData;
+
         // Record data
 
         if (rawData.record) {
@@ -531,7 +533,22 @@
             },
             xAxis: {
                 //categories : ['Apples', 'Bananas', 'Oranges']
-                type: xAxisType
+                type: xAxisType,
+                events: {
+                    afterSetExtremes: function (event) {
+                        // Remember x-axis is local time, but rawdata is accessed by UTC
+                        // Highchart "reset zoom"-button fires here with values on event.min/max (setExtremes gave undefined)
+                        timezoneDiff = util.getTimezoneOffsetFromUTC();
+                        //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
+                        var startTimestampUTC = Math.round(event.min)-timezoneDiff;
+                        var endTimestampUTC = Math.round(event.max)-timezoneDiff;
+                        FITUI.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
+                    }
+
+                    //setExtremes: function (event) {
+                    //    console.log("setExtremes xAxis in multiChart min, max =  ", event.min, event.max);
+                    //}
+                }
                 //reversed : true
             },
             yAxis: {
@@ -793,7 +810,7 @@
             yAxis: {
                 min: 0,
                 title: {
-                    text: ''
+                    text: null
                 },
                 stackLabels: {
                     enabled: false,
