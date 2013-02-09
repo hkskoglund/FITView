@@ -184,11 +184,11 @@
                              <!-- HEART RATE -->
 
                              <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
-                             <span title="Average heart rate" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
+                             <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
-                             <span  title="Max heart rate" data-bind="text: max_heart_rate()[selectedSession()]"></span>
+                             <span  title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
                              <!-- /ko -->
 
                              <!-- SPEED -->
@@ -244,9 +244,9 @@
 
                              <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
 
-                             <span data-bind="text: total_ascent()[selectedSession()]"></span>
+                             <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedSession()]"></span>
 
-                             <span data-bind="text: total_descent()[selectedSession()]"></span>
+                             <span title="Total descent (m)" data-bind="text: total_descent()[selectedSession()]"></span>
 
                              <!-- /ko -->
 
@@ -275,11 +275,11 @@
 
                              <!-- ko if: avg_power()[selectedSession()] >= 0  ||  max_power()[selectedSession()] >= 0  -->
 
-                             <img class="inlineIcon" alt="Power" title="Power" src="Images/power.png" />
+                             <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
 
-                             <span title="Average power" data-bind="text: avg_power()[selectedSession()]"></span>
+                             <span title="Average power (w)" data-bind="text: avg_power()[selectedSession()]"></span>
 
-                             <span title="Max power" data-bind="text: max_power()[selectedSession()]"></span>
+                             <span title="Max power (w)" data-bind="text: max_power()[selectedSession()]"></span>
 
                              <!-- /ko -->
 

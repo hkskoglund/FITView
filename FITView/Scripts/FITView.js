@@ -552,7 +552,9 @@
                     else
                         return Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' + this.series.name + '</b>' + ': ' + Highcharts.numberFormat(this.y, 1);
 
-                }
+                },
+                // Let's get crosshair on x-axis
+                crosshairs: true 
             },
 
             plotOptions: {
