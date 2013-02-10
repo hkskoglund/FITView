@@ -473,6 +473,76 @@
             
         }
 
+        // Add lap plotlines
+        //
+        // Would like to have the ability to write images at bottom/top of plotlines (to show lap triggers),
+        // but label property doesnt support image. In the case line is rendered using SVG
+        // line coordinates can be accessed via FITUI.multiChart.xAxis[0].plotLinesAndBands[0].svgElem.d
+
+        var lapLines = [];
+        var lapLabel;
+        if (rawData.lap) {
+            for (var lapNr = 0; lapNr < rawData.lap.timestamp.length; lapNr++) {
+                if (rawData.lap.timestamp[lapNr]) {
+                    switch (rawData.lap.lap_trigger[lapNr]) {
+                        case 0:
+                            lapLabel = ""
+                            if (rawData.lap.total_distance[lapNr])
+                                lapLabel += " "+Math.round(rawData.lap.total_distance[lapNr]).toString();
+                            break;
+                        default:
+                            lapLabel = null;
+                            break;
+                    }
+                //    <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 0 -->
+                //<img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed"/>
+                //<!-- /ko -->
+
+                             
+
+                //      <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 1 -->
+                //<img class="lapTrigger" src="Images/laptrigger/time.png" title="Time"/>
+                //<!-- /ko -->
+
+                //    <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 2 -->
+                //<img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
+                //<!-- /ko -->
+
+                //    <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 3 -->
+                //<img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
+                //<!-- /ko -->
+
+                //    <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 4 -->
+                //<img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
+                //<!-- /ko -->
+
+                //    <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 5 -->
+                //<img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
+                //<!-- /ko -->
+
+                //    <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 6 -->
+                //<img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
+                //<!-- /ko -->
+
+                // <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 7 -->
+                //<img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
+                //<!-- /ko -->
+                    }
+
+                    lapLines[lapNr] = {
+                        id: 'plotLineLap'+lapNr.toString(),
+                        color: '#960000',
+                        width: 1,
+                        label : {
+                            text: lapLabel,
+                            verticalAlign: 'bottom',
+                            y : 20},
+                        value: util.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])
+                    };
+                }
+            }
+        
+
         //if (rawData.lap != undefined) {
         //    // Lap data
         //    if (rawData.lap["total_ascent"] !== undefined)
@@ -507,7 +577,9 @@
             renderTo: chartId,
             type: 'line',
             // Allow zooming
-            zoomType: 'xy'
+            zoomType: 'xy',
+
+           
             
 
         };
@@ -548,7 +620,8 @@
                     //setExtremes: function (event) {
                     //    console.log("setExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                     //}
-                }
+                },
+                plotLines: lapLines
                 //reversed : true
             },
             yAxis: {
@@ -676,6 +749,8 @@
             jquerydivLoadingElement.show();
             FITUI.masterVM.loadChartVM.setNewChartAndSeriesData(FITUI.multiChart, seriesData);
 
+           
+
         //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
         FITUI.multiChart.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
@@ -684,6 +759,18 @@
        // chart1.redraw();
         //chart1.hideLoading();
         //clearInterval(intervalTimerID);
+
+        //var xAxis = FITUI.multiChart.xAxis[0];
+        //var testtime = util.addTimezoneOffsetToUTC(rawData.lap.timestamp[1]);
+        //var testLineOptions = {
+        //    color: '#FF0000',
+        //    width: 2,
+        //    value: testtime
+        //};
+
+        //xAxis.addPlotLine(testLineOptions);
+
+       
        
         d = new Date();
         console.log("Finishing highcharts now " + d);

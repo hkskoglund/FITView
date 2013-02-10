@@ -180,6 +180,7 @@ margin-top : 5px;
 
 #zonesChart {
     visibility : hidden;
+   z-index : 1;
     width : 10%;
     /*height: 200px;*/
     /*float : left;*/
