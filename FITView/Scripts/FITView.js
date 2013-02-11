@@ -117,7 +117,7 @@
 
             self.showHRZones(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
 
-            self.showChartsDatetime(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
+            self.showChartsDatetime(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index], VM.rawData.session.sport[index]);
 
 
         }
@@ -214,7 +214,7 @@
 
     };
 
-    FITUIUtility.prototype.combine = function (values, timestamps,startTimestamp,endTimestamp) {
+    FITUIUtility.prototype.combine = function (values, timestamps,startTimestamp,endTimestamp, converter) {
         var util = FITUtility();
         var combined = [];
 
@@ -238,10 +238,14 @@
             
             var timestamp = timestamps[nr];
             if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
-                if (values[nr] !== undefined)
-                    combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), values[nr]]);
+                if (values[nr] !== undefined) {
+                    if (converter)
+                        combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), converter(values[nr])]);
+                    else
+                        combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), values[nr]]);
+                }
                 else
-                    console.log("Tried to combine timestamp ", timestamp, " with undefined value at index",nr);
+                    console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr);
             }
                 if (timestamp > endTimestamp)
                 break;
@@ -413,11 +417,27 @@
 
     }
 
-    UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp) {
+    FITUIUtility.prototype.convertSpeedToMinutes = function (speed) {
+        // speed in m/s to min/km
+        if (speed === 0)
+            return 0;
+        else 
+          return 1 / (speed * 60 / 1000);
+    }
+
+    FITUIUtility.prototype.convertSpeedToKMprH = function (speed) {
+        // raw speed in m/s to km/h
+        if (speed === 0)
+            return 0;
+        else
+            return speed * 3.6; // 3.6 = 3600 s/h / 1000 m/km
+    }
+
+    UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp, sport) {
 
         // http://api.highcharts.com/highcharts#Chart.destroy()
-        if (FITUI.multiChart)
-            FITUI.multiChart.destroy();
+        if (this.multiChart)
+            this.multiChart.destroy();
 
         var self = this;
         var util = FITUtility();
@@ -438,6 +458,21 @@
 
         var allRawdata = rawData;
 
+        this.formatToMMSS = function (speed) {
+            if (speed === 0)
+                return "00:00";
+
+            var minutes = Math.floor(speed);
+            var seconds = parseInt(((speed - minutes) * 60).toFixed(),10); // implicit rounding
+            if (seconds === 60) {
+                seconds = 0;
+                minutes += 1;
+            }
+
+            var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+            return result;
+        }
+
         // Record data
 
         if (rawData.record) {
@@ -457,12 +492,25 @@
             }
 
 
+            this.speedMode = undefined;
+
             if (rawData.record.speed) {
-               //// Convert to km/h
-               //for (var relTimestamp = 0; relTimestamp <=  rawData.record.speed.length; relTimestamp++)
-               //    rawData.record.speed[relTimestamp] = rawData.record.speed[relTimestamp] * 3.6;
-               speedSeries = { name: 'Speed', id: 'speedseries' };
-               speedSeriesData = FITUtil.combine(rawData.record.speed, rawData.record.timestamp,startTimestamp,endTimestamp);
+              
+                speedSeries = { name: 'Speed', id: 'speedseries' };
+                switch (sport) {
+                    case 1: // Running
+                        this.speedMode = 1; // min/km
+                        speedSeriesData = FITUtil.combine(rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes);
+                        break;
+                    case 2: // Cycling
+                        this.speedMode = 2; // km/h
+                        speedSeriesData = FITUtil.combine(rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH);
+                        break;
+                    default:
+                        this.speedMode = 2;
+                        speedSeriesData = FITUtil.combine(rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH);
+                        break;
+                }
                seriesData['speedseries'] = speedSeriesData;
                seriesSetup.push(speedSeries);
             }
@@ -485,10 +533,12 @@
             for (var lapNr = 0; lapNr < rawData.lap.timestamp.length; lapNr++) {
                 if (rawData.lap.timestamp[lapNr]) {
                     switch (rawData.lap.lap_trigger[lapNr]) {
-                        case 0:
+                        case 0:  // LAP pressed
                             lapLabel = ""
-                            if (rawData.lap.total_distance[lapNr])
-                                lapLabel += " "+Math.round(rawData.lap.total_distance[lapNr]).toString();
+                            //if (rawData.lap.total_distance[lapNr])
+                            //    lapLabel += " "+Math.round(rawData.lap.total_distance[lapNr]).toString();
+                            if (rawData.lap.avg_speed[lapNr])
+                                lapLabel += " " + self.formatToMMSS(rawData.lap.avg_speed[lapNr]);
                             break;
                         default:
                             lapLabel = null;
@@ -550,6 +600,7 @@
             events: {
                 redraw: function () {
                     self.showLapTriggers(rawData);  // hook up - we want to synchronize on window resize
+                    self.showEvents(rawData);
                 }
             }
 
@@ -570,15 +621,14 @@
             
        
 
-
-        FITUI.multiChart = new Highcharts.Chart({
+        this.multiChart = new Highcharts.Chart({
             chart: chartOptions,
             
             title: {
                 text: ''
             },
             xAxis: {
-                //categories : ['Apples', 'Bananas', 'Oranges']
+                
                 type: xAxisType,
                 events: {
                     afterSetExtremes: function (event) {
@@ -602,6 +652,16 @@
                 title: {
                     text: ''
                 }
+                //labels: {
+                //    formatter: function () {
+                //        if (self.speedMode === 1) // Running
+                //            return self.formatToMMSS(this.value) + " min/km";
+                //        else if (self.speedMode === 2) // Cycling
+                //            return this.value + "km/h";
+                //        else
+                //            return this.value;
+                //    }
+                //}
             },
 
             tooltip: {
@@ -613,9 +673,26 @@
                     }
                     if (isInt(this.y))
                         return Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' + this.series.name + '</b>' + ': ' + this.y;
-                    else
-                        return Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' + this.series.name + '</b>' + ': ' + Highcharts.numberFormat(this.y, 1);
+                    else {
+                        var s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' +
+                            this.series.name + '</b>' + ': ';
 
+                        if (self.speedMode) {
+                            switch (self.speedMode) {
+                                case 1: // Running
+                                    s += self.formatToMMSS(this.y) + " min/km";
+                                    break;
+                                case 2: // Cycling
+                                    s += Highcharts.numberFormat(this.y, 1) + " km/h";
+                                    break;
+                                default:
+                                    s += Highcharts.numberFormat(this.y, 1) + " km/h";
+                                    break;
+                            }
+                        }
+                        return s;
+
+                    }
                 },
                 // Let's get crosshair on x-axis
                 crosshairs: true 
@@ -758,6 +835,98 @@
 
     };
 
+    UIController.prototype.showEvents = function(rawdata)
+    {
+    var util = FITUtility();  // Move to FITUI as property??
+
+      
+
+    if (typeof(rawdata.event) === "undefined")
+    {
+        console.error("No event information");
+        return;
+    }
+
+    var eventLen = rawdata.event.timestamp.length;
+
+    if (typeof (eventLen) === "undefined" || eventLen === 0) {
+        console.error("No timestamp information from event, event.timestamp");
+        return;
+    }
+
+    var eventIndex = 0;
+    var xpos, ypos;
+    var plotLeft = this.multiChart.plotLeft;
+    var renderer = this.multiChart.renderer;
+    var width = this.multiChart.xAxis[0].width;
+    var max = this.multiChart.xAxis[0].max;
+    var min = this.multiChart.xAxis[0].min;
+       
+    var srcImg, title;
+    var SVGE_elmImg;
+
+    // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
+    if (this.eventGroup)
+        $(this.eventGroup.element).remove()
+
+    this.eventGroup = renderer.g('events').add();
+
+
+    for (var eventNr = 0; eventNr < eventLen; eventNr++) {
+        var timestamp = util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]);
+        xpos = Math.round(width*((timestamp-min)/(max-min)))+plotLeft;
+        ypos = 20; // Choose top+20 -> under lap triggers
+               
+                
+        switch (rawdata.event.event_type[eventNr]) {
+            case 0:
+                srcImg = "Images/event_type/start_0.png";
+                title = "START";
+                break;
+            //case 1:
+            //    srcImg = "Images/laptrigger/time.png";
+            //    title = "Time";
+            //    break;
+            //case 2:
+            //    srcImg = "Images/laptrigger/distance.png";
+            //    title = "Distance";
+            //    break;
+            //case 3:
+            //    srcImg = "Images/laptrigger/position_start.png";
+            //    title = "Position start";
+            //    break;
+            case 4:
+                srcImg = "Images/event_type/stop_all_4.png";
+                title = "STOP";
+                break;
+            //case 5:
+            //    srcImg = "Images/laptrigger/position_waypoint.png";
+            //    title = "Position waypoint";
+            //    break;
+            //case 6:
+            //    srcImg = "Images/laptrigger/position_marked.png";
+            //    title = "Position marked";
+            //    break;
+            //case 7:
+            //    srcImg = "Images/laptrigger/session_end.png";
+            //    title = "Session end";
+            //    break;
+            default:
+                srcImg = undefined;
+                title = undefined;
+        }
+
+                
+        if (srcImg !== undefined) {
+            SVG_elmImg = renderer.image(srcImg, xpos, ypos, 16, 16).add(this.eventGroup);
+            if (title)
+                SVG_elmImg.attr({title: title});
+        }
+               
+    }
+
+        
+}
     UIController.prototype.showLapTriggers = function(rawdata)
     {
         var util = FITUtility();  // Move to FITUI as property??
@@ -798,7 +967,7 @@
         for (var lapNr = 0; lapNr < lapLen; lapNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
             xpos = Math.round(width*((timestamp-min)/(max-min)))+plotLeft;
-                ypos = 0;
+            ypos = 0; // Choose top
                
                 
                 switch (rawdata.lap.lap_trigger[lapNr]) {
@@ -1447,8 +1616,11 @@
                 minPrKM = 0;
 
             var minutes = Math.floor(minPrKM);
-            var seconds = ((minPrKM - minutes) * 60).toFixed(); // implicit rounding
-
+            var seconds = parseInt(((minPrKM - minutes) * 60).toFixed(),10); // implicit rounding
+            if (seconds === 60) {
+                seconds = 0;
+                minutes += 1;
+            }
             var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
             return result;
         }, self);
@@ -1460,6 +1632,8 @@
         
         
     };
+
+   
 
     UIController.prototype.convertSecsToHHMMSSModel = function (totalSec) {
         // Callback on "create" from knockout
@@ -1526,7 +1700,7 @@
     };
 
     UIController.prototype.onFITManagerMsg = function (e) {
-
+   // NB Callback, this reference....
        
         
 
@@ -1620,7 +1794,7 @@
 
                        
                         FITUI.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
-                         FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
+                         FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
                          
                         //FITUI.showChartHrv(rawData);
 

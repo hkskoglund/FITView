@@ -59,9 +59,12 @@
   <ItemGroup>
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
+    <Content Include="Images\event_type\stop_all_4.png" />
+    <Content Include="Images\event_type\start_0.png" />
     <Content Include="Images\kcalorie.png" />
     <Content Include="Images\heart.png" />
     <Content Include="Images\kcalorie.txt" />
+    <Content Include="Images\laptrigger\session_end.png" />
     <Content Include="Images\power.png" />
     <Content Include="Images\sessiontrigger\activity_end.png" />
     <Content Include="Images\sessiontrigger\auto_multi_sport.png" />
@@ -74,7 +77,6 @@
     <Content Include="Images\sport\running.png" />
     <Content Include="Images\sport\copyright.txt" />
     <Content Include="Images\sport\iconlands.txt" />
-    <Content Include="Images\laptrigger\session_end.png" />
     <Content Include="Images\laptrigger\position_marked.png" />
     <Content Include="Images\laptrigger\position_waypoint.png" />
     <Content Include="Images\laptrigger\position_lap.png" />
