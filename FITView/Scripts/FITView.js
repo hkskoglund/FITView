@@ -470,6 +470,7 @@
             }
 
             var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+
             return result;
         }
 
@@ -534,11 +535,25 @@
                 if (rawData.lap.timestamp[lapNr]) {
                     switch (rawData.lap.lap_trigger[lapNr]) {
                         case 0:  // LAP pressed
+                        case 2: // Distance
                             lapLabel = ""
                             //if (rawData.lap.total_distance[lapNr])
                             //    lapLabel += " "+Math.round(rawData.lap.total_distance[lapNr]).toString();
-                            if (rawData.lap.avg_speed[lapNr])
-                                lapLabel += " " + self.formatToMMSS(rawData.lap.avg_speed[lapNr]);
+
+                            if (rawData.lap.avg_speed[lapNr]) {
+                                switch (this.speedMode) {
+                                    case 1: // Running
+                                        lapLabel += " " + self.formatToMMSS(FITUtil.convertSpeedToMinutes(rawData.lap.avg_speed[lapNr]));
+                                        break;
+                                    case 2: // Cycling
+                                       lapLabel += " "+ FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
+                                        break;
+                                    default:
+                                        lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
+                                        break;
+                                }
+                            }
+
                             break;
                         default:
                             lapLabel = null;
@@ -863,7 +878,10 @@
     var min = this.multiChart.xAxis[0].min;
        
     var srcImg, title;
-    var SVGE_elmImg;
+    var srcImgEvent, titleEvent;
+
+    var SVG_elmImg;
+    var SVGeventElement;
 
     // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
     if (this.eventGroup)
@@ -877,6 +895,36 @@
         xpos = Math.round(width*((timestamp-min)/(max-min)))+plotLeft;
         ypos = 20; // Choose top+20 -> under lap triggers
                
+        switch (rawdata.event.event[eventNr]) {
+            case 11: // Battery
+                srcImgEvent = "Images/event/battery_marker.png";
+                titleEvent = "Battery";
+                if (rawdata.event.data[eventNr])
+                    titleEvent += " - " + rawdata.event.data[eventNr].toString();
+                break;
+            case 21: // Recovery_hr
+                srcImgEvent = "Images/heart.png";
+                titleEvent = "Recovery HR";
+                if (rawdata.event.data[eventNr])
+                    titleEvent += " - " + rawdata.event.data[eventNr].toString();
+                break;
+            case 22: // Battery_low marker
+                srcImgEvent = "Images/event/battery-low.png";
+                titleEvent = "Battery low";
+                if (rawdata.event.data[eventNr])
+                    titleEvent += " - " + rawdata.event.data[eventNr].toString();
+                break;
+            default:
+                srcImgEvent = undefined;
+                titleEvent = undefined;
+                break;
+        }
+
+        if (srcImgEvent !== undefined) {
+            SVGeventElement = renderer.image(srcImgEvent, xpos, ypos, 16, 16).add(this.eventGroup);
+            if (titleEvent)
+                SVGeventElement.attr({ title: title });
+        }
                 
         switch (rawdata.event.event_type[eventNr]) {
             case 0:
@@ -926,7 +974,8 @@
     }
 
         
-}
+    }
+
     UIController.prototype.showLapTriggers = function(rawdata)
     {
         var util = FITUtility();  // Move to FITUI as property??

@@ -59,6 +59,8 @@
   <ItemGroup>
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
+    <Content Include="Images\event\battery-low.png" />
+    <Content Include="Images\event\battery_marker.png" />
     <Content Include="Images\event_type\stop_all_4.png" />
     <Content Include="Images\event_type\start_0.png" />
     <Content Include="Images\kcalorie.png" />
