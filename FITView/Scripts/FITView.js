@@ -494,43 +494,12 @@
                             lapLabel = null;
                             break;
                     }
-                //    <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 0 -->
-                //<img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed"/>
-                //<!-- /ko -->
-
-                             
-
-                //      <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 1 -->
-                //<img class="lapTrigger" src="Images/laptrigger/time.png" title="Time"/>
-                //<!-- /ko -->
-
-                //    <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 2 -->
-                //<img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
-                //<!-- /ko -->
-
-                //    <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 3 -->
-                //<img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
-                //<!-- /ko -->
-
-                //    <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 4 -->
-                //<img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
-                //<!-- /ko -->
-
-                //    <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 5 -->
-                //<img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
-                //<!-- /ko -->
-
-                //    <!-- ko if:$parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 6 -->
-                //<img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
-                //<!-- /ko -->
-
-                // <!-- ko if: $parent.lap_trigger !== undefined && $parent.lap_trigger()[$index()] === 7 -->
-                //<img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
-                //<!-- /ko -->
+                
                     }
 
                     lapLines[lapNr] = {
-                        id: 'plotLineLap'+lapNr.toString(),
+                        id: 'plotLineLap' + lapNr.toString(),
+                        dashStyle: 'Dot',
                         color: '#960000',
                         width: 1,
                         label : {
@@ -578,6 +547,11 @@
             type: 'line',
             // Allow zooming
             zoomType: 'xy',
+            events: {
+                redraw: function () {
+                    self.showLapTriggers(rawData);  // hook up - we want to synchronize on window resize
+                }
+            }
 
            
             
@@ -614,7 +588,7 @@
                         //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                         var startTimestampUTC = Math.round(event.min)-timezoneDiff;
                         var endTimestampUTC = Math.round(event.max)-timezoneDiff;
-                        FITUI.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
+                        self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
                     }
 
                     //setExtremes: function (event) {
@@ -747,13 +721,13 @@
         //} else
 
             jquerydivLoadingElement.show();
-            FITUI.masterVM.loadChartVM.setNewChartAndSeriesData(FITUI.multiChart, seriesData);
+            this.masterVM.loadChartVM.setNewChartAndSeriesData(this.multiChart, seriesData);
 
            
 
         //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
-        FITUI.multiChart.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
+        this.multiChart.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
         //chart1.series[1].setData(altitudeSeriesData, false);
         //chart1.series[2].setData(speedSeriesData, false);
        // chart1.redraw();
@@ -771,6 +745,7 @@
         //xAxis.addPlotLine(testLineOptions);
 
        
+        // this.showLapTriggers(rawData)
        
         d = new Date();
         console.log("Finishing highcharts now " + d);
@@ -782,6 +757,99 @@
 
 
     };
+
+    UIController.prototype.showLapTriggers = function(rawdata)
+    {
+        var util = FITUtility();  // Move to FITUI as property??
+
+      
+
+        if (typeof(rawdata.lap) === "undefined")
+        {
+            console.error("No lap information");
+            return;
+        }
+
+        var lapLen = rawdata.lap.timestamp.length;
+
+        if (typeof (lapLen) === "undefined" || lapLen === 0) {
+            console.error("No timestamp information from lap, lap.timestamp");
+            return;
+        }
+
+        var lapIndex = 0;
+        var xpos, ypos;
+        var plotLeft = this.multiChart.plotLeft;
+        var renderer = this.multiChart.renderer;
+        var width = this.multiChart.xAxis[0].width;
+        var max = this.multiChart.xAxis[0].max;
+        var min = this.multiChart.xAxis[0].min;
+       
+        var srcImg, title;
+        var SVGE_elmImg;
+
+        // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
+        if (this.lapTriggerGroup)
+           $(this.lapTriggerGroup.element).remove()
+
+        this.lapTriggerGroup = renderer.g('laptriggers').add();
+
+
+        for (var lapNr = 0; lapNr < lapLen; lapNr++) {
+            var timestamp = util.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
+            xpos = Math.round(width*((timestamp-min)/(max-min)))+plotLeft;
+                ypos = 0;
+               
+                
+                switch (rawdata.lap.lap_trigger[lapNr]) {
+                    case 0:
+                        srcImg = "Images/laptrigger/manual.png";
+                        title = "LAP pressed";
+                        break;
+                    case 1:
+                        srcImg = "Images/laptrigger/time.png";
+                        title = "Time";
+                        break;
+                    case 2:
+                        srcImg = "Images/laptrigger/distance.png";
+                        title = "Distance";
+                        break;
+                    case 3:
+                        srcImg = "Images/laptrigger/position_start.png";
+                        title = "Position start";
+                        break;
+                    case 4:
+                        srcImg = "Images/laptrigger/position_lap.png";
+                        title = "Position lap";
+                        break;
+                    case 5:
+                        srcImg = "Images/laptrigger/position_waypoint.png";
+                        title = "Position waypoint";
+                        break;
+                    case 6:
+                        srcImg = "Images/laptrigger/position_marked.png";
+                        title = "Position marked";
+                        break;
+                    case 7:
+                        srcImg = "Images/laptrigger/session_end.png";
+                        title = "Session end";
+                        break;
+                    default:
+                        srcImg = undefined;
+                        title = undefined;
+                }
+
+                
+                if (srcImg !== undefined) {
+                    SVG_elmImg = renderer.image(srcImg, xpos, 0, 16, 16).add(this.lapTriggerGroup);
+                    if (title)
+                        SVG_elmImg.attr({title: title});
+                }
+               
+            }
+
+        
+    }
 
     UIController.prototype.showChartHrv = function (rawData) {
         var chartId = "hrvChart";
