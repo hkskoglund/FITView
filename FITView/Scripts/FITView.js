@@ -876,6 +876,8 @@
     var width = this.multiChart.xAxis[0].width;
     var max = this.multiChart.xAxis[0].max;
     var min = this.multiChart.xAxis[0].min;
+
+    var xAxisExtremes = this.multiChart.xAxis[0].getExtremes();
        
     var srcImg, title;
     var srcImgEvent, titleEvent;
@@ -892,9 +894,14 @@
 
     for (var eventNr = 0; eventNr < eventLen; eventNr++) {
         var timestamp = util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]);
-        xpos = Math.round(width*((timestamp-min)/(max-min)))+plotLeft;
-        ypos = 20; // Choose top+20 -> under lap triggers
-               
+        if (timestamp <= max) {
+            xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
+            ypos = 20; // Choose top+20 -> under lap triggers
+        } else {
+            xpos = width + plotLeft-5;  // Move events that reaches beyond max down at end like f.ex. HR recovery
+            ypos = 40;
+        }
+
         switch (rawdata.event.event[eventNr]) {
             case 11: // Battery
                 srcImgEvent = "Images/event/battery_marker.png";
@@ -923,7 +930,7 @@
         if (srcImgEvent !== undefined) {
             SVGeventElement = renderer.image(srcImgEvent, xpos, ypos, 16, 16).add(this.eventGroup);
             if (titleEvent)
-                SVGeventElement.attr({ title: title });
+                SVGeventElement.attr({ title: titleEvent });
         }
                 
         switch (rawdata.event.event_type[eventNr]) {
@@ -1015,9 +1022,13 @@
 
         for (var lapNr = 0; lapNr < lapLen; lapNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
-            xpos = Math.round(width*((timestamp-min)/(max-min)))+plotLeft;
-            ypos = 0; // Choose top
-               
+            if (timestamp <= max) {
+                xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
+                ypos = 0; // Choose top
+            } else {
+                xpos = width + plotLeft - 5;  // Try to move timestamp beyond current max at end of chart
+                ypos = 20;
+            }
                 
                 switch (rawdata.lap.lap_trigger[lapNr]) {
                     case 0:
