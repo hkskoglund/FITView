@@ -12,6 +12,8 @@
 
     function UIController() {
 
+        var self = this;
+
         var fitActivity = FIT.ActivityFile();
 
         // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
@@ -86,11 +88,52 @@
 
 
         this.masterVM = {
-            progressVM: { progress : ko.observable(0) },
+            settingsVM: {
+                showLapLines: ko.observable(true),
+                showLapTriggers: ko.observable(false),
+                showEvents: ko.observable(false),
+                showLegends : ko.observable(true)
+            },
+                progressVM: { 
+                    progress : ko.observable(0)
+                },
             sessionVM: getEmptyViewModel(fitActivity.session()),
             loadChartVM: new loadSeriesViaButtonViewModel()
          
         };
+
+        // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
+        this.masterVM.settingsVM.showLapLines.subscribe(function (showLapLines) {
+            // Callback from knockoutjs
+            if (!showLapLines) {
+                if (self.multiChart)
+                    self.multiChart.xAxis[0].removePlotLine('plotLines');
+            }
+            else
+               if (self.multiChart)
+                    self.addLapLines(self.masterVM.sessionVM.rawData,self.multiChart);
+        });
+
+        this.masterVM.settingsVM.showLapTriggers.subscribe(function (showLapTriggers) {
+
+            if (showLapTriggers)
+                self.showLapTriggers(self.masterVM.sessionVM.rawData);
+            else
+                self.removeSVGGroup(self.masterVM.lapTriggerGroup);
+
+
+        });
+
+        this.masterVM.settingsVM.showEvents.subscribe(function (showEvents) {
+
+            if (showEvents)
+                self.showEvents(self.masterVM.sessionVM.rawData);
+            else
+                self.removeSVGGroup(self.masterVM.eventGroup);
+
+
+        });
+
 
         var bodyId = '#divSessionLap';
         var jqueryBodyElement = $(bodyId);
@@ -433,7 +476,96 @@
             return speed * 3.6; // 3.6 = 3600 s/h / 1000 m/km
     }
 
-    UIController.prototype.showChartsDatetime = function (rawData,startTimestamp,endTimestamp, sport) {
+    UIController.prototype.addLapLines = function (rawData, chart) {
+        // Add lap plotlines
+        //
+        // Would like to have the ability to write images at bottom/top of plotlines (to show lap triggers),
+        // but label property doesnt support image. In the case line is rendered using SVG
+        // line coordinates can be accessed via FITUI.multiChart.xAxis[0].plotLinesAndBands[0].svgElem.d
+
+        //var self = this;
+
+        var axis = chart.xAxis[0];
+
+        var util = FITUtility();
+
+        this.formatToMMSS = function (speed) {
+            if (speed === 0)
+                return "00:00";
+
+            var minutes = Math.floor(speed);
+            var seconds = parseInt(((speed - minutes) * 60).toFixed(), 10); // implicit rounding
+            if (seconds === 60) {
+                seconds = 0;
+                minutes += 1;
+            }
+
+            var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+
+            return result;
+        }
+
+        var lapLinesConfig = [];
+
+
+        var lapLabel;
+        if (rawData.lap) {
+            for (var lapNr = 0; lapNr < rawData.lap.timestamp.length; lapNr++) {
+                if (rawData.lap.timestamp[lapNr]) {
+                    switch (rawData.lap.lap_trigger[lapNr]) {
+                        case 0:  // LAP pressed
+                        case 2: // Distance
+                            lapLabel = ""
+
+                            if (rawData.lap.avg_speed[lapNr]) {
+                                switch (this.speedMode) {
+                                    case 1: // Running
+                                        lapLabel += " " + this.formatToMMSS(FITUtil.convertSpeedToMinutes(rawData.lap.avg_speed[lapNr]));
+                                        break;
+                                    case 2: // Cycling
+                                        lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
+                                        break;
+                                    default:
+                                        lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
+                                        break;
+                                }
+                            }
+
+                            //if (rawData.lap.total_distance[lapNr])
+                            //    lapLabel += "/"+Math.round(rawData.lap.total_distance[lapNr]).toString();
+
+                            break;
+                        default:
+                            lapLabel = null;
+                            break;
+                    }
+
+                }
+
+                lapLinesConfig[lapNr] = {
+                    id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
+
+                    dashStyle: 'Dot',
+                    color: '#960000',
+                    width: 1,
+                    label: {
+                        text: lapLabel,
+                        verticalAlign: 'top'
+                        //y : -50
+                        //y: 20
+                    },
+                    value: util.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])
+                };
+            }
+        }
+
+        for (var lapNr = 0; lapNr < lapLinesConfig.length; lapNr++) {
+            axis.addPlotLine(lapLinesConfig[lapNr]);
+        }
+        
+    }
+
+    UIController.prototype.showChartsDatetime = function (rawData, startTimestamp, endTimestamp, sport) {
 
         // http://api.highcharts.com/highcharts#Chart.destroy()
         if (this.multiChart)
@@ -458,21 +590,7 @@
 
         var allRawdata = rawData;
 
-        this.formatToMMSS = function (speed) {
-            if (speed === 0)
-                return "00:00";
-
-            var minutes = Math.floor(speed);
-            var seconds = parseInt(((speed - minutes) * 60).toFixed(),10); // implicit rounding
-            if (seconds === 60) {
-                seconds = 0;
-                minutes += 1;
-            }
-
-            var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-
-            return result;
-        }
+        
 
         // Record data
 
@@ -522,59 +640,6 @@
             
         }
 
-        // Add lap plotlines
-        //
-        // Would like to have the ability to write images at bottom/top of plotlines (to show lap triggers),
-        // but label property doesnt support image. In the case line is rendered using SVG
-        // line coordinates can be accessed via FITUI.multiChart.xAxis[0].plotLinesAndBands[0].svgElem.d
-
-        var lapLines = [];
-        var lapLabel;
-        if (rawData.lap) {
-            for (var lapNr = 0; lapNr < rawData.lap.timestamp.length; lapNr++) {
-                if (rawData.lap.timestamp[lapNr]) {
-                    switch (rawData.lap.lap_trigger[lapNr]) {
-                        case 0:  // LAP pressed
-                        case 2: // Distance
-                            lapLabel = ""
-                            //if (rawData.lap.total_distance[lapNr])
-                            //    lapLabel += " "+Math.round(rawData.lap.total_distance[lapNr]).toString();
-
-                            if (rawData.lap.avg_speed[lapNr]) {
-                                switch (this.speedMode) {
-                                    case 1: // Running
-                                        lapLabel += " " + self.formatToMMSS(FITUtil.convertSpeedToMinutes(rawData.lap.avg_speed[lapNr]));
-                                        break;
-                                    case 2: // Cycling
-                                       lapLabel += " "+ FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
-                                        break;
-                                    default:
-                                        lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
-                                        break;
-                                }
-                            }
-
-                            break;
-                        default:
-                            lapLabel = null;
-                            break;
-                    }
-                
-                    }
-
-                    lapLines[lapNr] = {
-                        id: 'plotLineLap' + lapNr.toString(),
-                        dashStyle: 'Dot',
-                        color: '#960000',
-                        width: 1,
-                        label : {
-                            text: lapLabel,
-                            verticalAlign: 'bottom',
-                            y : 20},
-                        value: util.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])
-                    };
-                }
-            }
         
 
         //if (rawData.lap != undefined) {
@@ -614,10 +679,15 @@
             zoomType: 'xy',
             events: {
                 redraw: function () {
-                    self.showLapTriggers(rawData);  // hook up - we want to synchronize on window resize
-                    self.showEvents(rawData);
+                    if (self.masterVM.settingsVM.showLapTriggers())
+                      self.showLapTriggers(rawData);  // hook up - we want to synchronize on window resize
+
+                    if (self.masterVM.settingsVM.showEvents())
+                      self.showEvents(rawData);
                 }
             }
+            //marginBottom: 120,
+            //marginTop:50
 
            
             
@@ -659,8 +729,8 @@
                     //setExtremes: function (event) {
                     //    console.log("setExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                     //}
-                },
-                plotLines: lapLines
+                }
+                //plotLines: lapLinesConfig
                 //reversed : true
             },
             yAxis: {
@@ -677,6 +747,10 @@
                 //            return this.value;
                 //    }
                 //}
+            },
+
+            legend: {
+                enabled: this.masterVM.settingsVM.showLegends()
             },
 
             tooltip: {
@@ -817,6 +891,9 @@
 
            
 
+            if (this.masterVM.settingsVM.showLapLines())
+                this.addLapLines(rawData, this.multiChart,false);
+
         //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
         this.multiChart.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
@@ -838,6 +915,8 @@
 
        
         // this.showLapTriggers(rawData)
+
+       
        
         d = new Date();
         console.log("Finishing highcharts now " + d);
@@ -854,7 +933,10 @@
     {
     var util = FITUtility();  // Move to FITUI as property??
 
-      
+    if (typeof (rawdata) === "undefined") {
+        console.error("No rawdata available");
+        return;
+    }
 
     if (typeof(rawdata.event) === "undefined")
     {
@@ -885,11 +967,9 @@
     var SVG_elmImg;
     var SVGeventElement;
 
-    // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
-    if (this.eventGroup)
-        $(this.eventGroup.element).remove()
+    this.removeSVGGroup(this.masterVM.eventGroup);
 
-    this.eventGroup = renderer.g('events').add();
+    this.masterVM.eventGroup = renderer.g('events').add();
 
 
     for (var eventNr = 0; eventNr < eventLen; eventNr++) {
@@ -928,7 +1008,7 @@
         }
 
         if (srcImgEvent !== undefined) {
-            SVGeventElement = renderer.image(srcImgEvent, xpos, ypos, 16, 16).add(this.eventGroup);
+            SVGeventElement = renderer.image(srcImgEvent, xpos, ypos, 16, 16).add(this.masterVM.eventGroup);
             if (titleEvent)
                 SVGeventElement.attr({ title: titleEvent });
         }
@@ -973,7 +1053,7 @@
 
                 
         if (srcImg !== undefined) {
-            SVG_elmImg = renderer.image(srcImg, xpos, ypos, 16, 16).add(this.eventGroup);
+            SVG_elmImg = renderer.image(srcImg, xpos, ypos, 16, 16).add(this.masterVM.eventGroup);
             if (title)
                 SVG_elmImg.attr({title: title});
         }
@@ -983,8 +1063,18 @@
         
     }
 
+    UIController.prototype.removeSVGGroup = function (SVG_group) {
+        // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
+        if (SVG_group)
+            $(SVG_group.element).remove()
+    }
+
     UIController.prototype.showLapTriggers = function(rawdata)
     {
+
+        if (typeof (rawdata) === "undefined")
+            return;
+
         var util = FITUtility();  // Move to FITUI as property??
 
       
@@ -1002,6 +1092,12 @@
             return;
         }
 
+        if (typeof (this.multiChart) === "undefined") {
+            console.error("Multichart not defined");
+            return;
+
+        }
+
         var lapIndex = 0;
         var xpos, ypos;
         var plotLeft = this.multiChart.plotLeft;
@@ -1013,11 +1109,9 @@
         var srcImg, title;
         var SVGE_elmImg;
 
-        // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
-        if (this.lapTriggerGroup)
-           $(this.lapTriggerGroup.element).remove()
+        this.removeSVGGroup(this.masterVM.lapTriggerGroup);
 
-        this.lapTriggerGroup = renderer.g('laptriggers').add();
+        this.masterVM.lapTriggerGroup = renderer.g('laptriggers').add();
 
 
         for (var lapNr = 0; lapNr < lapLen; lapNr++) {
@@ -1070,7 +1164,7 @@
 
                 
                 if (srcImg !== undefined) {
-                    SVG_elmImg = renderer.image(srcImg, xpos, 0, 16, 16).add(this.lapTriggerGroup);
+                    SVG_elmImg = renderer.image(srcImg, xpos, 0, 16, 16).add(this.masterVM.lapTriggerGroup);
                     if (title)
                         SVG_elmImg.attr({title: title});
                 }
@@ -1217,6 +1311,9 @@
             //    borderWidth: 1,
             //    shadow: false
             //},
+            credits: {
+                enabled: false
+            },
             tooltip: {
                 formatter: function() {
                     return this.series.name + ': ' + Highcharts.numberFormat(this.y, 1);
@@ -1774,6 +1871,8 @@
                 //var rawData = JSON.parse(data.rawdata);
                
                 var rawData = eventdata.rawdata;
+
+                
 
                 // Holds index of previously lookedup timestamps in rawdata.record.timestamp array
                 FITUI.timestampIndexCache = [];

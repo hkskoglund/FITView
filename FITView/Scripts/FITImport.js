@@ -1259,10 +1259,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 recContent[currentField].invalid = true;
                             else
                                 recContent[currentField].invalid = false;
-                        
-
-                        
-                            
+                                                
                         // Advance to next field value position
                             index = index + bSize;
 

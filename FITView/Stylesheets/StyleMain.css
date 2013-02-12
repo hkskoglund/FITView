@@ -144,7 +144,7 @@ white-space: nowrap;
 
 #activityMap {
     width: 100%;
-    height: 400px;
+    height: 350px;
     background-color : white;
 
     
@@ -207,9 +207,7 @@ margin-top : 5px;
     width: 50%;
 }
 
-#divChartWrapper {
 
-}
 
 /* FIT global messages for map */
 

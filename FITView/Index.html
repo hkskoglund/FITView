@@ -31,6 +31,9 @@
          
          <ul class="menu" >
 
+             
+
+
              <li><a href="#">FITView</a>
 
                  <ul>
@@ -108,7 +111,55 @@
                  
 
              </li>
+
+             
+
          <!-- /ko -->
+
+             <!-- ko with: settingsVM -->
+             <li><a href="#">Settings</a>
+
+                 <ul>
+                     <li><a href="#">
+
+                         <div>
+                             <input type="checkbox" data-bind="checked: showLapLines" />
+                             Lap lines</div>
+
+                     </a>
+                     </li>
+
+                     <li><a href="#">
+
+                         <div>
+                             <input type="checkbox" data-bind="checked: showLapTriggers" />
+                             Lap triggers</div>
+
+                     </a>
+                     </li>
+
+                     <li><a href="#">
+
+                         <div>
+                             <input type="checkbox" data-bind="checked: showEvents" />
+                             Events</div>
+
+                     </a>
+                     </li>
+
+                     <li><a href="#">
+
+                         <div>
+                             <input type="checkbox" data-bind="checked: showLegends" />
+                             Legends</div>
+
+                     </a>
+                     </li>
+
+                 </ul>
+
+             </li>
+             <!-- /ko -->
 
              <!-- ko with: loadChartVM -->
           
