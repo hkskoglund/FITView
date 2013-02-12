@@ -191,6 +191,11 @@
                              <img class="inlineIcon" src="Images/power.png" /></button>
 
                      </li>
+                     <li>
+                         <button class="loadButton" title="Load temperature" data-bind="click: loadChart.bind('temperatureseries')">
+                             <img class="inlineIcon" src="Images/temperature.png" /></button>
+
+                     </li>
                  </ul>
 
              </li>
@@ -344,6 +349,15 @@
 
                              <!-- /ko -->
 
+                      <!-- ko if: avg_temperature()[selectedSession()] >= 0  ||  max_temperature()[selectedSession()] >= 0  -->
+
+                             <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
+
+                             <span title="Average temperature (C)" data-bind="text: avg_temperature()[selectedSession()]"></span>
+
+                             <span title="Max temperature (C)" data-bind="text: max_temperature()[selectedSession()]"></span>
+
+                             <!-- /ko -->
 
 
                              <!-- ko if:  total_training_effect()[selectedSession()] >= 1 -->

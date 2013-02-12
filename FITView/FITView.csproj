@@ -86,6 +86,7 @@
     <Content Include="Images\laptrigger\time.png" />
     <Content Include="Images\laptrigger\distance.png" />
     <Content Include="Images\laptrigger\manual.png" />
+    <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
     <Content Include="Scripts\FITImport.js" />
     <Content Include="Scripts\FITSport.js" />

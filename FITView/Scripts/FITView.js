@@ -274,8 +274,10 @@
             // But, could perhaps add relative start time...?
         }
 
+
+        
        
-        for (var nr = 0; nr <= values.length; nr++) {
+        for (var nr = 0; nr <= timestamps.length; nr++) {
             
             var timestamp = timestamps[nr];
             if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
@@ -397,7 +399,7 @@
         } else { // Create a generic session of all data
 
             rawData.session.sport.push(0);
-            rawData.session.sport.push(sport);
+           
 
             var timestamp = rawData.record.timestamp[rawData.record.timestamp.length - 1];
             rawData.session.timestamp.push(timestamp);
@@ -590,6 +592,9 @@
         var cadenceSeriesData;
         var powerSeries
         var powerSeriesData;
+        var temperatureSeries
+        var temperatureSeriesData;
+
         var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
 
         var allRawdata = rawData;
@@ -653,6 +658,12 @@
                 seriesSetup.push(powerSeries);
             }
             
+            if (rawData.record.temperature) {
+                temperatureSeries = { name: 'Temperature', id: 'temperatureseries' };
+                temperatureSeriesData = FITUtil.combine(rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp);
+                seriesData['temperatureseries'] = temperatureSeriesData;
+                seriesSetup.push(temperatureSeries);
+            }
             
         }
 
@@ -1528,7 +1539,10 @@
                 if (rawdata.record.position_long  && rawdata.record.position_long.length > 0)
                     long = rawdata.record.position_long[0];
 
-                var sport = rawdata.lap.sport[0];
+                var sport;
+                if (rawdata.lap && rawdata.lap.sport)
+                    sport = rawdata.lap.sport[0];
+
                 if (sport === undefined)
                     sport = 0; // Default to generic
 
