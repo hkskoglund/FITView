@@ -172,8 +172,6 @@
         if (this.map === undefined)
             this.map = this.initMap();
 
-        
-
     }
 
 
@@ -515,6 +513,7 @@
                     switch (rawData.lap.lap_trigger[lapNr]) {
                         case 0:  // LAP pressed
                         case 2: // Distance
+                        case 7: // Session end
                             lapLabel = ""
 
                             if (rawData.lap.avg_speed[lapNr]) {
@@ -525,6 +524,7 @@
                                     case 2: // Cycling
                                         lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
                                         break;
+                                   
                                     default:
                                         lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
                                         break;
@@ -586,6 +586,10 @@
         var altitudeSeriesData;
         var speedSeries;
         var speedSeriesData;
+        var cadenceSeries
+        var cadenceSeriesData;
+        var powerSeries
+        var powerSeriesData;
         var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
 
         var allRawdata = rawData;
@@ -634,42 +638,25 @@
                seriesSetup.push(speedSeries);
             }
 
-            //if (rawData.record["cadence"] !== undefined)
-            //    seriesSetup.push({ name: 'Cadence', data: combine(rawData.record["cadence"], rawData.record["timestamp"]) });
+
+            if (rawData.record.cadence) {
+                cadenceSeries = { name: 'Cadence', id: 'cadenceseries' };
+                cadenceSeriesData = FITUtil.combine(rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp);
+                seriesData['cadenceseries'] = cadenceSeriesData;
+                seriesSetup.push(cadenceSeries);
+            }
+            
+            if (rawData.record.power) {
+                powerSeries = { name: 'Power', id: 'powerseries' };
+                powerSeriesData = FITUtil.combine(rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp);
+                seriesData['powerseries'] = powerSeriesData;
+                seriesSetup.push(powerSeries);
+            }
             
             
         }
 
-        
-
-        //if (rawData.lap != undefined) {
-        //    // Lap data
-        //    if (rawData.lap["total_ascent"] !== undefined)
-        //        seriesSetup.push({ name: 'Total Ascent pr Lap', data: rawData.lap["total_ascent"] });
-        //    if (rawData.lap["total_descent"] !== undefined)
-        //        seriesSetup.push({ name: 'Total Decent pr Lap', data: rawData.lap["total_descent"] });
-        //    if (rawData.lap["avg_heart_rate"] !== undefined)
-        //        seriesSetup.push({ name: 'Avg. HR pr Lap', data: rawData.lap["avg_heart_rate"] });
-        //    if (rawData.lap["max_heart_rate"] !== undefined)
-        //        seriesSetup.push({ name: 'Max. HR pr Lap', data: rawData.lap["max_heart_rate"] });
-        //}
-
-
-
-        //// Test flags
-
-        //seriesSetup.push({
-        //    type: 'flags',
-        //    onSeries: 'heartrateseries',
-        //    data: [{
-        //        x: 0,
-        //        text: 'First heart rate',
-        //        title: 'I'
-        //    }],
-        //    width: 16,
-        //    showInLegend: false
-        //});
-
+   
         var xAxisType = 'datetime';
 
         var chartOptions = {
