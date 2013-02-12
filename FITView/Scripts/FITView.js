@@ -742,18 +742,20 @@
 
             tooltip: {
                 //xDateFormat: '%Y-%m-%d',
-                formatter: function () {
-                    //http://stackoverflow.com/questions/3885817/how-to-check-if-a-number-is-float-or-integer
-                    function isInt(n) {
-                        return n % 1 === 0;
-                    }
-                    if (isInt(this.y))
-                        return Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' + this.series.name + '</b>' + ': ' + this.y;
-                    else {
+                formatter:
+
+                    function () {
+
+                        //http://stackoverflow.com/questions/3885817/how-to-check-if-a-number-is-float-or-integer
+                        function isInt(n) {
+                            return n % 1 === 0;
+                        }
+
                         var s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/>' + '<b>' +
                             this.series.name + '</b>' + ': ';
 
-                        if (self.speedMode) {
+                        // Special treatment for speed
+                        if (self.speedMode && this.series.name === "Speed")
                             switch (self.speedMode) {
                                 case 1: // Running
                                     s += self.formatToMMSS(this.y) + " min/km";
@@ -765,15 +767,20 @@
                                     s += Highcharts.numberFormat(this.y, 1) + " km/h";
                                     break;
                             }
+                        else {
+                            if (isInt(this.y))
+                                s += this.y.toString();
+                            else
+                                s += Highcharts.numberFormat(this.y, 1);
                         }
+
                         return s;
 
-                    }
-                },
-                // Let's get crosshair on x-axis
-                crosshairs: true 
-            },
+                    },
 
+                crosshairs: true
+            },
+             
             plotOptions: {
                 series: {
                     allowPointSelect: true,
