@@ -1084,61 +1084,93 @@
             return;
         }
 
-        //var eventIndex = 0;
         var xpos, ypos;
+        var srcImgDeviceInfo, titleDeviceInfo;
+        var SVGDeviceInfoElement;
+
         var plotLeft = this.multiChart.plotLeft;
         var renderer = this.multiChart.renderer;
         var width = this.multiChart.xAxis[0].width;
         var max = this.multiChart.xAxis[0].max;
         var min = this.multiChart.xAxis[0].min;
-        var srcImgDeviceInfo, titleDeviceInfo;
-        var SVGDeviceInfoElement;
+       
 
         this.removeSVGGroup(this.masterVM.deviceInfoGroup);
         this.masterVM.deviceInfoGroup = renderer.g('deviceinfo').add();
 
 
+        var type, manufacturer, product;
+        var previousTimestamp;
+
         for (var deviceInfoNr = 0; deviceInfoNr < deviceInfoLen; deviceInfoNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
             if (timestamp <= max) {
                 xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
-                ypos = 40; // Choose top+40 -> under events
+                if (previousTimestamp === timestamp)
+                    ypos = ypos + 20; // Choose top+40 -> under events
+                else
+                    ypos = 40;
             } else {
                 xpos = width + plotLeft - 5;  // Move device info. that reaches beyond max down at end 
-                ypos = 60;
+                if (previousTimestamp === timestamp)
+                    ypos = ypos + 20; // Choose top+40 -> under events
+                else
+                  ypos = 60;
             }
 
-            if (rawdata.device_info.manufacturer[deviceInfoNr] === 1) {
+            
+            type = undefined;
+            if (rawdata.device_info.device_type)
+                type = rawdata.device_info.device_type[deviceInfoNr];
 
-                switch (rawdata.device_info.product[deviceInfoNr]) {
-                    case 1328: // 910xt
-                        srcImgDeviceInfo = "Images/deviceinfo/910xt.png";
-                        titleDeviceInfo = "";
-                        if (rawdata.device_info.software_version[deviceInfoNr])
-                            titleDeviceInfo += "Firmware : " + rawdata.device_info.software_version[deviceInfoNr].toString();
-                        if (rawdata.device_info.serial_number[deviceInfoNr])
-                            titleDeviceInfo += " Serial number : " + rawdata.device_info.serial_number[deviceInfoNr].toString();
+            manufacturer = undefined;
+            if (rawdata.device_info.manufacturer)
+                manufacturer = rawdata.device_info.manufacturer[deviceInfoNr];
+
+            product = undefined;
+            if (rawdata.device_info.product)
+                product = rawdata.device_info.product[deviceInfoNr];
+
+            if (type === 1 && manufacturer === 1) {
+                switch (product) {
+                    case 1328:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/910xt.png";
                         break;
-
+                    case 1124:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/fr110.png";
+                        break;
                     default:
                         srcImgDeviceInfo = undefined;
-                        titleDeviceInfo = undefined;
+                        // titleDeviceInfo = undefined;
                         break;
                 }
+            } else
+                srcImgDeviceInfo = undefined;
 
-                if (srcImgDeviceInfo !== undefined) {
-                    SVGDeviceInfoElement = renderer.image(srcImgDeviceInfo, xpos, ypos, 16, 16).add(this.masterVM.deviceInfoGroup);
-                    if (titleDeviceInfo)
-                        SVGDeviceInfoElement.attr({ title: titleDeviceInfo });
-                }
+            titleDeviceInfo = ""
+            if (rawdata.device_info.software_version[deviceInfoNr])
+                titleDeviceInfo += "Firmware : " + rawdata.device_info.software_version[deviceInfoNr].toString();
+            if (rawdata.device_info.serial_number[deviceInfoNr])
+                titleDeviceInfo += " Serial number : " + rawdata.device_info.serial_number[deviceInfoNr].toString();
 
-
-
+            if (type === 120) {
+                srcImgDeviceInfo = "Images/deviceinfo/HRstrap.jpg";
+                titleDeviceInfo = "Heart rate strap";
+            }
+           
+            if (srcImgDeviceInfo !== undefined) {
+                SVGDeviceInfoElement = renderer.image(srcImgDeviceInfo, xpos, ypos, 16, 16).add(this.masterVM.deviceInfoGroup);
+                if (titleDeviceInfo)
+                    SVGDeviceInfoElement.attr({ title: titleDeviceInfo });
             }
 
 
+            previousTimestamp = timestamp;
         }
+
+
     }
+    
 
     UIController.prototype.showEvents = function(rawdata)
     {
