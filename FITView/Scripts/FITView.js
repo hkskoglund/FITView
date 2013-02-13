@@ -1067,6 +1067,57 @@
     UIController.prototype.showDeviceInfo = function (rawdata) {
         var util = FITUtility();  // Move to FITUI as property??
 
+        var device_type = {
+            antfs: 1,
+            bike_power: 11,
+            environment_sensor_legacy: 12,
+            multi_sport_speed_distance: 15,
+            control: 16,
+            fitness_equipment: 17,
+            blood_pressure: 18,
+            geocache_node: 19,
+            light_electric_vehicle: 20,
+            env_sensor: 25,
+            weight_scale: 119,
+            heart_rate: 120,
+            bike_speed_cadence: 121,
+            bike_cadence: 122,
+            bike_speed: 123,
+            stride_speed_distance: 124
+        };
+
+        var garmin_product = {
+            hrm1: 1,
+            axh01: 2, // AXH01 HRM chipset
+            axb01: 3,
+            axb02: 4,
+            hrm2ss: 5,
+            dsi_alf02: 6,
+            fr405: 717,
+            fr50: 782,
+            fr60: 988,
+            dsi_alf01: 1011,
+            fr310xt: 1018,
+            edge500: 1036,
+            fr110: 1124,
+            edge800: 1169,
+            chirp: 1253,
+            edge200: 1325,
+            fr910xt: 1328,
+            alf04: 1341,
+            fr610: 1345,
+            fr70: 1436,
+            fr310xt_4t: 1446,
+            amx: 1461,
+            sdm4: 10007, // SDM4 footpod
+            training_center: 20119,
+            connect: 65534 // Garmin Connect website
+        };
+        
+        var manufacturer = {
+            garmin: 1
+        };
+
         if (typeof (rawdata) === "undefined") {
             console.error("No rawdata available");
             return;
@@ -1099,8 +1150,9 @@
         this.masterVM.deviceInfoGroup = renderer.g('deviceinfo').add();
 
 
-        var type, manufacturer, product;
+        var type, manufact, product;
         var previousTimestamp;
+       
 
         for (var deviceInfoNr = 0; deviceInfoNr < deviceInfoLen; deviceInfoNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
@@ -1110,12 +1162,14 @@
                     ypos = ypos + 20; // Choose top+40 -> under events
                 else
                     ypos = 40;
+              
             } else {
                 xpos = width + plotLeft - 5;  // Move device info. that reaches beyond max down at end 
-                if (previousTimestamp === timestamp)
+                if (previousTimestamp === timestamp && moveDown)
                     ypos = ypos + 20; // Choose top+40 -> under events
                 else
-                  ypos = 60;
+                    ypos = 60;
+              
             }
 
             
@@ -1123,20 +1177,23 @@
             if (rawdata.device_info.device_type)
                 type = rawdata.device_info.device_type[deviceInfoNr];
 
-            manufacturer = undefined;
+            manufact = undefined;
             if (rawdata.device_info.manufacturer)
-                manufacturer = rawdata.device_info.manufacturer[deviceInfoNr];
+                manufact = rawdata.device_info.manufacturer[deviceInfoNr];
 
             product = undefined;
             if (rawdata.device_info.product)
                 product = rawdata.device_info.product[deviceInfoNr];
 
-            if (type === 1 && manufacturer === 1) {
+            if (type === device_type.antfs && manufact === manufacturer.garmin) {
                 switch (product) {
-                    case 1328:
+                    case garmin_product.fr910xt:
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/910xt.png";
                         break;
-                    case 1124:
+                    case garmin.product.fr610:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/fr610.png";
+                        break;
+                    case garmin_product.fr110:
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/fr110.png";
                         break;
                     default:
@@ -1153,16 +1210,17 @@
             if (rawdata.device_info.serial_number[deviceInfoNr])
                 titleDeviceInfo += " Serial number : " + rawdata.device_info.serial_number[deviceInfoNr].toString();
 
-            if (type === 120) {
+            if (type === device_type.environment_sensor_legacy) {
                 srcImgDeviceInfo = "Images/deviceinfo/HRstrap.jpg";
-                titleDeviceInfo = "Heart rate strap";
+                titleDeviceInfo = "Heart rate strap/environment sensor";
             }
            
             if (srcImgDeviceInfo !== undefined) {
                 SVGDeviceInfoElement = renderer.image(srcImgDeviceInfo, xpos, ypos, 16, 16).add(this.masterVM.deviceInfoGroup);
                 if (titleDeviceInfo)
                     SVGDeviceInfoElement.attr({ title: titleDeviceInfo });
-            }
+              
+            } 
 
 
             previousTimestamp = timestamp;
