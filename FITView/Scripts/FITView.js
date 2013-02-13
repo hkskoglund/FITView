@@ -43,17 +43,30 @@
 
             self.loadChart = function () {
                 // this is highchart series id.
-                var id = this.toString(); // this has added prototype : "", must convert toString()
+                var id = this.id;
+                var name = this.name;
+
                 var series = self.chart.get(id);
 
-                if (series && series.data.length === 0) {
-                    // Add only fresh data
-
-                    series.setData(self.seriesData[id]);
-
+                if (typeof (series) === "undefined" || series === null) {
+                    if (self.seriesData[id]) {
+                        console.log("Loading series id: ", id);
+                        self.chart.addSeries({
+                            name: name,
+                            id: id,
+                            data: self.seriesData[id]
+                        });
+                    } else
+                        console.warn("No data available for load request of series id: ", id);
                 }
+                    //if (series && series.data.length === 0) {
+                    //    // Add only fresh data
+
+                    //    series.setData(self.seriesData[id]);
+
+                    //}
                 else
-                    console.error("Series id", id, " series length ", series.data.length);
+                    console.error("Data already loaded, skipped series id", id);
             }
 
         }
@@ -948,9 +961,10 @@
 
                     }
                 }
-            },
+            }
+            //,
 
-            series: seriesSetup
+            //series: seriesSetup
 
 
 
@@ -988,9 +1002,25 @@
 
         //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
-        this.multiChart.series[0].setData(seriesData['heartrateseries']); // Choose heart rate series as default
+        if (seriesData['heartrateseries'])
+            this.multiChart.addSeries({
+                name : 'Heart rate',
+                id : 'heartrateseries',
+                data: seriesData['heartrateseries']}); // Choose heart rate series as default
+        else if (seriesData['speedseries'])
+            this.multiChart.addSeries({
+                name : 'Speed',
+                id: 'speedseries',
+                data: seriesData['speedseries']}); // Next, try speed
+        else if (seriesData['altitudeseries'])
+            this.multiChart.addSeries({
+                name : 'Altitude',
+                id: 'altitudeseries',
+                data : seriesData['altitudeseries']}); // Next, try altitude
+       
+
         //chart1.series[1].setData(altitudeSeriesData, false);
-        //chart1.series[2].setData(speedSeriesData, false);
+       
        // chart1.redraw();
         //chart1.hideLoading();
         //clearInterval(intervalTimerID);
@@ -1333,6 +1363,11 @@
 
     UIController.prototype.showHRZones = function (rawdata, startTimestamp, endTimestamp) {
 
+        if (typeof (rawdata.record.heart_rate) === "undefined" || rawdata.record.heart_rate.length === 0) {
+            console.warn("No HR data found, skipping HR Zones chart");
+            return;
+        }
+
         if (FITUI.HRZonesChart)
             FITUI.HRZonesChart.destroy();
 
@@ -1472,10 +1507,10 @@
 
             var hry;
             
-            if (rawdata.record.heart_rate !== undefined)
+           // if (rawdata.record.heart_rate !== undefined)
                 hry = rawdata.record.heart_rate[datap];
-            else
-                hry = undefined;
+            //else
+            //    hry = undefined;
 
             if (hry === undefined || hry === null)
                 console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString()+" at index "+datap.toString());
