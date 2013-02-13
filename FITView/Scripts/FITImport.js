@@ -25,7 +25,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             case 'importFitFile':
                 var options = {
-                    fitfile: data.fitfile
+                    fitfile: data.fitfile,
+                    store: data.store
                     //,query: data.query,
 
                 };
@@ -51,6 +52,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
        // var fitFileManager = this;
 
         var fitFile = options.fitfile; // Reference to FIT file in browser - FILE API
+        var storeInIndexedDB = options.store;
+
         var index = 0; // Pointer to next unread byte in FIT file
         var records = []; // Holds every global message nr. contained in FIT file
         var fileBuffer = {};
@@ -315,7 +318,8 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var req;
             try {
                 req = {};
-                // req = store.add(datarec);
+                if (storeInIndexedDB)
+                    req = store.add(datarec);
             } catch (e) {
                 //if (e.name == 'DataCloneError')
                 //    displayActionFailure("This engine doesn't know how to clone a Blob, " +

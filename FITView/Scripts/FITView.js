@@ -92,7 +92,8 @@
                 showLapLines: ko.observable(true),
                 showLapTriggers: ko.observable(false),
                 showEvents: ko.observable(false),
-                showLegends : ko.observable(true)
+                showLegends: ko.observable(true),
+                storeInIndexedDB : ko.observable(false)
             },
                 progressVM: { 
                     progress : ko.observable(0)
@@ -134,6 +135,8 @@
 
         });
 
+
+       
 
         var bodyId = '#divSessionLap';
         var jqueryBodyElement = $(bodyId);
@@ -2123,13 +2126,31 @@
     };
 
     UIController.prototype.onFitFileSelected = function (e) {
+
+        if (typeof (e.target.files) === "undefined" || e.target.files.length === 0) {
+            console.warn("No file selected for import");
+            return;
+        }
+
         // console.log(e);
         e.preventDefault();
 
         //$('#activityMap').hide();
 
+        // Clean up UI state
         FITUI.masterVM.sessionVM.selectedSession(undefined);
         FITUI.resetViewModel(FITUI.masterVM.sessionVM);
+        //// http://api.highcharts.com/highcharts#Chart.destroy()
+
+        if (FITUI.multiChart) {
+            FITUI.multiChart.destroy();
+            FITUI.multiChart = undefined;
+        }
+
+        if (FITUI.HRZonesChart) {
+            FITUI.HRZonesChart.destroy();
+            FITUI.HRZonesChart = undefined;
+        }
 
         FITUI.selectedFiles = e.target.files;
 
@@ -2177,7 +2198,9 @@
         // deleteDb();
 
         var msg = {
-            request: 'importFitFile', "fitfile": files[0]
+            request: 'importFitFile',
+            fitfile: files[0],
+            store : FITUI.masterVM.settingsVM.storeInIndexedDB()
             //, "query": query
         };
 
