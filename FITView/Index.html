@@ -176,31 +176,37 @@
                  <a href="#">Load</a>
                  <ul>
                      <li>
-                         <button class="loadButton" title="Load heartrate" data-bind="click: loadChart.bind('heartrateseries')">
+                         <button class="loadButton" title="Load heartrate" data-bind="click: loadChart.bind({name:
+                             'Heart rate', id : 'heartrateseries'})">
                              <img class="inlineIcon" src="Images/heart.png" /></button>
                      </li>
                      <li>
-                         <button class="loadButton" title="Load altitude" data-bind="click: loadChart.bind('altitudeseries')">
+                         <button class="loadButton" title="Load altitude" data-bind="click: loadChart.bind({name:
+                             'Altitude', id : 'altitudeseries'})">
                              <img class="inlineIcon" src="Images/ascent.png" /></button>
 
                      </li>
                      <li>
-                         <button class="loadButton" title="Load speed" data-bind="click: loadChart.bind('speedseries')">
+                         <button class="loadButton" title="Load speed" data-bind="click: loadChart.bind({name : 
+                             'Speed', id : 'speedseries'})">
                              <img class="inlineIcon" src="Images/speed.png" /></button>
 
                      </li>
                      <li>
-                         <button class="loadButton" title="Load cadence" data-bind="click: loadChart.bind('cadenceseries')">
+                         <button class="loadButton" title="Load cadence" data-bind="click: loadChart.bind({name : 
+                             'Cadence', id: 'cadenceseries'})">
                              <img class="inlineIcon" src="Images/cadence.png" /></button>
 
                      </li>
                      <li>
-                         <button class="loadButton" title="Load power" data-bind="click: loadChart.bind('powerseries')">
+                         <button class="loadButton" title="Load power" data-bind="click: loadChart.bind({name:
+                             'Power', id : 'powerseries'})">
                              <img class="inlineIcon" src="Images/power.png" /></button>
 
                      </li>
                      <li>
-                         <button class="loadButton" title="Load temperature" data-bind="click: loadChart.bind('temperatureseries')">
+                         <button class="loadButton" title="Load temperature" data-bind="click: loadChart.bind({name : 
+                             'Temperature', id : 'temperatureseries'})">
                              <img class="inlineIcon" src="Images/temperature.png" /></button>
 
                      </li>
