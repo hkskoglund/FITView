@@ -106,7 +106,8 @@
                 showLapTriggers: ko.observable(false),
                 showEvents: ko.observable(false),
                 showLegends: ko.observable(true),
-                storeInIndexedDB : ko.observable(false)
+                storeInIndexedDB: ko.observable(false),
+                showDeviceInfo : ko.observable(false)
             },
                 progressVM: { 
                     progress : ko.observable(0)
@@ -148,7 +149,15 @@
 
         });
 
+        this.masterVM.settingsVM.showDeviceInfo.subscribe(function (showDeviceInfo) {
 
+            if (showDeviceInfo)
+                self.showDeviceInfo(self.masterVM.sessionVM.rawData);
+            else
+                self.removeSVGGroup(self.masterVM.deviceInfoGroup);
+
+
+        });
        
 
         var bodyId = '#divSessionLap';
@@ -779,7 +788,10 @@
                       self.showLapTriggers(rawData);  // hook up - we want to synchronize on window resize
 
                     if (self.masterVM.settingsVM.showEvents())
-                      self.showEvents(rawData);
+                        self.showEvents(rawData);
+
+                    if (self.masterVM.settingsVM.showDeviceInfo())
+                        self.showDeviceInfo(rawData);
                 }
             }
             //marginBottom: 120,
@@ -1050,6 +1062,83 @@
 
 
     };
+
+
+    UIController.prototype.showDeviceInfo = function (rawdata) {
+        var util = FITUtility();  // Move to FITUI as property??
+
+        if (typeof (rawdata) === "undefined") {
+            console.error("No rawdata available");
+            return;
+        }
+
+        if (typeof (rawdata.device_info) === "undefined") {
+            console.error("No device information");
+            return;
+        }
+
+        var deviceInfoLen = rawdata.device_info.timestamp.length;
+
+        if (typeof (deviceInfoLen) === "undefined" || deviceInfoLen === 0) {
+            console.error("No timestamp information in device_info, device_info.timestamp");
+            return;
+        }
+
+        //var eventIndex = 0;
+        var xpos, ypos;
+        var plotLeft = this.multiChart.plotLeft;
+        var renderer = this.multiChart.renderer;
+        var width = this.multiChart.xAxis[0].width;
+        var max = this.multiChart.xAxis[0].max;
+        var min = this.multiChart.xAxis[0].min;
+        var srcImgDeviceInfo, titleDeviceInfo;
+        var SVGDeviceInfoElement;
+
+        this.removeSVGGroup(this.masterVM.deviceInfoGroup);
+        this.masterVM.deviceInfoGroup = renderer.g('deviceinfo').add();
+
+
+        for (var deviceInfoNr = 0; deviceInfoNr < deviceInfoLen; deviceInfoNr++) {
+            var timestamp = util.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
+            if (timestamp <= max) {
+                xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
+                ypos = 40; // Choose top+40 -> under events
+            } else {
+                xpos = width + plotLeft - 5;  // Move device info. that reaches beyond max down at end 
+                ypos = 60;
+            }
+
+            if (rawdata.device_info.manufacturer[deviceInfoNr] === 1) {
+
+                switch (rawdata.device_info.product[deviceInfoNr]) {
+                    case 1328: // 910xt
+                        srcImgDeviceInfo = "Images/deviceinfo/910xt.png";
+                        titleDeviceInfo = "";
+                        if (rawdata.device_info.software_version[deviceInfoNr])
+                            titleDeviceInfo += "Firmware : " + rawdata.device_info.software_version[deviceInfoNr].toString();
+                        if (rawdata.device_info.serial_number[deviceInfoNr])
+                            titleDeviceInfo += " Serial number : " + rawdata.device_info.serial_number[deviceInfoNr].toString();
+                        break;
+
+                    default:
+                        srcImgDeviceInfo = undefined;
+                        titleDeviceInfo = undefined;
+                        break;
+                }
+
+                if (srcImgDeviceInfo !== undefined) {
+                    SVGDeviceInfoElement = renderer.image(srcImgDeviceInfo, xpos, ypos, 16, 16).add(this.masterVM.deviceInfoGroup);
+                    if (titleDeviceInfo)
+                        SVGDeviceInfoElement.attr({ title: titleDeviceInfo });
+                }
+
+
+
+            }
+
+
+        }
+    }
 
     UIController.prototype.showEvents = function(rawdata)
     {
@@ -1654,7 +1743,7 @@
                 var lat;
 
                 if (rawdata.record.position_lat && rawdata.record.position_lat.length > 0) {
-                    lat = rawdata.record.position_lat.shift();  // Take first no matter what index array start on...
+                    lat = rawdata.record.position_lat.shift();
                     rawdata.record.position_lat.unshift(lat);
                 }
 
@@ -1677,7 +1766,7 @@
                     setMapCenter(sport, lat, long);
                     mapCenterSet = true;
                 } else
-                    console.warn("Got no start position from head of position_lat/long");
+                    console.warn("Got no start position from head/index 0 of position_lat/long");
             }
 
         return mapCenterSet;

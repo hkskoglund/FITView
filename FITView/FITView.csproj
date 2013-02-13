@@ -59,6 +59,7 @@
   <ItemGroup>
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
+    <Content Include="Images\deviceinfo\910xt.png" />
     <Content Include="Images\event\battery-low.png" />
     <Content Include="Images\event\battery_marker.png" />
     <Content Include="Images\event_type\stop_all_4.png" />
