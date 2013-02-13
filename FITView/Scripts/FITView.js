@@ -1654,15 +1654,15 @@
                 var lat;
 
                 if (rawdata.record.position_lat && rawdata.record.position_lat.length > 0) {
-                    lat = rawdata.record.position_lat.unshift();  // Take first no matter what index array start on...
-                    rawdata.record.position_lat.shift(lat);
+                    lat = rawdata.record.position_lat.shift();  // Take first no matter what index array start on...
+                    rawdata.record.position_lat.unshift(lat);
                 }
 
                 var long;
 
                 if (rawdata.record.position_long && rawdata.record.position_long.length > 0) {
-                    long = rawdata.record.position_long.unshift();
-                    rawdata.record.position_long.shift(long);
+                    long = rawdata.record.position_long.shift();
+                    rawdata.record.position_long.unshift(long);
                 }
 
                 var sport;
@@ -1959,7 +1959,7 @@
     UIController.prototype.intepretMessageCounters  = function (counter) {
         if (counter.fileIdCounter != 1)
             console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
-        if (counter.fileIdCounter != 1)
+        if (counter.fileCreatorCounter != 1)
             console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
         if (counter.sessionCounter === 0)
             console.error("Session msg. should be at least 1, but is ",counter.sessionCounter);
