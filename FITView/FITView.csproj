@@ -61,7 +61,13 @@
     <Content Include="Images\ascent.png" />
     <Content Include="Images\deviceinfo\env_sensor_legacy.png" />
     <Content Include="Images\deviceinfo\garmin\910xt.png" />
+    <Content Include="Images\deviceinfo\garmin\edge200.jpg" />
+    <Content Include="Images\deviceinfo\garmin\edge500.jpg" />
+    <Content Include="Images\deviceinfo\garmin\edge800.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr110.png" />
+    <Content Include="Images\deviceinfo\garmin\fr310xt.jpg" />
+    <Content Include="Images\deviceinfo\garmin\fr405.jpg" />
+    <Content Include="Images\deviceinfo\garmin\fr410.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr610.png" />
     <Content Include="Images\deviceinfo\garmin\gsc-10.jpg" />
     <Content Include="Images\deviceinfo\HRstrap.jpg" />

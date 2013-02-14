@@ -1189,6 +1189,8 @@
 
             if (type === device_type.antfs && manufact === manufacturer.garmin) {
                 switch (product) {
+                    // Running/multisport
+
                     case garmin_product.fr910xt:
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/910xt.png";
                         titleDeviceInfo = "910XT";
@@ -1197,10 +1199,34 @@
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/fr610.png";
                         titleDeviceInfo = "FR610";
                         break;
+                    case garmin_product.fr310xt:
+                    case garmin_product.fr310xt_4t:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/310xt.jpg";
+                        titleDeviceInfo = "FR610";
+                        break;
+                    case garmin_product.fr405:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/405.jpg";
+                        titleDeviceInfo = "FR610";
+                        break;
                     case garmin_product.fr110:
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/fr110.png";
                         titleDeviceInfo = "FR110";
                         break;
+
+                        // Cycling
+                    case garmin_product.edge800:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/edge800.jpg";
+                        titleDeviceInfo = "EDGE 800";
+                        break;
+                    case garmin_product.edge500:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/edge500.jpg";
+                        titleDeviceInfo = "EDGE 500";
+                        break;
+                    case garmin_product.edge200:
+                        srcImgDeviceInfo = "Images/deviceinfo/garmin/edge200.jpg";
+                        titleDeviceInfo = "EDGE 200";
+                        break;
+
                     default:
                         srcImgDeviceInfo = undefined;
                         // titleDeviceInfo = undefined;
@@ -1319,6 +1345,8 @@
             case 21: // Recovery_hr
                 srcImgEvent = "Images/heart.png";
                 titleEvent = "Recovery HR";
+                titleEvent += " "+ Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+
                 if (rawdata.event.data[eventNr])
                     titleEvent += " - " + rawdata.event.data[eventNr].toString();
                 break;
