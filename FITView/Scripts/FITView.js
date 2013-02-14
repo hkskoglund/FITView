@@ -1187,6 +1187,11 @@
             if (rawdata.device_info.product)
                 product = rawdata.device_info.product[deviceInfoNr];
 
+            // Just in case we don't get a hit in the if's
+            srcImgDeviceInfo = "Images/deviceinfo/unknown.jpg";
+            if (product)
+              titleDeviceInfo = "Product :" + product.toString();
+
             if (type === device_type.antfs && manufact === manufacturer.garmin) {
                 switch (product) {
                     // Running/multisport
@@ -1227,10 +1232,10 @@
                         titleDeviceInfo = "EDGE 200";
                         break;
 
-                    default:
-                        srcImgDeviceInfo = undefined;
-                        // titleDeviceInfo = undefined;
-                        break;
+                    //default:
+                    //    srcImgDeviceInfo = "Images/deviceinfo/unknown.jpg";
+                    //    titleDeviceInfo = "Product :" + product.toString();
+                    //    break;
                 }
             } 
 
@@ -1266,7 +1271,6 @@
                 titleDeviceInfo = undefined;
             } 
 
-
             previousTimestamp = timestamp;
         }
 
@@ -1276,6 +1280,51 @@
 
     UIController.prototype.showEvents = function(rawdata)
     {
+        var event_type = {
+            start: 0,
+            stop: 1,
+            consecutive_depreciated: 2,
+            marker: 3,
+            stop_all: 4,
+            begin_depreciated: 5,
+            end_depreciated: 6,
+            end_all_depreciated: 7,
+            stop_disable: 8,
+            stop_disable_all: 9
+        };
+
+
+        var event = {
+            timer : 0, // Group 0. Start / stop_all
+            workout : 3, //  start / stop
+            workout_step : 4, //  Start at beginning of workout. Stop at end of each step.
+            power_down : 5, // stop_all group 0
+            power_up : 6, //  stop_all group 0
+            off_course : 7, // start / stop group 0
+            session : 8, // Stop at end of each session.
+            lap : 9, //  Stop at end of each lap.
+            course_point : 10, // marker.
+            battery : 11, // marker.
+            virtual_partner_pace : 12, //  Group 1. Start at beginning of activity if VP enabled, when VP pace is changed during activity or VP enabled mid activity. stop_disable when VP disabled.
+            hr_high_alert : 13, // Group 0. Start / stop when in alert condition.
+            hr_low_alert : 14, //  Group 0. Start / stop when in alert condition.
+            speed_high_alert : 15, // Group 0. Start / stop when in alert condition.
+            speed_low_alert : 16, //  Group 0. Start / stop when in alert condition.
+            cad_high_alert : 17, //    Group 0. Start / stop when in alert condition.
+            cad_low_alert : 18, //   Group 0. Start / stop when in alert condition.
+            power_high_alert : 19, //  Group 0. Start / stop when in alert condition.
+            power_low_alert : 20, //   Group 0. Start / stop when in alert condition.
+            recovery_hr : 21, //  marker.
+            battery_low : 22, // marker.
+            time_duration_alert : 23, //    Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+            distance_duration_alert : 24, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+            calorie_duration_alert : 25, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+            activity : 26, // Group 1.. Stop at end of activity.
+            fitness_equipment : 27, // marker.
+            length : 28 // Stop at end of each length.
+        };
+
+
     var util = FITUtility();  // Move to FITUI as property??
 
     if (typeof (rawdata) === "undefined") {
@@ -1304,12 +1353,7 @@
     var max = this.multiChart.xAxis[0].max;
     var min = this.multiChart.xAxis[0].min;
 
-    var xAxisExtremes = this.multiChart.xAxis[0].getExtremes();
-       
-    var srcImg, title;
     var srcImgEvent, titleEvent;
-
-    var SVG_elmImg;
     var SVGeventElement;
     
     
@@ -1335,14 +1379,49 @@
         else
             this.masterVM.freeYPOS[timestamp] = 0;
 
-        switch (rawdata.event.event[eventNr]) {
-            case 11: // Battery
+        var ev = rawdata.event.event[eventNr];
+        var ev_type = rawdata.event.event_type[eventNr];
+
+        srcImgEvent = "Images/unknown.png"
+        titleEvent = "Event: "+ev.toString()+" Event type: " + ev_type.toString();
+
+        switch (ev) {
+            case event.timer:
+
+                switch (ev_type) {
+                    case event_type.start:
+                        srcImgEvent = "Images/event_type/start_0.png";
+                        titleEvent = "START";
+                        break;
+                    case event_type.stop:
+                        srcImgEvent = "Images/event_type/stop_all_4.png";
+                        titleEvent = "STOP";
+                        break;
+                    case event_type.stop_all:
+                        srcImgEvent = "Images/event_type/stop_all_4.png";
+                        titleEvent = "STOP ALL";
+                        break;
+                    case event_type.stop_disable:
+                        srcImgEvent = "Images/event_type/stop_all_4.png";
+                        titleEvent = "STOP DISABLE";
+                        break;
+                    case event_type.stop_disable_all:
+                        srcImgEvent = "Images/event_type/stop_disable_all9.png";
+                        titleEvent = "STOP DISABLE ALL";
+                        break;
+
+                }
+                break;
+
+
+            case event.battery: // Don't check for event_type marker
                 srcImgEvent = "Images/event/battery_marker.png";
                 titleEvent = "Battery";
                 if (rawdata.event.data[eventNr])
                     titleEvent += " - " + rawdata.event.data[eventNr].toString();
                 break;
-            case 21: // Recovery_hr
+
+            case event.recovery_hr: // Don't check for event type marker
                 srcImgEvent = "Images/heart.png";
                 titleEvent = "Recovery HR";
                 titleEvent += " "+ Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
@@ -1350,16 +1429,29 @@
                 if (rawdata.event.data[eventNr])
                     titleEvent += " - " + rawdata.event.data[eventNr].toString();
                 break;
-            case 22: // Battery_low marker
+
+            case event.battery_low: 
                 srcImgEvent = "Images/event/battery-low.png";
                 titleEvent = "Battery low";
                 if (rawdata.event.data[eventNr])
                     titleEvent += " - " + rawdata.event.data[eventNr].toString();
                 break;
-            default:
-                srcImgEvent = undefined;
-                titleEvent = undefined;
+
+            case event.power_down:
+                srcImgEvent = "Images/event_type/stop_all_4.png";
+                titleEvent = "Power down";
                 break;
+
+            case event.power_up:
+                srcImgEvent = "Images/event_type/stop_all_4.png";
+                titleEvent = "Power up";
+                break;
+            
+            case event.session:
+                srcImgEvent = "Images/laptrigger/session_end.png";
+                titleEvent = "Stop - end of session";
+                break;
+           
         }
 
         var eventRendered = false;
@@ -1373,55 +1465,7 @@
                 SVGeventElement.attr({ title: titleEvent });
         }
                 
-        switch (rawdata.event.event_type[eventNr]) {
-            case 0:
-                srcImg = "Images/event_type/start_0.png";
-                title = "START";
-                break;
-            //case 1:
-            //    srcImg = "Images/laptrigger/time.png";
-            //    title = "Time";
-            //    break;
-            //case 2:
-            //    srcImg = "Images/laptrigger/distance.png";
-            //    title = "Distance";
-            //    break;
-            //case 3:
-            //    srcImg = "Images/laptrigger/position_start.png";
-            //    title = "Position start";
-            //    break;
-            case 4:
-                srcImg = "Images/event_type/stop_all_4.png";
-                title = "STOP";
-                break;
-            //case 5:
-            //    srcImg = "Images/laptrigger/position_waypoint.png";
-            //    title = "Position waypoint";
-            //    break;
-            //case 6:
-            //    srcImg = "Images/laptrigger/position_marked.png";
-            //    title = "Position marked";
-            //    break;
-            //case 7:
-            //    srcImg = "Images/laptrigger/session_end.png";
-            //    title = "Session end";
-            //    break;
-            default:
-                srcImg = undefined;
-                title = undefined;
-        }
-
-                
-        if (srcImg !== undefined) {
-            if (eventRendered)
-              this.masterVM.freeYPOS[timestamp] += 20;
-            SVG_elmImg = renderer.image(srcImg, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.eventGroup);
-            if (title)
-                SVG_elmImg.attr({ title: title });
-            
-        }
-         
-       
+        
     }
 
         

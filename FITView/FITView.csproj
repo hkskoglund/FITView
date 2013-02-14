@@ -71,8 +71,10 @@
     <Content Include="Images\deviceinfo\garmin\fr610.png" />
     <Content Include="Images\deviceinfo\garmin\gsc-10.jpg" />
     <Content Include="Images\deviceinfo\HRM.jpg" />
+    <Content Include="Images\deviceinfo\unknown.png" />
     <Content Include="Images\event\battery-low.png" />
     <Content Include="Images\event\battery_marker.png" />
+    <Content Include="Images\event_type\stop_disable_all9.png" />
     <Content Include="Images\event_type\stop_all_4.png" />
     <Content Include="Images\event_type\start_0.png" />
     <Content Include="Images\kcalorie.png" />
