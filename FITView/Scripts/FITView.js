@@ -1266,9 +1266,20 @@
                 titleDeviceInfo = "Footpod (stride/speed/distance)"
             }
 
+
+            if (type === device_type.bike_power) {
+                srcImgDeviceInfo = "Images/power.png";
+                titleDeviceInfo = "Bike power"
+            }
+
             if (type === device_type.environment_sensor_legacy && typeof (product) === "undefined" && typeof (manufact) === "undefined") {
                 srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
                 titleDeviceInfo = "Barometre/Temperature sensor"
+            }
+
+            if (type === device_type.environment_sensor_legacy && typeof(product) === "undefined"  && manufact === manufacturer.garmin) {
+                srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
+                titleDeviceInfo = "Accelerometre"
             }
 
             titleDeviceInfo += " "
