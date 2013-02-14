@@ -59,9 +59,11 @@
   <ItemGroup>
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
+    <Content Include="Images\deviceinfo\env_sensor_legacy.png" />
     <Content Include="Images\deviceinfo\garmin\910xt.png" />
     <Content Include="Images\deviceinfo\garmin\fr110.png" />
     <Content Include="Images\deviceinfo\garmin\fr610.png" />
+    <Content Include="Images\deviceinfo\garmin\gsc-10.jpg" />
     <Content Include="Images\deviceinfo\HRstrap.jpg" />
     <Content Include="Images\event\battery-low.png" />
     <Content Include="Images\event\battery_marker.png" />

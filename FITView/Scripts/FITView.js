@@ -618,14 +618,15 @@
         var lapLabel;
         if (rawData.lap) {
             for (var lapNr = 0; lapNr < rawData.lap.timestamp.length; lapNr++) {
-                if (rawData.lap.timestamp[lapNr]) {
+                if (rawData.lap.timestamp && rawData.lap.timestamp[lapNr]) {
                     switch (rawData.lap.lap_trigger[lapNr]) {
                         case 0:  // LAP pressed
                         case 2: // Distance
                         case 7: // Session end
                             lapLabel = ""
 
-                            if (rawData.lap.avg_speed[lapNr]) {
+
+                            if (rawData.lap.avg_speed && rawData.lap.avg_speed[lapNr]) {
                                 switch (this.speedMode) {
                                     case 1: // Running
                                         lapLabel += " " + this.formatToMMSS(FITUtil.convertSpeedToMinutes(rawData.lap.avg_speed[lapNr]));
@@ -633,7 +634,7 @@
                                     case 2: // Cycling
                                         lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
                                         break;
-                                   
+
                                     default:
                                         lapLabel += " " + FITUtil.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
                                         break;
@@ -649,7 +650,8 @@
                             break;
                     }
 
-                }
+                } else
+                    console.warn("No timestamps for lap in rawdata to lay out lap lines");
 
                 lapLinesConfig[lapNr] = {
                     id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
@@ -1151,27 +1153,27 @@
 
 
         var type, manufact, product;
-        var previousTimestamp;
+        
        
+        if (typeof (this.masterVM.freeYPOS) === "undefined")
+            this.masterVM.freeYPOS = {};
 
         for (var deviceInfoNr = 0; deviceInfoNr < deviceInfoLen; deviceInfoNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
             if (timestamp <= max) {
                 xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
-                if (previousTimestamp === timestamp)
-                    ypos = ypos + 20; // Choose top+40 -> under events
-                else
-                    ypos = 40;
+               
               
             } else {
                 xpos = width + plotLeft - 5;  // Move device info. that reaches beyond max down at end 
-                if (previousTimestamp === timestamp && moveDown)
-                    ypos = ypos + 20; // Choose top+40 -> under events
-                else
-                    ypos = 60;
+                timestamp = max;
               
             }
 
+            if (this.masterVM.freeYPOS[timestamp] >= 0)
+                this.masterVM.freeYPOS[timestamp] += 20;
+            else
+                this.masterVM.freeYPOS[timestamp] = 0;
             
             type = undefined;
             if (rawdata.device_info.device_type)
@@ -1189,37 +1191,53 @@
                 switch (product) {
                     case garmin_product.fr910xt:
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/910xt.png";
+                        titleDeviceInfo = "910XT";
                         break;
-                    case garmin.product.fr610:
+                    case garmin_product.fr610:
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/fr610.png";
+                        titleDeviceInfo = "FR610";
                         break;
                     case garmin_product.fr110:
                         srcImgDeviceInfo = "Images/deviceinfo/garmin/fr110.png";
+                        titleDeviceInfo = "FR110";
                         break;
                     default:
                         srcImgDeviceInfo = undefined;
                         // titleDeviceInfo = undefined;
                         break;
                 }
-            } else
-                srcImgDeviceInfo = undefined;
+            } 
 
-            titleDeviceInfo = ""
+            if (type === device_type.heart_rate) {
+                srcImgDeviceInfo = "Images/deviceinfo/HRstrap.jpg";
+                titleDeviceInfo = "Heart rate strap";
+            }
+
+            if (type === device_type.environment_sensor_legacy && manufact === manufacturer.garmin && product === 1080) {
+                srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
+                titleDeviceInfo = "GPS/SIRF";
+            }
+
+            if (type === device_type.bike_speed_cadence) {
+                srcImgDeviceInfo = "Images/deviceinfo/garmin/gsc-10.jpg";
+                titleDeviceInfo = "Bike speed/cadence sensor";
+            }
+
+
+            titleDeviceInfo += " "
             if (rawdata.device_info.software_version[deviceInfoNr])
                 titleDeviceInfo += "Firmware : " + rawdata.device_info.software_version[deviceInfoNr].toString();
             if (rawdata.device_info.serial_number[deviceInfoNr])
                 titleDeviceInfo += " Serial number : " + rawdata.device_info.serial_number[deviceInfoNr].toString();
 
-            if (type === device_type.environment_sensor_legacy) {
-                srcImgDeviceInfo = "Images/deviceinfo/HRstrap.jpg";
-                titleDeviceInfo = "Heart rate strap/environment sensor";
-            }
+            
            
             if (srcImgDeviceInfo !== undefined) {
-                SVGDeviceInfoElement = renderer.image(srcImgDeviceInfo, xpos, ypos, 16, 16).add(this.masterVM.deviceInfoGroup);
+                SVGDeviceInfoElement = renderer.image(srcImgDeviceInfo, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.deviceInfoGroup);
                 if (titleDeviceInfo)
                     SVGDeviceInfoElement.attr({ title: titleDeviceInfo });
-              
+                srcImgDeviceInfo = undefined;
+                titleDeviceInfo = undefined;
             } 
 
 
@@ -1267,21 +1285,29 @@
 
     var SVG_elmImg;
     var SVGeventElement;
+    
+    
 
     this.removeSVGGroup(this.masterVM.eventGroup);
 
     this.masterVM.eventGroup = renderer.g('events').add();
 
+    if (typeof (this.masterVM.freeYPOS) === "undefined")
+        this.masterVM.freeYPOS = {};
 
     for (var eventNr = 0; eventNr < eventLen; eventNr++) {
         var timestamp = util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]);
-        if (timestamp <= max) {
+        if (timestamp <= max)
             xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
-            ypos = 20; // Choose top+20 -> under lap triggers
-        } else {
-            xpos = width + plotLeft-5;  // Move events that reaches beyond max down at end like f.ex. HR recovery
-            ypos = 40;
+        else {
+            timestamp = max;  // Force to max even if greater
+            xpos = width + plotLeft - 5;  // Move events that reaches beyond max down at end like f.ex. HR recovery
         }
+       
+        if (this.masterVM.freeYPOS[timestamp] >= 0)
+            this.masterVM.freeYPOS[timestamp] += 20;
+        else
+            this.masterVM.freeYPOS[timestamp] = 0;
 
         switch (rawdata.event.event[eventNr]) {
             case 11: // Battery
@@ -1308,8 +1334,13 @@
                 break;
         }
 
+        var eventRendered = false;
         if (srcImgEvent !== undefined) {
-            SVGeventElement = renderer.image(srcImgEvent, xpos, ypos, 16, 16).add(this.masterVM.eventGroup);
+            SVGeventElement = renderer.image(srcImgEvent, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.eventGroup);
+            eventRendered = true;
+            if (this.masterVM.freeYPOS[timestamp])
+                this.masterVM.freeYPOS[timestamp] += 20;
+            
             if (titleEvent)
                 SVGeventElement.attr({ title: titleEvent });
         }
@@ -1354,11 +1385,15 @@
 
                 
         if (srcImg !== undefined) {
-            SVG_elmImg = renderer.image(srcImg, xpos, ypos, 16, 16).add(this.masterVM.eventGroup);
+            if (eventRendered)
+              this.masterVM.freeYPOS[timestamp] += 20;
+            SVG_elmImg = renderer.image(srcImg, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.eventGroup);
             if (title)
-                SVG_elmImg.attr({title: title});
+                SVG_elmImg.attr({ title: title });
+            
         }
-               
+         
+       
     }
 
         
@@ -1368,6 +1403,8 @@
         // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
         if (SVG_group)
             $(SVG_group.element).remove()
+
+        this.masterVM.freeYPOS = {} // Loose state of ypos for triggers,deviceinfo,events in multichart
     }
 
     UIController.prototype.showLapTriggers = function(rawdata)
@@ -1414,16 +1451,25 @@
 
         this.masterVM.lapTriggerGroup = renderer.g('laptriggers').add();
 
+        if (typeof (this.masterVM.freeYPOS) === "undefined")
+            this.masterVM.freeYPOS = {};
 
         for (var lapNr = 0; lapNr < lapLen; lapNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
             if (timestamp <= max) {
                 xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
-                ypos = 0; // Choose top
+               
             } else {
                 xpos = width + plotLeft - 5;  // Try to move timestamp beyond current max at end of chart
-                ypos = 20;
+                timestamp = max;
             }
+
+
+            if (this.masterVM.freeYPOS[timestamp] >= 0)
+                this.masterVM.freeYPOS[timestamp] += 20;
+            else
+                this.masterVM.freeYPOS[timestamp] = 0;
+
                 
                 switch (rawdata.lap.lap_trigger[lapNr]) {
                     case 0:
@@ -1465,7 +1511,7 @@
 
                 
                 if (srcImg !== undefined) {
-                    SVG_elmImg = renderer.image(srcImg, xpos, 0, 16, 16).add(this.masterVM.lapTriggerGroup);
+                    SVG_elmImg = renderer.image(srcImg, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.lapTriggerGroup);
                     if (title)
                         SVG_elmImg.attr({title: title});
                 }
