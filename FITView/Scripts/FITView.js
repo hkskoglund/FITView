@@ -1188,9 +1188,16 @@
                 product = rawdata.device_info.product[deviceInfoNr];
 
             // Just in case we don't get a hit in the if's
-            srcImgDeviceInfo = "Images/deviceinfo/unknown.jpg";
+            srcImgDeviceInfo = "Images/deviceinfo/unknown.png";
+            titleDeviceInfo = "";
+            if (manufact === manufacturer.garmin)
+                titleDeviceInfo = "Manufacturer : Garmin"
+            else if (manufact)
+                titleDeviceInfo = "Manufacturer : " + manufact.toString();
             if (product)
-              titleDeviceInfo = "Product :" + product.toString();
+              titleDeviceInfo =  titleDeviceInfo+" Product :" + product.toString();
+            if (type)
+                titleDeviceInfo = titleDeviceInfo + " Type: " + type.toString();
 
             if (type === device_type.antfs && manufact === manufacturer.garmin) {
                 switch (product) {
@@ -1254,6 +1261,15 @@
                 titleDeviceInfo = "Bike speed/cadence sensor";
             }
 
+            if (type === device_type.stride_speed_distance) {
+                srcImgDeviceInfo = "Images/deviceinfo/garmin/footpod.jpg";
+                titleDeviceInfo = "Footpod (stride/speed/distance)"
+            }
+
+            if (type === device_type.environment_sensor_legacy && typeof (product) === "undefined" && typeof (manufact) === "undefined") {
+                srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
+                titleDeviceInfo = "Barometre/Temperature sensor"
+            }
 
             titleDeviceInfo += " "
             if (rawdata.device_info.software_version[deviceInfoNr])
@@ -1382,7 +1398,7 @@
         var ev = rawdata.event.event[eventNr];
         var ev_type = rawdata.event.event_type[eventNr];
 
-        srcImgEvent = "Images/unknown.png"
+        srcImgEvent = "Images/event/unknown.png"
         titleEvent = "Event: "+ev.toString()+" Event type: " + ev_type.toString();
 
         switch (ev) {
@@ -1450,6 +1466,11 @@
             case event.session:
                 srcImgEvent = "Images/laptrigger/session_end.png";
                 titleEvent = "Stop - end of session";
+                break;
+
+            case event.course_point:
+                srcImgEvent = "Images/laptrigger/position_marked.png";
+                titleEvent = "Course point";
                 break;
            
         }

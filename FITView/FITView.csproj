@@ -64,6 +64,7 @@
     <Content Include="Images\deviceinfo\garmin\edge200.jpg" />
     <Content Include="Images\deviceinfo\garmin\edge500.jpg" />
     <Content Include="Images\deviceinfo\garmin\edge800.jpg" />
+    <Content Include="Images\deviceinfo\garmin\footpod.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr110.png" />
     <Content Include="Images\deviceinfo\garmin\fr310xt.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr405.jpg" />
@@ -74,6 +75,7 @@
     <Content Include="Images\deviceinfo\unknown.png" />
     <Content Include="Images\event\battery-low.png" />
     <Content Include="Images\event\battery_marker.png" />
+    <Content Include="Images\event\unknown.png" />
     <Content Include="Images\event_type\stop_disable_all9.png" />
     <Content Include="Images\event_type\stop_all_4.png" />
     <Content Include="Images\event_type\start_0.png" />
