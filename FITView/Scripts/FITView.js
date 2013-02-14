@@ -1235,8 +1235,8 @@
             } 
 
             if (type === device_type.heart_rate) {
-                srcImgDeviceInfo = "Images/deviceinfo/HRstrap.jpg";
-                titleDeviceInfo = "Heart rate strap";
+                srcImgDeviceInfo = "Images/deviceinfo/HRM.jpg";
+                titleDeviceInfo = "Heart rate monitor";
             }
 
             if (type === device_type.environment_sensor_legacy && manufact === manufacturer.garmin && product === 1080) {

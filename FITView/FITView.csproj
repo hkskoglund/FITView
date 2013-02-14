@@ -70,7 +70,7 @@
     <Content Include="Images\deviceinfo\garmin\fr410.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr610.png" />
     <Content Include="Images\deviceinfo\garmin\gsc-10.jpg" />
-    <Content Include="Images\deviceinfo\HRstrap.jpg" />
+    <Content Include="Images\deviceinfo\HRM.jpg" />
     <Content Include="Images\event\battery-low.png" />
     <Content Include="Images\event\battery_marker.png" />
     <Content Include="Images\event_type\stop_all_4.png" />
