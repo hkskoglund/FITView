@@ -641,9 +641,12 @@
                                 }
                             }
 
-                            //if (rawData.lap.total_distance[lapNr])
-                            //    lapLabel += "/"+Math.round(rawData.lap.total_distance[lapNr]).toString();
-
+                            var distance;
+                            if (rawData.lap.total_distance && rawData.lap.total_distance[lapNr]) {
+                                distance = Math.round(rawData.lap.total_distance[lapNr]);
+                                if (!(distance === 1000 || distance === 1609))
+                                    lapLabel += "<br/>" + distance.toString()+" m";
+                            }
                             break;
                         default:
                             lapLabel = null;
@@ -657,13 +660,22 @@
                     id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
 
                     dashStyle: 'Dot',
-                    color: '#960000',
+                    //color: '#960000',
+                    color : 'lightgray',
                     width: 1,
                     label: {
+
+                        rotation: 0,
                         text: lapLabel,
-                        verticalAlign: 'top'
-                        //y : -50
-                        //y: 20
+                        textAlign: 'right',
+                        verticalAlign: 'top',
+                        x: -5,
+                        y: 15,
+                        style: {
+                            fontSize: '14px',
+                            fontWeight: 'bold'
+                        }
+                       
                     },
                     value: util.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])
                 };
@@ -2410,6 +2422,49 @@
                     case 4: // Activity file
 
                         FITUI.showLaps(rawData);
+
+                        // Try to catch errors in session start_time/timestamp
+                        var start_time;
+
+                        if (typeof (rawData.session.start_time) === "undefined")
+                        {
+                       
+                            console.warn("Session start time not found");
+                            start_time = rawData.lap.start_time[0];
+
+                            if (start_time === undefined) {
+                                console.warn("Session start time not found in first lap either, trying record head");
+                                start_time === rawData.record.timestamp[0];
+                            }
+
+                            console.info("Found start_time for session:", start_time);
+
+                            rawData.session.start_time = [];
+                            rawData.session.start_time.push(start_time);
+                        } else
+                            start_time = rawData.session.start_time[0];
+
+                       
+
+                        var timestamp;
+                        if (typeof (rawData.session.timestamp) === "undefined") {
+                            console.warn("Session end time not found");
+                            timestamp = rawData.lap.timestamp[rawData.session.num_laps - 1];
+                            console.info("Timestamp of lap", rawData.session_num_laps, "is :", timestamp);
+
+                            if (timestamp === undefined) {
+                                console.warn("Session end not found in timestamp for lap", rawData.session.num_laps);
+                                var len = rawData.record.timestamp.length;
+                                timestamp === rawData.record.timestamp[len - 1];
+                                console.info("Timestamp of last rawdata.record is :", timestamp);
+                            }
+                            rawData.session.timestamp = [];
+                            rawData.session.timestamp.push(timestamp);
+                        } else
+                            timestamp = rawData.session.timestamp[0];
+
+                      
+                      
 
                         if (FITUI.map) {
                             var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
