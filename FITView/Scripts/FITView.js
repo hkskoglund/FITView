@@ -1167,16 +1167,24 @@
         var type, manufact, product;
         
        
+        
         if (typeof (this.masterVM.freeYPOS) === "undefined")
             this.masterVM.freeYPOS = {};
 
+        var waitForDelay = 3 * 60 * 1000;
         for (var deviceInfoNr = 0; deviceInfoNr < deviceInfoLen; deviceInfoNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
-            if (timestamp <= max) {
+
+            if (timestamp < min)
+                continue;
+
+            if (timestamp > max + waitForDelay)
+                break;
+
+
+            if (timestamp <= max && timestamp >= min)
                 xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
-               
-              
-            } else {
+            else {
                 xpos = width + plotLeft - 5;  // Move device info. that reaches beyond max down at end 
                 timestamp = max;
               
@@ -1404,14 +1412,28 @@
     if (typeof (this.masterVM.freeYPOS) === "undefined")
         this.masterVM.freeYPOS = {};
 
+    var waitForDelay = 3 * 60 * 1000;
+
+    var recLen = rawdata.record.timestamp.length;
+    var maxTimestamp = rawdata.record.timestamp[recLen-1];
+
     for (var eventNr = 0; eventNr < eventLen; eventNr++) {
         var timestamp = util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]);
-        if (timestamp <= max)
+
+        if (timestamp < min)
+            continue;
+
+        if (timestamp > max + waitForDelay)
+            break;
+
+        if (timestamp <= max && timestamp >= min)
             xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
-        else {
+        else  // Gives us some issues with multisport...all events over max is displayed....
+        {
             timestamp = max;  // Force to max even if greater
             xpos = width + plotLeft - 5;  // Move events that reaches beyond max down at end like f.ex. HR recovery
         }
+
        
         if (this.masterVM.freeYPOS[timestamp] >= 0)
             this.masterVM.freeYPOS[timestamp] += 20;
@@ -1431,22 +1453,27 @@
                     case event_type.start:
                         srcImgEvent = "Images/event_type/start_0.png";
                         titleEvent = "START";
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
                     case event_type.stop:
                         srcImgEvent = "Images/event_type/stop_all_4.png";
                         titleEvent = "STOP";
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
                     case event_type.stop_all:
                         srcImgEvent = "Images/event_type/stop_all_4.png";
                         titleEvent = "STOP ALL";
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
                     case event_type.stop_disable:
                         srcImgEvent = "Images/event_type/stop_all_4.png";
                         titleEvent = "STOP DISABLE";
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
                     case event_type.stop_disable_all:
                         srcImgEvent = "Images/event_type/stop_disable_all9.png";
                         titleEvent = "STOP DISABLE ALL";
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
 
                 }
@@ -1458,6 +1485,7 @@
                 titleEvent = "Battery";
                 if (rawdata.event.data[eventNr])
                     titleEvent += " - " + rawdata.event.data[eventNr].toString();
+                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                 break;
 
             case event.recovery_hr: // Don't check for event type marker
@@ -1474,26 +1502,31 @@
                 titleEvent = "Battery low";
                 if (rawdata.event.data[eventNr])
                     titleEvent += " - " + rawdata.event.data[eventNr].toString();
+                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                 break;
 
             case event.power_down:
-                srcImgEvent = "Images/event_type/stop_all_4.png";
+                srcImgEvent = "Images/event/power_down.png";
                 titleEvent = "Power down";
+                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                 break;
 
             case event.power_up:
-                srcImgEvent = "Images/event_type/stop_all_4.png";
+                srcImgEvent = "Images/event/power_up.png";
                 titleEvent = "Power up";
+                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                 break;
             
             case event.session:
                 srcImgEvent = "Images/laptrigger/session_end.png";
                 titleEvent = "Stop - end of session";
+                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                 break;
 
             case event.course_point:
                 srcImgEvent = "Images/laptrigger/position_marked.png";
                 titleEvent = "Course point";
+                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                 break;
            
         }
@@ -1526,8 +1559,10 @@
     UIController.prototype.showLapTriggers = function(rawdata)
     {
 
-        if (typeof (rawdata) === "undefined")
+        if (typeof (rawdata) === "undefined") {
+            console.error("No rawdata, cannot show lap triggers");
             return;
+        }
 
         var util = FITUtility();  // Move to FITUI as property??
 
@@ -1567,15 +1602,29 @@
 
         this.masterVM.lapTriggerGroup = renderer.g('laptriggers').add();
 
-        if (typeof (this.masterVM.freeYPOS) === "undefined")
+        if (typeof (this.masterVM.freeYPOS) === "undefined")  // Used for stacked layout
             this.masterVM.freeYPOS = {};
 
+      
+        var waitForDelay = 3 * 60 * 1000;
+        
         for (var lapNr = 0; lapNr < lapLen; lapNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
-            if (timestamp <= max) {
+
+            if (timestamp < min)
+                continue;
+
+            if (timestamp > max + waitForDelay)
+                break;
+
+
+
+            if (timestamp <= max && timestamp >= min )
                 xpos = Math.round(width * ((timestamp - min) / (max - min))) + plotLeft;
-               
-            } else {
+            //else
+            //    continue; // Skip overflowing triggers
+                //}
+            else {
                 xpos = width + plotLeft - 5;  // Try to move timestamp beyond current max at end of chart
                 timestamp = max;
             }
