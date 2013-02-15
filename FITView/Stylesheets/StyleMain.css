@@ -81,6 +81,8 @@
 .menu li:hover > a { color: #8fde62; }
 
 .menu ul {
+    max-width : 300px;
+
     z-index : 1;
     position: absolute;
     top: 40px;
@@ -88,6 +90,8 @@
  
     opacity: 0;
     background: #1f2024;
+
+    overflow-x: scroll;
  
     -webkit-border-radius: 0 0 5px 5px;
     -moz-border-radius: 0 0 5px 5px;
