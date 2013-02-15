@@ -121,7 +121,7 @@
 }
 
 .menu ul li a {
-    width: 400px;
+    width: 600px;
     /*padding: 4px 0 4px 40px;*/
     margin: 0;
  
@@ -347,6 +347,15 @@ section#lapList {
     font-size: larger;
 }
 
+.lapHHMMSS {
+    color : lightgray;
+   /* font-size: larger; */ 
+}
+
+.lapTOTALDISTANCE {
+    color: lightgray;
+    /*font-size: larger;*/
+}
 .sessionTOTALDISTANCE {
     color: lightgray;
     font-size: larger;

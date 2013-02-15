@@ -101,20 +101,26 @@
 
 
         this.masterVM = {
+
             settingsVM: {
                 showLapLines: ko.observable(true),
                 showLapTriggers: ko.observable(false),
                 showEvents: ko.observable(false),
                 showLegends: ko.observable(true),
                 storeInIndexedDB: ko.observable(false),
-                showDeviceInfo : ko.observable(false)
+                showDeviceInfo: ko.observable(false)
             },
-                progressVM: { 
-                    progress : ko.observable(0)
-                },
+
+            progressVM: {
+                progress: ko.observable(0)
+            },
+
             sessionVM: getEmptyViewModel(fitActivity.session()),
-            loadChartVM: new loadSeriesViaButtonViewModel()
-         
+
+            lapVM: getEmptyViewModel(fitActivity.lap()),
+
+            loadChartVM: new loadSeriesViaButtonViewModel()  // Give possibility for ondemand loading of data -> to speed up start/not loading all data at once
+
         };
 
         // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
@@ -167,12 +173,19 @@
 
         this.masterVM.sessionVM.selectedSession = ko.observable(undefined);
         this.masterVM.sessionVM.tempoOrSpeed = ko.observable(undefined);
+        this.masterVM.lapVM.tempoOrSpeed = ko.observable(undefined);
 
         var self = this;
 
+        // Maybe: set rawdata on masterVM
         this.masterVM.sessionVM.setRawdata = function(self,rawData)
         {
             self.masterVM.sessionVM.rawData = rawData;
+        }
+
+
+        this.masterVM.lapVM.setRawdata = function (self, rawData) {
+            self.masterVM.lapVM.rawData = rawData;
         }
 
         this.masterVM.sessionVM.showSession = function (data, event) {
@@ -190,7 +203,7 @@
 
         }
 
-        ko.applyBindings(this.masterVM, bodyElement); // Initialize model with DOM 
+        ko.applyBindings(this.masterVM, bodyElement); // Initialize master model with DOM 
         jqueryBodyElement.show();
 
         // Initialize map
@@ -2364,10 +2377,10 @@
 
     };
 
-    UIController.prototype.resetViewModel = function (viewModel) {
+    UIController.prototype.resetViewModel = function (viewModel,fieldDefProperties) {
 
         var fitActivity = FIT.ActivityFile();
-        var sessionFieldDef = fitActivity.session();
+        //var sessionFieldDef = fitActivity.session();
        
         // Take timestamp first to collapse DOM outline and hopefully make other collapses "hidden"
 
@@ -2375,8 +2388,8 @@
             viewModel.timestamp([]);
 
         var fieldDefProperty;
-        for (var fieldDefNr in sessionFieldDef) {
-            fieldDefProperty = sessionFieldDef[fieldDefNr].property;
+        for (var fieldDefNr in fieldDefProperties) {
+            fieldDefProperty = fieldDefProperties[fieldDefNr].property;
             if (viewModel[fieldDefProperty] && fieldDefProperty !== "timestamp" ) {
                 // console.log("RemoveAll() on ", observableArray);
                 viewModel[fieldDefProperty]([]);
@@ -2455,7 +2468,8 @@
 
                 //if (FITUI.lapViewModel === undefined && rawData.lap) {
                 //    FITUI.lapViewModel = emptyViewModel(fitActivity.lap());
-                //        FITUI.lapViewModel = ko.mapping.fromJS(rawData.lap, mappingOptions);
+                FITUI.masterVM.lapVM.setRawdata(FITUI, rawData);
+                 ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.masterVM.lapVM);
                 //       // jqueryLapNode.show();
                 //        ko.applyBindings(FITUI.lapViewModel, lapNode);
                        
@@ -2600,6 +2614,8 @@
             return;
         }
 
+        var fitActivity = FIT.ActivityFile();
+
         // console.log(e);
         e.preventDefault();
 
@@ -2607,7 +2623,8 @@
 
         // Clean up UI state
         FITUI.masterVM.sessionVM.selectedSession(undefined);
-        FITUI.resetViewModel(FITUI.masterVM.sessionVM);
+        FITUI.resetViewModel(FITUI.masterVM.sessionVM, fitActivity.session());
+        FITUI.resetViewModel(FITUI.masterVM.lapVM, fitActivity.lap());
         //// http://api.highcharts.com/highcharts#Chart.destroy()
 
         if (FITUI.multiChart) {

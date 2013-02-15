@@ -22,17 +22,16 @@
 
 <body id="body">
    
-  <!--  <div data-bind="text: ko.toJSON($root)"></div> -->
+    
 
  <div id="divSessionLap"  >
 
-     
+    <!-- <div data-bind="text: ko.toJSON($root.lapVM)"></div> -->
+
+         
      
          
          <ul class="menu" >
-
-             
-
 
              <li><a href="#">FITView</a>
 
@@ -52,7 +51,7 @@
             
              <li id="liSessions" style="display : none" data-bind="visible: timestamp().length > 0"><a href="#">Sessions</a>
                  
-                 <ul data-bind="foreach: timestamp">
+                 <ul style="max-height: 300px; overflow-y : auto; overflow-x : hidden" data-bind="foreach: timestamp">
 
                      <li data-bind="with: $parent">
 
@@ -113,6 +112,172 @@
              </li>
 
              
+
+         <!-- /ko -->
+
+
+<!-- ko with: lapVM -->
+             
+             <li id="liLaps" style="display : none" data-bind="visible: timestamp().length > 0"><a href="#">Laps</a>
+             
+     <ul style="max-height: 300px; overflow-y : scroll; overflow-x : scroll" data-bind="foreach: timestamp">
+
+                     <li data-bind="with: $parent">
+
+                        <!-- <a href="#" data-bind="click: showSession.bind($index())">-->
+                         <a href="#"  -->
+                         
+                        <!-- ko if:  sport()[$index()] === 1 -->
+                        <img class="lapSport" src="Images/sport/running.png" title="Running" alt="Running"/>
+                        <!-- /ko -->
+                        
+                        <!-- ko if:  sport()[$index()] === 2 -->
+                        <img class="lapSport" src="Images/sport/cycling.png" title="Cycling" alt="Cycling" />
+                        <!-- /ko -->
+                        
+                        <!-- ko if:  sport()[$index()] === 5 -->
+                        <img class="lapSport" src="Images/sport/swimming.png" title="Swimming" alt="Swimming" />
+                        <!-- /ko -->
+                        
+
+                             <!-- ko if: total_elapsed_time().length > 0  -->
+                             <time><span class="lapHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
+                             <!-- /ko -->
+
+                            <!-- ko if: total_distance().length > 0 -->
+                             <span class="lapTOTALDISTANCE"  title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
+                             <!-- /ko -->
+
+                             
+                             
+
+
+                     <!-- ko if: total_calories()[$index()] > 0 -->
+                             <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+
+                             <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: avg_heart_rate()[$index()] ||  max_heart_rate()[$index()] -->
+                             <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
+                             <!-- /ko -->
+
+                             <!-- HEART RATE -->
+
+                             <!-- ko if:  avg_heart_rate()[$index()]  >= 0 -->
+                             <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[$index()]"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: max_heart_rate()[$index()] >= 0 -->
+                             <span  title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[$index()]"></span>
+                             <!-- /ko -->
+
+                             <!-- SPEED -->
+
+                             <!-- ko if: avg_speed()[$index()]  || max_speed()[$index()]  -->
+                             <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
+                             <!-- /ko -->
+
+
+                             <!-- BIKING/GENERIC -->
+                             <!-- ko if: sport()[$index()] === 2 || sport()[$index()] === 0 || tempoOrSpeed() === 1 -->
+
+
+                             <!-- ko if: avg_speed()[$index()] -->
+                             <span title="Average speed" data-bind="text: avg_speed()[$index()].toKMprH()"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: max_speed()[$index()]  -->
+                             <span title="Max speed" data-bind="text: max_speed()[$index()].toKMprH()"></span>
+                             <!-- /ko -->
+                             <!-- /ko -->
+
+                             <!-- RUNNING -->
+
+                             <!-- ko if: sport()[$index()] === 1 || tempoOrSpeed() === 0 -->
+
+                             <!-- ko if: avg_speed()[$index()] -->
+                             <span title="Average speed" data-bind="text: avg_speed()[$index()].toMINprKM()"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: max_speed()[$index()] -->
+                             <span title="Max speed" data-bind="text: max_speed()[$index()].toMINprKM()"></span>
+                             <!-- /ko -->
+                             <!-- /ko -->
+
+                             <!-- SWIMMING TO DO .... -->
+
+                             <!-- ko if: sport()[$index()] === 5  -->
+
+                             <!-- ko if: avg_speed()[$index()] -->
+                             <span title="Average speed" data-bind="text: avg_speed()[$index()].toMINpr100M()"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: max_speed()[$index()] -->
+                             <span title="Max speed" data-bind="text: max_speed()[$index()].toMINpr100M()"></span>
+                             <!-- /ko -->
+                             <!-- /ko -->
+
+
+                             <!-- ASCENT/DESCENT -->
+
+                             <!-- ko if: total_ascent()[$index()] >= 0  ||  total_descent()[$index()] >= 0 -->
+
+                             <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
+
+                             <span title="Total ascent (m)" data-bind="text: total_ascent()[$index()]"></span>
+
+                             <span title="Total descent (m)" data-bind="text: total_descent()[$index()]"></span>
+
+                             <!-- /ko -->
+
+                             <!-- CADENCE/STRIDES -->
+
+                             <!-- ko if: avg_cadence()[$index()] >= 0 || 
+                            max_cadence()[$index()] >= 0 ||  
+                          total_cycles_strides()[$index()] >=0 -->
+                             <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
+                             <!-- /ko -->
+
+                             <!-- ko if:  avg_cadence().length > 0  -->
+                             <span title="Average cadence" data-bind="text: avg_cadence()[$index()]"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: max_cadence().length > 0  -->
+                             <span title="Max cadence" data-bind="text: max_cadence()[$index()]"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: total_cycles_strides().length > 0  -->
+                             <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[$index()]"></span>
+
+                             <!-- /ko -->
+
+                             <!-- POWER -->
+
+                             <!-- ko if: avg_power()[$index()] >= 0  ||  max_power()[$index()] >= 0  -->
+
+                             <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
+
+                             <span title="Average power (w)" data-bind="text: avg_power()[$index()]"></span>
+
+                             <span title="Max power (w)" data-bind="text: max_power()[$index()]"></span>
+
+                             <!-- /ko -->
+
+                      <!-- ko if: avg_temperature()[$index()] >= 0  ||  max_temperature()[$index()] >= 0  -->
+
+                             <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
+
+                             <span title="Average temperature (C)" data-bind="text: avg_temperature()[$index()]"></span>
+
+                             <span title="Max temperature (C)" data-bind="text: max_temperature()[$index()]"></span>
+
+                             <!-- /ko -->
+
+                        </a>
+                   </li>
+         </ul>
+                 </li>
 
          <!-- /ko -->
 
