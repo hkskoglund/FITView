@@ -274,6 +274,39 @@
 
                              <!-- /ko -->
 
+                             <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 0 -->
+                        <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed"/>
+                        <!-- /ko -->
+
+                             
+                              <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 1 -->
+                        <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time"/>
+                        <!-- /ko -->
+
+                            <!-- ko if: lap_trigger && lap_trigger()[$index()] === 2 -->
+                        <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
+                        <!-- /ko -->
+
+                            <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 3 -->
+                        <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
+                        <!-- /ko -->
+
+                            <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 4 -->
+                        <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
+                        <!-- /ko -->
+
+                            <!-- ko if: lap_trigger && lap_trigger()[$index()] === 5 -->
+                        <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
+                        <!-- /ko -->
+
+                            <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 6 -->
+                        <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
+                        <!-- /ko -->
+
+                         <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 7 -->
+                        <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
+                        <!-- /ko -->
+
                         </a>
                    </li>
          </ul>
@@ -391,12 +424,26 @@
 
              <li>
                <!--  <a href="#"></a>-->
-                 <!-- ko with: sessionVM -->
+                 
+             </li>
+
+             <!--<li>
+                  
+            <div data-bind="text: ko.toJSON($root)"></div>
+
+           
+             </li>-->
+            
+
+         </ul>
+
+    <!-- ko with: sessionVM -->
                   <div id="sessionDetails" >
                      <!--<div data-bind="text: ko.toJSON($root)"></div>-->
                    
                      <!-- ko if: selectedSession() !== undefined -->
 
+                      
                        <!-- ko if: sport()[selectedSession()] === 1 -->
                              <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
                              <!-- /ko -->
@@ -409,10 +456,17 @@
                              <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
                              <!-- /ko -->
 
-                             <!-- ko if: total_elapsed_time().length > 0  -->
+                     <!-- ko if : start_time()[selectedSession()] -->
+                  
+                        <span data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedSession()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
+                      <!-- /ko -->
+
+                           
+                       <!-- ko if: total_elapsed_time().length > 0  -->
                              <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
                              <!-- /ko -->
 
+                       
 
                              <!-- ko if: total_timer_time().length > 0   -->
 
@@ -581,19 +635,6 @@
 
                  </div>
                  <!-- /ko -->
-             </li>
-
-             <!--<li>
-                  
-            <div data-bind="text: ko.toJSON($root)"></div>
-
-           
-             </li>-->
-            
-
-         </ul>
-
-    
         
      
      
@@ -629,6 +670,8 @@
 
    
     <section id="activityMap"></section>
+
+    
     
     <div id="divChartWrapper">
         

@@ -16,6 +16,8 @@
 
         var fitActivity = FIT.ActivityFile();
 
+        var util = FITUtility();
+
         // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
         // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
         // virtual elements and something with "changed" value notification. Introducing empty observables on unused properties gives a performance penalty.
@@ -103,6 +105,7 @@
         this.masterVM = {
 
             settingsVM: {
+                timeZoneDifferenceUTC : util.getTimezoneOffsetFromUTC(),
                 showLapLines: ko.observable(true),
                 showLapTriggers: ko.observable(false),
                 showEvents: ko.observable(false),
@@ -630,7 +633,7 @@
 
         var lapLabel;
         if (rawData.lap) {
-            for (var lapNr = 0; lapNr < rawData.lap.timestamp.length; lapNr++) {
+            for (var lapNr = 0, len = rawData.lap.timestamp.length ; lapNr < len; lapNr++) {
                 if (rawData.lap.timestamp && rawData.lap.timestamp[lapNr]) {
                     switch (rawData.lap.lap_trigger[lapNr]) {
                         case 0:  // LAP pressed
@@ -2334,6 +2337,14 @@
         
     };
 
+    UIController.prototype.convertToFullDate = function (UTCmillisec)
+        //// Callback on "create" from knockout
+    {
+        this.value = UTCmillsec;
+        this.fullDate = ko.computed(function () {
+            return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec)
+        }, this);
+    };
    
 
     UIController.prototype.convertSecsToHHMMSSModel = function (totalSec) {
@@ -2341,6 +2352,8 @@
         //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
 
         this.value = totalSec;
+        
+
         this.toHHMMSS = ko.computed(function () {
             // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
 
@@ -2424,6 +2437,11 @@
 
                 // Value converters that are run on "create"-event/callback in knockout
                 var mappingOptions = {
+                    //'start_time' : {
+                    //    create: function (options) {
+                    //        return new FITUI.convertToFullDate(options.data);
+                    //    }
+                    //},
                     'total_elapsed_time': {
                         create: function (options) {
                             return new FITUI.convertSecsToHHMMSSModel(options.data);

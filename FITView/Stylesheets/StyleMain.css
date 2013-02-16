@@ -326,14 +326,15 @@ section#lapList {
 }
 
 .lapSport {
-  float : left;
+  /*float : left;*/
+  padding-left : 5px;
   width : 16px;
   height : 16px;
   border : none;
 }
 
 .lapTrigger {
-    float: right;
+    /*float: right;*/
     height : 16px;
     width : 16px;
     border : none;
@@ -346,27 +347,31 @@ section#lapList {
     padding : 2px;
 }
 
+.sessionFullDate {
+  font-size : larger;
+}
+
 .sessionHHMMSS  {
-    color : lightgray;
+    /*color : lightgray;*/
     font-size: larger;
 }
 
 .lapHHMMSS {
-    color : lightgray;
+    /*color : lightgray;*/
    /* font-size: larger; */ 
 }
 
 .lapTOTALDISTANCE {
-    color: lightgray;
+    /*color: lightgray;*/
     /*font-size: larger;*/
 }
 .sessionTOTALDISTANCE {
-    color: lightgray;
+    /*color: lightgray;*/
     font-size: larger;
 }
 
 #sessionDetails {
-   color: lightgray;
+   /*color: lightgray;*/
    /*font-size: larger;*/
   
    padding-bottom: 10px;
