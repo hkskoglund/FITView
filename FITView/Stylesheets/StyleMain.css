@@ -147,12 +147,19 @@ white-space: nowrap;
 
 
 #activityMap {
-    width: 100%;
-    height: 350px;
+    width: 69%;
+    height : 270px;
     background-color : white;
-
+    float : right;
     
     /*display : none; */
+}
+
+#liveImage {
+   width : 30%;
+    height : 270px;
+   margin-left : 5px;
+   float : left;
 }
 
 .loadButton {
