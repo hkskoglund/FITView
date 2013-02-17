@@ -174,21 +174,33 @@ white-space: nowrap;
 
 #divChartWrapper {
 margin-top : 5px;
+
+/*display : -webkit-flex;
+display : -ms-flexbox;
+display : -moz-flex; 
+display  : flex;
+-webkit-flex-flow :row wrap;
+-webkit-align-items : stretch;*/
+
 }
 
 #testChart {
-    visibility : hidden;
-    width : 89%;
+    /*visibility : hidden;*/
+    /*-webkit-flex : 5 1;*/
+    float:left;
+   width: 90%;
     /*height : 300px;*/
 }
 
 #zonesChart {
-    visibility : hidden;
-   z-index : 1;
-    width : 10%;
+    /*visibility : hidden;*/
+   /*z-index : 1;*/
+    /*-webkit-flex : 1  1;*/
+   
     /*height: 200px;*/
     /*float : left;*/
-    
+    float: right;
+    width : 10%;
 }
 
 #hrvChart {

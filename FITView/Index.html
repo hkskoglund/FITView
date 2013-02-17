@@ -23,7 +23,9 @@
 <body id="body">
    
     
+    <div>
 
+   
  <div id="divSessionLap"  >
 
     <!-- <div data-bind="text: ko.toJSON($root.lapVM)"></div> -->
@@ -148,31 +150,7 @@
                              <span class="lapTOTALDISTANCE"  title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
                              <!-- /ko -->
 
-                             
-                             
-
-
-                     <!-- ko if: total_calories()[$index()] > 0 -->
-                             <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
-
-                             <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
-                             <!-- /ko -->
-
-                             <!-- ko if: avg_heart_rate()[$index()] ||  max_heart_rate()[$index()] -->
-                             <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
-                             <!-- /ko -->
-
-                             <!-- HEART RATE -->
-
-                             <!-- ko if:  avg_heart_rate()[$index()]  >= 0 -->
-                             <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[$index()]"></span>
-                             <!-- /ko -->
-
-                             <!-- ko if: max_heart_rate()[$index()] >= 0 -->
-                             <span  title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[$index()]"></span>
-                             <!-- /ko -->
-
-                             <!-- SPEED -->
+                           <!-- SPEED -->
 
                              <!-- ko if: avg_speed()[$index()]  || max_speed()[$index()]  -->
                              <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
@@ -217,19 +195,32 @@
                              <span title="Max speed" data-bind="text: max_speed()[$index()].toMINpr100M()"></span>
                              <!-- /ko -->
                              <!-- /ko -->
+  
+                             
+                              <!-- HEART RATE -->
 
-
-                             <!-- ASCENT/DESCENT -->
-
-                             <!-- ko if: total_ascent()[$index()] >= 0  ||  total_descent()[$index()] >= 0 -->
-
-                             <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
-
-                             <span title="Total ascent (m)" data-bind="text: total_ascent()[$index()]"></span>
-
-                             <span title="Total descent (m)" data-bind="text: total_descent()[$index()]"></span>
-
+                              <!-- ko if: avg_heart_rate()[$index()] ||  max_heart_rate()[$index()] -->
+                             <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
                              <!-- /ko -->
+
+
+                             <!-- ko if:  avg_heart_rate()[$index()]  >= 0 -->
+                             <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[$index()]"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: max_heart_rate()[$index()] >= 0 -->
+                             <span  title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[$index()]"></span>
+                             <!-- /ko -->
+
+                                       
+                     <!-- ko if: total_calories()[$index()] > 0 -->
+                             <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+
+                             <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
+                             <!-- /ko -->
+
+
+                             
 
                              <!-- CADENCE/STRIDES -->
 
@@ -263,6 +254,19 @@
                              <span title="Max power (w)" data-bind="text: max_power()[$index()]"></span>
 
                              <!-- /ko -->
+
+                   <!-- ASCENT/DESCENT -->
+
+                             <!-- ko if: total_ascent()[$index()] >= 0  ||  total_descent()[$index()] >= 0 -->
+
+                             <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
+
+                             <span title="Total ascent (m)" data-bind="text: total_ascent()[$index()]"></span>
+
+                             <span title="Total descent (m)" data-bind="text: total_descent()[$index()]"></span>
+
+                             <!-- /ko -->
+                            
 
                       <!-- ko if: avg_temperature()[$index()] >= 0  ||  max_temperature()[$index()] >= 0  -->
 
@@ -468,7 +472,7 @@
 
                        
 
-                             <!-- ko if: total_timer_time().length > 0   -->
+                             <!-- ko if: total_timer_time().length > 0  && total_timer_time()[selectedSession()] !== total_elapsed_time()[selectedSession()] -->
 
                              <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
                              <!-- /ko -->
@@ -477,28 +481,7 @@
                              <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
                              <!-- /ko -->
 
-
-                     <!-- ko if: total_calories()[selectedSession()] > 0 -->
-                             <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
-
-                             <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedSession()]"></span>
-                             <!-- /ko -->
-
-                             <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
-                             <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
-                             <!-- /ko -->
-
-                             <!-- HEART RATE -->
-
-                             <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
-                             <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
-                             <!-- /ko -->
-
-                             <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
-                             <span  title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
-                             <!-- /ko -->
-
-                             <!-- SPEED -->
+                      <!-- SPEED -->
 
                              <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
                              <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
@@ -544,18 +527,29 @@
                              <!-- /ko -->
                              <!-- /ko -->
 
-
-                             <!-- ASCENT/DESCENT -->
-
-                             <!-- ko if: total_ascent()[selectedSession()] >= 0  ||  total_descent()[selectedSession()] >= 0 -->
-
-                             <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
-
-                             <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedSession()]"></span>
-
-                             <span title="Total descent (m)" data-bind="text: total_descent()[selectedSession()]"></span>
-
+                             <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
+                             <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
                              <!-- /ko -->
+
+                             <!-- HEART RATE -->
+
+                             <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
+                             <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
+                             <!-- /ko -->
+
+                             <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
+                             <span  title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
+                             <!-- /ko -->
+
+                               
+                     <!-- ko if: total_calories()[selectedSession()] > 0 -->
+                             <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+
+                             <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedSession()]"></span>
+                             <!-- /ko -->
+
+
+
 
                              <!-- CADENCE/STRIDES -->
 
@@ -587,6 +581,20 @@
                              <span title="Average power (w)" data-bind="text: avg_power()[selectedSession()]"></span>
 
                              <span title="Max power (w)" data-bind="text: max_power()[selectedSession()]"></span>
+
+                             <!-- /ko -->
+
+                    
+                      
+                             <!-- ASCENT/DESCENT -->
+
+                             <!-- ko if: total_ascent()[selectedSession()] >= 0  ||  total_descent()[selectedSession()] >= 0 -->
+
+                             <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
+
+                             <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedSession()]"></span>
+
+                             <span title="Total descent (m)" data-bind="text: total_descent()[selectedSession()]"></span>
 
                              <!-- /ko -->
 
@@ -675,8 +683,8 @@
     
     <div id="divChartWrapper">
         
-        <section style="float: left; display: inline" id="testChart"></section>
-        <section style="float: right; display: inline" id="zonesChart"></section>
+        <div  id="testChart"></div>
+        <div  id="zonesChart"></div>
     </div>
 
     
@@ -697,6 +705,8 @@
         <button id="btnNewZone" type="button">New</button>
    
     </div>-->
+
+         </div>
 
    
     

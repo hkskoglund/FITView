@@ -743,7 +743,9 @@
         if (rawData.record) {
 
             if (rawData.record.heart_rate) {
-                heartRateSeries = { id: 'heartrateseries',name: 'Heart rate' };
+                heartRateSeries = {
+                    id: 'heartrateseries', name: 'Heart rate'
+                };
                 heartRateSeriesData = FITUtil.combine(rawData,rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, heartRateSeries.name);
                 seriesData['heartrateseries'] = heartRateSeriesData;
                 seriesSetup.push(heartRateSeries);
@@ -808,12 +810,15 @@
         var xAxisType = 'datetime';
 
         var chartOptions = {
+            animation : false,
             renderTo: chartId,
             type: 'line',
             // Allow zooming
             zoomType: 'xy',
             events: {
                 redraw: function () {
+
+                    // Use events instead?? -> send event "redraw" to these
                     if (self.masterVM.settingsVM.showLapTriggers())
                       self.showLapTriggers(rawData);  // hook up - we want to synchronize on window resize
 
@@ -934,6 +939,15 @@
              
             plotOptions: {
                 series: {
+                    marker: {
+                        enabled: false,  // Will speed up drawing, no need to call drawPoints in Highcharts....for entire series
+                        states: {
+                            hover: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    animation: false,
                     allowPointSelect: true,
                     point: {
 
@@ -1049,12 +1063,13 @@
                 name : 'Heart rate',
                 id : 'heartrateseries',
                 data: seriesData['heartrateseries']}); // Choose heart rate series as default
-        else if (seriesData['speedseries'])
+
+        if (seriesData['speedseries'])
             this.multiChart.addSeries({
                 name : 'Speed',
                 id: 'speedseries',
                 data: seriesData['speedseries']}); // Next, try speed
-        else if (seriesData['altitudeseries'])
+       if (seriesData['altitudeseries'])
             this.multiChart.addSeries({
                 name : 'Altitude',
                 id: 'altitudeseries',

@@ -1081,11 +1081,12 @@ pathAnim = {
 			 * @param {Array} arr
 			 * @param {Function} fn
 			 */
-			this.each = Array.prototype.forEach ?
-				function (arr, fn) { // modern browsers
-					return Array.prototype.forEach.call(arr, fn);
+			this.each =
+                //Array.prototype.forEach ?
+			//	function (arr, fn) { // modern browsers
+			//		return Array.prototype.forEach.call(arr, fn);
 					
-				} : 
+			//	} : 
 				function (arr, fn) { // legacy
 					var i = 0, 
 						len = arr.length;
