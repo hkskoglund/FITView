@@ -740,71 +740,136 @@
 
         // Record data
 
+        var yAxisNr = 0; // Give each series a y-axis
+        var yAxisOptions = [];
+
+        var id;
+
         if (rawData.record) {
 
             if (rawData.record.heart_rate) {
+                id = 'heartrateseries';
+                heartRateSeriesData = FITUtil.combine(rawData,rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
+                seriesData[id] = heartRateSeriesData;
                 heartRateSeries = {
-                    id: 'heartrateseries', name: 'Heart rate'
+                    id: id,
+                    name: 'Heart rate',
+                    yAxis: yAxisNr++,
+                    data : seriesData[id]
                 };
-                heartRateSeriesData = FITUtil.combine(rawData,rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, heartRateSeries.name);
-                seriesData['heartrateseries'] = heartRateSeriesData;
                 seriesSetup.push(heartRateSeries);
+                yAxisOptions.push({
+                    gridLineWidth: 0,
+                    title: {
+                        text: null
+                    }
+                    
+                });
+
             }
 
-            if (rawData.record.altitude) {
-                altitudeSeries = { name: 'Altitude', id: 'altitudeseries'  };
-                altitudeSeriesData = FITUtil.combine(rawData,rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, altitudeSeries.name);
-                seriesData['altitudeseries'] = altitudeSeriesData;
-                seriesSetup.push(altitudeSeries);
-            }
-
+           
 
             this.speedMode = undefined;
 
             if (rawData.record.speed) {
-              
-                speedSeries = { name: 'Speed', id: 'speedseries' };
+                id = 'speedseries';
+               
                 switch (sport) {
                     case 1: // Running
                         this.speedMode = 1; // min/km
-                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, speedSeries.name);
+                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes,id);
                         break;
                     case 2: // Cycling
                         this.speedMode = 2; // km/h
-                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, speedSeries.name);
+                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
                         break;
                     default:
                         this.speedMode = 2;
-                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, speedSeries.name);
+                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
                         break;
                 }
-               seriesData['speedseries'] = speedSeriesData;
+                seriesData[id] = speedSeriesData;
+                speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id] };
                seriesSetup.push(speedSeries);
+               yAxisOptions.push({
+                   gridLineWidth: 0,
+                   title: {
+                       text: null
+                   }
+
+               });
             }
 
 
             if (rawData.record.cadence) {
-                cadenceSeries = { name: 'Cadence', id: 'cadenceseries' };
-                cadenceSeriesData = FITUtil.combine(rawData,rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, cadenceSeries.name);
-                seriesData['cadenceseries'] = cadenceSeriesData;
+                id = 'cadenceseries';
+                cadenceSeriesData = FITUtil.combine(rawData,rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
+                seriesData[id] = cadenceSeriesData;
+
+                cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id] };
+
                 seriesSetup.push(cadenceSeries);
+                yAxisOptions.push({
+                    gridLineWidth: 0,
+                    title: {
+                        text: null
+                    }
+
+                });
             }
             
             if (rawData.record.power) {
-                powerSeries = { name: 'Power', id: 'powerseries' };
-                powerSeriesData = FITUtil.combine(rawData,rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, powerSeries.name);
-                seriesData['powerseries'] = powerSeriesData;
+                id = 'powerseries';
+                powerSeriesData = FITUtil.combine(rawData,rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
+                seriesData[id] = powerSeriesData;
+
+                powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data : seriesData[id] };
                 seriesSetup.push(powerSeries);
+                yAxisOptions.push({
+                    gridLineWidth: 0,
+                    title: {
+                        text: null
+                    }
+
+                });
             }
             
+            if (rawData.record.altitude) {
+                id = 'altitudeseries';
+                 altitudeSeriesData = FITUtil.combine(rawData,rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
+                 seriesData[id] = altitudeSeriesData;
+                 altitudeSeries = { name: 'Altitude', id: id, yAxis : yAxisNr++, data : seriesData[id] };
+              
+                seriesSetup.push(altitudeSeries);
+                yAxisOptions.push({
+                    gridLineWidth: 0,
+                    title: {
+                        text: null
+                    }
+
+                });
+            }
+
+
             if (rawData.record.temperature) {
-                temperatureSeries = { name: 'Temperature', id: 'temperatureseries' };
-                temperatureSeriesData = FITUtil.combine(rawData,rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, temperatureSeries.name);
-                seriesData['temperatureseries'] = temperatureSeriesData;
+                id = 'temperatureseries';
+                temperatureSeriesData = FITUtil.combine(rawData,rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
+                seriesData[id] = temperatureSeriesData;
+                temperatureSeries = { name: 'Temperature', id: id, yAxis: yAxisNr++, data : seriesData[id] };
                 seriesSetup.push(temperatureSeries);
+                yAxisOptions.push({
+                    gridLineWidth: 0,
+                    title: {
+                        text: null
+                    }
+
+                });
             }
             
         }
+
+       
 
    
         var xAxisType = 'datetime';
@@ -841,11 +906,7 @@
 
         var d = new Date();
         console.log("Starting highchart now " + d);
-        //var progressInSec = 0;
-        //$("#progressFITimport").show();
-        //var intervalTimerID = setInterval(function () {
-        //    FITUI.progressFITimportViewModel.progressFITimport(++progressInSec);
-        //},2000);
+        
             
        
 
@@ -876,55 +937,38 @@
                 //plotLines: lapLinesConfig
                 //reversed : true
             },
-            yAxis: [{
-                title: {
-                    text: ''
-                }
-                //labels: {
-                //    formatter: function () {
-                //        if (self.speedMode === 1) // Running
-                //            return self.formatToMMSS(this.value) + " min/km";
-                //        else if (self.speedMode === 2) // Cycling
-                //            return this.value + "km/h";
-                //        else
-                //            return this.value;
-                //    }
-                //}
-            }, { // Secondary yAxis
-                gridLineWidth: 0,
-                title: {
-                    text: 'Speed',
-                    //style: {
-                    //    color: '#4572A7'
-                    //}
-                },
-                labels: {
-                    //formatter: function() {
-                    //    return this.value +' mm';
-                    //},
-                    //style: {
-                    //    color: '#4572A7'
-                    //}
-                }
-            },
-
-            { // Secondary yAxis
-                gridLineWidth: 0,
-                title: {
-                    text: 'Altitude',
-                    //style: {
-                    //    color: '#4572A7'
-                    //}
-                },
-                labels: {
-                    //formatter: function() {
-                    //    return this.value +' mm';
-                    //},
-                    //style: {
-                    //    color: '#4572A7'
-                    //}
-                }
-            }],
+            //yAxis: [{
+            //    title: {
+            //        text: null
+            //    }
+            //    //labels: {
+            //    //    formatter: function () {
+            //    //        if (self.speedMode === 1) // Running
+            //    //            return self.formatToMMSS(this.value) + " min/km";
+            //    //        else if (self.speedMode === 2) // Cycling
+            //    //            return this.value + "km/h";
+            //    //        else
+            //    //            return this.value;
+            //    //    }
+            //    //}
+            //}, { // Secondary yAxis
+            //    gridLineWidth: 0,
+            //    title: {
+            //        text: null,
+            //        //style: {
+            //        //    color: '#4572A7'
+            //        //}
+            //    },
+            //    labels: {
+            //        //formatter: function() {
+            //        //    return this.value +' mm';
+            //        //},
+            //        //style: {
+            //        //    color: '#4572A7'
+            //        //}
+            //    }
+            //},
+            yAxis : yAxisOptions,
 
             legend: {
                 enabled: this.masterVM.settingsVM.showLegends()
@@ -1052,9 +1096,11 @@
                     }
                 }
             }
-            //,
+            ,
 
-            //series: seriesSetup
+            series: seriesSetup,
+
+           
 
 
 
@@ -1092,46 +1138,28 @@
 
         //chart1.showLoading();
         // http://api.highcharts.com/highcharts#Series.setData()
-        if (seriesData['heartrateseries'])
-            this.multiChart.addSeries({
-                name : 'Heart rate',
-                id: 'heartrateseries',
-                yaxis : 0,
-                data: seriesData['heartrateseries']}); // Choose heart rate series as default
 
-        if (seriesData['speedseries'])
-            this.multiChart.addSeries({
-                name : 'Speed',
-                id: 'speedseries',
-                yAxis : 1,
-                data: seriesData['speedseries']}); // Next, try speed
-       if (seriesData['altitudeseries'])
-            this.multiChart.addSeries({
-                name : 'Altitude',
-                id: 'altitudeseries',
-                yAxis : 2,
-                data : seriesData['altitudeseries']}); // Next, try altitude
-       
+       //     if (seriesData['heartrateseries'])
+       //     this.multiChart.addSeries({
+       //         name : 'Heart rate',
+       //         id: 'heartrateseries',
+       //         yaxis : 0,
+       //         data: seriesData['heartrateseries']}); // Choose heart rate series as default
 
-        //chart1.series[1].setData(altitudeSeriesData, false);
-       
-       // chart1.redraw();
-        //chart1.hideLoading();
-        //clearInterval(intervalTimerID);
+       // if (seriesData['speedseries'])
+       //     this.multiChart.addSeries({
+       //         name : 'Speed',
+       //         id: 'speedseries',
+       //         yAxis : 1,
+       //         data: seriesData['speedseries']
+       //     }); // Next, try speed
 
-        //var xAxis = FITUI.multiChart.xAxis[0];
-        //var testtime = util.addTimezoneOffsetToUTC(rawData.lap.timestamp[1]);
-        //var testLineOptions = {
-        //    color: '#FF0000',
-        //    width: 2,
-        //    value: testtime
-        //};
-
-        //xAxis.addPlotLine(testLineOptions);
-
-       
-        // this.showLapTriggers(rawData)
-
+       //if (seriesData['altitudeseries'])
+       //     this.multiChart.addSeries({
+       //         name : 'Altitude',
+       //         id: 'altitudeseries',
+       //         yAxis : 2,
+       //         data : seriesData['altitudeseries']}); // Next, try altitude
        
        
         d = new Date();
