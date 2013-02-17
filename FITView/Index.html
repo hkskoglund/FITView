@@ -220,7 +220,21 @@
                              <!-- /ko -->
 
 
-                             
+                           
+
+                             <!-- POWER -->
+
+                             <!-- ko if: avg_power()[$index()] >= 0  ||  max_power()[$index()] >= 0  -->
+
+                             <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
+
+                             <span title="Average power (w)" data-bind="text: avg_power()[$index()]"></span>
+
+                             <span title="Max power (w)" data-bind="text: max_power()[$index()]"></span>
+
+                             <!-- /ko -->
+
+                               
 
                              <!-- CADENCE/STRIDES -->
 
@@ -240,18 +254,6 @@
 
                              <!-- ko if: total_cycles_strides().length > 0  -->
                              <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[$index()]"></span>
-
-                             <!-- /ko -->
-
-                             <!-- POWER -->
-
-                             <!-- ko if: avg_power()[$index()] >= 0  ||  max_power()[$index()] >= 0  -->
-
-                             <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
-
-                             <span title="Average power (w)" data-bind="text: avg_power()[$index()]"></span>
-
-                             <span title="Max power (w)" data-bind="text: max_power()[$index()]"></span>
 
                              <!-- /ko -->
 
@@ -549,8 +551,19 @@
                              <!-- /ko -->
 
 
+                             <!-- POWER -->
 
+                             <!-- ko if: avg_power()[selectedSession()] >= 0  ||  max_power()[selectedSession()] >= 0  -->
 
+                             <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
+
+                             <span title="Average power (w)" data-bind="text: avg_power()[selectedSession()]"></span>
+
+                             <span title="Max power (w)" data-bind="text: max_power()[selectedSession()]"></span>
+
+                             <!-- /ko -->
+
+                    
                              <!-- CADENCE/STRIDES -->
 
                              <!-- ko if: avg_cadence()[selectedSession()] >= 0 || 
@@ -571,20 +584,6 @@
                              <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[selectedSession()]"></span>
 
                              <!-- /ko -->
-
-                             <!-- POWER -->
-
-                             <!-- ko if: avg_power()[selectedSession()] >= 0  ||  max_power()[selectedSession()] >= 0  -->
-
-                             <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
-
-                             <span title="Average power (w)" data-bind="text: avg_power()[selectedSession()]"></span>
-
-                             <span title="Max power (w)" data-bind="text: max_power()[selectedSession()]"></span>
-
-                             <!-- /ko -->
-
-                    
                       
                              <!-- ASCENT/DESCENT -->
 
