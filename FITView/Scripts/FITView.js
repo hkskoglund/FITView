@@ -759,7 +759,7 @@
                 };
                 seriesSetup.push(heartRateSeries);
                 yAxisOptions.push({
-                    gridLineWidth: 0,
+                    gridLineWidth: 1,
                     title: {
                         text: null
                     }
@@ -796,7 +796,8 @@
                    gridLineWidth: 0,
                    title: {
                        text: null
-                   }
+                   },
+                   opposite : true
 
                });
             }
@@ -830,7 +831,8 @@
                     gridLineWidth: 0,
                     title: {
                         text: null
-                    }
+                    },
+                    opposite : true
 
                 });
             }
@@ -860,6 +862,7 @@
                 seriesSetup.push(temperatureSeries);
                 yAxisOptions.push({
                     gridLineWidth: 0,
+                    opposite : true,
                     title: {
                         text: null
                     }

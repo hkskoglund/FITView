@@ -14118,8 +14118,13 @@ var ColumnSeries = extendClass(Series, {
 			translatedThreshold = series.translatedThreshold = yAxis.getThreshold(threshold),
 			minPointLength = pick(options.minPointLength, 5);
 
-		// record the new values
-		each(points, function (point) {
+	    // record the new values
+
+		var len = points.length;
+		var point;
+		for (var i=0;i<len;i++) {
+		    //each(points, function (point) {
+		        point = points[i];
 			var plotY = mathMin(mathMax(-999, point.plotY), yAxis.len + 999), // Don't draw too far outside plot area (#1303)
 				yBottom = pick(point.yBottom, translatedThreshold),
 				barX = point.plotX + pointXOffset,
@@ -14161,7 +14166,9 @@ var ColumnSeries = extendClass(Series, {
 				height: 6,
 				y: barY - 3
 			});
-		});
+		}
+        //)
+	    ;
 
 	},
 
