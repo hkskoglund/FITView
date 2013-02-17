@@ -876,7 +876,7 @@
                 //plotLines: lapLinesConfig
                 //reversed : true
             },
-            yAxis: {
+            yAxis: [{
                 title: {
                     text: ''
                 }
@@ -890,7 +890,41 @@
                 //            return this.value;
                 //    }
                 //}
+            }, { // Secondary yAxis
+                gridLineWidth: 0,
+                title: {
+                    text: 'Speed',
+                    //style: {
+                    //    color: '#4572A7'
+                    //}
+                },
+                labels: {
+                    //formatter: function() {
+                    //    return this.value +' mm';
+                    //},
+                    //style: {
+                    //    color: '#4572A7'
+                    //}
+                }
             },
+
+            { // Secondary yAxis
+                gridLineWidth: 0,
+                title: {
+                    text: 'Altitude',
+                    //style: {
+                    //    color: '#4572A7'
+                    //}
+                },
+                labels: {
+                    //formatter: function() {
+                    //    return this.value +' mm';
+                    //},
+                    //style: {
+                    //    color: '#4572A7'
+                    //}
+                }
+            }],
 
             legend: {
                 enabled: this.masterVM.settingsVM.showLegends()
@@ -1061,18 +1095,21 @@
         if (seriesData['heartrateseries'])
             this.multiChart.addSeries({
                 name : 'Heart rate',
-                id : 'heartrateseries',
+                id: 'heartrateseries',
+                yaxis : 0,
                 data: seriesData['heartrateseries']}); // Choose heart rate series as default
 
         if (seriesData['speedseries'])
             this.multiChart.addSeries({
                 name : 'Speed',
                 id: 'speedseries',
+                yAxis : 1,
                 data: seriesData['speedseries']}); // Next, try speed
        if (seriesData['altitudeseries'])
             this.multiChart.addSeries({
                 name : 'Altitude',
                 id: 'altitudeseries',
+                yAxis : 2,
                 data : seriesData['altitudeseries']}); // Next, try altitude
        
 
