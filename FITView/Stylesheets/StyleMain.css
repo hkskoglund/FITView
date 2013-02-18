@@ -200,6 +200,7 @@ display  : flex;
 }
 
 #zonesChart {
+    /*display : none;*/
     /*visibility : hidden;*/
    /*z-index : 1;*/
     /*-webkit-flex : 1  1;*/

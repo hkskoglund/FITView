@@ -177,6 +177,7 @@
         this.masterVM.sessionVM.selectedSession = ko.observable(undefined);
         this.masterVM.sessionVM.tempoOrSpeed = ko.observable(undefined);
         this.masterVM.lapVM.tempoOrSpeed = ko.observable(undefined);
+        this.masterVM.lapVM.selectedLap = ko.observable(undefined);
 
         var self = this;
 
@@ -197,7 +198,12 @@
             var VM = self.masterVM.sessionVM;
             VM.selectedSession(index);
 
-            var polylinePlotted = self.showPolyline(VM.rawData,self.map, VM.rawData.record, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
+            var polylinePlotted = self.showPolyline(VM.rawData, self.map, VM.rawData.record, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index],
+                {
+                    strokeColor: 'red',
+                    strokeOpacity: 1,
+                    strokeWeight: 1
+                }, "session");
 
             self.showHRZones(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
 
@@ -205,6 +211,31 @@
 
 
         }
+
+
+        this.masterVM.lapVM.showLap = function (data, event) {
+            // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
+            var index = this;
+            var VM = self.masterVM.lapVM;
+            var start_time = VM.rawData.lap.start_time[index];
+            var timestamp = VM.rawData.lap.timestamp[index];
+            var sport = VM.rawData.lap.sport[index];
+
+            VM.selectedLap(index);
+            
+            var polylinePlotted = self.showPolyline(VM.rawData, self.map, VM.rawData.record, start_time, timestamp, {
+                strokeColor: 'blue',
+                strokeOpacity: 1,
+                strokeWeight: 2
+            }, "lap");
+
+            self.showHRZones(VM.rawData, start_time, timestamp);
+
+            self.showChartsDatetime(VM.rawData, start_time, timestamp,sport);
+
+
+        }
+
 
         ko.applyBindings(this.masterVM, bodyElement); // Initialize master model with DOM 
         jqueryBodyElement.show();
@@ -1255,9 +1286,11 @@
         var plotLeft = this.multiChart.plotLeft;
         var renderer = this.multiChart.renderer;
         var width = this.multiChart.xAxis[0].width;
-        var max = this.multiChart.xAxis[0].max;
+        var extremes = this.multiChart.xAxis[0].getExtremes();
+        var max = this.multiChart.xAxis[0].max
         var min = this.multiChart.xAxis[0].min;
        
+        console.log("Deviceinfo xaxis extreemes datamin,datamax : ", min, max);
 
         this.removeSVGGroup(this.masterVM.deviceInfoGroup);
         this.masterVM.deviceInfoGroup = renderer.g('deviceinfo').add();
@@ -1271,13 +1304,17 @@
             this.masterVM.freeYPOS = {};
 
         var waitForDelay = 3 * 60 * 1000;
+
+        var recLen = rawdata.record.timestamp.length;
+        var maxTimestamp = util.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
+
         for (var deviceInfoNr = 0; deviceInfoNr < deviceInfoLen; deviceInfoNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
 
             if (timestamp < min)
                 continue;
 
-            if (timestamp > max + waitForDelay)
+            if (timestamp > maxTimestamp + waitForDelay || timestamp > max)
                 break;
 
 
@@ -1496,8 +1533,11 @@
     var plotLeft = this.multiChart.plotLeft;
     var renderer = this.multiChart.renderer;
     var width = this.multiChart.xAxis[0].width;
+    var extremes = this.multiChart.xAxis[0].getExtremes();
     var max = this.multiChart.xAxis[0].max;
     var min = this.multiChart.xAxis[0].min;
+
+    console.log("Event xaxis extremes datamin,datamax : ", min, max);
 
     var srcImgEvent, titleEvent;
     var SVGeventElement;
@@ -1514,7 +1554,7 @@
     var waitForDelay = 3 * 60 * 1000;
 
     var recLen = rawdata.record.timestamp.length;
-    var maxTimestamp = rawdata.record.timestamp[recLen-1];
+    var maxTimestamp = util.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
 
     for (var eventNr = 0; eventNr < eventLen; eventNr++) {
         var timestamp = util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]);
@@ -1522,7 +1562,7 @@
         if (timestamp < min)
             continue;
 
-        if (timestamp > max + waitForDelay)
+        if (timestamp > maxTimestamp+waitForDelay || timestamp > max)
             break;
 
         if (timestamp <= max && timestamp >= min)
@@ -1691,9 +1731,12 @@
         var plotLeft = this.multiChart.plotLeft;
         var renderer = this.multiChart.renderer;
         var width = this.multiChart.xAxis[0].width;
+        var extremes = this.multiChart.xAxis[0].getExtremes();
         var max = this.multiChart.xAxis[0].max;
         var min = this.multiChart.xAxis[0].min;
-       
+
+        console.log("Lap triggers xaxis extremes datamin,datamax : ", min, max);
+
         var srcImg, title;
         var SVGE_elmImg;
 
@@ -1706,6 +1749,9 @@
 
       
         var waitForDelay = 3 * 60 * 1000;
+
+        var recLen = rawdata.record.timestamp.length;
+        var maxTimestamp = util.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
         
         for (var lapNr = 0; lapNr < lapLen; lapNr++) {
             var timestamp = util.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
@@ -1713,9 +1759,8 @@
             if (timestamp < min)
                 continue;
 
-            if (timestamp > max + waitForDelay)
+            if (timestamp > maxTimestamp+waitForDelay || timestamp > max)
                 break;
-
 
 
             if (timestamp <= max && timestamp >= min )
@@ -1852,17 +1897,23 @@
 
     UIController.prototype.showHRZones = function (rawdata, startTimestamp, endTimestamp) {
 
+        var divChartId = 'zonesChart';
+        //var divChart = document.getElementById(divChartId);
+       
+
         if (typeof (rawdata.record.heart_rate) === "undefined" || rawdata.record.heart_rate.length === 0) {
             console.warn("No HR data found, skipping HR Zones chart");
+            //$('#zonesChart').hide();
             return;
         }
+
+        //$('#zonesChart').show();
+       
 
         if (FITUI.HRZonesChart)
             FITUI.HRZonesChart.destroy();
 
-        var divChartId = 'zonesChart';
-        var divChart = document.getElementById(divChartId);
-        divChart.style.visibility = "visible";
+        
 
         //var options = {
         //    chart: {
@@ -1945,6 +1996,7 @@
                     }
                 }
             }
+            //,
             //series: [{
             //    name: 'John',
             //    data: [5, 3, 4, 7, 2]
@@ -2285,16 +2337,33 @@
             
     };
 
-    UIController.prototype.showPolyline = function (rawdata,map, record, startTimestamp, endTimestamp) {
+    UIController.prototype.showPolyline = function (rawdata,map, record, startTimestamp, endTimestamp, strokeOptions, type) {
       
+        var chosenStrokeColor = "#FF0000";
+        var chosenStrokeWeight = 1;
+        var chosenStrokeOpacity = 1;
+       
+        if (strokeOptions) {
+            if (strokeOptions.strokeColor)
+                chosenStrokeColor = strokeOptions.strokeColor;
+            if (strokeOptions.strokeWeight)
+                chosenStrokeWeight = strokeOptions.strokeWeight;
+            if (strokeOptions.strokeOpacity)
+                chosenStrokeOpacity = strokeOptions.strokeOpacity;
+        }
+
         var self = this;
 
-        // Clear previous polyline
-        if (self.activityPolyline) {
+        
 
-            self.activityPolyline.setMap(null);
-            self.activityPolyline = null;
+        // Clear previous polyline
+        if (self.masterVM.activityPolyline && self.masterVM.activityPolyline[type]) {
+
+            self.masterVM.activityPolyline[type].setMap(null);
+            self.masterVM.activityPolyline[type] = null;
         }
+        else
+            self.masterVM.activityPolyline = {};
 
         if (record === undefined) {
             console.info("No record msg. to based plot of polyline data for session,lap etc.");
@@ -2311,7 +2380,13 @@
             return false;
         }
 
-        var activityCoordinates = [];
+        if (self.masterVM.activityCoordinates)
+            self.masterVM.activityCoordinates[type] = [];
+        else {
+            self.masterVM.activityCoordinates = {};
+            self.masterVM.activityCoordinates[type] = [];
+        }
+
         var util = FITUtility();
 
         // Build up polyline
@@ -2352,20 +2427,20 @@
                 if (index === indexStartTime || (index % sampleInterval === 0) || index === indexEndTime)
                     if (record.position_long[index] !== undefined && record.position_lat[index] !== undefined && rawdata.dirty[index] != true) {
                         //console.log("Setting lat,long in activityCoordinates",record.position_lat[index],record.position_long[index]," index", index);
-                        activityCoordinates.push(new google.maps.LatLng(util.semiCirclesToDegrees(record.position_lat[index]), util.semiCirclesToDegrees(record.position_long[index])));
+                        self.masterVM.activityCoordinates[type].push(new google.maps.LatLng(util.semiCirclesToDegrees(record.position_lat[index]), util.semiCirclesToDegrees(record.position_long[index])));
                     }
                     }
 
-            console.info("Total length of polyline array with coordinates is : ", activityCoordinates.length.toString());
+            console.info("Total length of polyline array with coordinates is : ", self.masterVM.activityCoordinates[type].length.toString());
 
-        self.activityPolyline = new google.maps.Polyline({
-            path: activityCoordinates,
-            strokeColor: "#FF0000",
-            strokeOpacity: 1.0,
-            strokeWeight: 2
+        self.masterVM.activityPolyline[type] = new google.maps.Polyline({
+            path: self.masterVM.activityCoordinates[type],
+            strokeColor: chosenStrokeColor,
+            strokeOpacity: chosenStrokeOpacity,
+            strokeWeight: chosenStrokeWeight
         });
 
-        self.activityPolyline.setMap(map);
+        self.masterVM.activityPolyline[type].setMap(map);
 
         return true;
       
@@ -2635,7 +2710,10 @@
 
                             var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
 
-                            var polylinePlotted = FITUI.showPolyline(rawData,FITUI.map, rawData.record, rawData.session.start_time[0], rawData.session.timestamp[0]);
+                            var polylinePlotted = FITUI.showPolyline(rawData, FITUI.map, rawData.record, rawData.session.start_time[0], rawData.session.timestamp[0],
+                                {strokeColor : 'red',
+                                    strokeOpacity : 1,
+                                    strokeWeight : 1},"session");
                         }
                         //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
                         //   $('#activityMap').show();

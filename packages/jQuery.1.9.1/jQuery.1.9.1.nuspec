@@ -2,10 +2,10 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>jQuery</id>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
     <title>jQuery</title>
-    <authors>John Resig</authors>
-    <owners>John Resig</owners>
+    <authors>jQuery Foundation,  Inc.</authors>
+    <owners>jQuery Foundation,  Inc.</owners>
     <licenseUrl>http://jquery.org/license</licenseUrl>
     <projectUrl>http://jquery.com/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
