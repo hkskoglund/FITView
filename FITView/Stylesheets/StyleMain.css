@@ -145,6 +145,10 @@ padding-left: 0;
 white-space: nowrap;
 }*/
 
+#divHeaderInfo {
+  margin-left : 5px;
+  margin-top : 2px;
+}
 
 #activityMap {
     width: 69%;

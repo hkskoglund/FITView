@@ -104,6 +104,23 @@
 
         this.masterVM = {
 
+            headerInfoVM: {
+
+                fileName: ko.observable(),
+                fileSize: ko.observable(),
+                headerSize: ko.observable(),
+                dataSize: ko.observable(),
+                estimatedFitFileSize : ko.observable(),
+                protocolVersion: ko.observable(),
+                
+                profileVersion: ko.observable(),
+                
+                dataType: ko.observable(),
+                headerCRC: ko.observable(),
+                verifyHeaderCRC : ko.observable()
+
+            },
+
             settingsVM: {
                 timeZoneDifferenceUTC : util.getTimezoneOffsetFromUTC(),
                 showLapLines: ko.observable(true),
@@ -111,7 +128,8 @@
                 showEvents: ko.observable(false),
                 showLegends: ko.observable(true),
                 storeInIndexedDB: ko.observable(false),
-                showDeviceInfo: ko.observable(false)
+                showDeviceInfo: ko.observable(false),
+                showHeaderInfo : ko.observable(false)
             },
 
             progressVM: {
@@ -2740,6 +2758,20 @@
 
             case 'header':
                 var headerInfo = eventdata.header;
+                // Copy to view model
+                FITUI.masterVM.headerInfoVM.fileName(headerInfo.fitFile.name);
+                FITUI.masterVM.headerInfoVM.fileSize(headerInfo.fitFile.size);
+                FITUI.masterVM.headerInfoVM.protocolVersion(headerInfo.protocolVersionMajor + "." + headerInfo.protocolVersionMinor);
+              
+                FITUI.masterVM.headerInfoVM.profileVersion(headerInfo.profileVersionMajor + "." + headerInfo.profileVersionMinor);
+                FITUI.masterVM.headerInfoVM.dataType(headerInfo.dataType);
+                FITUI.masterVM.headerInfoVM.headerCRC(headerInfo.headerCRC);
+                FITUI.masterVM.headerInfoVM.verifyHeaderCRC(headerInfo.verifyHeaderCRC);
+                FITUI.masterVM.headerInfoVM.headerSize(headerInfo.headerSize);
+                FITUI.masterVM.headerInfoVM.dataSize(headerInfo.dataSize);
+                FITUI.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
+
+
                 if (headerInfo.estimatedFitFileSize != headerInfo.fitFile.size)
                     console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFile.size.toString() + " bytes.");
                 break;

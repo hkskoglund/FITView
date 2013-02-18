@@ -28,10 +28,9 @@
 
         <div id="divSessionLap">
 
-            <!-- <div data-bind="text: ko.toJSON($root.lapVM)"></div> -->
+            <!-- <div data-bind="text: ko.toJSON($root.headerInfoVM)"></div> -->
 
-
-
+            
 
             <ul class="menu">
 
@@ -381,6 +380,15 @@
                         </a>
                         </li>
 
+                        <li><a href="#">
+
+                            <div>
+                                <input type="checkbox" data-bind="checked: showHeaderInfo" />
+                                Show FIT header info.
+                            </div>
+                        </a>
+                        </li>
+
                     </ul>
 
                 </li>
@@ -447,6 +455,22 @@
 
 
             </ul>
+
+            <!-- ko with: headerInfoVM -->
+           
+            <div id="divHeaderInfo" data-bind="visible: $parent.settingsVM.showHeaderInfo">
+                Header info: 
+                <span title="File name" data-bind="text: fileName"></span>
+                <span title="File size" data-bind="text: fileSize"></span>
+                <span title="Data type" data-bind="text: dataType"></span>
+                 <span title="Header size" data-bind="text: headerSize"></span>
+                 <span title="Data size" data-bind="text: dataSize"></span>
+                 <span title="Protocol version" data-bind="text: protocolVersion"></span>
+                 <span title="Profile version" data-bind="text: profileVersion"></span>
+                 <span title="CRC" data-bind="text: headerCRC"></span>
+                 
+            </div>
+            <!-- /ko -->
 
             <!-- ko with: sessionVM -->
             <div id="sessionDetails">
