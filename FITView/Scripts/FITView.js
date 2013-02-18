@@ -129,7 +129,8 @@
                 showLegends: ko.observable(true),
                 storeInIndexedDB: ko.observable(false),
                 showDeviceInfo: ko.observable(false),
-                showHeaderInfo : ko.observable(false)
+                showHeaderInfo: ko.observable(false),
+                forceSpeedKMprH : ko.observable(false)
             },
 
             progressVM: {
@@ -186,6 +187,48 @@
 
         });
        
+        this.masterVM.settingsVM.forceSpeedKMprH.subscribe(function (forceSpeedKMprH) {
+            var util = FITUtility();
+
+            var speedSeries;
+            var speedSeriesData;
+
+            var rawData = self.masterVM.sessionVM.rawData;
+            var timezoneDiff = util.getTimezoneOffsetFromUTC()
+            var startTimestamp,endTimestamp;
+
+            if (self.multiChart) { 
+                speedSeries = self.multiChart.get('speedseries');
+                startTimestamp = self.multiChart.xAxis[0].min-timezoneDiff;
+                endTimestamp = self.multiChart.xAxis[0].max - timezoneDiff;
+              
+            }
+
+            if (speedSeries) {
+                if (forceSpeedKMprH) {
+                    self.masterVM.previousSpeedMode = self.masterVM.speedMode;
+                    self.masterVM.previousSpeedData = speedSeries.data;
+                    speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
+                    
+                    self.masterVM.speedMode = 2;
+                    
+                } else {
+                    self.masterVM.speedMode = self.masterVM.previousSpeedMode;
+                    if (self.masterVM.previousSpeedMode === 1) // Running
+                      speedSeriesData = speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, 'speedseries');
+                    else
+                        speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
+                }
+
+                // Toggle lap lines - to update speed 
+                if (self.masterVM.settingsVM.showLapLines()) {
+
+                    self.masterVM.settingsVM.showLapLines(false);
+                    self.masterVM.settingsVM.showLapLines(true);
+                }
+                speedSeries.setData(speedSeriesData, true);
+            }
+        });
 
         var bodyId = '#divSessionLap';
         var jqueryBodyElement = $(bodyId);
@@ -695,7 +738,7 @@
 
 
                             if (rawData.lap.avg_speed && rawData.lap.avg_speed[lapNr]) {
-                                switch (this.speedMode) {
+                                switch (this.masterVM.speedMode) {
                                     case 1: // Running
                                         lapLabel += " " + this.formatToMMSS(FITUtil.convertSpeedToMinutes(rawData.lap.avg_speed[lapNr]));
                                         break;
@@ -822,22 +865,26 @@
 
            
 
-            this.speedMode = undefined;
+            this.masterVM.speedMode = undefined;
 
             if (rawData.record.speed) {
                 id = 'speedseries';
                
+                if (FITUI.masterVM.settingsVM.forceSpeedKMprH()) 
+                    sport = 0;
+                
+
                 switch (sport) {
                     case 1: // Running
-                        this.speedMode = 1; // min/km
+                        this.masterVM.speedMode = 1; // min/km
                         speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes,id);
                         break;
                     case 2: // Cycling
-                        this.speedMode = 2; // km/h
+                        this.masterVM.speedMode = 2; // km/h
                         speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
                         break;
                     default:
-                        this.speedMode = 2;
+                        this.masterVM.speedMode = 2;
                         speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
                         break;
                 }
@@ -1044,8 +1091,8 @@
                             this.series.name + '</b>' + ': ';
 
                         // Special treatment for speed
-                        if (self.speedMode && this.series.name === "Speed")
-                            switch (self.speedMode) {
+                        if (self.masterVM.speedMode && this.series.name === "Speed")
+                            switch (self.masterVM.speedMode) {
                                 case 1: // Running
                                     s += self.formatToMMSS(this.y) + " min/km";
                                     break;
@@ -2651,6 +2698,8 @@
 
                 if (rawData.session === undefined)
                     rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
+
+                
 
                 FITUI.masterVM.sessionVM.setRawdata(FITUI, rawData);
 
