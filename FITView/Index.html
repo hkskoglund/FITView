@@ -479,7 +479,7 @@
 
 
 
-                <!-- ko if: total_timer_time().length > 0  && total_timer_time()[selectedSession()] !== total_elapsed_time()[selectedSession()] -->
+                <!-- ko if: total_timer_time().length > 0  && total_timer_time()[selectedSession()].toHHMMSS() !== total_elapsed_time()[selectedSession()].toHHMMSS() -->
 
                 <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
                 <!-- /ko -->
@@ -489,7 +489,7 @@
                 <!-- /ko -->
 
                 <!-- SPEED -->
-
+              
                 <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
                 <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
                 <!-- /ko -->
@@ -533,13 +533,14 @@
                 <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINpr100M()"></span>
                 <!-- /ko -->
                 <!-- /ko -->
+               
+                     <!-- HEART RATE -->
 
                 <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
                 <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
                 <!-- /ko -->
-
-                <!-- HEART RATE -->
-
+                
+              
                 <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
                 <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
                 <!-- /ko -->
@@ -547,7 +548,7 @@
                 <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
                 <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
                 <!-- /ko -->
-
+                
 
                 <!-- ko if: total_calories()[selectedSession()] > 0 -->
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />

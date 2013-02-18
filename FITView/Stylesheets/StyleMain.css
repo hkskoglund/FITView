@@ -368,12 +368,12 @@ section#lapList {
 }
 
 .sessionFullDate {
-  font-size : larger;
+  /*font-size : larger;*/
 }
 
 .sessionHHMMSS  {
     /*color : lightgray;*/
-    font-size: larger;
+    /*font-size: larger;*/
 }
 
 .lapHHMMSS {
@@ -387,7 +387,7 @@ section#lapList {
 }
 .sessionTOTALDISTANCE {
     /*color: lightgray;*/
-    font-size: larger;
+    /*font-size: larger;*/
 }
 
 #sessionDetails {

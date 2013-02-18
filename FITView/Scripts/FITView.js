@@ -196,18 +196,21 @@
             // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
             var index = this;
             var VM = self.masterVM.sessionVM;
+            var start_time = VM.rawData.session.start_time[index];
+            var timestamp = VM.rawData.session.timestamp[index];
+            var sport = VM.rawData.session.sport[index];
             VM.selectedSession(index);
 
-            var polylinePlotted = self.showPolyline(VM.rawData, self.map, VM.rawData.record, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index],
+            var polylinePlotted = self.showPolyline(VM.rawData, self.map, VM.rawData.record, start_time, timestamp,
                 {
                     strokeColor: 'red',
                     strokeOpacity: 1,
                     strokeWeight: 1
                 }, "session");
 
-            self.showHRZones(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index]);
+            self.showHRZones(VM.rawData, start_time, timestamp);
 
-            self.showChartsDatetime(VM.rawData, VM.rawData.session.start_time[index], VM.rawData.session.timestamp[index], VM.rawData.session.sport[index]);
+            self.showChartsDatetime(VM.rawData, start_time, timestamp, sport);
 
 
         }
