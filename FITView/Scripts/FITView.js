@@ -835,39 +835,7 @@
             return;
         }
 
-        // Setup lap categories
-        var len = rawdata.lap.timestamp.length;
-        var lap = {
-            categories: [],
-            avg_speed: [],
-            max_speed: [],
-            avg_heart_rate: [],
-            max_heart_rate: []
-        }
-
-        var yAxisOptions = [];
-
-        var pushData = function (property) {
-            if (rawdata.lap[property] && rawdata.lap[property][lapNr]) {
-                lap[property].push(rawdata.lap[property][lapNr]);
-                return lap[property];
-            }
-            else {
-
-                console.warn("Found no lap." + property + " in rawdata");
-                return undefined;
-            }
-        }
-
-        for (var lapNr = 0; lapNr < len; lapNr++) {
-            if (rawdata.lap.start_time[lapNr] >= startTimestamp && rawdata.lap.timestamp[lapNr] <= endTimestamp) {
-                lap.categories.push("Lap " + (lapNr + 1).toString());
-                pushData("avg_speed");
-                pushData("max_speed");
-                pushData("avg_heart_rate");
-                pushData("max_heart_rate");
-            }
-        }
+        
 
         this.lapChart = new Highcharts.Chart({
             chart: {
@@ -881,6 +849,12 @@
             credits: {
                 enabled: false
             },
+            //plotOptions: {
+            //    bar: {
+            //        grouping: false,
+            //        shadow: false
+            //    }
+            //},
             xAxis: {
                 categories: lap.categories
             },
@@ -944,7 +918,7 @@
 
     UIController.prototype.showChartsDatetime = function (rawData, startTimestamp, endTimestamp, sport) {
 
-        this.showLapChart(rawData, startTimestamp, endTimestamp, sport);
+       // this.showLapChart(rawData, startTimestamp, endTimestamp, sport);
 
         // http://api.highcharts.com/highcharts#Chart.destroy()
         if (this.multiChart)
@@ -982,6 +956,8 @@
 
         var yAxisNr = 0; // Give each series a y-axis
         var yAxisOptions = [];
+        var speedYAxisNr;
+        var heartRateYAxisNr;
 
         var id;
 
@@ -991,10 +967,12 @@
                 id = 'heartrateseries';
                 heartRateSeriesData = FITUtil.combine(rawData,rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                 seriesData[id] = heartRateSeriesData;
+                heartRateYAxisNr = yAxisNr;
                 heartRateSeries = {
                     id: id,
                     name: 'Heart rate',
                     yAxis: yAxisNr++,
+                    type: 'line',
                     data : seriesData[id]
                 };
                 seriesSetup.push(heartRateSeries);
@@ -1034,7 +1012,8 @@
                         break;
                 }
                 seriesData[id] = speedSeriesData;
-                speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id] };
+                speedYAxisNr = yAxisNr;
+                speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line' };
                seriesSetup.push(speedSeries);
                yAxisOptions.push({
                    gridLineWidth: 0,
@@ -1052,7 +1031,7 @@
                 cadenceSeriesData = FITUtil.combine(rawData,rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                 seriesData[id] = cadenceSeriesData;
 
-                cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id] };
+                cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line' };
 
                 seriesSetup.push(cadenceSeries);
                 yAxisOptions.push({
@@ -1069,7 +1048,7 @@
                 powerSeriesData = FITUtil.combine(rawData,rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                 seriesData[id] = powerSeriesData;
 
-                powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data : seriesData[id] };
+                powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line' };
                 seriesSetup.push(powerSeries);
                 yAxisOptions.push({
                     gridLineWidth: 0,
@@ -1086,7 +1065,7 @@
                  altitudeSeriesData = FITUtil.combine(rawData,rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                  seriesData[id] = altitudeSeriesData;
                  var hasGPSdata = FITUtil.hasGPSData(rawData);
-                 altitudeSeries = { name: 'Altitude', id: id, yAxis : yAxisNr++, data : seriesData[id], visible : hasGPSdata };
+                 altitudeSeries = { name: 'Altitude', id: id, yAxis: yAxisNr++, data: seriesData[id], visible: hasGPSdata, type: 'line' };
               
                 seriesSetup.push(altitudeSeries);
                 yAxisOptions.push({
@@ -1103,7 +1082,7 @@
                 id = 'temperatureseries';
                 temperatureSeriesData = FITUtil.combine(rawData,rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                 seriesData[id] = temperatureSeriesData;
-                temperatureSeries = { name: 'Temperature', id: id, yAxis: yAxisNr++, data : seriesData[id] };
+                temperatureSeries = { name: 'Temperature', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line' };
                 seriesSetup.push(temperatureSeries);
                 yAxisOptions.push({
                     gridLineWidth: 0,
@@ -1117,15 +1096,52 @@
             
         }
 
-       
+        // Setup lap categories
+        var len = rawData.lap.timestamp.length;
+        var lap = {
+            categories: [],
+            avg_speed: [],
+            max_speed: [],
+            avg_heart_rate: [],
+            max_heart_rate: []
+        }
 
-   
+        var lapNr;
+
+        var pushData = function (property) {
+            if (rawData.lap[property] && rawData.lap[property][lapNr]) {
+                lap[property].push(rawData.lap[property][lapNr]);
+                return lap[property];
+            }
+            else {
+
+                console.warn("Found no lap." + property + " in rawdata");
+                return undefined;
+            }
+        }
+
+        for (lapNr = 0; lapNr < len; lapNr++) {
+            if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
+                lap.categories.push("Lap " + (lapNr + 1).toString());
+                pushData("avg_speed");
+                pushData("max_speed");
+                pushData("avg_heart_rate");
+                pushData("max_heart_rate");
+            }
+        }
+
+       
+        seriesSetup.push({ name: "Avg. speed", xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible : true });
+        seriesSetup.push({ name: "Max. speed", xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible : false });
+        seriesSetup.push({ name: "Avg. HR", xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible : false });
+        seriesSetup.push({ name: "Max. HR", xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible : false });
+
         var xAxisType = 'datetime';
 
         var chartOptions = {
             animation : false,
             renderTo: chartId,
-            type: 'line',
+           
             // Allow zooming
             zoomType: 'xy',
             events: {
@@ -1164,7 +1180,7 @@
             title: {
                 text: ''
             },
-            xAxis: {
+            xAxis: [{
                 
                 type: xAxisType,
                 events: {
@@ -1184,7 +1200,9 @@
                 }
                 //plotLines: lapLinesConfig
                 //reversed : true
-            },
+            },{
+                type: 'linear',
+                categories : lap.categories}],
             //yAxis: [{
             //    title: {
             //        text: null
