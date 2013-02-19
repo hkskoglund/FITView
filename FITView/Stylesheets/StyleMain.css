@@ -398,9 +398,9 @@ section#lapList {
    /*color: lightgray;*/
    /*font-size: larger;*/
   
-   padding-bottom: 10px;
+  
    padding-left : 5px;
-   padding-top: 7px;
+   
   
     /*background: #4c4e5a;
     background: -webkit-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
@@ -408,6 +408,10 @@ section#lapList {
     background: -o-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
     background: -ms-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
     background: linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);*/
+}
+
+#lapDetails {
+    padding-left: 5px;
 }
 
 ul#sessionList {

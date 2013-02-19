@@ -104,6 +104,8 @@
 
         this.masterVM = {
 
+            speedMode : ko.observable(),
+
             headerInfoVM: {
 
                 fileName: ko.observable(),
@@ -140,10 +142,13 @@
             sessionVM: getEmptyViewModel(fitActivity.session()),
 
             lapVM: getEmptyViewModel(fitActivity.lap()),
+            
 
             loadChartVM: new loadSeriesViaButtonViewModel()  // Give possibility for ondemand loading of data -> to speed up start/not loading all data at once
 
         };
+
+        //this.masterVM.lapVM.speedMode = ko.observable();
 
         // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
         this.masterVM.settingsVM.showLapLines.subscribe(function (showLapLines) {
@@ -206,14 +211,14 @@
 
             if (speedSeries) {
                 if (forceSpeedKMprH) {
-                    self.masterVM.previousSpeedMode = self.masterVM.speedMode;
+                    self.masterVM.previousSpeedMode = self.masterVM.speedMode();
                     self.masterVM.previousSpeedData = speedSeries.data;
                     speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
                     
-                    self.masterVM.speedMode = 2;
+                    self.masterVM.speedMode(2);
                     
                 } else {
-                    self.masterVM.speedMode = self.masterVM.previousSpeedMode;
+                    self.masterVM.speedMode(self.masterVM.previousSpeedMode);
                     if (self.masterVM.previousSpeedMode === 1) // Running
                       speedSeriesData = speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, 'speedseries');
                     else
@@ -260,6 +265,8 @@
             var start_time = VM.rawData.session.start_time[index];
             var timestamp = VM.rawData.session.timestamp[index];
             var sport = VM.rawData.session.sport[index];
+
+            self.masterVM.lapVM.selectedLap(undefined);
             VM.selectedSession(index);
 
             var polylinePlotted = self.showPolyline(VM.rawData, self.map, VM.rawData.record, start_time, timestamp,
@@ -285,6 +292,7 @@
             var timestamp = VM.rawData.lap.timestamp[index];
             var sport = VM.rawData.lap.sport[index];
 
+            self.masterVM.sessionVM.selectedSession(undefined);
             VM.selectedLap(index);
             
             var polylinePlotted = self.showPolyline(VM.rawData, self.map, VM.rawData.record, start_time, timestamp, {
@@ -390,6 +398,21 @@
         });
 
     };
+
+    FITUIUtility.prototype.hasGPSData = function (rawdata) {
+        if (rawdata.record.position_lat === undefined) {
+            console.info("No position data (position_lat)");
+            
+        }
+
+        if (rawdata.record.position_long === undefined) {
+            console.info("No position data (position_lat)");
+            
+        }
+
+        return (rawdata.record.position_lat === undefined || rawdata.record.position_long === undefined) ? false : true;
+
+    }
 
     FITUIUtility.prototype.combine = function (rawdata,values, timestamps,startTimestamp,endTimestamp, converter, seriesName) {
         var util = FITUtility();
@@ -738,7 +761,7 @@
 
 
                             if (rawData.lap.avg_speed && rawData.lap.avg_speed[lapNr]) {
-                                switch (this.masterVM.speedMode) {
+                                switch (this.masterVM.speedMode()) {
                                     case 1: // Running
                                         lapLabel += " " + this.formatToMMSS(FITUtil.convertSpeedToMinutes(rawData.lap.avg_speed[lapNr]));
                                         break;
@@ -752,12 +775,12 @@
                                 }
                             }
 
-                            var distance;
-                            if (rawData.lap.total_distance && rawData.lap.total_distance[lapNr]) {
-                                distance = Math.round(rawData.lap.total_distance[lapNr]);
-                                if (!(distance === 1000 || distance === 1609))
-                                    lapLabel += "<br/>" + distance.toString()+" m";
-                            }
+                            //var distance;
+                            //if (rawData.lap.total_distance && rawData.lap.total_distance[lapNr]) {
+                            //    distance = Math.round(rawData.lap.total_distance[lapNr]);
+                            //    if (!(distance === 1000 || distance === 1609))
+                            //        lapLabel += "<br/>" + distance.toString()+" m";
+                            //}
                             break;
                         default:
                             lapLabel = null;
@@ -770,7 +793,7 @@
                 lapLinesConfig[lapNr] = {
                     id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
 
-                    dashStyle: 'Dot',
+                    dashStyle: 'Dash',
                     //color: '#960000',
                     color : 'lightgray',
                     width: 1,
@@ -783,7 +806,7 @@
                         x: -5,
                         y: 15,
                         style: {
-                            fontSize: '14px',
+                            fontSize: '9px',
                             fontWeight: 'bold'
                         }
                        
@@ -865,7 +888,7 @@
 
            
 
-            this.masterVM.speedMode = undefined;
+            this.masterVM.speedMode(undefined);
 
             if (rawData.record.speed) {
                 id = 'speedseries';
@@ -876,15 +899,15 @@
 
                 switch (sport) {
                     case 1: // Running
-                        this.masterVM.speedMode = 1; // min/km
+                        this.masterVM.speedMode(1); // min/km
                         speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes,id);
                         break;
                     case 2: // Cycling
-                        this.masterVM.speedMode = 2; // km/h
+                        this.masterVM.speedMode(2); // km/h
                         speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
                         break;
                     default:
-                        this.masterVM.speedMode = 2;
+                        this.masterVM.speedMode(2);
                         speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
                         break;
                 }
@@ -940,7 +963,8 @@
                 id = 'altitudeseries';
                  altitudeSeriesData = FITUtil.combine(rawData,rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                  seriesData[id] = altitudeSeriesData;
-                 altitudeSeries = { name: 'Altitude', id: id, yAxis : yAxisNr++, data : seriesData[id] };
+                 var hasGPSdata = FITUtil.hasGPSData(rawData);
+                 altitudeSeries = { name: 'Altitude', id: id, yAxis : yAxisNr++, data : seriesData[id], visible : hasGPSdata };
               
                 seriesSetup.push(altitudeSeries);
                 yAxisOptions.push({
@@ -1091,8 +1115,8 @@
                             this.series.name + '</b>' + ': ';
 
                         // Special treatment for speed
-                        if (self.masterVM.speedMode && this.series.name === "Speed")
-                            switch (self.masterVM.speedMode) {
+                        if (self.masterVM.speedMode() && this.series.name === "Speed")
+                            switch (self.masterVM.speedMode()) {
                                 case 1: // Running
                                     s += self.formatToMMSS(this.y) + " min/km";
                                     break;
@@ -2424,30 +2448,29 @@
 
         
 
-        // Clear previous polyline
-        if (self.masterVM.activityPolyline && self.masterVM.activityPolyline[type]) {
-
-            self.masterVM.activityPolyline[type].setMap(null);
-            self.masterVM.activityPolyline[type] = null;
+        // Clear previous polylines
+        if (self.masterVM.activityPolyline) {
+            for (var propType in self.masterVM.activityPolyline) { // Clear everything sessions,laps
+                if (self.masterVM.activityPolyline.hasOwnProperty(propType)) {
+                    //console.log("Clearing ", propType);
+                    if (self.masterVM.activityPolyline[propType] !== null) {
+                        self.masterVM.activityPolyline[propType].setMap(null);
+                        self.masterVM.activityPolyline[propType] = null;
+                    }
+                }
+            }
         }
-        else
-            self.masterVM.activityPolyline = {};
+        else if (typeof (self.masterVM.activityPolyline) === "undefined")
+             self.masterVM.activityPolyline = {};
 
         if (record === undefined) {
             console.info("No record msg. to based plot of polyline data for session,lap etc.");
             return false;
         }
 
-        if (record.position_lat === undefined) {
-            console.info("No position data (position_lat), cannot render polyline data");
+        if (!FITUtil.hasGPSData(rawdata))
             return false;
-        }
-
-        if (record.position_long === undefined) {
-            console.info("No position data (position_lat), cannot render polyline data");
-            return false;
-        }
-
+          
         if (self.masterVM.activityCoordinates)
             self.masterVM.activityCoordinates[type] = [];
         else {
@@ -2886,6 +2909,7 @@
 
         // Clean up UI state
         FITUI.masterVM.sessionVM.selectedSession(undefined);
+        FITUI.masterVM.lapVM.selectedLap(undefined);
         FITUI.resetViewModel(FITUI.masterVM.sessionVM, fitActivity.session());
         FITUI.resetViewModel(FITUI.masterVM.lapVM, fitActivity.lap());
         //// http://api.highcharts.com/highcharts#Chart.destroy()

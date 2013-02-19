@@ -156,7 +156,7 @@
 
 
                                 <!-- BIKING/GENERIC -->
-                                <!-- ko if: sport()[$index()] === 2 || sport()[$index()] === 0 || tempoOrSpeed() === 1 -->
+                                <!-- ko if: sport()[$index()] === 2 || sport()[$index()] === 0 || (sport()[$index()] === 1 && $root.speedMode() === 2)-->
 
 
                                 <!-- ko if: avg_speed()[$index()] -->
@@ -170,7 +170,7 @@
 
                                 <!-- RUNNING -->
 
-                                <!-- ko if: sport()[$index()] === 1 || tempoOrSpeed() === 0 -->
+                                <!-- ko if: sport()[$index()] === 1  && !((sport()[$index()] === 1 && $root.speedMode() === 2)) -->
 
                                 <!-- ko if: avg_speed()[$index()] -->
                                 <span title="Average speed" data-bind="text: avg_speed()[$index()].toMINprKM()"></span>
@@ -180,6 +180,8 @@
                                 <span title="Max speed" data-bind="text: max_speed()[$index()].toMINprKM()"></span>
                                 <!-- /ko -->
                                 <!-- /ko -->
+
+                                
 
                                 <!-- SWIMMING TO DO .... -->
 
@@ -356,7 +358,7 @@
 
                             <div>
                                 <input type="checkbox" data-bind="checked: showLegends" />
-                                Legends
+                                Chart legends
                             </div>
 
                         </a>
@@ -366,7 +368,7 @@
 
                             <div>
                                 <input type="checkbox" data-bind="checked: storeInIndexedDB" />
-                                Store rawdata in IndexedDB
+                                Use IndexedDB
                             </div>
                         </a>
                         </li>
@@ -384,7 +386,7 @@
 
                             <div>
                                 <input type="checkbox" data-bind="checked: showHeaderInfo" />
-                                Show FIT header info.
+                                FIT header info.
                             </div>
                         </a>
                         </li>
@@ -393,7 +395,7 @@
 
                             <div>
                                 <input type="checkbox" data-bind="checked: forceSpeedKMprH" />
-                                Force speed to km/h
+                                Run speed in km/h
                             </div>
                         </a>
                         </li>
@@ -529,7 +531,7 @@
 
 
                 <!-- BIKING/GENERIC -->
-                <!-- ko if: sport()[selectedSession()] === 2 || sport()[selectedSession()] === 0 || tempoOrSpeed() === 1 -->
+                <!-- ko if: sport()[selectedSession()] === 2 || sport()[selectedSession()] === 0  -->
 
 
                 <!-- ko if: avg_speed()[selectedSession()] -->
@@ -543,7 +545,7 @@
 
                 <!-- RUNNING -->
 
-                <!-- ko if: sport()[selectedSession()] === 1 || tempoOrSpeed() === 0 -->
+                <!-- ko if: sport()[selectedSession()] === 1 && $parent.speedMode() === 1-->
 
                 <!-- ko if: avg_speed()[selectedSession()] -->
                 <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toMINprKM()"></span>
@@ -551,6 +553,17 @@
 
                 <!-- ko if: max_speed()[selectedSession()] -->
                 <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINprKM()"></span>
+                <!-- /ko -->
+                <!-- /ko -->
+
+                <!-- ko if: sport()[selectedSession()] === 1 && $parent.speedMode() === 2 -->
+
+                <!-- ko if: avg_speed()[selectedSession()] -->
+                <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toKMprH()"></span>
+                <!-- /ko -->
+
+                <!-- ko if: max_speed()[selectedSession()] -->
+                <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toKMprH()"></span>
                 <!-- /ko -->
                 <!-- /ko -->
 
@@ -682,6 +695,223 @@
             </div>
             <!-- /ko -->
 
+            <!-- ko with: lapVM -->
+            <div id="lapDetails">
+                <!--<div data-bind="text: ko.toJSON($root)"></div>-->
+
+                <!-- ko if: selectedLap() !== undefined -->
+
+
+                <!-- ko if: sport()[selectedLap()] === 1 -->
+                <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
+                <!-- /ko -->
+
+                <!-- ko if: sport()[selectedLap()] === 2 -->
+                <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
+                <!-- /ko -->
+
+                <!-- ko if: sport()[selectedLap()] === 5 -->
+                <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
+                <!-- /ko -->
+
+                <!-- ko if : start_time()[selectedLap()] -->
+
+                <span data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedLap()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
+                <!-- /ko -->
+
+
+                <!-- ko if: total_elapsed_time().length > 0  -->
+                <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedLap()].toHHMMSS()"></span></time>
+                <!-- /ko -->
+
+
+
+                <!-- ko if: total_timer_time().length > 0 && selectedLap() !== undefined && total_timer_time()[selectedLap()].toHHMMSS() !== total_elapsed_time()[selectedLap()].toHHMMSS() -->
+
+                <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedLap()].toHHMMSS()"></span></time>
+                <!-- /ko -->
+
+                <!-- ko if: total_distance().length > 0 -->
+                <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedLap()].toFixed(0)"></span>
+                <!-- /ko -->
+
+                <!-- SPEED -->
+              
+                <!-- ko if: avg_speed()[selectedLap()]  || max_speed()[selectedLap()]  -->
+                <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
+                <!-- /ko -->
+
+
+                <!-- BIKING/GENERIC -->
+                <!-- ko if: sport()[selectedLap()] === 2 || sport()[selectedLap()] === 0  -->
+
+
+                <!-- ko if: avg_speed()[selectedLap()] -->
+                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toKMprH()"></span>
+                <!-- /ko -->
+
+                <!-- ko if: max_speed()[selectedLap()]  -->
+                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toKMprH()"></span>
+                <!-- /ko -->
+                <!-- /ko -->
+
+                <!-- RUNNING -->
+
+                <!-- ko if: sport()[selectedLap()] === 1 && $parent.speedMode() === 1-->
+
+                <!-- ko if: avg_speed()[selectedLap()] -->
+                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toMINprKM()"></span>
+                <!-- /ko -->
+
+                <!-- ko if: max_speed()[selectedLap()] -->
+                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toMINprKM()"></span>
+                <!-- /ko -->
+                <!-- /ko -->
+
+                <!-- ko if: sport()[selectedLap()] === 1 && $parent.speedMode() === 2 -->
+
+                <!-- ko if: avg_speed()[selectedLap()] -->
+                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toKMprH()"></span>
+                <!-- /ko -->
+
+                <!-- ko if: max_speed()[selectedLap()] -->
+                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toKMprH()"></span>
+                <!-- /ko -->
+                <!-- /ko -->
+
+                <!-- SWIMMING TO DO .... -->
+
+                <!-- ko if: sport()[selectedLap()] === 5  -->
+
+                <!-- ko if: avg_speed()[selectedLap()] -->
+                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toMINpr100M()"></span>
+                <!-- /ko -->
+
+                <!-- ko if: max_speed()[selectedLap()] -->
+                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toMINpr100M()"></span>
+                <!-- /ko -->
+                <!-- /ko -->
+               
+                     <!-- HEART RATE -->
+
+                <!-- ko if: avg_heart_rate()[selectedLap()] ||  max_heart_rate()[selectedLap()] -->
+                <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
+                <!-- /ko -->
+                
+              
+                <!-- ko if:  avg_heart_rate()[selectedLap()]  >= 0 -->
+                <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedLap()]"></span>
+                <!-- /ko -->
+
+                <!-- ko if: max_heart_rate()[selectedLap()] >= 0 -->
+                <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedLap()]"></span>
+                <!-- /ko -->
+                
+
+                <!-- ko if: total_calories()[selectedLap()] > 0 -->
+                <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+
+                <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedLap()]"></span>
+                <!-- /ko -->
+
+
+                <!-- POWER -->
+
+                <!-- ko if: avg_power()[selectedLap()] >= 0  ||  max_power()[selectedLap()] >= 0  -->
+
+                <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
+
+                <span title="Average power (w)" data-bind="text: avg_power()[selectedLap()]"></span>
+
+                <span title="Max power (w)" data-bind="text: max_power()[selectedLap()]"></span>
+
+                <!-- /ko -->
+
+
+                <!-- CADENCE/STRIDES -->
+
+                <!-- ko if: avg_cadence()[selectedLap()] >= 0 || 
+                            max_cadence()[selectedLap()] >= 0 ||  
+                          total_cycles_strides()[selectedLap()] >=0 -->
+                <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
+                <!-- /ko -->
+
+                <!-- ko if:  avg_cadence().length > 0  -->
+                <span title="Average cadence" data-bind="text: avg_cadence()[selectedLap()]"></span>
+                <!-- /ko -->
+
+                <!-- ko if: max_cadence().length > 0  -->
+                <span title="Max cadence" data-bind="text: max_cadence()[selectedLap()]"></span>
+                <!-- /ko -->
+
+                <!-- ko if: total_cycles_strides().length > 0  -->
+                <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[selectedLap()]"></span>
+
+                <!-- /ko -->
+
+                <!-- ASCENT/DESCENT -->
+
+                <!-- ko if: total_ascent()[selectedLap()] >= 0  ||  total_descent()[selectedLap()] >= 0 -->
+
+                <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
+
+                <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedLap()]"></span>
+
+                <span title="Total descent (m)" data-bind="text: total_descent()[selectedLap()]"></span>
+
+                <!-- /ko -->
+
+                <!-- ko if: avg_temperature()[selectedLap()] >= 0  ||  max_temperature()[selectedLap()] >= 0  -->
+
+                <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
+
+                <span title="Average temperature (C)" data-bind="text: avg_temperature()[selectedLap()]"></span>
+
+                <span title="Max temperature (C)" data-bind="text: max_temperature()[selectedLap()]"></span>
+
+                <!-- /ko -->
+
+                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 0 -->
+                <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed" />
+                <!-- /ko -->
+
+
+                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 1 -->
+                <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" />
+                <!-- /ko -->
+
+                <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 2 -->
+                <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
+                <!-- /ko -->
+
+                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 3 -->
+                <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
+                <!-- /ko -->
+
+                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 4 -->
+                <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
+                <!-- /ko -->
+
+                <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 5 -->
+                <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
+                <!-- /ko -->
+
+                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 6 -->
+                <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
+                <!-- /ko -->
+
+                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 7 -->
+                <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
+                <!-- /ko -->
+
+
+
+
+
+                <!-- /ko -->
+
+            </div>
+            <!-- /ko -->
 
 
 
@@ -715,7 +945,7 @@
 
         <div>
             <div>
-                <img id="liveImage" src="http://195.18.181.101/mjpg/video.mjpg" />
+                <img id="liveImage" src="http://195.18.181.101/mjpg/video.mjpg" /> 
             </div>
             <section id="activityMap"></section>
 
