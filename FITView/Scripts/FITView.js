@@ -822,7 +822,129 @@
         
     }
 
+    UIController.prototype.showLapChart = function(rawdata, startTimestamp, endTimestamp, sport)
+    {
+        // Clean up previous chart if any
+        if (this.lapChart)
+            this.lapChart.destroy();
+
+        // Check for empty lap info.
+
+        if (typeof (rawdata.lap) === "undefined" || rawdata.lap.timestamp.length === 0) {
+            console.log("No lap data to show chart for");
+            return;
+        }
+
+        // Setup lap categories
+        var len = rawdata.lap.timestamp.length;
+        var lap = {
+            categories: [],
+            avg_speed: [],
+            max_speed: [],
+            avg_heart_rate: [],
+            max_heart_rate: []
+        }
+
+        var yAxisOptions = [];
+
+        var pushData = function (property) {
+            if (rawdata.lap[property] && rawdata.lap[property][lapNr]) {
+                lap[property].push(rawdata.lap[property][lapNr]);
+                return lap[property];
+            }
+            else {
+
+                console.warn("Found no lap." + property + " in rawdata");
+                return undefined;
+            }
+        }
+
+        for (var lapNr = 0; lapNr < len; lapNr++) {
+            if (rawdata.lap.start_time[lapNr] >= startTimestamp && rawdata.lap.timestamp[lapNr] <= endTimestamp) {
+                lap.categories.push("Lap " + (lapNr + 1).toString());
+                pushData("avg_speed");
+                pushData("max_speed");
+                pushData("avg_heart_rate");
+                pushData("max_heart_rate");
+            }
+        }
+
+        this.lapChart = new Highcharts.Chart({
+            chart: {
+                renderTo: 'lapChart',
+                type: 'bar',
+                
+            },
+            title: {
+                text: null,
+            },
+            credits: {
+                enabled: false
+            },
+            xAxis: {
+                categories: lap.categories
+            },
+            yAxis: [{
+                gridLineWidth: 0,
+                title: {
+                    text: null
+                }
+            },
+            {
+                gridLineWidth: 0,
+                title: {
+                    text: null
+                }
+                    
+            }],
+           
+            //legend: {
+            //    layout: 'vertical',
+            //    floating: true,
+            //    backgroundColor: '#FFFFFF',
+            //    align: 'right',
+            //    verticalAlign: 'top',
+            //    y: 60,
+            //    x: -60
+            //},
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +  this.x + ': ' + this.y;
+                }
+            },
+            plotOptions: {
+            },
+            series: [{
+                yAxis: 0,
+                name : 'Avg. speed',
+                data: lap.avg_speed
+            },
+            {
+                yAxis: 0,
+                name : 'Max. speed',
+                data: lap.max_speed,
+                visible : false,
+            },
+            {
+                yAxis: 1,
+                name : 'Avg. HR',
+                data: lap.avg_heart_rate,
+                visible : false,
+            },
+            {
+                yAxis: 1,
+                name: 'Max. HR',
+                visible : false,
+                data: lap.max_heart_rate
+            }
+
+            ]
+        });
+    }
+
     UIController.prototype.showChartsDatetime = function (rawData, startTimestamp, endTimestamp, sport) {
+
+        this.showLapChart(rawData, startTimestamp, endTimestamp, sport);
 
         // http://api.highcharts.com/highcharts#Chart.destroy()
         if (this.multiChart)

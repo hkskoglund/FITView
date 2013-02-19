@@ -150,14 +150,23 @@ white-space: nowrap;
   margin-top : 2px;
 }
 
+#lapChart {
+    width: 30%;
+    height: 270px;
+    float: right;
+    margin-right : 5px;
+}
+
 #activityMap {
-    width: 69%;
+    width: 39%;
     height : 270px;
-    background-color : white;
+    /*background-color : white;*/
     float : right;
     
     /*display : none; */
 }
+
+
 
 #liveImage {
    width : 30%;
