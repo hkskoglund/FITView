@@ -414,7 +414,7 @@
 
     }
 
-    FITUIUtility.prototype.combine = function (rawdata,values, timestamps,startTimestamp,endTimestamp, converter, seriesName) {
+    FITUIUtility.prototype.combine = function (rawdata,values, timestamps,startTimestamp,endTimestamp, converter, seriesName,averaging,avgSampleTime) {
         var util = FITUtility();
         var combined = [];
 
@@ -434,28 +434,75 @@
         }
 
 
-        
        
-        for (var nr = 0; nr <= timestamps.length; nr++) {
-            
-            var timestamp = timestamps[nr];
-            if (rawdata.dirty[nr]) // Skip dirty data
-                continue;
-            
-            if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
-                if (values[nr] !== undefined) {
-                    if (converter)
-                        combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), converter(values[nr])]);
-                    else
-                        combined.push([util.addTimezoneOffsetToUTC(timestamps[nr]), values[nr]]);
+        var localTimestamp;  // Timestamp in local time zone
+        var valuesForAvgerage;
+
+        //http://stackoverflow.com/questions/10359907/array-sum-and-average
+        // var sum = times.reduce(function(a, b) { return a + b });
+        //var avg = sum / times.length;
+            var len = timestamps.length;
+
+            for (var nr = 0; nr < len; nr++) {
+
+                var timestamp = timestamps[nr];  // UTC timestamp in rawdata
+
+
+                if (rawdata.dirty[nr]) // Skip dirty data
+                    continue;
+
+                if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
+
+                    if (averaging) {
+                        valuesForAverage = [];
+                        var nextTimestamp = timestamp;
+                        while (nextTimestamp - timestamp <= avgSampleTime && nextTimestamp <= endTimestamp && nr < len) {
+
+                            var val = values[nr];
+
+                            if (val !== undefined) {
+                                localTimestamp = util.addTimezoneOffsetToUTC(timestamp);
+                                if (converter)
+                                    valuesForAverage.push(converter(val));
+                                else
+                                    valuesForAverage.push(val);
+
+                            } else
+                                console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
+
+                         
+                            nextTimestamp = timestamps[++nr];
+                        }
+
+
+                        var sum = valuesForAverage.reduce(function (a, b) { return a + b });
+                        var avg = sum / valuesForAverage.length;
+
+                        combined.push([localTimestamp, avg]);
+                    }
+                    else if (typeof (averaging) === "undefined" || averaging == false) {
+
+                        var val = values[nr];
+
+                        if (val !== undefined) {
+                            localTimestamp = util.addTimezoneOffsetToUTC(timestamp);
+
+                            if (converter)
+                                combined.push([localTimestamp, converter(val)]);
+                            else
+                                combined.push([localTimestamp, val]);
+                        } else
+                            console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
+
+                    }
+
+
+
+                    if (timestamp > endTimestamp)
+                        break;
+
                 }
-                else
-                    console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr," series: ",seriesName);
             }
-                if (timestamp > endTimestamp)
-                break;
-           
-        }
 
         return combined;
       
@@ -939,6 +986,9 @@
         var altitudeSeriesData;
         var speedSeries;
         var speedSeriesData;
+        var speedAvgSeries;
+        var speedAvgSeriesData;
+
         var cadenceSeries
         var cadenceSeriesData;
         var powerSeries
@@ -1001,15 +1051,15 @@
                 switch (sport) {
                     case 1: // Running
                         this.masterVM.speedMode(1); // min/km
-                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes,id);
+                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes,id,false);
                         break;
                     case 2: // Cycling
                         this.masterVM.speedMode(2); // km/h
-                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
+                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id,false);
                         break;
                     default:
                         this.masterVM.speedMode(2);
-                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id);
+                        speedSeriesData = FITUtil.combine(rawData,rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id,false);
                         break;
                 }
                 seriesData[id] = speedSeriesData;
@@ -1027,6 +1077,42 @@
                });
             }
 
+
+            if (rawData.record.speed) {
+                id = 'speedseriesAvg';
+
+                if (FITUI.masterVM.settingsVM.forceSpeedKMprH())
+                    sport = 0;
+
+
+                switch (sport) {
+                    case 1: // Running
+                        this.masterVM.speedMode(1); // min/km
+                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, id, true,15000);
+                        break;
+                    case 2: // Cycling
+                        this.masterVM.speedMode(2); // km/h
+                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id, true,15000);
+                        break;
+                    default:
+                        this.masterVM.speedMode(2);
+                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id, true,15000);
+                        break;
+                }
+                seriesData[id] = speedAvgSeriesData;
+                //speedYAxisNr = yAxisNr;
+                speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', zIndex: 99 };
+                seriesSetup.push(speedAvgSeries);
+                yAxisOptions.push({
+                    gridLineWidth: 0,
+                    title: {
+                        text: null
+                    },
+                    opposite: true,
+
+
+                });
+            }
 
             
             
