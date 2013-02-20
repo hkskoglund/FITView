@@ -400,6 +400,25 @@
                         </a>
                         </li>
 
+                        <li><a href="#">
+
+                            <div>
+                                <input type="checkbox" data-bind="checked: requestAveragingOnSpeed" />
+                                Average speed
+                            </div>
+                        </a>
+                        </li>
+
+                        <li><a href="#">
+
+                            <div>
+                                 Avg.speed sample
+                                <input type="range" min="3000" max="120000" data-bind="value: averageSampleTime" />
+                                <span data-bind="text: averageSampleTime"></span> ms
+                            </div>
+                        </a>
+                        </li>
+
                     </ul>
 
                 </li>

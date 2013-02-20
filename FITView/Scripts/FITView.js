@@ -132,7 +132,9 @@
                 storeInIndexedDB: ko.observable(false),
                 showDeviceInfo: ko.observable(false),
                 showHeaderInfo: ko.observable(false),
-                forceSpeedKMprH : ko.observable(false)
+                forceSpeedKMprH: ko.observable(false),
+                requestAveragingOnSpeed: ko.observable(true),
+                averageSampleTime : ko.observable(15000)
             },
 
             progressVM: {
@@ -1077,41 +1079,42 @@
                });
             }
 
-
-            if (rawData.record.speed) {
+            var avgReq = this.masterVM.settingsVM.requestAveragingOnSpeed();
+            if (rawData.record.speed && avgReq) {
                 id = 'speedseriesAvg';
 
                 if (FITUI.masterVM.settingsVM.forceSpeedKMprH())
                     sport = 0;
 
+                var avgSampleInterval = this.masterVM.settingsVM.averageSampleTime();
 
                 switch (sport) {
                     case 1: // Running
                         this.masterVM.speedMode(1); // min/km
-                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, id, true,15000);
+                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, id, avgReq,avgSampleInterval);
                         break;
                     case 2: // Cycling
                         this.masterVM.speedMode(2); // km/h
-                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id, true,15000);
+                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id, avgReq,avgSampleInterval);
                         break;
                     default:
                         this.masterVM.speedMode(2);
-                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id, true,15000);
+                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, id, avgReq,avgSampleInterval);
                         break;
                 }
                 seriesData[id] = speedAvgSeriesData;
                 //speedYAxisNr = yAxisNr;
                 speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', zIndex: 99 };
                 seriesSetup.push(speedAvgSeries);
-                yAxisOptions.push({
-                    gridLineWidth: 0,
-                    title: {
-                        text: null
-                    },
-                    opposite: true,
+                //yAxisOptions.push({
+                //    gridLineWidth: 0,
+                //    title: {
+                //        text: null
+                //    },
+                //    opposite: true,
 
 
-                });
+                //});
             }
 
             
@@ -1387,7 +1390,7 @@
                         s += '<br/>' + '<b>' + this.series.name + '</b>' + ': ';
 
                         // Special treatment for speed
-                        if (self.masterVM.speedMode() && this.series.name === "Speed" || this.series.name === "Avg. speed" || this.series.name === "Max. speed")
+                        if (self.masterVM.speedMode() && this.series.name === "Speed" || this.series.name === "Avg. speed" || this.series.name === "Max. speed" || this.series.name === "SpeedAvg")
                             switch (self.masterVM.speedMode()) {
                                 case 1: // Running
                                     s += self.formatToMMSS(this.y) + " min/km";
