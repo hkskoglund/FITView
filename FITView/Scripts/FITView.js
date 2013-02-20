@@ -1208,6 +1208,7 @@
 
         this.multiChart = new Highcharts.Chart({
             chart: chartOptions,
+            //height : 700,
             
             title: {
                 text: ''

@@ -151,10 +151,14 @@ white-space: nowrap;
 }
 
 
+#divMapWrapper {
+    min-height: 270px;
+}
 
 #activityMap {
     width: 69%;
     height : 270px;
+    /*height : 270px;*/
     /*background-color : white;*/
     float : right;
     
@@ -165,7 +169,8 @@ white-space: nowrap;
 
 #liveImage {
    width : 30%;
-    height : 270px;
+    /*height : 270px;*/
+   height : 270px;
    margin-left : 5px;
    float : left;
 }
@@ -196,15 +201,16 @@ display : -moz-flex;
 display  : flex;
 -webkit-flex-flow :row wrap;
 -webkit-align-items : stretch;*/
-
+ height: 550px;
 }
+
 
 #testChart {
     /*visibility : hidden;*/
     /*-webkit-flex : 5 1;*/
     float:left;
    width: 90%;
-    /*height : 300px;*/
+    height : inherit;
 }
 
 #zonesChart {
@@ -217,6 +223,7 @@ display  : flex;
     /*float : left;*/
     float: right;
     width : 10%;
+    height: inherit;
 }
 
 #hrvChart {
