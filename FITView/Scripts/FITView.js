@@ -1213,7 +1213,7 @@
                 text: ''
             },
             xAxis: [{
-                
+                id: 'dataxAxis',
                 type: xAxisType,
                 events: {
                     afterSetExtremes: function (event) {
@@ -1234,6 +1234,7 @@
                 //reversed : true
             },{
                 type: 'linear',
+                id : 'lapxAxis',
                 categories : lap.categories}],
             //yAxis: [{
             //    title: {
@@ -1283,12 +1284,18 @@
                             return n % 1 === 0;
                         }
 
-                        var highChartdate = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
-                        var s;
-                        if (highChartdate === "Invalid date")
-                            s = this.x
+                        var onLapxAxis;
+                        (this.series.xAxis === self.multiChart.get('lapxAxis')) ? onLapxAxis = true : onLapxAxis = false;
+                        // Check to see if its a tooltip for lap axis
+                        if (onLapxAxis) {
+                            var lapNr = this.x;
+                            s = "Lap " + lapNr.toString();
+                            if (rawData.lap.total_distance)
+                                 s += '<br/>' + '<b>Distance:</b> ' + Highcharts.numberFormat(rawData.lap.total_distance[lapNr - 1],0) + ' m';
+                        }
                         else
-                        s = highChartdate;
+                            s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
+                        
 
                         s += '<br/>' + '<b>' + this.series.name + '</b>' + ': ';
 
