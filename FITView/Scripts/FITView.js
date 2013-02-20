@@ -197,8 +197,8 @@
         this.masterVM.settingsVM.forceSpeedKMprH.subscribe(function (forceSpeedKMprH) {
             var util = FITUtility();
 
-            var speedSeries;
-            var speedSeriesData;
+            var speedSeries, speedAvgSeries;
+            var speedSeriesData, speedAvgSeriesData;
 
             var rawData = self.masterVM.sessionVM.rawData;
             var timezoneDiff = util.getTimezoneOffsetFromUTC()
@@ -206,6 +206,7 @@
 
             if (self.multiChart) { 
                 speedSeries = self.multiChart.get('speedseries');
+                speedAvgSeries = self.multiChart.get('speedavgseries');
                 startTimestamp = self.multiChart.xAxis[0].min-timezoneDiff;
                 endTimestamp = self.multiChart.xAxis[0].max - timezoneDiff;
               
@@ -215,16 +216,25 @@
                 if (forceSpeedKMprH) {
                     self.masterVM.previousSpeedMode = self.masterVM.speedMode();
                     self.masterVM.previousSpeedData = speedSeries.data;
+                    self.masterVM.previousSpeedAvgData = speedAvgSeries.data;
                     speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
-                    
+                    if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                     speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+
                     self.masterVM.speedMode(2);
-                    
+
                 } else {
                     self.masterVM.speedMode(self.masterVM.previousSpeedMode);
-                    if (self.masterVM.previousSpeedMode === 1) // Running
-                      speedSeriesData = speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, 'speedseries');
-                    else
+                    if (self.masterVM.previousSpeedMode === 1) // Running 
+                    {
+                        speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, 'speedseries');
+                        if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                          speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+                    } else {
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
+                        if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                          speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+                    }
                 }
 
                 // Toggle lap lines - to update speed 
@@ -233,7 +243,10 @@
                     self.masterVM.settingsVM.showLapLines(false);
                     self.masterVM.settingsVM.showLapLines(true);
                 }
-                speedSeries.setData(speedSeriesData, true);
+
+                speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed);
+                if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                 speedAvgSeries.setData(speedAvgSeriesData, true);
             }
         });
 
@@ -440,9 +453,8 @@
         var localTimestamp;  // Timestamp in local time zone
         var valuesForAvgerage;
 
-        //http://stackoverflow.com/questions/10359907/array-sum-and-average
-        // var sum = times.reduce(function(a, b) { return a + b });
-        //var avg = sum / times.length;
+       
+        
             var len = timestamps.length;
 
             for (var nr = 0; nr < len; nr++) {
@@ -454,10 +466,14 @@
                     continue;
 
                 if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
-
+                    
                     if (averaging) {
+                        //console.log("Nr. before avg:", nr);
+
                         valuesForAverage = [];
                         var nextTimestamp = timestamp;
+                        var prevTimetampNr;
+
                         while (nextTimestamp - timestamp <= avgSampleTime && nextTimestamp <= endTimestamp && nr < len) {
 
                             var val = values[nr];
@@ -472,17 +488,28 @@
                             } else
                                 console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
 
-                         
+                            prevTimestampNr = nr;
                             nextTimestamp = timestamps[++nr];
                         }
 
+                        if (prevTimestampNr)
+                            nr = prevTimestampNr;
 
-                        var sum = valuesForAverage.reduce(function (a, b) { return a + b });
-                        var avg = sum / valuesForAverage.length;
+                        //console.log("Nr. after avg:", nr);
+                      
+                        //Credit to: http://stackoverflow.com/questions/10359907/array-sum-and-average
+                        var sum, avg;
+                        if (valuesForAverage.length > 0) {
+                            sum = valuesForAverage.reduce(function (a, b) { return a + b });
+                            avg = sum / valuesForAverage.length;
+                        } else {
+                            console.warn("Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
+                            avg = 0;
+                        }
 
                         combined.push([localTimestamp, avg]);
                     }
-                    else if (typeof (averaging) === "undefined" || averaging == false) {
+                    else if (typeof (averaging) === "undefined" || averaging == false || averaging === null) {
 
                         var val = values[nr];
 
@@ -645,54 +672,57 @@
 
             rawData.session.sport.push(0);
            
-            var lastRecordIndex = rawData.record.timestamp.length - 1;
-            
-            var timestamp = rawData.record.timestamp[lastRecordIndex];
-            rawData.session.timestamp.push(timestamp);
+            if (rawData.record) {
+                var lastRecordIndex = rawData.record.timestamp.length - 1;
 
-            var start_time = rawData.record.timestamp[0];
-            rawData.session.start_time.push(start_time);
+                var timestamp = rawData.record.timestamp[lastRecordIndex];
+                rawData.session.timestamp.push(timestamp);
 
-            var total_elapsed_time = (timestamp-start_time)/1000;
-            if (total_elapsed_time && total_elapsed_time >= 0) {
-                rawData.session.total_elapsed_time.push(total_elapsed_time);
-                rawData.session.total_timer_time.push(total_elapsed_time);
-            }
-            else
-                console.error("Something is wrong with start and/or end timestamp", start_time, timestamp);
+                var start_time = rawData.record.timestamp[0];
+                rawData.session.start_time.push(start_time);
 
-            // Take a guess on distance - assume one single session
-            // Drawback : does not check for multiple sessions
-            // Want: keep things quite simple...
-
-            var distance = rawData.record.distance[lastRecordIndex];
-            rawData.session.total_distance.push(distance);
-
-            var total_ascent = 0;
-            var total_descent = 0;
-            var altitude, previousAltitude = 0;
-
-            if (rawData.record.altitude) {
-                for (recordNr = 0; recordNr < lastRecordIndex; recordNr++) {
-                    if (rawData.record.altitude[recordNr]) {
-                        altitude = rawData.record.altitude[recordNr];
-                        diff = altitude - previousAltitude;
-                        if (diff < 0)
-                            total_descent += diff * -1;
-                        else
-                            total_ascent += diff;
-                        previousAltitude = altitude;
-                    } else
-                        break;
+                var total_elapsed_time = (timestamp - start_time) / 1000;
+                if (total_elapsed_time && total_elapsed_time >= 0) {
+                    rawData.session.total_elapsed_time.push(total_elapsed_time);
+                    rawData.session.total_timer_time.push(total_elapsed_time);
                 }
+                else
+                    console.error("Something is wrong with start and/or end timestamp", start_time, timestamp);
 
-                
-                rawData.session.total_ascent = [];
-                rawData.session.total_descent = [];
+                // Take a guess on distance - assume one single session
+                // Drawback : does not check for multiple sessions
+                // Want: keep things quite simple...
 
-                rawData.session.total_ascent.push(parseFloat(total_ascent.toFixed(1)));
-                rawData.session.total_descent.push(parseFloat(total_descent.toFixed(1)));
-            }
+                var distance = rawData.record.distance[lastRecordIndex];
+                rawData.session.total_distance.push(distance);
+
+                var total_ascent = 0;
+                var total_descent = 0;
+                var altitude, previousAltitude = 0;
+
+                if (rawData.record.altitude) {
+                    for (recordNr = 0; recordNr < lastRecordIndex; recordNr++) {
+                        if (rawData.record.altitude[recordNr]) {
+                            altitude = rawData.record.altitude[recordNr];
+                            diff = altitude - previousAltitude;
+                            if (diff < 0)
+                                total_descent += diff * -1;
+                            else
+                                total_ascent += diff;
+                            previousAltitude = altitude;
+                        } else
+                            break;
+                    }
+
+
+                    rawData.session.total_ascent = [];
+                    rawData.session.total_descent = [];
+
+                    rawData.session.total_ascent.push(parseFloat(total_ascent.toFixed(1)));
+                    rawData.session.total_descent.push(parseFloat(total_descent.toFixed(1)));
+                }
+            } else
+                console.warn("No data present on rawdata.record for restoration of session");
 
            // TO DO : calculate avg./max for speed, HR, ... not prioritized
 
@@ -1081,7 +1111,7 @@
 
             var avgReq = this.masterVM.settingsVM.requestAveragingOnSpeed();
             if (rawData.record.speed && avgReq) {
-                id = 'speedseriesAvg';
+                id = 'speedavgseries';
 
                 if (FITUI.masterVM.settingsVM.forceSpeedKMprH())
                     sport = 0;
@@ -1193,8 +1223,6 @@
             
         }
 
-        // Setup lap categories
-        var len = rawData.lap.timestamp.length;
         var lap = {
             categories: [],
             avg_speed: [],
@@ -1203,59 +1231,67 @@
             max_heart_rate: []
         }
 
-        var lapNr;
+        // Setup lap categories
+        if (rawData.lap) {
+            var len = rawData.lap.timestamp.length;
+            
 
-        var pushData = function (property, converter) {
+            var lapNr;
 
-            if (rawData.lap[property] && rawData.lap[property][lapNr]) {
+            var pushData = function (property, converter) {
 
-                if (converter)
-                    lap[property].push(converter(rawData.lap[property][lapNr]));
-                else
-                    lap[property].push(rawData.lap[property][lapNr]);
+                if (rawData.lap[property] && rawData.lap[property][lapNr]) {
 
-                return lap[property];
-            }
-            else {
+                    if (converter)
+                        lap[property].push(converter(rawData.lap[property][lapNr]));
+                    else
+                        lap[property].push(rawData.lap[property][lapNr]);
 
-                console.warn("Found no lap." + property + " in rawdata");
-                return undefined;
-            }
-        }
-
-        for (lapNr = 0; lapNr < len; lapNr++) {
-            if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
-                lap.categories.push((lapNr + 1).toString());
-                switch (sport) {
-                    case 1: // Running
-                        pushData("avg_speed", FITUtil.convertSpeedToMinutes);
-                        pushData("max_speed", FITUtil.convertSpeedToMinutes);
-                        pushData("avg_heart_rate");
-                        pushData("max_heart_rate");
-                        break;
-                    case 2: // Cycling
-                        pushData("avg_speed", FITUtil.convertSpeedToKMprH);
-                        pushData("max_speed", FITUtil.convertSpeedToKMprH);
-                        pushData("avg_heart_rate");
-                        pushData("max_heart_rate");
-                        break;
-                    default:
-                        pushData("avg_speed", FITUtil.convertSpeedToKMprH);
-                        pushData("max_speed", FITUtil.convertSpeedToKMprH);
-                        pushData("avg_heart_rate");
-                        pushData("max_heart_rate");
-                        break;
+                    return lap[property];
                 }
-              
-               
-            }
-        }
+                else {
 
-       
-        seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible : true, zIndex : 1 });
-        seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
-        seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
-        seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
+                    console.warn("Found no lap." + property + " in rawdata");
+                    return undefined;
+                }
+            }
+
+            for (lapNr = 0; lapNr < len; lapNr++) {
+                if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
+                    lap.categories.push((lapNr + 1).toString());
+                    switch (sport) {
+                        case 1: // Running
+                            pushData("avg_speed", FITUtil.convertSpeedToMinutes);
+                            pushData("max_speed", FITUtil.convertSpeedToMinutes);
+                            pushData("avg_heart_rate");
+                            pushData("max_heart_rate");
+                            break;
+                        case 2: // Cycling
+                            pushData("avg_speed", FITUtil.convertSpeedToKMprH);
+                            pushData("max_speed", FITUtil.convertSpeedToKMprH);
+                            pushData("avg_heart_rate");
+                            pushData("max_heart_rate");
+                            break;
+                        default:
+                            pushData("avg_speed", FITUtil.convertSpeedToKMprH);
+                            pushData("max_speed", FITUtil.convertSpeedToKMprH);
+                            pushData("avg_heart_rate");
+                            pushData("max_heart_rate");
+                            break;
+                    }
+
+
+                }
+            }
+
+
+            seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1 });
+            seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
+            seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
+            seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
+        }
+        else
+            console.warn("No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
 
         var xAxisType = 'datetime';
 
@@ -2267,6 +2303,10 @@
         var divChartId = 'zonesChart';
         //var divChart = document.getElementById(divChartId);
        
+        if (typeof (rawdata.record) === "undefined") {
+            console.warn("Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
+            return -1;
+        }
 
         if (typeof (rawdata.record.heart_rate) === "undefined" || rawdata.record.heart_rate.length === 0) {
             console.warn("No HR data found, skipping HR Zones chart");
@@ -2953,7 +2993,10 @@
                
                 var rawData = eventdata.rawdata;
 
-                FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
+                if (rawData.record)
+                    FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
+                else
+                    console.warn("No rawdata present on rawdata.record - no data in file");
 
                 // Holds index of previously lookedup timestamps in rawdata.record.timestamp array
                 FITUI.timestampIndexCache = [];
