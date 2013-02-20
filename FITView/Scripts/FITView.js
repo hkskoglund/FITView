@@ -1118,13 +1118,13 @@
 
         var pushData = function (property, converter) {
 
-           
-
             if (rawData.lap[property] && rawData.lap[property][lapNr]) {
+
                 if (converter)
                     lap[property].push(converter(rawData.lap[property][lapNr]));
                 else
                     lap[property].push(rawData.lap[property][lapNr]);
+
                 return lap[property];
             }
             else {
@@ -1136,7 +1136,7 @@
 
         for (lapNr = 0; lapNr < len; lapNr++) {
             if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
-                lap.categories.push("Lap " + (lapNr + 1).toString());
+                lap.categories.push((lapNr + 1).toString());
                 switch (sport) {
                     case 1: // Running
                         pushData("avg_speed", FITUtil.convertSpeedToMinutes);
