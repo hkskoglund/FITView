@@ -199,14 +199,25 @@
 
             var speedSeries, speedAvgSeries;
             var speedSeriesData, speedAvgSeriesData;
+            var lapAvgSpeedSeries, lapMaxSpeedSeries
+            var lapAvgSpeedSeriesData, lapMaxSpeedSeriesData;
 
             var rawData = self.masterVM.sessionVM.rawData;
             var timezoneDiff = util.getTimezoneOffsetFromUTC()
             var startTimestamp,endTimestamp;
 
+            var updatePoint = function (data,property,converter)
+            {
+             for (var pointNr=0; pointNr < data.length; pointNr++) 
+                    data[pointNr].update(converter(rawData.lap[property][pointNr]),false);
+             
+            }
+
             if (self.multiChart) { 
                 speedSeries = self.multiChart.get('speedseries');
                 speedAvgSeries = self.multiChart.get('speedavgseries');
+                lapAvgSpeedSeries = self.multiChart.get('LAP_avg_speed');
+                lapMaxSpeedSeries = self.multiChart.get('LAP_max_speed');
                 startTimestamp = self.multiChart.xAxis[0].min-timezoneDiff;
                 endTimestamp = self.multiChart.xAxis[0].max - timezoneDiff;
               
@@ -217,7 +228,15 @@
                     self.masterVM.previousSpeedMode = self.masterVM.speedMode();
                     self.masterVM.previousSpeedData = speedSeries.data;
                     self.masterVM.previousSpeedAvgData = speedAvgSeries.data;
+                    
                     speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
+                   
+                    if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
+                        updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITUtil.convertSpeedToKMprH);
+                        updatePoint(lapMaxSpeedSeries.data, "max_speed", FITUtil.convertSpeedToKMprH);
+                        self.multiChart.redraw();
+                    }
+
                     if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                      speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
 
@@ -228,12 +247,24 @@
                     if (self.masterVM.previousSpeedMode === 1) // Running 
                     {
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, 'speedseries');
+
+                        if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
+                            updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITUtil.convertSpeedToMinutes);
+                            updatePoint(lapMaxSpeedSeries.data, "max_speed", FITUtil.convertSpeedToMinutes);
+                            self.multiChart.redraw();
+                        }
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                           speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToMinutes, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
                     } else {
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                           speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+
+                        if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
+                            updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITUtil.convertSpeedToKMprH);
+                            updatePoint(lapMaxSpeedSeries.data, "max_speed", FITUtil.convertSpeedToKMprH);
+                            self.multiChart.redraw();
+                        }
                     }
                 }
 
