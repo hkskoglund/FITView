@@ -1,6 +1,6 @@
 ﻿//use strict
-// Will load "Script/FITMessage.js probably since worker is loaded from /Scripts directory
-importScripts('FITActivityFile.js', 'FITUtility.js');  
+
+importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 'FITUtility.js');  
 
 (
 
@@ -105,16 +105,31 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
         // Global msg types.
 
         var GLOBAL_FIT_MSG = {
+            // Common
             FILEID: 0,
+            FILE_CREATOR: 49,
+
+            // Activity messages
             SESSION: 18,
             LAP: 19,
             RECORD: 20,
             EVENT: 21,
             ACTIVITY: 34,
-            FILE_CREATOR: 49,
+           
             HRV: 78,
             DEVICE_INFO: 23,
-            LENGTH: 101
+            LENGTH: 101,
+
+            // Sport setting messages
+
+            ZONES_TARGET : 7,
+            HR_ZONE : 8,
+            POWER_ZONE : 9,
+            MET_ZONE : 10,
+            SPORT: 12,
+            SPEED_ZONE:53
+            // Where is cadence_zone ? Is it implemented in FIT?
+
         };
 
         // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
@@ -746,6 +761,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
             var fieldNrs = definitionMsg.content.fieldNumbers;
 
+            self.postMessage({ response: "info", data: "Global message nr "+globalMsgType.toString()+" has according to definition message; total field numbers = "+fieldNrs.toString() });
             
 
             var logger = "";
@@ -767,12 +783,16 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 for (var i = 0; i < fieldNrs; i++) {
                     var field = "field" + i.toString();
 
+                   
+
                     if (rec.content[field] === undefined) {
                         self.postMessage({ response: "error", data: "Cannot read content of field " + field + " global message type "+ globalMsgType.toString() });
                         break;
                     }
 
                     var fieldDefNr = rec.content[field].fieldDefinitionNumber;
+
+                   // self.postMessage({ response: "info", data: "Parsing  " + field +" in record content, it contains data for field definition number"+fieldDefNr });
 
                     // Skip fields with invalid value
                     if (!rec.content[field].invalid) {
@@ -795,11 +815,18 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                             // Duplication of code, maybe later do some value conversions here for specific messages
                             switch (globalMsgType) {
+
+                                // Common messages
+
                                 // file_id
                                 case GLOBAL_FIT_MSG.FILEID:
                                     if (prop === "time_created")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                                //  file_creator
+                                case GLOBAL_FIT_MSG.FILE_CREATOR: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+
+                               // Activity messages
                                     // session
                                 case GLOBAL_FIT_MSG.SESSION:
                                     if (prop === "timestamp" || prop === "start_time")
@@ -831,9 +858,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                                    //  file_creator
-                                case GLOBAL_FIT_MSG.FILE_CREATOR: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-
+                                 
                                     // hrv
                                 case GLOBAL_FIT_MSG.HRV: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
@@ -854,6 +879,59 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                     if (prop === "timestamp" || prop === "start_time")
                                         rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
                                     msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                                    break;
+
+
+                                // Sport setting messages
+
+                                case GLOBAL_FIT_MSG.ZONES_TARGET:
+                                    msg[prop] = {
+                                        value: rec.content[field].value,
+                                        unit: unit,
+                                        scale: scale,
+                                        offset: offset
+                                    };
+                                    break;
+                                case GLOBAL_FIT_MSG.SPORT:
+                                    msg[prop] = {
+                                        value: rec.content[field].value,
+                                        unit: unit,
+                                        scale: scale,
+                                        offset: offset
+                                    };
+                                    break;
+                                case GLOBAL_FIT_MSG.HR_ZONE:
+                                    msg[prop] = {
+                                        value: rec.content[field].value,
+                                        unit: unit,
+                                        scale: scale,
+                                        offset: offset
+                                    };
+                                    break;
+                                case GLOBAL_FIT_MSG.SPEED_ZONE:
+                                    msg[prop] = {
+                                        value: rec.content[field].value,
+                                        unit: unit,
+                                        scale: scale,
+                                        offset: offset
+                                    };
+                                    break;
+                                    // case cadence...
+                                case GLOBAL_FIT_MSG.POWER_ZONE:
+                                    msg[prop] = {
+                                        value: rec.content[field].value,
+                                        unit: unit,
+                                        scale: scale,
+                                        offset: offset
+                                    };
+                                    break;
+                                case GLOBAL_FIT_MSG.MET_ZONE:
+                                    msg[prop] = {
+                                        value: rec.content[field].value,
+                                        unit: unit, 
+                                        scale: scale, 
+                                        offset: offset
+                                    };
                                     break;
 
                                 default:
@@ -878,6 +956,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             msg[prop] = { "value": rec.content[field].value};
 
                         }
+
                           
                     }
 
@@ -965,16 +1044,23 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
             var name = getGlobalMessageTypeName(globalMessageType);
             //var fitMsg = FITMessage();
             var fitActivity = FIT.ActivityFile();
+            var fitCommonMsg = FIT.CommonMessage();
+            var fitSportMsg = FIT.SportSettingMessage();
 
             var message = { properties: undefined };
 
             switch (name) {
+                // Common Messages
                 case "file_creator":
-                    message.properties = fitActivity.fileCreator();
+                    message.properties = fitCommonMsg.fileCreator();
                     break;
+
+
                 case "file_id":
-                    message.properties = fitActivity.fileId();
+                    message.properties = fitCommonMsg.fileId();
                     break;
+
+                 // Activity messages
                 case "activity":
                     message.properties = fitActivity.activity();
                     break;
@@ -999,6 +1085,33 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                 case "length":
                     message.properties = fitActivity.length();
                     break;
+
+                  // Sport settings file messages
+
+                case "zones_target":
+                    message.properties = fitSportMsg.zones_target();
+                    break;
+
+                case "sport":
+                    message.properties = fitSportMsg.sport();
+                    break;
+
+                case "hr_zone":
+                    message.properties = fitSportMsg.hr_zone();
+                    break;
+                case "speed_zone":
+                    message.properties = fitSportMsg.speed_zone();
+                    break;
+                case "cadence_zone":
+                    message.properties = fitSportMsg.cadence_zone();
+                    break;
+                case "power_zone":
+                    message.properties = fitSportMsg.power_zone();
+                    break;
+                case "met_zone":
+                    message.properties = fitSportMsg.met_zone();
+                    break;
+
                 default:
                     self.postMessage({ response: "error", data: "No message properties found, global message name : " + name });
                     message.properties = {};
@@ -1163,10 +1276,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                             size    : fsize,
                             baseType: fbtype
                         };
-                     }
-                   
+                    }
 
-                  
+                    self.postMessage({ response: "info", data: "Raw record content of definition message : " + JSON.stringify(recContent) });
+
                     //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
 
                     break;
@@ -1235,7 +1348,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 }
 
                               
-                                recContent[currentField] = { "value": str };
+                                recContent[currentField].value = str;
                                 break;
 
                               
@@ -1248,7 +1361,7 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
                                 for (var byteNr = 0; byteNr < bSize; byteNr++)
                                     bytes.push(dviewFit.getUint8(bytesStartIndex++));
                                 
-                                recContent[currentField] = { "value": bytes };
+                                recContent[currentField].value = bytes;
                                 
                                 break;
                             default: 
@@ -1269,6 +1382,10 @@ importScripts('FITActivityFile.js', 'FITUtility.js');
 
                         
                     }
+
+                   // self.postMessage({ response: "info", data: "Raw record content of data message : " + JSON.stringify(recContent) });
+
+
 
                     break;
             }

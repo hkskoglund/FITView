@@ -1,28 +1,11 @@
-﻿// Try creating "namespace" FIT in parent function execution context
+﻿
+if (typeof (FIT) === "undefined")
+    var FIT = {};
 
-var FIT = {};
-
-
-if (FIT.ActivityFile === undefined)
-    FIT.Activity = {};
 
 FIT.ActivityFile = function () {
 
 
-    // Private
-    var fileIdProperties = {
-        0: { "property": "type" },
-        1: { "property": "manufacturer" },
-        2: { "property": "product" },
-        3: { "property": "serial_number" },
-        4: { "property": "time_created" },
-        5: { "property": "number" }
-    };
-
-    var fileCreatorProperties = {
-        0: { "property": "software_version" },
-        1: { "property": "hardware_version" }
-    };
 
     var recordProperties = {
 
@@ -268,13 +251,13 @@ FIT.ActivityFile = function () {
     // Expose functions
     return {
 
-        fileId: function () {
-            return fileIdProperties;
-        },
+        //fileId: function () {
+        //    return fileIdProperties;
+        //},
 
-        fileCreator: function () {
-            return fileCreatorProperties;
-        },
+        //fileCreator: function () {
+        //    return fileCreatorProperties;
+        //},
 
         record: function () {
             return recordProperties;

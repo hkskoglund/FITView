@@ -106,8 +106,10 @@
     <Content Include="Images\laptrigger\manual.png" />
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
+    <Content Include="Scripts\FITCommonMessage.js" />
     <Content Include="Scripts\FITImport.js" />
     <Content Include="Scripts\FITSport.js" />
+    <Content Include="Scripts\FITSportSetting.js" />
     <Content Include="Scripts\FITView.js" />
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
