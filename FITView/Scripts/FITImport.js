@@ -501,15 +501,32 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
             var unacceptableLong = false;
 
             var counter = {
-                lapCounter: 0,
-                sessionCounter: 0,
+
+                // Common
+
                 fileIdCounter: 0,
                 fileCreatorCounter: 0,
+                
+                // Activity
+
+                lapCounter: 0,
+                sessionCounter: 0,
                 lengthCounter: 0,
                 deviceInfoCounter: 0,
                 activityCounter: 0,
                 eventCounter: 0,
-                recordCounter : 0
+                recordCounter: 0,
+
+                // Sport setting
+
+                zones_target_Counter: 0,
+                sport_Counter: 0,
+                hr_zone_Counter: 0,
+                speed_zone_Counter: 0,
+                cadence_zone_Counter: 0,
+                power_zone_Counter: 0,
+                met_zone_Counter : 0
+
             };
 
             var progressHandle;
@@ -520,15 +537,15 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
 
             while (index < maxReadToByte) { // Try reading from file in case something is wrong with header (datasize/headersize) 
 
-                var rec = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
+                var recRaw = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
                 // Probably it would be possible to integrate the first and second-pass in a integrated pass, but it would
                 // complicate the code. A decision was made to stick with the current solution - it works -
 
-                if (rec.header.messageType === FIT_DEFINITION_MSG)
-                    localMsgDef["localMsgDefinition" + rec.header.localMessageType.toString()] = rec; // If we got an definition message, store it as a property
+                if (recRaw.header.messageType === FIT_DEFINITION_MSG)
+                    localMsgDef["localMsgDefinition" + recRaw.header.localMessageType.toString()] = recRaw; // If we got an definition message, store it as a property
                 else {
 
-                    var datarec = getDataRecordContent(rec); // Do a second-pass and try to intepret content and generate messages with meaningfull properties
+                    var datarec = getDataRecordContent(recRaw); // Do a second-pass and try to intepret content and generate messages with meaningfull properties
 
                     if (datarec !== undefined) {
 
@@ -544,6 +561,26 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
 
                             // Presist data to indexedDB
                             switch (datarec.message) {
+
+                                // Common
+
+                                case "file_id":
+                                    // Well formed .FIT should have one file_id at the start
+                                    counter.fileIdCounter++;
+                                    fileidRec = datarec;
+                                    // addRawdata(fileidStore, datarec);
+                                    break;
+                                case "file_creator":
+                                    counter.fileCreatorCounter++;
+                                    // Seems rather redudant, same info. is also in device_info record
+                                    if (fileidRec !== undefined) {
+                                        fileidRec.file_creator = datarec;
+
+                                    } else
+                                        self.postMessage({ response: "error", data: "file_creator msg. found, but not file_id, skipped saving" });
+                                    break;
+
+                                // Activity
                                 case "record":
                                     if (datarec.timestamp !== undefined) {
 
@@ -626,21 +663,7 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
                                     else
                                         self.postMessage({ response: "error", data: "No timestamp in event message, not written to indexedDB" });
                                     break;
-                                case "file_id":
-                                    // Well formed .FIT should have one file_id at the start
-                                    counter.fileIdCounter++;
-                                    fileidRec = datarec;
-                                   // addRawdata(fileidStore, datarec);
-                                    break;
-                                case "file_creator":
-                                    counter.fileCreatorCounter++;
-                                    // Seems rather redudant, same info. is also in device_info record
-                                    if (fileidRec !== undefined) {
-                                        fileidRec.file_creator = datarec;
-                                        
-                                    } else
-                                        self.postMessage({ response: "error", data: "file_creator msg. found, but not file_id, skipped saving" });
-                                    break;
+                               
                                 case "device_info":
                                     counter.deviceInfoCounter++;
                                     // Hmmm. 910XT seems to record 2 set of identically device info records
@@ -649,6 +672,31 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
                                     
                                     addRawdata(deviceinfoStore, datarec);
                                     break;
+
+                                    // Sport setting
+
+                                case "zones_target" :
+                                    counter.zones_target_Counter++;
+                                    break;
+                                case "sport" : 
+                                    counter.sport_Counter++;
+                                    break;
+                                case "hr_zone" : 
+                                    counter.hr_zone_Counter++;
+                                    break;
+                                case "speed_zone":
+                                    counter.speed_zone_Counter++;
+                                    break;
+                                case "cadence_zone":
+                                    counter.cadence_zone_Counter++;
+                                    break;
+                                case "power_zone":
+                                    counter.power_zone_Counter++;
+                                    break;
+                                case "met_zone":
+                                    counter.met_zone_Counter++;
+                                    break;
+                                    
                             }
 
                             // Build rawdata structure tailored for integration with highchart
@@ -717,8 +765,7 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
             clearInterval(progressHandle);
 
             self.postMessage({ response: "importFinished", data: 100 });
-
-            rawdata.counter = counter;  
+            self.postMessage({ response: "messageCounter", counter: counter });
 
             // Persist file_id msg.
 
@@ -945,11 +992,15 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
                             if (fieldDefNr === 253) { // Seems like field def. 253 is always a timestamp
                                 prop = "timestamp";
                                 rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                            } else {
+                            } else if (fieldDefNr === 254) { // Probably always message_index - a counter from 0 to n for each message
+                                prop = "message_index";
+                            }
+
+                            else {
                                 if (fieldDefNr == undefined)
                                     fieldDefNr = "undefined";
 
-                                prop = "unknown" + fieldDefNr.toString();
+                                prop = "unknown_fieldDefinitionNr_" + fieldDefNr.toString();
                                 self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() + " unknown field generated to store data" });
                             }
 
@@ -1036,7 +1087,11 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
                 104: "battery"
             }
 
-            return mesg_num[globalMessageType];
+            var globalMessage = mesg_num[globalMessageType];
+            if (globalMessage === undefined)
+                globalMessage = "globalMessage" + globalMessageType.toString();
+
+            return globalMessage;
         }
 
         messageFactory = function (globalMessageType) {
@@ -1113,7 +1168,7 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
                     break;
 
                 default:
-                    self.postMessage({ response: "error", data: "No message properties found, global message name : " + name });
+                    self.postMessage({ response: "error", data: "No message properties found, global message type : " + globalMessageType });
                     message.properties = {};
                     break;
                     

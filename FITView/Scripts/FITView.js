@@ -2967,7 +2967,12 @@
         }, this);
     };
 
-    UIController.prototype.intepretMessageCounters  = function (counter) {
+    UIController.prototype.intepretMessageCounters = function (counter) {
+        if (typeof (counter) === "undefined") {
+            console.warn("Message counters is undefined, cannot intepret counter of global messages in FIT file");
+            return -1;
+        }
+
         if (counter.fileIdCounter != 1)
             console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
         if (counter.fileCreatorCounter != 1)
@@ -3008,6 +3013,138 @@
 
     };
 
+    UIController.prototype.processSportSettingFile = function (rawData)
+    {
+    }
+
+    UIController.prototype.processActivityFile = function (rawData,counter)
+    {
+        FITUI.intepretMessageCounters(counter);
+
+        if (rawData.record)
+            FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
+        else
+            console.warn("No rawdata present on rawdata.record - no data in file");
+
+        // Holds index of previously lookedup timestamps in rawdata.record.timestamp array
+        FITUI.timestampIndexCache = [];
+                
+
+        // Value converters that are run on "create"-event/callback in knockout
+        var mappingOptions = {
+            //'start_time' : {
+            //    create: function (options) {
+            //        return new FITUI.convertToFullDate(options.data);
+            //    }
+            //},
+            'total_elapsed_time': {
+                create: function (options) {
+                    return new FITUI.convertSecsToHHMMSSModel(options.data);
+                }
+            },
+            'total_timer_time': {
+                create: function (options) {
+                    return new FITUI.convertSecsToHHMMSSModel(options.data);
+                }
+            },
+            'avg_speed': {
+                create: function (options) {
+                    return new FITUI.convertSpeedConverterModel(options.data);
+                }
+            },
+            'max_speed': {
+                create: function (options) {
+                    return new FITUI.convertSpeedConverterModel(options.data);
+                }
+            }
+        };
+                
+
+        if (rawData.session === undefined)
+            rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
+
+            
+        FITUI.masterVM.sessionVM.setRawdata(FITUI, rawData);
+
+        ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.masterVM.sessionVM);
+
+        FITUI.masterVM.sessionVM.selectedSession(0);  // Start with first session, there is no session object but an common index for a timestamp to all arrays 
+
+      
+        FITUI.masterVM.lapVM.setRawdata(FITUI, rawData);
+        ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.masterVM.lapVM);
+      
+
+      
+          // Activity file
+
+                FITUI.showLaps(rawData);
+
+                // Try to catch errors in session start_time/timestamp
+                var start_time;
+
+                if (typeof (rawData.session.start_time) === "undefined")
+                {
+                       
+                    console.warn("Session start time not found");
+                    start_time = rawData.lap.start_time[0];
+
+                    if (start_time === undefined) {
+                        console.warn("Session start time not found in first lap either, trying record head");
+                        start_time === rawData.record.timestamp[0];
+                    }
+
+                    console.info("Found start_time for session:", start_time);
+
+                    rawData.session.start_time = [];
+                    rawData.session.start_time.push(start_time);
+                } else
+                    start_time = rawData.session.start_time[0];
+
+                       
+
+                var timestamp;
+                if (typeof (rawData.session.timestamp) === "undefined") {
+                    console.warn("Session end time not found");
+                    timestamp = rawData.lap.timestamp[rawData.session.num_laps - 1];
+                    console.info("Timestamp of lap", rawData.session_num_laps, "is :", timestamp);
+
+                    if (timestamp === undefined) {
+                        console.warn("Session end not found in timestamp for lap", rawData.session.num_laps);
+                        var len = rawData.record.timestamp.length;
+                        timestamp === rawData.record.timestamp[len - 1];
+                        console.info("Timestamp of last rawdata.record is :", timestamp);
+                    }
+                    rawData.session.timestamp = [];
+                    rawData.session.timestamp.push(timestamp);
+                } else
+                    timestamp = rawData.session.timestamp[0];
+
+                      
+                      
+
+                if (FITUI.map) {
+                    var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
+
+                    var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
+
+                    var polylinePlotted = FITUI.showPolyline(rawData, FITUI.map, rawData.record, rawData.session.start_time[0], rawData.session.timestamp[0],
+                        {strokeColor : 'red',
+                            strokeOpacity : 1,
+                            strokeWeight : 1},"session");
+                }
+                //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
+                //   $('#activityMap').show();
+
+                       
+                FITUI.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
+                FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
+                         
+                //FITUI.showChartHrv(rawData);
+
+                //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
+    }
+
     UIController.prototype.onFITManagerMsg = function (e) {
    // NB Callback, this reference....
        
@@ -3017,168 +3154,71 @@
 
         var eventdata = e.data;
 
+        var fileIdType;
+
         switch (eventdata.response) {
 
+            case 'messageCounter':
+                FITUI.messageCounter = eventdata.counter;
+                break;
+
             case 'rawData':
-                //var rawData = JSON.parse(data.rawdata);
+              
                
                 var rawData = eventdata.rawdata;
 
-                if (rawData.record)
-                    FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
-                else
-                    console.warn("No rawdata present on rawdata.record - no data in file");
+                if (rawData.file_id)
+                    console.info("file_id message : ", JSON.stringify(rawData.file_id));
 
-                // Holds index of previously lookedup timestamps in rawdata.record.timestamp array
-                FITUI.timestampIndexCache = [];
-                FITUI.intepretMessageCounters(rawData.counter);
+                if (rawData.file_creator)
+                    console.info("file_creator message : ", JSON.stringify(rawData.file_creator));
+ 
+                if (rawData.file_id) {
+                    fileIdType = rawData.file_id.type[0];
 
-                // Value converters that are run on "create"-event/callback in knockout
-                var mappingOptions = {
-                    //'start_time' : {
-                    //    create: function (options) {
-                    //        return new FITUI.convertToFullDate(options.data);
-                    //    }
-                    //},
-                    'total_elapsed_time': {
-                        create: function (options) {
-                            return new FITUI.convertSecsToHHMMSSModel(options.data);
-                        }
-                    },
-                    'total_timer_time': {
-                        create: function (options) {
-                            return new FITUI.convertSecsToHHMMSSModel(options.data);
-                        }
-                    },
-                    'avg_speed': {
-                        create: function (options) {
-                            return new FITUI.convertSpeedConverterModel(options.data);
-                        }
-                    },
-                    'max_speed': {
-                        create: function (options) {
-                            return new FITUI.convertSpeedConverterModel(options.data);
-                        }
+                    if (rawData.file_id.type.length > 1)
+                        console.warn("More than 1 file_id type");
+                }
+                else {
+                    // Normally FIT files contains exactly ONE file_id message at the start
+
+                    if (rawData.session || rawData.lap || rawData.record) {
+                        console.log("No file_id message in FIT file, but assume its an acivity file - found session or lap or record");
+                        fileIdType = 4;
                     }
-                };
-                
+                }
 
-                //var liId = '#liSessions';
-                //var jquerySessionElement = $(liId);
-                //var sessionElement = jquerySessionElement[0];
-                //console.log(liId + " for data binding", sessionElement);
+                switch (fileIdType)
+                {
+                    // Activity file
+                    case 4 : 
+                        console.info("Processing an activity file");
+                        FITUI.processActivityFile(rawData,FITUI.messageCounter);
+                        break;
 
-                if (rawData.session === undefined)
-                    rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
+                        // Sport settings (HR zones)
 
-                
-
-                FITUI.masterVM.sessionVM.setRawdata(FITUI, rawData);
-
-                ko.mapping.fromJS(rawData.session, mappingOptions, FITUI.masterVM.sessionVM);
-
-                FITUI.masterVM.sessionVM.selectedSession(0);  // Start with first session, there is no session object but an common index for a timestamp to all arrays 
-
-                   
-                //var jqueryLapNode = $('#divLaps');
-                //var lapNode = jqueryLapNode[0];
-                //console.log("#divLaps for data binding", lapNode);
-
-                //if (FITUI.lapViewModel === undefined && rawData.lap) {
-                //    FITUI.lapViewModel = emptyViewModel(fitActivity.lap());
-                FITUI.masterVM.lapVM.setRawdata(FITUI, rawData);
-                 ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.masterVM.lapVM);
-                //       // jqueryLapNode.show();
-                //        ko.applyBindings(FITUI.lapViewModel, lapNode);
-                       
-                //}
-                //else {
-                //    FITUI.resetViewModel(FITUI.lapViewModel);
-                //    ko.mapping.fromJS(rawData.lap, mappingOptions, FITUI.lapViewModel);
-                //}
-
-              
-
-                switch (rawData.file_id.type[0]) {
-                    case 4: // Activity file
-
-                        FITUI.showLaps(rawData);
-
-                        // Try to catch errors in session start_time/timestamp
-                        var start_time;
-
-                        if (typeof (rawData.session.start_time) === "undefined")
-                        {
-                       
-                            console.warn("Session start time not found");
-                            start_time = rawData.lap.start_time[0];
-
-                            if (start_time === undefined) {
-                                console.warn("Session start time not found in first lap either, trying record head");
-                                start_time === rawData.record.timestamp[0];
-                            }
-
-                            console.info("Found start_time for session:", start_time);
-
-                            rawData.session.start_time = [];
-                            rawData.session.start_time.push(start_time);
-                        } else
-                            start_time = rawData.session.start_time[0];
-
-                       
-
-                        var timestamp;
-                        if (typeof (rawData.session.timestamp) === "undefined") {
-                            console.warn("Session end time not found");
-                            timestamp = rawData.lap.timestamp[rawData.session.num_laps - 1];
-                            console.info("Timestamp of lap", rawData.session_num_laps, "is :", timestamp);
-
-                            if (timestamp === undefined) {
-                                console.warn("Session end not found in timestamp for lap", rawData.session.num_laps);
-                                var len = rawData.record.timestamp.length;
-                                timestamp === rawData.record.timestamp[len - 1];
-                                console.info("Timestamp of last rawdata.record is :", timestamp);
-                            }
-                            rawData.session.timestamp = [];
-                            rawData.session.timestamp.push(timestamp);
-                        } else
-                            timestamp = rawData.session.timestamp[0];
-
-                      
-                      
-
-                        if (FITUI.map) {
-                            var sessionMarkerSet = FITUI.showSessionMarkers(FITUI.map, rawData);
-
-                            var sessionAsOverlaySet = FITUI.showSessionsAsOverlay(FITUI.map, rawData);
-
-                            var polylinePlotted = FITUI.showPolyline(rawData, FITUI.map, rawData.record, rawData.session.start_time[0], rawData.session.timestamp[0],
-                                {strokeColor : 'red',
-                                    strokeOpacity : 1,
-                                    strokeWeight : 1},"session");
-                        }
-                        //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
-                        //   $('#activityMap').show();
-
-                       
-                        FITUI.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
-                         FITUI.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
-                         
-                        //FITUI.showChartHrv(rawData);
-
-                        //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
+                    case 3 : 
+                        console.info("Processing a sport settings file");
+                        FITUI.processSportSettingFile(rawData);
                         break;
 
                     default:
-                        console.warn("Unsupported fit file type, expected 4 (activity file), but got ", rawData.file_id.type[0]);
+                        console.error("Cannot process file id with type : ",fileIdType);
+                      
+                        
+
                         break;
 
                 }
-
+                
                 break;
 
             case 'header':
                 var headerInfo = eventdata.header;
+
+                console.info("FIT file header : "+JSON.stringify(headerInfo));
+
                 // Copy to view model
                 FITUI.masterVM.headerInfoVM.fileName(headerInfo.fitFile.name);
                 FITUI.masterVM.headerInfoVM.fileSize(headerInfo.fitFile.size);
@@ -3227,7 +3267,6 @@
                 FITUI.masterVM.progressVM.progress(0);
 
                 break;
-
 
             default:
                 console.error("Received unrecognized message from worker " + eventdata.response);
