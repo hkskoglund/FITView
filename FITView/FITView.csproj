@@ -118,6 +118,7 @@
     <Content Include="Scripts\FITActivityFile.js" />
     <Content Include="Scripts\FITUtility.js" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="Scripts\highcharts30betasrc.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
     <Content Include="Scripts\jquery-1.9.1.min.js" />
     <Content Include="Scripts\knockout-2.2.1.debug.js" />

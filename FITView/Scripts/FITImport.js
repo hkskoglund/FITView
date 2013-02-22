@@ -808,7 +808,7 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
 
             var fieldNrs = definitionMsg.content.fieldNumbers;
 
-            self.postMessage({ response: "info", data: "Global message nr "+globalMsgType.toString()+" has according to definition message; total field numbers = "+fieldNrs.toString() });
+           // self.postMessage({ response: "info", data: "Global message nr "+globalMsgType.toString()+" has according to definition message; total field numbers = "+fieldNrs.toString() });
             
 
             var logger = "";

@@ -9,7 +9,8 @@
     <script src="Scripts/knockout-2.2.1.debug.js"></script>
     <script src="Scripts/knockout.mapping-latest.debug.js"></script>
     <script src="Scripts/modernizr-2.6.2.js"></script>
-    <script src="Scripts/highcharts.src.js"></script>
+   <!-- <script src="Scripts/highcharts.src.js"></script>-->
+    <script src="Scripts/highcharts30betasrc.js"></script>
 
     <script src="Scripts/FITUtility.js"></script>
     <script src="Scripts/FITActivityFile.js"></script>
@@ -25,11 +26,12 @@
 
     <div>
 
-
+        
         <div id="divSessionLap">
 
             <!-- <div data-bind="text: ko.toJSON($root.headerInfoVM)"></div> -->
 
+            
             
 
             <ul class="menu">
@@ -488,7 +490,25 @@
 
             <!-- ko with: headerInfoVM -->
            
-            <div id="divHeaderInfo" data-bind="visible: $parent.settingsVM.showHeaderInfo">
+           <!-- <div id="divHeartRateZones" style="width: 30%">
+                <h1 style="font-size: larger; text-align: center">Heart rate zones</h1>
+                <ul style="list-style : none">
+                    <li>
+                        <input type="text" placeholder="HR zone 1"/><input type="range" min="0" max="300"  /></li>
+                    <li>
+                        <input type="text" placeholder="HR zone 2"/><input type="range" min="0" max="300"  /></li>
+                    <li>
+                       <input type="text" placeholder="HR zone 3"/><input type="range" min="0" max="300"  /></li>
+                    <li>
+                        <input type="text" placeholder="HR zone 4"/><input type="range" min="0" max="300"  /></li>
+                    <li>
+                        <input type="text" placeholder="HR zone 5"/><input type="range" min="0" max="300" /></li>
+                    
+                </ul>
+                <button id="btnSaveHRZones" style="float: right">Save</button>
+            </div>-->
+
+            <div  id="divHeaderInfo" data-bind="visible: $parent.settingsVM.showHeaderInfo">
                 Header info: 
                 <span title="File name" data-bind="text: fileName"></span>
                 <span title="File size" data-bind="text: fileSize"></span>

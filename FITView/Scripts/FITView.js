@@ -144,8 +144,7 @@
             sessionVM: getEmptyViewModel(fitActivity.session()),
 
             lapVM: getEmptyViewModel(fitActivity.lap()),
-            
-
+           
             loadChartVM: new loadSeriesViaButtonViewModel()  // Give possibility for ondemand loading of data -> to speed up start/not loading all data at once
 
         };
@@ -237,7 +236,7 @@
                         self.multiChart.redraw();
                     }
 
-                    if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                    if (self.masterVM.settingsVM.requestAveragingOnSpeed())
                      speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
 
                     self.masterVM.speedMode(2);
@@ -275,8 +274,8 @@
                     self.masterVM.settingsVM.showLapLines(true);
                 }
 
-                speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed);
-                if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
+                if (self.masterVM.settingsVM.requestAveragingOnSpeed())
                  speedAvgSeries.setData(speedAvgSeriesData, true);
             }
         });
@@ -2397,10 +2396,10 @@
                 },
                 stackLabels: {
                     enabled: false,
-                    style: {
-                        fontWeight: 'bold',
-                        color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-                    }
+                    //style: {
+                    //    fontWeight: 'bold',
+                    //    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                    //}
                 }
             },
             legend: {
@@ -2428,10 +2427,10 @@
             plotOptions: {
                 column: {
                     stacking: 'normal',
-                    dataLabels: {
-                        enabled: false,
-                        color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
-                    }
+                    //dataLabels: {
+                    //    enabled: false,
+                    //    color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+                    //}
                 }
             }
             //,
@@ -2967,7 +2966,7 @@
         }, this);
     };
 
-    UIController.prototype.intepretMessageCounters = function (counter) {
+    UIController.prototype.intepretMessageCounters = function (counter,type) {
         if (typeof (counter) === "undefined") {
             console.warn("Message counters is undefined, cannot intepret counter of global messages in FIT file");
             return -1;
@@ -2977,16 +2976,20 @@
             console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
         if (counter.fileCreatorCounter != 1)
             console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
-        if (counter.sessionCounter === 0)
-            console.error("Session msg. should be at least 1, but is ",counter.sessionCounter);
-        if (counter.lapCounter === 0)
-            console.error("Lap msg. should be at least 1, but is ",counter.lapCounter);
-        if (counter.activityCounter !== 1)
-            console.error("Activity msg. should be 1, but is ", counter.activityCounter);
-        if (counter.deviceInfoCounter === 0)
-            console.error("Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
-        if (counter.recordCounter === 0)
-            console.error("No record msg. ", counter.lapCounter);
+
+        if (type === 4) { // Activity
+
+            if (counter.sessionCounter === 0)
+                console.error("Session msg. should be at least 1, but is ", counter.sessionCounter);
+            if (counter.lapCounter === 0)
+                console.error("Lap msg. should be at least 1, but is ", counter.lapCounter);
+            if (counter.activityCounter !== 1)
+                console.error("Activity msg. should be 1, but is ", counter.activityCounter);
+            if (counter.deviceInfoCounter === 0)
+                console.error("Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
+            if (counter.recordCounter === 0)
+                console.error("No record msg. ", counter.lapCounter);
+        }
 
     };
 
@@ -3015,11 +3018,27 @@
 
     UIController.prototype.processSportSettingFile = function (rawData)
     {
-    }
+        // From profile.xls
+        var hr_zone_calc = {
+            custom : 0,
+            percent_max_hr : 1,
+            percent_hrr : 2
+        }
+
+        var pwr_zone_calc = {
+            custom: 0,
+            percent_ftp : 1
+        }
+
+        // rawData.hr_zone
+        // "{"name":["HR Zone 0","HR Zone 1","HR Zone 2","HR Zone 3","HR Zone 4","HR Zone 5"],"message_index":[0,1,2,3,4,5],"high_bpm":[106,140,150,159,171,177]}"
+
+}
 
     UIController.prototype.processActivityFile = function (rawData,counter)
     {
-        FITUI.intepretMessageCounters(counter);
+        var activityFITfileType = 4;
+        FITUI.intepretMessageCounters(counter, activityFITfileType);
 
         if (rawData.record)
             FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
