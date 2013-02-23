@@ -1,6 +1,6 @@
 ﻿//use strict
 
-importScripts('FITCommonMessage.js', 'FITActivityFile.js', 'FITSportSetting.js', 'FITCRCTimestampUtility.js');
+importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITActivityFile.js', '/Scripts/Messages/FITSportSetting.js', 'FITCRCTimestampUtility.js');
 
 (
 

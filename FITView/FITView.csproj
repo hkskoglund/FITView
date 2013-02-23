@@ -106,26 +106,25 @@
     <Content Include="Images\laptrigger\manual.png" />
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
-    <Content Include="Scripts\FITCommonMessage.js" />
+    <Content Include="Scripts\Messages\FITCommonMessage.js" />
     <Content Include="Scripts\FITImport.js" />
-    <Content Include="Scripts\FITSport.js" />
-    <Content Include="Scripts\FITSportSetting.js" />
+    <Content Include="Scripts\Messages\FITSportSetting.js" />
     <Content Include="Scripts\FITView.js" />
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
-    <Content Include="Scripts\highcharts.src.js" />
-    <Content Include="Scripts\FITActivityFile.js" />
+    <Content Include="Scripts\3party\highcharts.src.js" />
+    <Content Include="Scripts\Messages\FITActivityFile.js" />
     <Content Include="Scripts\FITCRCTimestampUtility.js" />
-    <None Include="Scripts\jquery-1.9.1.intellisense.js" />
-    <Content Include="Scripts\highcharts30betasrc.js" />
-    <Content Include="Scripts\jquery-1.9.1.js" />
-    <Content Include="Scripts\jquery-1.9.1.min.js" />
-    <Content Include="Scripts\knockout-2.2.1.debug.js" />
-    <Content Include="Scripts\knockout-2.2.1.js" />
-    <Content Include="Scripts\knockout.mapping-latest.debug.js" />
-    <Content Include="Scripts\knockout.mapping-latest.js" />
-    <Content Include="Scripts\modernizr-2.6.2.js" />
+    <None Include="Scripts\3party\jquery-1.9.1.intellisense.js" />
+    <Content Include="Scripts\3party\highcharts30betasrc.js" />
+    <Content Include="Scripts\3party\jquery-1.9.1.js" />
+    <Content Include="Scripts\3party\jquery-1.9.1.min.js" />
+    <Content Include="Scripts\3party\knockout-2.2.1.debug.js" />
+    <Content Include="Scripts\3party\knockout-2.2.1.js" />
+    <Content Include="Scripts\3party\knockout.mapping-latest.debug.js" />
+    <Content Include="Scripts\3party\knockout.mapping-latest.js" />
+    <Content Include="Scripts\3party\modernizr-2.6.2.js" />
     <Content Include="Snippets\LapDetails.html" />
     <Content Include="Snippets\LapView.html" />
     <Content Include="Snippets\SessionView.html" />
@@ -137,7 +136,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\jquery-1.9.1.min.map" />
+    <Content Include="Scripts\3party\jquery-1.9.1.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

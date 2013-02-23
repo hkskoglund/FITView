@@ -1,13 +1,43 @@
 //use strict
 
 (function () {
+    var self;
 
     var lapxAxisID = 'lapxAxis',
         rawdataxAxis = 'rawdataxAxis';
 
+    // TO DO, fix namespace...?
+
+    var FITSport = {
+
+        generic: 0,
+        running: 1,
+        cycling: 2,
+        transition: 3, // Multisport transition
+        fitness_equipment: 4,
+        swimming: 5,
+        basketball: 6,
+        soccer: 7,
+        tennis: 8,
+        american_fotball: 9,
+        training: 10,
+        all: 254 // All is for goals only to include all sports.
+    };
+
+
+    var lap_trigger = {
+        manual: 0,
+        time: 1,
+        distance: 2,
+        position_start: 3,
+        position_lap: 4,
+        position_waypoint: 5,
+        position_marked: 6,
+        session_end: 7
+    };
+
     var FITUtil =
         {
-
             hasGPSData: function (rawdata) {
                 if (rawdata.record.position_lat === undefined) {
                     console.info("No position data (position_lat)");
@@ -377,10 +407,6 @@
             timestampUtil: FITCRCTimestampUtility()
         };
 
-
-    var self;
-
-
     var fitActivity = FIT.ActivityFile();
 
     var converter = {
@@ -499,7 +525,6 @@
             }, this);
         },
 
-
     };
 
     var FITViewUIConverter = converter;
@@ -545,10 +570,7 @@
             progressVM: {
                 progress: ko.observable(0)
             },
-
-
         },
-
 
         init: function () {
 
@@ -729,7 +751,7 @@
 
                 self.showHRZones(VM.rawData, start_time, timestamp);
 
-                self.showChartsDatetime(VM.rawData, start_time, timestamp, sport);
+                self.showMultiChart(VM.rawData, start_time, timestamp, sport);
 
 
             }
@@ -754,7 +776,7 @@
 
                 self.showHRZones(VM.rawData, start_time, timestamp);
 
-                self.showChartsDatetime(VM.rawData, start_time, timestamp, sport);
+                self.showMultiChart(VM.rawData, start_time, timestamp, sport);
 
 
             }
@@ -818,7 +840,7 @@
 
                 } else {
                     self.masterVM.speedMode(self.masterVM.previousSpeedMode);
-                    if (self.masterVM.previousSpeedMode === 1) // Running 
+                    if (self.masterVM.previousSpeedMode === FITSport.running) // Running 
                     {
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedseries');
 
@@ -950,18 +972,18 @@
                 for (var lapNr = 0, len = rawData.lap.timestamp.length ; lapNr < len; lapNr++) {
                     if (rawData.lap.timestamp && rawData.lap.timestamp[lapNr]) {
                         switch (rawData.lap.lap_trigger[lapNr]) {
-                            case 0:  // LAP pressed
-                            case 2: // Distance
-                            case 7: // Session end
+                            case lap_trigger.manual:  // LAP pressed
+                            case lap_trigger.distance: // Distance
+                            case lap_trigger.session_end: // Session end
                                 lapLabel = ""
 
 
                                 if (rawData.lap.avg_speed && rawData.lap.avg_speed[lapNr]) {
                                     switch (this.masterVM.speedMode()) {
-                                        case 1: // Running
+                                        case FITSport.running: // Running
                                             lapLabel += " " + FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(rawData.lap.avg_speed[lapNr]));
                                             break;
-                                        case 2: // Cycling
+                                        case FITSport.cycling: // Cycling
                                             lapLabel += " " + FITViewUIConverter.convertSpeedToKMprH(rawData.lap.avg_speed[lapNr]).toFixed(1);
                                             break;
 
@@ -1018,100 +1040,7 @@
 
         },
 
-        showLapChart: function (rawdata, startTimestamp, endTimestamp, sport) {
-            // Clean up previous chart if any
-            if (this.lapChart)
-                this.lapChart.destroy();
-
-            // Check for empty lap info.
-
-            if (typeof (rawdata.lap) === "undefined" || rawdata.lap.timestamp.length === 0) {
-                console.log("No lap data to show chart for");
-                return;
-            }
-
-
-
-            this.lapChart = new Highcharts.Chart({
-                chart: {
-                    renderTo: 'lapChart',
-                    type: 'bar',
-
-                },
-                title: {
-                    text: null,
-                },
-                credits: {
-                    enabled: false
-                },
-                //plotOptions: {
-                //    bar: {
-                //        grouping: false,
-                //        shadow: false
-                //    }
-                //},
-                xAxis: {
-                    categories: lap.categories
-                },
-                yAxis: [{
-                    gridLineWidth: 0,
-                    title: {
-                        text: null
-                    }
-                },
-                {
-                    gridLineWidth: 0,
-                    title: {
-                        text: null
-                    }
-
-                }],
-
-                //legend: {
-                //    layout: 'vertical',
-                //    floating: true,
-                //    backgroundColor: '#FFFFFF',
-                //    align: 'right',
-                //    verticalAlign: 'top',
-                //    y: 60,
-                //    x: -60
-                //},
-                tooltip: {
-                    formatter: function () {
-                        return '<b>' + this.series.name + '</b><br/>' + this.x + ': ' + this.y;
-                    }
-                },
-                plotOptions: {
-                },
-                series: [{
-                    yAxis: 0,
-                    name: 'Avg. speed',
-                    data: lap.avg_speed
-                },
-                {
-                    yAxis: 0,
-                    name: 'Max. speed',
-                    data: lap.max_speed,
-                    visible: false,
-                },
-                {
-                    yAxis: 1,
-                    name: 'Avg. HR',
-                    data: lap.avg_heart_rate,
-                    visible: false,
-                },
-                {
-                    yAxis: 1,
-                    name: 'Max. HR',
-                    visible: false,
-                    data: lap.max_heart_rate
-                }
-
-                ]
-            });
-        },
-
-        showChartsDatetime: function (rawData, startTimestamp, endTimestamp, sport) {
+        showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
             // this.showLapChart(rawData, startTimestamp, endTimestamp, sport);
 
@@ -1197,11 +1126,11 @@
 
 
                     switch (sport) {
-                        case 1: // Running
+                        case FITSport.running: // Running
                             this.masterVM.speedMode(1); // min/km
                             speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, id, false);
                             break;
-                        case 2: // Cycling
+                        case FITSport.cycling: // Cycling
                             this.masterVM.speedMode(2); // km/h
                             speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, false);
                             break;
@@ -1235,11 +1164,11 @@
                     var avgSampleInterval = this.masterVM.settingsVM.averageSampleTime();
 
                     switch (sport) {
-                        case 1: // Running
+                        case FITSport.running: // Running
                             this.masterVM.speedMode(1); // min/km
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, id, avgReq, avgSampleInterval);
                             break;
-                        case 2: // Cycling
+                        case FITSport.cycling: // Cycling
                             this.masterVM.speedMode(2); // km/h
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, avgReq, avgSampleInterval);
                             break;
@@ -1377,13 +1306,13 @@
                     if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
                         lap.categories.push((lapNr + 1).toString());
                         switch (sport) {
-                            case 1: // Running
+                            case FITSport.running: // Running
                                 pushData("avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
                                 pushData("max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
                                 pushData("avg_heart_rate");
                                 pushData("max_heart_rate");
                                 break;
-                            case 2: // Cycling
+                            case FITSport.cycling: // Cycling
                                 pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
                                 pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
                                 pushData("avg_heart_rate");
@@ -1549,10 +1478,10 @@
                             // Special treatment for speed
                             if (self.masterVM.speedMode() && this.series.name === "Speed" || this.series.name === "Avg. speed" || this.series.name === "Max. speed" || this.series.name === "SpeedAvg")
                                 switch (self.masterVM.speedMode()) {
-                                    case 1: // Running
+                                    case FITSport.running: // Running
                                         s += FITViewUIConverter.formatToMMSS(this.y) + " min/km";
                                         break;
-                                    case 2: // Cycling
+                                    case FITSport.cycling: // Cycling
                                         s += Highcharts.numberFormat(this.y, 1) + " km/h";
                                         break;
                                     default:
@@ -2224,15 +2153,13 @@
             this.masterVM.freeYPOS = {} // Loose state of ypos for triggers,deviceinfo,events in multichart
         },
 
-
         showLapTriggers: function (rawdata) {
+
 
             if (typeof (rawdata) === "undefined") {
                 console.error("No rawdata, cannot show lap triggers");
                 return;
             }
-
-
 
 
 
@@ -2309,35 +2236,35 @@
 
 
                 switch (rawdata.lap.lap_trigger[lapNr]) {
-                    case 0:
+                    case lap_trigger.manual:
                         srcImg = "Images/laptrigger/manual.png";
                         title = "LAP pressed";
                         break;
-                    case 1:
+                    case lap_trigger.time:
                         srcImg = "Images/laptrigger/time.png";
                         title = "Time";
                         break;
-                    case 2:
+                    case lap_trigger.distance:
                         srcImg = "Images/laptrigger/distance.png";
                         title = "Distance";
                         break;
-                    case 3:
+                    case lap_trigger.position_start:
                         srcImg = "Images/laptrigger/position_start.png";
                         title = "Position start";
                         break;
-                    case 4:
+                    case lap_trigger.position_lap:
                         srcImg = "Images/laptrigger/position_lap.png";
                         title = "Position lap";
                         break;
-                    case 5:
+                    case lap_trigger.position_waypoint:
                         srcImg = "Images/laptrigger/position_waypoint.png";
                         title = "Position waypoint";
                         break;
-                    case 6:
+                    case lap_trigger.position_marked:
                         srcImg = "Images/laptrigger/position_marked.png";
                         title = "Position marked";
                         break;
-                    case 7:
+                    case lap_trigger.session_end:
                         srcImg = "Images/laptrigger/session_end.png";
                         title = "Session end";
                         break;
@@ -2976,9 +2903,6 @@
 
         },
 
-       
-        
-
         intepretMessageCounters: function (counter, type) {
             if (typeof (counter) === "undefined") {
                 console.warn("Message counters is undefined, cannot intepret counter of global messages in FIT file");
@@ -3169,7 +3093,7 @@
 
 
             self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
-            self.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
+            self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
 
             //FITUI.showChartHrv(rawData);
 
@@ -3404,7 +3328,6 @@
 
         },
 
-
         showDataRecordsOnMap: function (dataRecords) {
 
 
@@ -3446,16 +3369,9 @@
         }
     }
 
-
     window.onload = function () {
-
-        FITViewUI.init();
+        FITViewUI.init();  // Let's get started....
     };
-
-
-
-
-
 
     function deleteDb() {
         // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
@@ -3512,6 +3428,4 @@
 
 })
 
-// We have created a socalled Immediately-Invoked Function Expression (IIFE)
-
-(); // Run it
+(); // Immediately-Invoked Function Expression (IIFE) - Run it

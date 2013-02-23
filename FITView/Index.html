@@ -5,16 +5,15 @@
     <title>FITView</title>
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false"></script>
-    <script src="Scripts/jquery-1.9.1.js"></script>
-    <script src="Scripts/knockout-2.2.1.debug.js"></script>
-    <script src="Scripts/knockout.mapping-latest.debug.js"></script>
-    <script src="Scripts/modernizr-2.6.2.js"></script>
+    <script src="Scripts/3party/jquery-1.9.1.js"></script>
+    <script src="Scripts/3party/knockout-2.2.1.debug.js"></script>
+    <script src="Scripts/3party/knockout.mapping-latest.debug.js"></script>
+    <script src="Scripts/3party/modernizr-2.6.2.js"></script>
    <!-- <script src="Scripts/highcharts.src.js"></script>-->
-    <script src="Scripts/highcharts30betasrc.js"></script>
+    <script src="Scripts/3party/highcharts30betasrc.js"></script>
 
     <script src="Scripts/FITCRCTimestampUtility.js"></script>
-    <script src="Scripts/FITActivityFile.js"></script>
-    <script src="Scripts/FITSport.js"></script>
+    <script src="Scripts/Messages/FITActivityFile.js"></script>
 
     <script defer="defer" src="Scripts/FITView.js"></script>
 
@@ -30,10 +29,8 @@
         <div id="divSessionLap">
 
             <!-- <div data-bind="text: ko.toJSON($root.headerInfoVM)"></div> -->
-
             
-            
-
+          <nav>
             <ul class="menu">
 
                 <li><a href="#">FITView</a>
@@ -496,7 +493,7 @@
 
 
             </ul>
-
+          </nav>  
             <!-- ko with: headerInfoVM -->
            
            <!-- <div id="divHeartRateZones" style="width: 30%">
