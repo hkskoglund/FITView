@@ -116,7 +116,7 @@
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
     <Content Include="Scripts\highcharts.src.js" />
     <Content Include="Scripts\FITActivityFile.js" />
-    <Content Include="Scripts\FITUtility.js" />
+    <Content Include="Scripts\FITCRCTimestampUtility.js" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
     <Content Include="Scripts\highcharts30betasrc.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />

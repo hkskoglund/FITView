@@ -2,12 +2,384 @@
 
 (function () {
 
+    var lapxAxisID = 'lapxAxis';
  
-    var FITUtil;
+    var FITUtil =
+        {
+
+            hasGPSData: function (rawdata) {
+                if (rawdata.record.position_lat === undefined) {
+                    console.info("No position data (position_lat)");
+
+                }
+
+                if (rawdata.record.position_long === undefined) {
+                    console.info("No position data (position_lat)");
+
+                }
+
+                return (rawdata.record.position_lat === undefined || rawdata.record.position_long === undefined) ? false : true;
+
+            },
+
+            combine: function (rawdata, values, timestamps, startTimestamp, endTimestamp, converter, seriesName, averaging, avgSampleTime) {
+
+                var combined = [];
+
+                if (timestamps == undefined) {
+                    console.warn("Found no timestamps to combine with data measurements.", seriesName);
+                    return values;
+                }
+
+                if (values.length !== timestamps.length)
+                    console.warn("Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString(), seriesName);
+
+
+                if (startTimestamp === undefined || endTimestamp === undefined) {
+                    console.error("Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps, series:", seriesName);
+                    return values;
+                    // But, could perhaps add relative start time...?
+                }
+
+
+
+                var localTimestamp;  // Timestamp in local time zone
+                var valuesForAvgerage;
+
+
+
+                var len = timestamps.length;
+
+                for (var nr = 0; nr < len; nr++) {
+
+                    var timestamp = timestamps[nr];  // UTC timestamp in rawdata
+
+
+                    if (rawdata.dirty[nr]) // Skip dirty data
+                        continue;
+
+                    if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
+
+                        if (averaging) {
+                            //console.log("Nr. before avg:", nr);
+
+                            valuesForAverage = [];
+                            var nextTimestamp = timestamp;
+                            var prevTimetampNr;
+
+                            while (nextTimestamp - timestamp <= avgSampleTime && nextTimestamp <= endTimestamp && nr < len) {
+
+                                var val = values[nr];
+
+                                if (val !== undefined) {
+                                    localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(timestamp);
+                                    if (converter)
+                                        valuesForAverage.push(converter(val));
+                                    else
+                                        valuesForAverage.push(val);
+
+                                } else
+                                    console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
+
+                                prevTimestampNr = nr;
+                                nextTimestamp = timestamps[++nr];
+                            }
+
+                            if (prevTimestampNr)
+                                nr = prevTimestampNr;
+
+                            //console.log("Nr. after avg:", nr);
+
+                            //Credit to: http://stackoverflow.com/questions/10359907/array-sum-and-average
+                            var sum, avg;
+                            if (valuesForAverage.length > 0) {
+                                sum = valuesForAverage.reduce(function (a, b) { return a + b });
+                                avg = sum / valuesForAverage.length;
+                            } else {
+                                console.warn("Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
+                                avg = 0;
+                            }
+
+                            combined.push([localTimestamp, avg]);
+                        }
+                        else if (typeof (averaging) === "undefined" || averaging == false || averaging === null) {
+
+                            var val = values[nr];
+
+                            if (val !== undefined) {
+                                localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(timestamp);
+
+                                if (converter)
+                                    combined.push([localTimestamp, converter(val)]);
+                                else
+                                    combined.push([localTimestamp, val]);
+                            } else
+                                console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
+
+                        }
+
+
+
+                        if (timestamp > endTimestamp)
+                            break;
+
+                    }
+                }
+
+                return combined;
+
+            },
+
+            setDirtyTimestamps: function (rawdata, timestamps) {
+
+                if (typeof (timestamps) === "undefined") {
+                    console.error("No timestamps - undefined");
+                    return undefined;
+                }
+
+                if (timestamps.length === 0) {
+                    console.warn("Empty timestamps");
+                    return undefined;
+                }
+
+                rawdata.dirty = [];
+
+
+                var max = 1000 * 60 * 24;
+                var oneWeek = 1000 * 60 * 24 * 7;
+
+                var len = timestamps.length;
+                var timeDiff;
+
+                var start_time = timestamps[0];
+                var maxLimit = start_time + oneWeek;
+
+                for (var index = 0; index < len; index++) {
+                    if (index + 1 <= len - 1) {
+                        timeDiff = timestamps[index + 1] - timestamps[index];
+                        if (timeDiff > 0 && timeDiff < max && timestamps[index] < maxLimit)
+                            rawdata.dirty[index] = false;
+                        else {
+                            console.warn("Found dirty timestamp ", timestamps[index], " at index ", index);
+                            rawdata.dirty[index] = true;
+                        }
+                    } else  // Last timestap
+                    {
+                        if (timestamps[index] < maxLimit)
+                            rawdata.dirty[index] = false;
+                        else {
+                            console.warn("Found dirty timestamp ", timestamps[index], " at index ", index);
+                            rawdata.dirty[index] = true;
+                        }
+                    }
+                }
+
+
+            },
+
+            restoreSession: function (rawData) {
+                var prevSession = rawData.session;
+
+                rawData.session = {};
+                rawData.session.sport = [];
+                rawData.session.start_time = [];
+                rawData.session.timestamp = [];
+                rawData.session.total_elapsed_time = [];
+                rawData.session.total_timer_time = [];
+                rawData.session.total_distance = [];
+                rawData.session.total_calories = [];
+
+
+                // Try to restore session from available lap data
+                if (rawData.lap) {
+                    var numberOfLaps = rawData.lap.timestamp.length;
+                    var currentSport;
+                    var prevSport;
+                    var lastEndtimstamp;
+                    var total_elapsed_time;
+                    var total_timer_time;
+                    var total_distance;
+                    var total_calories;
+
+
+                    for (var lapNr = 0; lapNr < numberOfLaps; lapNr++) {
+                        currentSport = rawData.lap.sport[lapNr];
+
+                        if (currentSport !== prevSport) {
+                            if (total_elapsed_time)
+                                rawData.session.total_elapsed_time.push(total_elapsed_time);
+                            total_elapsed_time = rawData.lap.total_elapsed_time[lapNr];
+
+                            if (total_timer_time)
+                                rawData.session.total_timer_time.push(total_timer_time);
+                            total_timer_time = rawData.lap.total_timer_time[lapNr];
+
+                            if (total_distance)
+                                rawData.session.total_distance.push(total_distance);
+                            total_distance = rawData.lap.total_distance[lapNr];
+
+                            if (total_calories)
+                                rawData.session.total_calories.push(total_calories);
+                            total_calories = rawData.lap.total_calories[lapNr];
+
+
+
+                            if (lastEndtimstamp !== undefined)
+                                rawData.session.timestamp.push(rawData.lap.timestamp[lapNr - 1]);
+
+                            if (numberOfLaps === 1)
+                                lastEndtimstamp = rawData.lap.timestamp[lapNr];
+
+
+                            rawData.session.sport.push(currentSport);
+                            rawData.session.start_time.push(rawData.lap.start_time[lapNr])
+
+
+                        } else {
+                            total_elapsed_time += rawData.lap.total_elapsed_time[lapNr];
+                            total_timer_time += rawData.lap.total_timer_time[lapNr];
+                            total_distance += rawData.lap.total_distance[lapNr];
+                            total_calories += rawData.lap.total_calories[lapNr];
+
+                            lastEndtimstamp = rawData.lap.timestamp[lapNr - 1];
+                        }
+                        prevSport = currentSport;
+                    }
+
+                    if (total_elapsed_time)
+                        rawData.session.total_elapsed_time.push(total_elapsed_time);
+
+                    if (total_timer_time)
+                        rawData.session.total_timer_time.push(total_timer_time);
+
+                    if (total_distance)
+                        rawData.session.total_distance.push(total_distance);
+
+                    if (total_calories)
+                        rawData.session.total_calories.push(total_calories);
+
+                    if (lastEndtimstamp)
+                        rawData.session.timestamp.push(rawData.lap.timestamp[lapNr - 1]);
+
+                } else { // Create a generic session of all data
+
+                    rawData.session.sport.push(0);
+
+                    if (rawData.record) {
+                        var lastRecordIndex = rawData.record.timestamp.length - 1;
+
+                        var timestamp = rawData.record.timestamp[lastRecordIndex];
+                        rawData.session.timestamp.push(timestamp);
+
+                        var start_time = rawData.record.timestamp[0];
+                        rawData.session.start_time.push(start_time);
+
+                        var total_elapsed_time = (timestamp - start_time) / 1000;
+                        if (total_elapsed_time && total_elapsed_time >= 0) {
+                            rawData.session.total_elapsed_time.push(total_elapsed_time);
+                            rawData.session.total_timer_time.push(total_elapsed_time);
+                        }
+                        else
+                            console.error("Something is wrong with start and/or end timestamp", start_time, timestamp);
+
+                        // Take a guess on distance - assume one single session
+                        // Drawback : does not check for multiple sessions
+                        // Want: keep things quite simple...
+
+                        var distance = rawData.record.distance[lastRecordIndex];
+                        rawData.session.total_distance.push(distance);
+
+                        var total_ascent = 0;
+                        var total_descent = 0;
+                        var altitude, previousAltitude = 0;
+
+                        if (rawData.record.altitude) {
+                            for (recordNr = 0; recordNr < lastRecordIndex; recordNr++) {
+                                if (rawData.record.altitude[recordNr]) {
+                                    altitude = rawData.record.altitude[recordNr];
+                                    diff = altitude - previousAltitude;
+                                    if (diff < 0)
+                                        total_descent += diff * -1;
+                                    else
+                                        total_ascent += diff;
+                                    previousAltitude = altitude;
+                                } else
+                                    break;
+                            }
+
+
+                            rawData.session.total_ascent = [];
+                            rawData.session.total_descent = [];
+
+                            rawData.session.total_ascent.push(parseFloat(total_ascent.toFixed(1)));
+                            rawData.session.total_descent.push(parseFloat(total_descent.toFixed(1)));
+                        }
+                    } else
+                        console.warn("No data present on rawdata.record for restoration of session");
+
+                    // TO DO : calculate avg./max for speed, HR, ... not prioritized
+
+                }
+
+                return rawData.session;
+            },
+
+            getIndexOfTimestamp: function (record, timestamp) {
+
+
+                var findNearestTimestamp = function (timestamp) {
+
+                    // Try to get from cache first
+
+                    for (var cacheItem = 0; cacheItem < self.timestampIndexCache.length; cacheItem++)
+                        if (self.timestampIndexCache[cacheItem].key === timestamp)
+                            return self.timestampIndexCache[cacheItem].value;
+
+
+                    var indxNr = -1;
+                    var breaked = false;
+                    var len = record.timestamp.length;
+                    for (indxNr = 0; indxNr < len; indxNr++) {
+                        if (record.timestamp[indxNr] >= timestamp) {
+                            breaked = true;
+                            break;
+                        }
+                    }
+
+                    if (breaked) {
+                        self.timestampIndexCache.push({ key: timestamp, value: indxNr });
+                        return indxNr;
+                    }
+                    else {
+                        self.timestampIndexCache.push({ key: timestamp, value: indxNr - 1 });
+                        return indxNr - 1;
+                    }
+                };
+
+                if (timestamp === undefined) {
+                    console.error("Cannot lookup/find index in timestamp array of an undefined timestamp");
+                    return -1;
+                }
+
+                var indexTimestamp;
+
+                indexTimestamp = record.timestamp.indexOf(timestamp);
+                if (indexTimestamp === -1) {
+                    console.warn("Direct lookup for timestamp ", timestamp, " not found, looping through available timestamps on message property record.timestamp to find nearest");
+                    indexTimestamp = findNearestTimestamp(timestamp);
+                }
+
+                return indexTimestamp;
+
+            },
+
+            timestampUtil : FITCRCTimestampUtility()
+        };
+
 
     var self;
 
-    var util = FITUtility();
+  
 
     var fitActivity = FIT.ActivityFile();
 
@@ -73,7 +445,7 @@
             },
 
             settingsVM: {
-                timeZoneDifferenceUTC: util.getTimezoneOffsetFromUTC(),
+                timeZoneDifferenceUTC: FITUtil.timestampUtil.getTimezoneOffsetFromUTC(),
                 showLapLines: ko.observable(true),
                 showLapTriggers: ko.observable(false),
                 showEvents: ko.observable(false),
@@ -244,7 +616,7 @@
                 var lapAvgSpeedSeriesData, lapMaxSpeedSeriesData;
 
                 var rawData = self.masterVM.sessionVM.rawData;
-                var timezoneDiff = util.getTimezoneOffsetFromUTC()
+                var timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC()
                 var startTimestamp, endTimestamp;
 
                 var updatePoint = function (data, property, converter) {
@@ -561,7 +933,7 @@
                             }
 
                         },
-                        value: util.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])
+                        value: FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])
                     };
                 }
             }
@@ -1016,7 +1388,7 @@
                         afterSetExtremes: function (event) {
                             // Remember x-axis is local time, but rawdata is accessed by UTC
                             // Highchart "reset zoom"-button fires here with values on event.min/max (setExtremes gave undefined)
-                            timezoneDiff = util.getTimezoneOffsetFromUTC();
+                            timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
                             //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                             var startTimestampUTC = Math.round(event.min) - timezoneDiff;
                             var endTimestampUTC = Math.round(event.max) - timezoneDiff;
@@ -1031,7 +1403,7 @@
                     //reversed : true
                 }, {
                     type: 'linear',
-                    id: 'lapxAxis',
+                    id: lapxAxisID,
                     categories: lap.categories
                 }],
                 //yAxis: [{
@@ -1145,11 +1517,19 @@
                                 },
 
                                 mouseOver: function () {
+
+                                    // Skip handling if mouse is over lap x axis
+                                    // Maybe : include support to update map with lap polyline
+
+                                    var lapxAxis = self.multiChart.get(lapxAxisID);
+                                    if (this.series.xAxis === lapxAxis)
+                                        return;
+
                                     var lat, long;
 
                                     if (rawData.record != undefined) {
 
-                                        var index = rawData.record.timestamp.indexOf(this.x - util.getTimezoneOffsetFromUTC());
+                                        var index = rawData.record.timestamp.indexOf(this.x - FITUtil.timestampUtil.getTimezoneOffsetFromUTC());
 
 
                                         if (index === -1) {
@@ -1162,7 +1542,7 @@
                                                 return;
 
                                             prevMarker = new google.maps.Marker({
-                                                position: new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long)),
+                                                position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long)),
                                                 icon: {
                                                     path: google.maps.SymbolPath.CIRCLE,
                                                     scale: 3
@@ -1381,10 +1761,10 @@
             var waitForDelay = 3 * 60 * 1000;
 
             var recLen = rawdata.record.timestamp.length;
-            var maxTimestamp = util.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
+            var maxTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
 
             for (var deviceInfoNr = 0; deviceInfoNr < deviceInfoLen; deviceInfoNr++) {
-                var timestamp = util.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
+                var timestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.device_info.timestamp[deviceInfoNr]);
 
                 if (timestamp < min)
                     continue;
@@ -1626,10 +2006,10 @@
             var waitForDelay = 3 * 60 * 1000;
 
             var recLen = rawdata.record.timestamp.length;
-            var maxTimestamp = util.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
+            var maxTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
 
             for (var eventNr = 0; eventNr < eventLen; eventNr++) {
-                var timestamp = util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]);
+                var timestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]);
 
                 if (timestamp < min)
                     continue;
@@ -1664,27 +2044,27 @@
                             case event_type.start:
                                 srcImgEvent = "Images/event_type/start_0.png";
                                 titleEvent = "START";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
                             case event_type.stop:
                                 srcImgEvent = "Images/event_type/stop_all_4.png";
                                 titleEvent = "STOP";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
                             case event_type.stop_all:
                                 srcImgEvent = "Images/event_type/stop_all_4.png";
                                 titleEvent = "STOP ALL";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
                             case event_type.stop_disable:
                                 srcImgEvent = "Images/event_type/stop_all_4.png";
                                 titleEvent = "STOP DISABLE";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
                             case event_type.stop_disable_all:
                                 srcImgEvent = "Images/event_type/stop_disable_all9.png";
                                 titleEvent = "STOP DISABLE ALL";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
 
                         }
@@ -1696,13 +2076,13 @@
                         titleEvent = "Battery";
                         if (rawdata.event.data[eventNr])
                             titleEvent += " - " + rawdata.event.data[eventNr].toString();
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
 
                     case event.recovery_hr: // Don't check for event type marker
                         srcImgEvent = "Images/heart.png";
                         titleEvent = "Recovery HR";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
 
                         if (rawdata.event.data[eventNr])
                             titleEvent += " - " + rawdata.event.data[eventNr].toString();
@@ -1713,31 +2093,31 @@
                         titleEvent = "Battery low";
                         if (rawdata.event.data[eventNr])
                             titleEvent += " - " + rawdata.event.data[eventNr].toString();
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
 
                     case event.power_down:
                         srcImgEvent = "Images/event/power_down.png";
                         titleEvent = "Power down";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
 
                     case event.power_up:
                         srcImgEvent = "Images/event/power_up.png";
                         titleEvent = "Power up";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
 
                     case event.session:
                         srcImgEvent = "Images/laptrigger/session_end.png";
                         titleEvent = "Stop - end of session";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
 
                     case event.course_point:
                         srcImgEvent = "Images/laptrigger/position_marked.png";
                         titleEvent = "Course point";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', util.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                         break;
 
                 }
@@ -1822,10 +2202,10 @@
             var waitForDelay = 3 * 60 * 1000;
 
             var recLen = rawdata.record.timestamp.length;
-            var maxTimestamp = util.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
+            var maxTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
 
             for (var lapNr = 0; lapNr < lapLen; lapNr++) {
-                var timestamp = util.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
+                var timestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
 
                 if (timestamp < min)
                     continue;
@@ -2174,7 +2554,7 @@
             var session = rawdata.session;
 
             setMapCenter = function (sport,lat,long) {
-                var latlong = new google.maps.LatLng(util.semiCirclesToDegrees(lat), util.semiCirclesToDegrees(long));
+                var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long));
                 console.info("Setting map center for sport ",sport," at ",latlong);
                 map.setCenter(latlong);
             
@@ -2334,10 +2714,10 @@
                     session.nec_lat[index] &&
                     session.nec_long[index] ) {
                     sessionCoords.push([
-                new google.maps.LatLng(util.semiCirclesToDegrees(session.swc_lat[index]), util.semiCirclesToDegrees(session.swc_long[index])),
-                new google.maps.LatLng(util.semiCirclesToDegrees(session.swc_lat[index]), util.semiCirclesToDegrees(session.nec_long[index])),
-                new google.maps.LatLng(util.semiCirclesToDegrees(session.nec_lat[index]), util.semiCirclesToDegrees(session.nec_long[index])),
-                new google.maps.LatLng(util.semiCirclesToDegrees(session.nec_lat[index]), util.semiCirclesToDegrees(session.swc_long[index]))]);
+                new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(session.swc_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(session.swc_long[index])),
+                new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(session.swc_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(session.nec_long[index])),
+                new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(session.nec_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(session.nec_long[index])),
+                new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(session.nec_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(session.swc_long[index]))]);
                 }
 
                 switch (session.sport[index]) {
@@ -2501,7 +2881,7 @@
                 if (index === indexStartTime || (index % sampleInterval === 0) || index === indexEndTime)
                     if (record.position_long[index] !== undefined && record.position_lat[index] !== undefined && rawdata.dirty[index] != true) {
                         //console.log("Setting lat,long in activityCoordinates",record.position_lat[index],record.position_long[index]," index", index);
-                        self.masterVM.activityCoordinates[type].push(new google.maps.LatLng(util.semiCirclesToDegrees(record.position_lat[index]), util.semiCirclesToDegrees(record.position_long[index])));
+                        self.masterVM.activityCoordinates[type].push(new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(record.position_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(record.position_long[index])));
                     }
             }
 
@@ -3075,382 +3455,14 @@
 
 
     window.onload = function () {
-        //FITUI = new UIController();
-        FITUtil = new FITUIUtility();
+       
         FITViewUI.init();
     };
 
     
 
 
-    function FITUIUtility() {
-    }
-
-    FITUIUtility.prototype.hasGPSData = function (rawdata) {
-        if (rawdata.record.position_lat === undefined) {
-            console.info("No position data (position_lat)");
-            
-        }
-
-        if (rawdata.record.position_long === undefined) {
-            console.info("No position data (position_lat)");
-            
-        }
-
-        return (rawdata.record.position_lat === undefined || rawdata.record.position_long === undefined) ? false : true;
-
-    }
-
-    FITUIUtility.prototype.combine = function (rawdata,values, timestamps,startTimestamp,endTimestamp, converter, seriesName,averaging,avgSampleTime) {
-      
-        var combined = [];
-
-        if (timestamps == undefined) {
-            console.warn("Found no timestamps to combine with data measurements.",seriesName);
-            return values;
-        }
-
-        if (values.length !== timestamps.length)
-            console.warn("Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString(),seriesName);
-
-        
-        if (startTimestamp === undefined || endTimestamp === undefined) {
-            console.error("Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps, series:",seriesName);
-            return values;
-            // But, could perhaps add relative start time...?
-        }
-
-
-       
-        var localTimestamp;  // Timestamp in local time zone
-        var valuesForAvgerage;
-
-       
-        
-            var len = timestamps.length;
-
-            for (var nr = 0; nr < len; nr++) {
-
-                var timestamp = timestamps[nr];  // UTC timestamp in rawdata
-
-
-                if (rawdata.dirty[nr]) // Skip dirty data
-                    continue;
-
-                if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
-                    
-                    if (averaging) {
-                        //console.log("Nr. before avg:", nr);
-
-                        valuesForAverage = [];
-                        var nextTimestamp = timestamp;
-                        var prevTimetampNr;
-
-                        while (nextTimestamp - timestamp <= avgSampleTime && nextTimestamp <= endTimestamp && nr < len) {
-
-                            var val = values[nr];
-
-                            if (val !== undefined) {
-                                localTimestamp = util.addTimezoneOffsetToUTC(timestamp);
-                                if (converter)
-                                    valuesForAverage.push(converter(val));
-                                else
-                                    valuesForAverage.push(val);
-
-                            } else
-                                console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
-
-                            prevTimestampNr = nr;
-                            nextTimestamp = timestamps[++nr];
-                        }
-
-                        if (prevTimestampNr)
-                            nr = prevTimestampNr;
-
-                        //console.log("Nr. after avg:", nr);
-                      
-                        //Credit to: http://stackoverflow.com/questions/10359907/array-sum-and-average
-                        var sum, avg;
-                        if (valuesForAverage.length > 0) {
-                            sum = valuesForAverage.reduce(function (a, b) { return a + b });
-                            avg = sum / valuesForAverage.length;
-                        } else {
-                            console.warn("Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
-                            avg = 0;
-                        }
-
-                        combined.push([localTimestamp, avg]);
-                    }
-                    else if (typeof (averaging) === "undefined" || averaging == false || averaging === null) {
-
-                        var val = values[nr];
-
-                        if (val !== undefined) {
-                            localTimestamp = util.addTimezoneOffsetToUTC(timestamp);
-
-                            if (converter)
-                                combined.push([localTimestamp, converter(val)]);
-                            else
-                                combined.push([localTimestamp, val]);
-                        } else
-                            console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
-
-                    }
-
-
-
-                    if (timestamp > endTimestamp)
-                        break;
-
-                }
-            }
-
-        return combined;
-      
-    }
-
-    FITUIUtility.prototype.setDirtyTimestamps = function(rawdata,timestamps) {
-
-        if (typeof (timestamps) === "undefined") {
-            console.error("No timestamps - undefined");
-            return undefined;
-        }
-
-        if (timestamps.length === 0) {
-            console.warn("Empty timestamps");
-            return undefined;
-        }
-
-        rawdata.dirty = [];
-
-       
-        var max = 1000*60*24;
-        var oneWeek = 1000 * 60 * 24 * 7;
-      
-        var len = timestamps.length;
-        var timeDiff;
-
-        var start_time = timestamps[0];
-        var maxLimit = start_time+oneWeek;
-        
-        for (var index = 0; index < len; index++) {
-            if (index + 1 <= len - 1) {
-                timeDiff = timestamps[index + 1] - timestamps[index];
-                if (timeDiff > 0 && timeDiff < max && timestamps[index] < maxLimit)
-                    rawdata.dirty[index] = false;
-                else {
-                    console.warn("Found dirty timestamp ", timestamps[index], " at index ", index);
-                    rawdata.dirty[index] = true;
-                }
-            } else  // Last timestap
-            {
-                if (timestamps[index] < maxLimit)
-                    rawdata.dirty[index] = false;
-                else {
-                    console.warn("Found dirty timestamp ", timestamps[index], " at index ", index);
-                    rawdata.dirty[index] = true;
-                }
-            }
-        }
-
-        
-    }
-
-    FITUIUtility.prototype.restoreSession = function (rawData) {
-        var prevSession = rawData.session;
-        
-        rawData.session = {};
-        rawData.session.sport = [];
-        rawData.session.start_time = [];
-        rawData.session.timestamp = [];
-        rawData.session.total_elapsed_time = [];
-        rawData.session.total_timer_time = [];
-        rawData.session.total_distance = [];
-        rawData.session.total_calories = [];
-
-
-        // Try to restore session from available lap data
-        if (rawData.lap) {
-            var numberOfLaps = rawData.lap.timestamp.length;
-            var currentSport;
-            var prevSport;
-            var lastEndtimstamp;
-            var total_elapsed_time;
-            var total_timer_time;
-            var total_distance;
-            var total_calories;
-
-
-            for (var lapNr = 0; lapNr < numberOfLaps; lapNr++) {
-                currentSport = rawData.lap.sport[lapNr];
-
-                if (currentSport !== prevSport) {
-                    if (total_elapsed_time)
-                        rawData.session.total_elapsed_time.push(total_elapsed_time);
-                    total_elapsed_time = rawData.lap.total_elapsed_time[lapNr];
-
-                    if (total_timer_time)
-                        rawData.session.total_timer_time.push(total_timer_time);
-                    total_timer_time = rawData.lap.total_timer_time[lapNr];
-
-                    if (total_distance)
-                        rawData.session.total_distance.push(total_distance);
-                    total_distance = rawData.lap.total_distance[lapNr];
-
-                    if (total_calories)
-                        rawData.session.total_calories.push(total_calories);
-                    total_calories = rawData.lap.total_calories[lapNr];
-
-                    
-
-                    if (lastEndtimstamp !== undefined) 
-                        rawData.session.timestamp.push(rawData.lap.timestamp[lapNr - 1]);
-
-                        if (numberOfLaps === 1)
-                            lastEndtimstamp = rawData.lap.timestamp[lapNr];
-                          
-
-                    rawData.session.sport.push(currentSport);
-                    rawData.session.start_time.push(rawData.lap.start_time[lapNr])
-
-
-                } else {
-                    total_elapsed_time += rawData.lap.total_elapsed_time[lapNr];
-                    total_timer_time += rawData.lap.total_timer_time[lapNr];
-                    total_distance += rawData.lap.total_distance[lapNr];
-                    total_calories += rawData.lap.total_calories[lapNr];
-
-                    lastEndtimstamp = rawData.lap.timestamp[lapNr - 1];
-                }
-                prevSport = currentSport;
-            }
-
-            if (total_elapsed_time)
-                rawData.session.total_elapsed_time.push(total_elapsed_time);
-
-            if (total_timer_time)
-                rawData.session.total_timer_time.push(total_timer_time);
-
-            if (total_distance)
-                rawData.session.total_distance.push(total_distance);
-
-            if (total_calories)
-                rawData.session.total_calories.push(total_calories);
-
-            if (lastEndtimstamp)
-                rawData.session.timestamp.push(rawData.lap.timestamp[lapNr - 1]);
-
-        } else { // Create a generic session of all data
-
-            rawData.session.sport.push(0);
-           
-            if (rawData.record) {
-                var lastRecordIndex = rawData.record.timestamp.length - 1;
-
-                var timestamp = rawData.record.timestamp[lastRecordIndex];
-                rawData.session.timestamp.push(timestamp);
-
-                var start_time = rawData.record.timestamp[0];
-                rawData.session.start_time.push(start_time);
-
-                var total_elapsed_time = (timestamp - start_time) / 1000;
-                if (total_elapsed_time && total_elapsed_time >= 0) {
-                    rawData.session.total_elapsed_time.push(total_elapsed_time);
-                    rawData.session.total_timer_time.push(total_elapsed_time);
-                }
-                else
-                    console.error("Something is wrong with start and/or end timestamp", start_time, timestamp);
-
-                // Take a guess on distance - assume one single session
-                // Drawback : does not check for multiple sessions
-                // Want: keep things quite simple...
-
-                var distance = rawData.record.distance[lastRecordIndex];
-                rawData.session.total_distance.push(distance);
-
-                var total_ascent = 0;
-                var total_descent = 0;
-                var altitude, previousAltitude = 0;
-
-                if (rawData.record.altitude) {
-                    for (recordNr = 0; recordNr < lastRecordIndex; recordNr++) {
-                        if (rawData.record.altitude[recordNr]) {
-                            altitude = rawData.record.altitude[recordNr];
-                            diff = altitude - previousAltitude;
-                            if (diff < 0)
-                                total_descent += diff * -1;
-                            else
-                                total_ascent += diff;
-                            previousAltitude = altitude;
-                        } else
-                            break;
-                    }
-
-
-                    rawData.session.total_ascent = [];
-                    rawData.session.total_descent = [];
-
-                    rawData.session.total_ascent.push(parseFloat(total_ascent.toFixed(1)));
-                    rawData.session.total_descent.push(parseFloat(total_descent.toFixed(1)));
-                }
-            } else
-                console.warn("No data present on rawdata.record for restoration of session");
-
-           // TO DO : calculate avg./max for speed, HR, ... not prioritized
-
-        }
-
-        return rawData.session;
-    }
-
-    FITUIUtility.prototype.getIndexOfTimestamp = function (record, timestamp) {
-
-
-        var findNearestTimestamp = function (timestamp) {
-
-            // Try to get from cache first
-
-            for (var cacheItem = 0; cacheItem < self.timestampIndexCache.length; cacheItem++)
-                if (self.timestampIndexCache[cacheItem].key === timestamp)
-                    return self.timestampIndexCache[cacheItem].value;
-
-
-            var indxNr = -1;
-            var breaked = false;
-            var len = record.timestamp.length;
-            for (indxNr = 0; indxNr < len; indxNr++) {
-                if (record.timestamp[indxNr] >= timestamp) {
-                    breaked = true;
-                    break;
-                }
-            }
-
-            if (breaked) {
-                self.timestampIndexCache.push({ key: timestamp, value: indxNr });
-                return indxNr;
-            }
-            else {
-                self.timestampIndexCache.push({ key: timestamp, value: indxNr - 1 });
-                return indxNr - 1;
-            }
-        };
-
-        if (timestamp === undefined) {
-            console.error("Cannot lookup/find index in timestamp array of an undefined timestamp");
-            return -1;
-        }
-
-        var indexTimestamp;
-
-        indexTimestamp = record.timestamp.indexOf(timestamp);
-        if (indexTimestamp === -1) {
-            console.warn("Direct lookup for timestamp ", timestamp, " not found, looping through available timestamps on message property record.timestamp to find nearest");
-            indexTimestamp = findNearestTimestamp(timestamp);
-        }
-
-        return indexTimestamp;
-
-    }
+   
 
     function deleteDb() {
         // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase

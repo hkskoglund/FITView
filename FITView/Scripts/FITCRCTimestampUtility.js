@@ -1,4 +1,4 @@
-﻿function FITUtility() {
+﻿function FITCRCTimestampUtility() {
     var expose = {};
 
     var d = new Date();

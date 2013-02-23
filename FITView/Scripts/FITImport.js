@@ -1,10 +1,13 @@
 ﻿//use strict
 
-importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 'FITUtility.js');  
+importScripts('FITCommonMessage.js', 'FITActivityFile.js', 'FITSportSetting.js', 'FITCRCTimestampUtility.js');
 
 (
 
  function () {
+
+     var util = FITCRCTimestampUtility();
+
     var fitFileManager;
 
     var workerThreadContext = self;
@@ -448,7 +451,7 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
         
 
         getDataRecords = function () {
-            var util = FITUtility();
+           
             var aFITBuffer = fileBuffer;
             var dvFITBuffer = new DataView(aFITBuffer);
 
@@ -818,7 +821,7 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
             var msg = { "message": getGlobalMessageTypeName(globalMsgType) };
             msg.globalMessageType = globalMsgType;
 
-            var util = FITUtility();
+           
 
 
             //if (globalMsg === undefined)
@@ -1219,7 +1222,7 @@ importScripts('FITCommonMessage.js','FITActivityFile.js', 'FITSportSetting.js', 
             var firstPartOfHeaderLength = 12;
             index = firstPartOfHeaderLength;
 
-            var util = FITUtility();
+
 
             // Optional header info, header CRC
 
