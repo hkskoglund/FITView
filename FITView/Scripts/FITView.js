@@ -2,8 +2,9 @@
 
 (function () {
 
-    var lapxAxisID = 'lapxAxis';
- 
+    var lapxAxisID = 'lapxAxis',
+        rawdataxAxis = 'rawdataxAxis';
+
     var FITUtil =
         {
 
@@ -373,13 +374,12 @@
 
             },
 
-            timestampUtil : FITCRCTimestampUtility()
+            timestampUtil: FITCRCTimestampUtility()
         };
 
 
     var self;
 
-  
 
     var fitActivity = FIT.ActivityFile();
 
@@ -401,21 +401,104 @@
             return result;
         },
 
-        convertSpeedToMinPrKM : function (speed) {
+        convertSpeedToMinPrKM: function (speed) {
             // speed in m/s to min/km
             if (speed === 0)
                 return 0;
-            else 
+            else
                 return 1 / (speed * 60 / 1000);
         },
 
-        convertSpeedToKMprH : function (speed) {
+        convertSpeedToKMprH: function (speed) {
             // raw speed in m/s to km/h
             if (speed === 0)
                 return 0;
             else
                 return speed * 3.6; // 3.6 = 3600 s/h / 1000 m/km
-        }
+        },
+
+        convertSecsToHHMMSSModel: function (totalSec) {
+            // Callback on "create" from knockout
+            //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
+
+            this.value = totalSec;
+
+
+            this.toHHMMSS = ko.computed(function () {
+                // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
+
+                var hours = parseInt(totalSec / 3600, 10) % 24;
+                var minutes = parseInt(totalSec / 60, 10) % 60;
+                var seconds = parseInt(totalSec % 60, 10);
+
+                var hourResult;
+                if (hours != 0)
+                    hourResult = (hours < 10 ? "0" + hours : hours) + ":";
+                else
+                    hourResult = "";
+
+                var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                return result;
+            }, this);
+        },
+
+        convertSpeedConverterModel: function (speedMprSEC) {
+
+            //ko.mapping.fromJS(speedMprSEC, {}, this);
+
+            var minPrKM;
+            var minPr100M;
+
+            this.value = speedMprSEC;
+
+            this.toMINpr100M = ko.computed(function () {
+
+                if (speedMprSEC > 0)
+                    minPr100M = 1 / (speedMprSEC * 60 / 100); // min/100m
+                else
+                    minPr100M = 0;
+
+                var minutes = Math.floor(minPr100M);
+                var seconds = ((minPr100M - minutes) * 60).toFixed(); // implicit rounding
+
+                var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                return result;
+            }, self);
+
+            this.toMINprKM = ko.computed(function () {
+
+                if (speedMprSEC > 0)
+                    minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
+                else
+                    minPrKM = 0;
+
+                var minutes = Math.floor(minPrKM);
+                var seconds = parseInt(((minPrKM - minutes) * 60).toFixed(), 10); // implicit rounding
+                if (seconds === 60) {
+                    seconds = 0;
+                    minutes += 1;
+                }
+                var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                return result;
+            }, self);
+
+            this.toKMprH = ko.computed(function () {
+                var kmPrH = (speedMprSEC * 3.6).toFixed(1);
+                return kmPrH;
+            }, self);
+
+
+        },
+
+        convertToFullDate: function (UTCmillisec)
+            //// Callback on "create" from knockout
+        {
+            this.value = UTCmillsec;
+            this.fullDate = ko.computed(function () {
+                return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec)
+            }, this);
+        },
+
 
     };
 
@@ -423,7 +506,7 @@
 
     var FITViewUI = {
 
-        masterVM : {
+        masterVM: {
 
             speedMode: ko.observable(),
 
@@ -456,22 +539,19 @@
                 forceSpeedKMprH: ko.observable(false),
                 requestAveragingOnSpeed: ko.observable(true),
                 averageSampleTime: ko.observable(15000)
+                //requestHideAltitude : ko.observable(true)
             },
 
             progressVM: {
                 progress: ko.observable(0)
             },
 
-          
-            
 
         },
 
-       
-        
 
         init: function () {
-            
+
             self = this;
 
             // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
@@ -533,7 +613,7 @@
             self.masterVM.sessionVM = getEmptyViewModel(fitActivity.session());
             self.masterVM.lapVM = getEmptyViewModel(fitActivity.lap());
 
-          //  self.masterVM.loadChartVM = new loadSeriesViaButtonViewModel();
+            //  self.masterVM.loadChartVM = new loadSeriesViaButtonViewModel();
             self.masterVM.loadChartVM = {};
 
             if (!Modernizr.webworkers) {
@@ -560,8 +640,6 @@
             this.progressFITImport = document.getElementById('progressFITImport');
 
             this.divSessionLap = $('#divSessionLap');
-
-            
 
             //this.masterVM.lapVM.speedMode = ko.observable();
 
@@ -607,91 +685,7 @@
 
             });
 
-            this.masterVM.settingsVM.forceSpeedKMprH.subscribe(function (forceSpeedKMprH) {
-              
-
-                var speedSeries, speedAvgSeries;
-                var speedSeriesData, speedAvgSeriesData;
-                var lapAvgSpeedSeries, lapMaxSpeedSeries
-                var lapAvgSpeedSeriesData, lapMaxSpeedSeriesData;
-
-                var rawData = self.masterVM.sessionVM.rawData;
-                var timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC()
-                var startTimestamp, endTimestamp;
-
-                var updatePoint = function (data, property, converter) {
-                    for (var pointNr = 0; pointNr < data.length; pointNr++)
-                        data[pointNr].update(converter(rawData.lap[property][pointNr]), false);
-
-                }
-
-                if (self.multiChart) {
-                    speedSeries = self.multiChart.get('speedseries');
-                    speedAvgSeries = self.multiChart.get('speedavgseries');
-                    lapAvgSpeedSeries = self.multiChart.get('LAP_avg_speed');
-                    lapMaxSpeedSeries = self.multiChart.get('LAP_max_speed');
-                    startTimestamp = self.multiChart.xAxis[0].min - timezoneDiff;
-                    endTimestamp = self.multiChart.xAxis[0].max - timezoneDiff;
-
-                }
-
-                if (speedSeries) {
-                    if (forceSpeedKMprH) {
-                        self.masterVM.previousSpeedMode = self.masterVM.speedMode();
-                        self.masterVM.previousSpeedData = speedSeries.data;
-                        self.masterVM.previousSpeedAvgData = speedAvgSeries.data;
-
-                        speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
-
-                        if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
-                            updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToKMprH);
-                            updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                            self.multiChart.redraw();
-                        }
-
-                        if (self.masterVM.settingsVM.requestAveragingOnSpeed())
-                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
-
-                        self.masterVM.speedMode(2);
-
-                    } else {
-                        self.masterVM.speedMode(self.masterVM.previousSpeedMode);
-                        if (self.masterVM.previousSpeedMode === 1) // Running 
-                        {
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp,  FITViewUIConverter.convertSpeedToMinPrKM, 'speedseries');
-
-                            if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
-                                updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
-                                updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
-                                self.multiChart.redraw();
-                            }
-                            if (self.masterVM.settingsVM.requestAveragingOnSpeed)
-                                speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp,  FITViewUIConverter.convertSpeedToMinPrKM, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
-                        } else {
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
-                            if (self.masterVM.settingsVM.requestAveragingOnSpeed)
-                                speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
-
-                            if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
-                                updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                self.multiChart.redraw();
-                            }
-                        }
-                    }
-
-                    // Toggle lap lines - to update speed 
-                    if (self.masterVM.settingsVM.showLapLines()) {
-
-                        self.masterVM.settingsVM.showLapLines(false);
-                        self.masterVM.settingsVM.showLapLines(true);
-                    }
-
-                    speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
-                    if (self.masterVM.settingsVM.requestAveragingOnSpeed())
-                        speedAvgSeries.setData(speedAvgSeriesData, true);
-                }
-            });
+            this.masterVM.settingsVM.forceSpeedKMprH.subscribe(self.adjustSpeed);
 
             var bodyId = '#divSessionLap';
             var jqueryBodyElement = $(bodyId);
@@ -703,7 +697,7 @@
             this.masterVM.lapVM.tempoOrSpeed = ko.observable(undefined);
             this.masterVM.lapVM.selectedLap = ko.observable(undefined);
 
-           
+
 
             // Maybe: set rawdata on masterVM
             this.masterVM.sessionVM.setRawdata = function (self, rawData) {
@@ -775,9 +769,93 @@
 
         },
 
-      
+        adjustSpeed: function (forceSpeedKMprH) {
 
-        showSpeedVsHeartRate : function (rawData) {
+
+            var speedSeries, speedAvgSeries;
+            var speedSeriesData, speedAvgSeriesData;
+            var lapAvgSpeedSeries, lapMaxSpeedSeries
+            var lapAvgSpeedSeriesData, lapMaxSpeedSeriesData;
+
+            var rawData = self.masterVM.sessionVM.rawData;
+            var timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC()
+            var startTimestamp, endTimestamp;
+
+            var updatePoint = function (data, property, converter) {
+                for (var pointNr = 0; pointNr < data.length; pointNr++)
+                    data[pointNr].update(converter(rawData.lap[property][pointNr]), false);
+
+            }
+
+            if (self.multiChart) {
+                speedSeries = self.multiChart.get('speedseries');
+                speedAvgSeries = self.multiChart.get('speedavgseries');
+                lapAvgSpeedSeries = self.multiChart.get('LAP_avg_speed');
+                lapMaxSpeedSeries = self.multiChart.get('LAP_max_speed');
+                startTimestamp = self.multiChart.xAxis[0].min - timezoneDiff;
+                endTimestamp = self.multiChart.xAxis[0].max - timezoneDiff;
+
+            }
+
+            if (speedSeries) {
+                if (forceSpeedKMprH) {
+                    self.masterVM.previousSpeedMode = self.masterVM.speedMode();
+                    self.masterVM.previousSpeedData = speedSeries.data;
+                    self.masterVM.previousSpeedAvgData = speedAvgSeries.data;
+
+                    speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
+
+                    if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
+                        updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToKMprH);
+                        updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToKMprH);
+                        self.multiChart.redraw();
+                    }
+
+                    if (self.masterVM.settingsVM.requestAveragingOnSpeed())
+                        speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+
+                    self.masterVM.speedMode(2);
+
+                } else {
+                    self.masterVM.speedMode(self.masterVM.previousSpeedMode);
+                    if (self.masterVM.previousSpeedMode === 1) // Running 
+                    {
+                        speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedseries');
+
+                        if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
+                            updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
+                            updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
+                            self.multiChart.redraw();
+                        }
+                        if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+                    } else {
+                        speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
+                        if (self.masterVM.settingsVM.requestAveragingOnSpeed)
+                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+
+                        if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
+                            updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToKMprH);
+                            updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToKMprH);
+                            self.multiChart.redraw();
+                        }
+                    }
+                }
+
+                // Toggle lap lines - to update speed 
+                if (self.masterVM.settingsVM.showLapLines()) {
+
+                    self.masterVM.settingsVM.showLapLines(false);
+                    self.masterVM.settingsVM.showLapLines(true);
+                }
+
+                speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
+                if (self.masterVM.settingsVM.requestAveragingOnSpeed())
+                    speedAvgSeries.setData(speedAvgSeriesData, true);
+            }
+        },
+
+        showSpeedVsHeartRate: function (rawData) {
             var seriesSpeedVsHR = [];
             var minLength;
 
@@ -862,11 +940,7 @@
 
             //var self = this;
 
-            var axis = chart.xAxis[0];
-
-        
-
-           
+            var axis = chart.get(rawdataxAxis);
 
             var lapLinesConfig = [];
 
@@ -1045,8 +1119,8 @@
             if (this.multiChart)
                 this.multiChart.destroy();
 
-           
-         
+
+
 
 
             var chartId = "testChart";
@@ -1104,7 +1178,7 @@
                     yAxisOptions.push({
                         gridLineWidth: 1,
                         title: {
-                            text: null
+                            text: 'Heart rate'
                         }
 
                     });
@@ -1143,7 +1217,7 @@
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
-                            text: null
+                            text: 'Speed'
                         },
                         opposite: true,
 
@@ -1196,12 +1270,12 @@
                     powerSeriesData = FITUtil.combine(rawData, rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                     seriesData[id] = powerSeriesData;
 
-                    powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 98 };
+                    powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 98, visible : false };
                     seriesSetup.push(powerSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
-                            text: null
+                            text: 'Power'
                         },
                         opposite: true,
 
@@ -1214,13 +1288,13 @@
                     cadenceSeriesData = FITUtil.combine(rawData, rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                     seriesData[id] = cadenceSeriesData;
 
-                    cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 97 };
+                    cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', visible : false, zIndex: 97 };
 
                     seriesSetup.push(cadenceSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
-                            text: null
+                            text: 'Cadence'
                         }
 
                     });
@@ -1233,14 +1307,14 @@
                     seriesData[id] = altitudeSeriesData;
                     var hasGPSdata = FITUtil.hasGPSData(rawData);
                     altitudeSeries = {
-                        name: 'Altitude', id: id, yAxis: yAxisNr++, data: seriesData[id], visible: hasGPSdata, type: 'line', zIndex: 96
+                        name: 'Altitude', id: id, yAxis: yAxisNr++, data: seriesData[id], visible: false, type: 'line', zIndex: 96
                     };
 
                     seriesSetup.push(altitudeSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
-                            text: null
+                            text: 'Altitude'
                         }
 
                     });
@@ -1257,7 +1331,7 @@
                         gridLineWidth: 0,
                         opposite: true,
                         title: {
-                            text: null
+                            text: 'Temperature'
                         }
 
 
@@ -1327,11 +1401,14 @@
                     }
                 }
 
-
-                seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1 });
-                seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
-                seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
-                seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
+                if (lap.avg_speed && lap.avg_speed.length > 0)
+                  seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1 });
+                if (lap.max_speed && lap.max_speed.length > 0)
+                  seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
+                if (lap.avg_heart_rate && lap.avg_heart_rate.length > 0)
+                  seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
+                if (lap.max_heart_rate && lap.max_heart_rate.length > 0)
+                  seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
             }
             else
                 console.warn("No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
@@ -1382,7 +1459,7 @@
                     text: ''
                 },
                 xAxis: [{
-                    id: 'dataxAxis',
+                    id: rawdataxAxis,
                     type: xAxisType,
                     events: {
                         afterSetExtremes: function (event) {
@@ -1664,7 +1741,7 @@
         },
 
         showDeviceInfo: function (rawdata) {
-          
+
 
             var device_type = {
                 antfs: 1,
@@ -1961,7 +2038,7 @@
             };
 
 
-         
+
 
             if (typeof (rawdata) === "undefined") {
                 console.error("No rawdata available");
@@ -2139,7 +2216,7 @@
 
         },
 
-        removeSVGGroup : function (SVG_group) {
+        removeSVGGroup: function (SVG_group) {
             // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
             if (SVG_group)
                 $(SVG_group.element).remove()
@@ -2155,7 +2232,7 @@
                 return;
             }
 
-          
+
 
 
 
@@ -2281,7 +2358,7 @@
 
         },
 
-        showChartHrv : function (rawData) {
+        showChartHrv: function (rawData) {
             var chartId = "hrvChart";
             var divChart = document.getElementById(chartId);
             //divChart.style.visibility = "visible";
@@ -2346,11 +2423,11 @@
 
         },
 
-        showHRZones : function (rawdata, startTimestamp, endTimestamp) {
+        showHRZones: function (rawdata, startTimestamp, endTimestamp) {
 
             var divChartId = 'zonesChart';
             //var divChart = document.getElementById(divChartId);
-       
+
             if (typeof (rawdata.record) === "undefined") {
                 console.warn("Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
                 return -1;
@@ -2363,12 +2440,12 @@
             }
 
             //$('#zonesChart').show();
-       
+
 
             if (self.HRZonesChart)
                 self.HRZonesChart.destroy();
 
-        
+
 
             //var options = {
             //    chart: {
@@ -2403,7 +2480,7 @@
                     text: ''
                 },
                 xAxis: {
-                
+
                     //categories: ['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
                     categories: ['HR Zones']
                 },
@@ -2421,7 +2498,8 @@
                     }
                 },
                 legend: {
-                    enabled : false },
+                    enabled: false
+                },
                 //legend: {
                 //    align: 'right',
                 //    x: -100,
@@ -2437,9 +2515,9 @@
                     enabled: false
                 },
                 tooltip: {
-                    formatter: function() {
+                    formatter: function () {
                         return this.series.name + ': ' + Highcharts.numberFormat(this.y, 1);
-                        
+
                     }
                 },
                 plotOptions: {
@@ -2467,21 +2545,21 @@
 
             var myZones = getHRZones();
 
-            var startIndex = FITUtil.getIndexOfTimestamp(rawdata.record,startTimestamp);
-            var endIndex = FITUtil.getIndexOfTimestamp(rawdata.record,endTimestamp);
+            var startIndex = FITUtil.getIndexOfTimestamp(rawdata.record, startTimestamp);
+            var endIndex = FITUtil.getIndexOfTimestamp(rawdata.record, endTimestamp);
 
 
-            for (var zone = 0; zone < myZones.length; zone++) 
+            for (var zone = 0; zone < myZones.length; zone++)
                 myZones[zone].timeInZone = 0;
 
             var timeInZoneMillisec;
-            var maxTimeDifference = 60000;  
+            var maxTimeDifference = 60000;
 
             for (var datap = startIndex; datap <= endIndex; datap++) {
 
                 // var hry = rawData["heart_rate"][datap][1];
 
-           
+
 
                 if (datap < endIndex) {
                     timeInZoneMillisec = rawdata.record.timestamp[datap + 1] - rawdata.record.timestamp[datap];
@@ -2502,17 +2580,17 @@
 
 
                 var hry;
-            
+
                 // if (rawdata.record.heart_rate !== undefined)
                 hry = rawdata.record.heart_rate[datap];
                 //else
                 //    hry = undefined;
 
                 if (hry === undefined || hry === null)
-                    console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString()+" at index "+datap.toString());
+                    console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
                 else {
                     // Count Heart rate data points in zone
-                    for (var zone = 0; zone < myZones.length; zone++) 
+                    for (var zone = 0; zone < myZones.length; zone++)
                         if (hry <= myZones[zone].max && hry >= myZones[zone].min) {
 
                             myZones[zone].timeInZone += timeInZoneMillisec;
@@ -2524,28 +2602,28 @@
             options.series = [];
 
             var timeInSecs;
-            for (var catNr = myZones.length-1; catNr >= 0; catNr--) {
-        
+            for (var catNr = myZones.length - 1; catNr >= 0; catNr--) {
+
                 // s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
                 // timeInSecs = parseFloat(((myZones[catNr].timeInZone) / 60000).toFixed(1));
-            
+
                 timeInSecs = myZones[catNr].timeInZone / 60000;
 
                 options.series.push({
-                    name: myZones[catNr].name ,
+                    name: myZones[catNr].name,
                     data: [timeInSecs]
                 });
             }
 
-      
+
             self.HRZonesChart = new Highcharts.Chart(options);
         },
 
-        showSessionMarkers : function (map, rawdata) {
+        showSessionMarkers: function (map, rawdata) {
             // Plot markers for start of each session
-           
 
-         
+
+
 
             var sessionStartPosFound = false;
 
@@ -2553,11 +2631,11 @@
 
             var session = rawdata.session;
 
-            setMapCenter = function (sport,lat,long) {
+            setMapCenter = function (sport, lat, long) {
                 var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long));
-                console.info("Setting map center for sport ",sport," at ",latlong);
+                console.info("Setting map center for sport ", sport, " at ", latlong);
                 map.setCenter(latlong);
-            
+
                 if (self.sessionMarkers === undefined || self.sessionMarkers === null)
                     self.sessionMarkers = [];
 
@@ -2589,10 +2667,10 @@
                 //training 10
                 //all 254 All is for goals only to include all sports.
 
-            
+
                 switch (sport) {
                     case FITSport.running:
-                    
+
                         image = newMarkerImage('Images/sport/running.png');
                         break;
                     case FITSport.cycling:
@@ -2607,13 +2685,12 @@
 
                 if (image)
                     markerOptions.icon = image;
-           
+
                 self.sessionMarkers.push(new google.maps.Marker(markerOptions));
             };
-        
+
             // Clear previous session markers
-            if (self.sessionMarkers)
-            {
+            if (self.sessionMarkers) {
                 self.sessionMarkers.forEach(function (element, index, array) {
                     element.setMap(null);
                 });
@@ -2621,23 +2698,22 @@
                 self.sessionMarkers = null;
             }
 
-            if (session && session.start_position_lat)
-            {
-        
+            if (session && session.start_position_lat) {
+
                 session.start_position_lat.forEach(function (element, index, array) {
 
                     var lat = element;
                     var long = session.start_position_long[index];
 
-                    if (lat  && long ) {
-                    
+                    if (lat && long) {
+
                         sessionStartPosFound = true;
-                        
+
                         setMapCenter(session.sport[index], lat, long);
 
                         mapCenterSet = true;
 
-                        
+
                     }
                 });
             }
@@ -2645,8 +2721,7 @@
 
             // Valid .FIT file have session record, but invalid fit may not....try to fetch from record head instead
 
-            if (!sessionStartPosFound && rawdata.record)
-            {
+            if (!sessionStartPosFound && rawdata.record) {
                 var lat;
 
                 if (rawdata.record.position_lat && rawdata.record.position_lat.length > 0) {
@@ -2669,7 +2744,7 @@
                     sport = 0; // Default to generic
 
                 if (lat && long) {
-                    console.info("No start position was found in session data, got a position at start of record messages.", lat,long);
+                    console.info("No start position was found in session data, got a position at start of record messages.", lat, long);
                     setMapCenter(sport, lat, long);
                     mapCenterSet = true;
                 } else
@@ -2680,9 +2755,9 @@
 
         },
 
-        showSessionsAsOverlay : function (map, rawdata) {
-           
-           
+        showSessionsAsOverlay: function (map, rawdata) {
+
+
 
             var session = rawdata.session;
 
@@ -2701,18 +2776,18 @@
                 return false;
             }
 
-    
+
             var sessionCoords = [];
             self.sessionRectangles = [];
             var fillColors = [];
 
             session.swc_lat.forEach(function (value, index, array) {
 
-          
+
                 if (session.swc_lat[index] &&
                     session.swc_long[index] &&
                     session.nec_lat[index] &&
-                    session.nec_long[index] ) {
+                    session.nec_long[index]) {
                     sessionCoords.push([
                 new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(session.swc_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(session.swc_long[index])),
                 new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(session.swc_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(session.nec_long[index])),
@@ -2735,7 +2810,7 @@
                         break;
                 }
 
-                self.sessionRectangles.push( new google.maps.Polygon({
+                self.sessionRectangles.push(new google.maps.Polygon({
                     paths: sessionCoords[index],
                     strokeColor: "#000000",
                     strokeOpacity: 0.10,
@@ -2752,7 +2827,7 @@
             return true;
         },
 
-        initMap : function () {
+        initMap: function () {
 
             // f.ex in case google maps api is not downloaded due to network problems....
             // http://joshua-go.blogspot.no/2010/07/javascript-checking-for-undeclared-and.html
@@ -2774,7 +2849,7 @@
                 // Async call with anonymous callback..
                 navigator.geolocation.getCurrentPosition(function (position) {
                     myCurrentPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                    var  currentCenter = newMap.getCenter();
+                    var currentCenter = newMap.getCenter();
 
                     if (currentCenter === undefined)
                         newMap.setCenter(myCurrentPosition);
@@ -2784,20 +2859,20 @@
             return newMap;
         },
 
-        showLaps : function (rawData) {
+        showLaps: function (rawData) {
 
 
             this.divSessionLap.show();
 
-            
+
         },
 
-        showPolyline : function (rawdata,map, record, startTimestamp, endTimestamp, strokeOptions, type) {
-      
+        showPolyline: function (rawdata, map, record, startTimestamp, endTimestamp, strokeOptions, type) {
+
             var chosenStrokeColor = "#FF0000";
             var chosenStrokeWeight = 1;
             var chosenStrokeOpacity = 1;
-       
+
             if (strokeOptions) {
                 if (strokeOptions.strokeColor)
                     chosenStrokeColor = strokeOptions.strokeColor;
@@ -2807,9 +2882,9 @@
                     chosenStrokeOpacity = strokeOptions.strokeOpacity;
             }
 
-         
 
-        
+
+
 
             // Clear previous polylines
             if (self.masterVM.activityPolyline) {
@@ -2833,7 +2908,7 @@
 
             if (!FITUtil.hasGPSData(rawdata))
                 return false;
-          
+
             if (self.masterVM.activityCoordinates)
                 self.masterVM.activityCoordinates[type] = [];
             else {
@@ -2841,15 +2916,15 @@
                 self.masterVM.activityCoordinates[type] = [];
             }
 
-           
+
 
             // Build up polyline
-        
+
             var latLength = record.position_lat.length;
             var longLength = record.position_long.length;
 
             console.info("Total GPS points available (position_lat,position_long) : ", latLength, longLength);
-        
+
             //var sampleInterval = Math.floor(latLength / 30);
 
             //if (sampleInterval < 1)
@@ -2872,10 +2947,10 @@
             //    return indxNr;
             //};
 
-            var indexStartTime = FITUtil.getIndexOfTimestamp(record,startTimestamp);
+            var indexStartTime = FITUtil.getIndexOfTimestamp(record, startTimestamp);
 
-            var indexEndTime = FITUtil.getIndexOfTimestamp(record,endTimestamp);
-          
+            var indexEndTime = FITUtil.getIndexOfTimestamp(record, endTimestamp);
+
 
             for (var index = indexStartTime; index <= indexEndTime; index++) {
                 if (index === indexStartTime || (index % sampleInterval === 0) || index === indexEndTime)
@@ -2897,93 +2972,14 @@
             self.masterVM.activityPolyline[type].setMap(map);
 
             return true;
-      
+
 
         },
 
-        convertSpeedConverterModel : function (speedMprSEC) {
        
-            //ko.mapping.fromJS(speedMprSEC, {}, this);
-
-            var minPrKM;
-            var minPr100M;
-        
-            this.value = speedMprSEC;
-
-            this.toMINpr100M = ko.computed(function () {
-           
-                if (speedMprSEC > 0)
-                    minPr100M = 1 / (speedMprSEC * 60 / 100); // min/100m
-                else
-                    minPr100M = 0;
-
-                var minutes = Math.floor(minPr100M);
-                var seconds = ((minPr100M - minutes) * 60).toFixed(); // implicit rounding
-
-                var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                return result;
-            }, self);
-
-            this.toMINprKM = ko.computed(function () {
-           
-                if (speedMprSEC > 0)
-                    minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
-                else
-                    minPrKM = 0;
-
-                var minutes = Math.floor(minPrKM);
-                var seconds = parseInt(((minPrKM - minutes) * 60).toFixed(),10); // implicit rounding
-                if (seconds === 60) {
-                    seconds = 0;
-                    minutes += 1;
-                }
-                var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                return result;
-            }, self);
-
-            this.toKMprH = ko.computed(function () {
-                var kmPrH = (speedMprSEC * 3.6).toFixed(1);
-                return kmPrH;
-            }, self);
-        
-        
-        },
-
-        convertToFullDate : function (UTCmillisec)
-            //// Callback on "create" from knockout
-        {
-            this.value = UTCmillsec;
-            this.fullDate = ko.computed(function () {
-                return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec)
-            }, this);
-        },
-
-        convertSecsToHHMMSSModel : function (totalSec) {
-            // Callback on "create" from knockout
-            //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
-
-            this.value = totalSec;
         
 
-            this.toHHMMSS = ko.computed(function () {
-                // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
-
-                var hours = parseInt(totalSec / 3600, 10) % 24;
-                var minutes = parseInt(totalSec / 60, 10) % 60;
-                var seconds = parseInt(totalSec % 60, 10);
-
-                var hourResult;
-                if (hours != 0)
-                    hourResult = (hours < 10 ? "0" + hours : hours) + ":";
-                else
-                    hourResult = "";
-
-                var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                return result;
-            }, this);
-        },
-
-        intepretMessageCounters : function (counter,type) {
+        intepretMessageCounters: function (counter, type) {
             if (typeof (counter) === "undefined") {
                 console.warn("Message counters is undefined, cannot intepret counter of global messages in FIT file");
                 return -1;
@@ -3010,11 +3006,11 @@
 
         },
 
-        resetViewModel : function (viewModel,fieldDefProperties) {
+        resetViewModel: function (viewModel, fieldDefProperties) {
 
-           
+
             //var sessionFieldDef = fitActivity.session();
-       
+
             // Take timestamp first to collapse DOM outline and hopefully make other collapses "hidden"
 
             if (viewModel.timestamp)
@@ -3023,29 +3019,27 @@
             var fieldDefProperty;
             for (var fieldDefNr in fieldDefProperties) {
                 fieldDefProperty = fieldDefProperties[fieldDefNr].property;
-                if (viewModel[fieldDefProperty] && fieldDefProperty !== "timestamp" ) {
+                if (viewModel[fieldDefProperty] && fieldDefProperty !== "timestamp") {
                     // console.log("RemoveAll() on ", observableArray);
                     viewModel[fieldDefProperty]([]);
                 }
             }
 
-       
+
 
         },
 
-
-        processSportSettingFile : function (rawData)
-        {
+        processSportSettingFile: function (rawData) {
             // From profile.xls
             var hr_zone_calc = {
-                custom : 0,
-                percent_max_hr : 1,
-                percent_hrr : 2
+                custom: 0,
+                percent_max_hr: 1,
+                percent_hrr: 2
             }
 
             var pwr_zone_calc = {
                 custom: 0,
-                percent_ftp : 1
+                percent_ftp: 1
             }
 
             // rawData.hr_zone
@@ -3053,8 +3047,7 @@
 
         },
 
-        processActivityFile : function (rawData,counter)
-        {
+        processActivityFile: function (rawData, counter) {
             var activityFITfileType = 4;
             self.intepretMessageCounters(counter, activityFITfileType);
 
@@ -3065,7 +3058,7 @@
 
             // Holds index of previously lookedup timestamps in rawdata.record.timestamp array
             self.timestampIndexCache = [];
-                
+
 
             // Value converters that are run on "create"-event/callback in knockout
             var mappingOptions = {
@@ -3076,43 +3069,43 @@
                 //},
                 'total_elapsed_time': {
                     create: function (options) {
-                        return new self.convertSecsToHHMMSSModel(options.data);
+                        return new FITViewUIConverter.convertSecsToHHMMSSModel(options.data);
                     }
                 },
                 'total_timer_time': {
                     create: function (options) {
-                        return new self.convertSecsToHHMMSSModel(options.data);
+                        return new FITViewUIConverter.convertSecsToHHMMSSModel(options.data);
                     }
                 },
                 'avg_speed': {
                     create: function (options) {
-                        return new self.convertSpeedConverterModel(options.data);
+                        return new FITViewUIConverter.convertSpeedConverterModel(options.data);
                     }
                 },
                 'max_speed': {
                     create: function (options) {
-                        return new self.convertSpeedConverterModel(options.data);
+                        return new FITViewUIConverter.convertSpeedConverterModel(options.data);
                     }
                 }
             };
-                
+
 
             if (rawData.session === undefined)
                 rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
 
-            
+
             self.masterVM.sessionVM.setRawdata(self, rawData);
 
             ko.mapping.fromJS(rawData.session, mappingOptions, self.masterVM.sessionVM);
 
             self.masterVM.sessionVM.selectedSession(0);  // Start with first session, there is no session object but an common index for a timestamp to all arrays 
 
-      
+
             self.masterVM.lapVM.setRawdata(self, rawData);
             ko.mapping.fromJS(rawData.lap, mappingOptions, self.masterVM.lapVM);
-      
 
-      
+
+
             // Activity file
 
             self.showLaps(rawData);
@@ -3120,9 +3113,8 @@
             // Try to catch errors in session start_time/timestamp
             var start_time;
 
-            if (typeof (rawData.session.start_time) === "undefined")
-            {
-                       
+            if (typeof (rawData.session.start_time) === "undefined") {
+
                 console.warn("Session start time not found");
                 start_time = rawData.lap.start_time[0];
 
@@ -3138,7 +3130,7 @@
             } else
                 start_time = rawData.session.start_time[0];
 
-                       
+
 
             var timestamp;
             if (typeof (rawData.session.timestamp) === "undefined") {
@@ -3157,8 +3149,8 @@
             } else
                 timestamp = rawData.session.timestamp[0];
 
-                      
-                      
+
+
 
             if (self.map) {
                 var sessionMarkerSet = self.showSessionMarkers(self.map, rawData);
@@ -3166,28 +3158,30 @@
                 var sessionAsOverlaySet = self.showSessionsAsOverlay(self.map, rawData);
 
                 var polylinePlotted = self.showPolyline(rawData, self.map, rawData.record, rawData.session.start_time[0], rawData.session.timestamp[0],
-                    {strokeColor : 'red',
-                        strokeOpacity : 1,
-                        strokeWeight : 1},"session");
+                    {
+                        strokeColor: 'red',
+                        strokeOpacity: 1,
+                        strokeWeight: 1
+                    }, "session");
             }
             //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
             //   $('#activityMap').show();
 
-                       
+
             self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
             self.showChartsDatetime(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
-                         
+
             //FITUI.showChartHrv(rawData);
 
             //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
         },
 
-        onFITManagerMsg : function (e) {
+        onFITManagerMsg: function (e) {
             // NB Callback, this reference....
-       
-        
 
-           
+
+
+
 
             var eventdata = e.data;
 
@@ -3200,8 +3194,8 @@
                     break;
 
                 case 'rawData':
-              
-               
+
+
                     var rawData = eventdata.rawdata;
 
                     if (rawData.file_id)
@@ -3209,7 +3203,7 @@
 
                     if (rawData.file_creator)
                         console.info("file_creator message : ", JSON.stringify(rawData.file_creator));
- 
+
                     if (rawData.file_id) {
                         fileIdType = rawData.file_id.type[0];
 
@@ -3225,42 +3219,41 @@
                         }
                     }
 
-                    switch (fileIdType)
-                    {
+                    switch (fileIdType) {
                         // Activity file
-                        case 4 : 
+                        case 4:
                             console.info("Processing an activity file");
-                            self.processActivityFile(rawData,self.messageCounter);
+                            self.processActivityFile(rawData, self.messageCounter);
                             break;
 
                             // Sport settings (HR zones)
 
-                        case 3 : 
+                        case 3:
                             console.info("Processing a sport settings file");
                             self.processSportSettingFile(rawData);
                             break;
 
                         default:
-                            console.error("Cannot process file id with type : ",fileIdType);
-                      
-                        
+                            console.error("Cannot process file id with type : ", fileIdType);
+
+
 
                             break;
 
                     }
-                
+
                     break;
 
                 case 'header':
                     var headerInfo = eventdata.header;
 
-                    console.info("FIT file header : "+JSON.stringify(headerInfo));
+                    console.info("FIT file header : " + JSON.stringify(headerInfo));
 
                     // Copy to view model
                     self.masterVM.headerInfoVM.fileName(headerInfo.fitFile.name);
                     self.masterVM.headerInfoVM.fileSize(headerInfo.fitFile.size);
                     self.masterVM.headerInfoVM.protocolVersion(headerInfo.protocolVersionMajor + "." + headerInfo.protocolVersionMinor);
-              
+
                     self.masterVM.headerInfoVM.profileVersion(headerInfo.profileVersionMajor + "." + headerInfo.profileVersionMinor);
                     self.masterVM.headerInfoVM.dataType(headerInfo.dataType);
                     self.masterVM.headerInfoVM.headerCRC(headerInfo.headerCRC);
@@ -3292,7 +3285,7 @@
                     break;
 
                 case 'importProgress':
-               
+
                     self.masterVM.progressVM.progress(eventdata.data);
 
                     //FITUI.progressFITImport.setAttribute("value", eventdata.data);
@@ -3314,18 +3307,18 @@
 
         },
 
-        onFITManagerError : function (e) {
+        onFITManagerError: function (e) {
             console.error("Error in worker, status " + e.toString());
         },
 
-        onFitFileSelected : function (e) {
+        onFitFileSelected: function (e) {
 
             if (typeof (e.target.files) === "undefined" || e.target.files.length === 0) {
                 console.warn("No file selected for import");
                 return;
             }
 
-           
+
 
             // console.log(e);
             e.preventDefault();
@@ -3397,12 +3390,12 @@
             var msg = {
                 request: 'importFitFile',
                 fitfile: files[0],
-                store : self.masterVM.settingsVM.storeInIndexedDB()
+                store: self.masterVM.settingsVM.storeInIndexedDB()
                 //, "query": query
             };
 
 
-        
+
             $("#progressFITimport").show();
 
             self.fitFileManager.postMessage(msg);
@@ -3412,9 +3405,9 @@
         },
 
 
-        showDataRecordsOnMap : function (dataRecords) {
+        showDataRecordsOnMap: function (dataRecords) {
 
-           
+
             var FIT_MSG_FILEID = 0;
             var FIT_MSG_SESSION = 18;
             var FIT_MSG_LAP = 19;
@@ -3455,14 +3448,14 @@
 
 
     window.onload = function () {
-       
+
         FITViewUI.init();
     };
 
-    
 
 
-   
+
+
 
     function deleteDb() {
         // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
@@ -3482,8 +3475,8 @@
 
 
         req.onsuccess = function (evt) {
-            console.info("Delete "+evt.currentTarget.readyState);
-            
+            console.info("Delete " + evt.currentTarget.readyState);
+
         };
 
         req.onerror = function (evt) {
