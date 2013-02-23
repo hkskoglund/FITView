@@ -641,16 +641,16 @@
                         self.masterVM.previousSpeedData = speedSeries.data;
                         self.masterVM.previousSpeedAvgData = speedAvgSeries.data;
 
-                        speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedseries');
+                        speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
 
                         if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
-                            updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITUtil.convertSpeedToKMprH);
-                            updatePoint(lapMaxSpeedSeries.data, "max_speed", FITUtil.convertSpeedToKMprH);
+                            updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToKMprH);
+                            updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToKMprH);
                             self.multiChart.redraw();
                         }
 
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed())
-                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITUtil.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
+                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
 
                         self.masterVM.speedMode(2);
 
