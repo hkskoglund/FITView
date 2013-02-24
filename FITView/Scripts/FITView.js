@@ -4,7 +4,8 @@
     var self;
 
     var lapxAxisID = 'lapxAxis',
-        rawdataxAxis = 'rawdataxAxis';
+        rawdataxAxis = 'rawdataxAxis',
+        combinedxAxisID = "combinedxAxis"; // For speed vs HR
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -1106,7 +1107,7 @@
 
             var id;
 
-            var combinedxAxisID = "combinedxAxis"; // For speed vs HR
+          
 
             if (typeof (rawData.record) === "undefined") {
                 console.error("No rawdata present on rawdata.record, cannot render chart");
@@ -1294,11 +1295,11 @@
             }
 
 
-            var arr = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
-            if (arr) {
+            var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
+            if (speedVSHR) {
                 id = 'speedVSHR';
-                seriesData[id] = arr;
-                seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: FITUtil.hasGPSData(rawData), zIndex: 94 });
+                seriesData[id] = speedVSHR;
+                seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: false, zIndex: 94 });
             }
                 //yAxisOptions.push({
             //    gridLineWidth: 0,
@@ -1380,21 +1381,26 @@
                 }
 
                 for (lapNr = 0; lapNr < len; lapNr++) {
+
                     if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
                         lap.categories.push((lapNr + 1).toString());
+
                         switch (sport) {
+
                             case FITSport.running: // Running
                                 pushData("avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
                                 pushData("max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
                                 pushData("avg_heart_rate");
                                 pushData("max_heart_rate");
                                 break;
+
                             case FITSport.cycling: // Cycling
                                 pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
                                 pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
                                 pushData("avg_heart_rate");
                                 pushData("max_heart_rate");
                                 break;
+
                             default:
                                 pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
                                 pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
@@ -1409,10 +1415,13 @@
 
                 if (lap.avg_speed && lap.avg_speed.length > 0)
                     seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1 });
+
                 if (lap.max_speed && lap.max_speed.length > 0)
                     seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
+
                 if (lap.avg_heart_rate && lap.avg_heart_rate.length > 0)
                     seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
+
                 if (lap.max_heart_rate && lap.max_heart_rate.length > 0)
                     seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
             }
@@ -1455,6 +1464,75 @@
             console.log("Starting highchart now " + d);
 
 
+            // Shared mouse event handler for spline/line series in multichart
+            var mouseHandler =
+                {
+                    select : function () {
+                        console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y)
+                    },
+
+                    mouseOut : function () {
+                        if (prevMarker !== undefined && prevMarker !== null) {
+                            prevMarker.setMap(null);
+                            prevMarker = null; // GC takes over...
+                        }
+                    },
+
+                    mouseOver : function () {
+
+                        //var lapxAxis = self.multiChart.get(lapxAxisID);
+                        //if (this.series.xAxis === lapxAxis)
+                        //    return;
+
+                        var lat, long;
+
+                        if (rawData.record != undefined) {
+
+                            var index = rawData.record.timestamp.indexOf(this.x - FITUtil.timestampUtil.getTimezoneOffsetFromUTC());
+
+
+                            if (index === -1) {
+                                console.error("Could not find index of timestamp ", this.x);
+                                return;
+                            }
+
+                            setMarker = function () {
+                                if (typeof (google) === "undefined") // Allows working without map
+                                    return;
+
+                                prevMarker = new google.maps.Marker({
+                                    position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long)),
+                                    icon: {
+                                        path: google.maps.SymbolPath.CIRCLE,
+                                        scale: 3
+                                    },
+                                    draggable: true,
+                                    map: self.map
+                                });
+                            }
+
+                            if (rawData.record.position_lat != undefined)
+                                lat = rawData.record.position_lat[index];
+
+                            if (rawData.record.position_long != undefined)
+                                long = rawData.record.position_long[index];
+
+                            //console.log("Lat, long ", lat, long);
+
+                            if (lat && long) {
+                                if (prevMarker === null) {
+                                    setMarker();
+                                } else {
+                                    // Clear previous marker
+                                    prevMarker.setMap(null);
+                                    prevMarker = null;
+                                    setMarker();
+                                }
+                            }
+
+                        }
+                    }
+                };
        
 
 
@@ -1492,43 +1570,13 @@
                     id: combinedxAxisID
                 }
                     ],
-                //yAxis: [{
-                //    title: {
-                //        text: null
-                //    }
-                //    //labels: {
-                //    //    formatter: function () {
-                //    //        if (self.speedMode === 1) // Running
-                //    //            return self.formatToMMSS(this.value) + " min/km";
-                //    //        else if (self.speedMode === 2) // Cycling
-                //    //            return this.value + "km/h";
-                //    //        else
-                //    //            return this.value;
-                //    //    }
-                //    //}
-                //}, { // Secondary yAxis
-                //    gridLineWidth: 0,
-                //    title: {
-                //        text: null,
-                //        //style: {
-                //        //    color: '#4572A7'
-                //        //}
-                //    },
-                //    labels: {
-                //        //formatter: function() {
-                //        //    return this.value +' mm';
-                //        //},
-                //        //style: {
-                //        //    color: '#4572A7'
-                //        //}
-                //    }
-                //},
+                
                 yAxis: yAxisOptions,
 
                 legend: {
                     enabled: this.masterVM.settingsVM.showLegends()
                 },
-
+                // Shared tooltip for all series
                 tooltip: {
                     //xDateFormat: '%Y-%m-%d',
                     formatter:
@@ -1541,13 +1589,21 @@
                             }
 
                             var onLapxAxis;
-                            (this.series.xAxis === self.multiChart.get('lapxAxis')) ? onLapxAxis = true : onLapxAxis = false;
+                            (this.series.xAxis === self.multiChart.get(lapxAxisID)) ? onLapxAxis = true : onLapxAxis = false;
+
+                            var onSpeedVSHRxAxis;
+                            (this.series.xAxis === self.multiChart.get(combinedxAxisID)) ? onSpeedVSHRxAxis = true : onSpeedVSHRxAxis = false;
                             // Check to see if its a tooltip for lap axis
                             if (onLapxAxis) {
                                 var lapNr = this.x;
                                 s = "Lap " + lapNr.toString();
                                 if (rawData.lap.total_distance)
                                     s += '<br/>' + '<b>Distance:</b> ' + Highcharts.numberFormat(rawData.lap.total_distance[lapNr - 1], 0) + ' m';
+                            }
+                            
+                            else if (onSpeedVSHRxAxis) {
+                                s = "<b>Speed:</b>" + this.x + "<br/>" + "<b>Heart rate:</b>" + this.y;
+                                return s;
                             }
                             else
                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
@@ -1591,6 +1647,19 @@
                                     enabled: true
                                 }
                             }
+                        },
+
+                        point: {
+
+                            events: {
+
+                                select: mouseHandler.select,
+
+                                mouseOver: mouseHandler.mouseOver,
+
+                                mouseOut: mouseHandler.mouseOut
+                            }
+
                         }
                     },
 
@@ -1613,71 +1682,11 @@
 
                             events: {
 
-                                select: function () {
-                                    console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y)
-                                },
+                                select: mouseHandler.select,
 
-                                mouseOver: function () {
+                                mouseOver: mouseHandler.mouseOver,
 
-                                    //var lapxAxis = self.multiChart.get(lapxAxisID);
-                                    //if (this.series.xAxis === lapxAxis)
-                                    //    return;
-
-                                    var lat, long;
-
-                                    if (rawData.record != undefined) {
-
-                                        var index = rawData.record.timestamp.indexOf(this.x - FITUtil.timestampUtil.getTimezoneOffsetFromUTC());
-
-
-                                        if (index === -1) {
-                                            console.error("Could not find index of timestamp ", this.x);
-                                            return;
-                                        }
-
-                                        setMarker = function () {
-                                            if (typeof (google) === "undefined") // Allows working without map
-                                                return;
-
-                                            prevMarker = new google.maps.Marker({
-                                                position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long)),
-                                                icon: {
-                                                    path: google.maps.SymbolPath.CIRCLE,
-                                                    scale: 3
-                                                },
-                                                draggable: true,
-                                                map: self.map
-                                            });
-                                        }
-
-                                        if (rawData.record.position_lat != undefined)
-                                            lat = rawData.record.position_lat[index];
-
-                                        if (rawData.record.position_long != undefined)
-                                            long = rawData.record.position_long[index];
-
-                                        //console.log("Lat, long ", lat, long);
-
-                                        if (lat && long) {
-                                            if (prevMarker === null) {
-                                                setMarker();
-                                            } else {
-                                                // Clear previous marker
-                                                prevMarker.setMap(null);
-                                                prevMarker = null;
-                                                setMarker();
-                                            }
-                                        }
-
-                                    }
-                                },
-
-                                mouseOut: function () {
-                                    if (prevMarker !== undefined && prevMarker !== null) {
-                                        prevMarker.setMap(null);
-                                        prevMarker = null; // GC takes over...
-                                    }
-                                }
+                                mouseOut: mouseHandler.mouseOut
                             }
 
                         }
@@ -1687,13 +1696,7 @@
 
                 series: seriesSetup,
 
-
-
-
-
             }
-
-
                 //, function () {
                 ////callback action
                 //alert('Something is happening now....');
