@@ -1295,10 +1295,12 @@
 
 
             var arr = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
-            id = 'speedVSHR';
-            seriesData[id] = arr;
-            seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible : false, zIndex: 94 });
-            //yAxisOptions.push({
+            if (arr) {
+                id = 'speedVSHR';
+                seriesData[id] = arr;
+                seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: FITUtil.hasGPSData(rawData), zIndex: 94 });
+            }
+                //yAxisOptions.push({
             //    gridLineWidth: 0,
             //    type : 'scatter',
             //    title: {
