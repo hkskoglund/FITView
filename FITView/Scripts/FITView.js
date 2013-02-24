@@ -1497,7 +1497,7 @@
                                 return n % 1 === 0;
                             }
 
-                            var speed;
+                            var speed, s;
 
                             var onLapxAxis;
                             (this.series.xAxis === self.multiChart.get(lapxAxisID)) ? onLapxAxis = true : onLapxAxis = false;
@@ -1517,9 +1517,6 @@
                             }
                             else
                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
-
-
-
 
                             // Special treatment for speed
                             if (self.masterVM.speedMode() && this.series.name === "Speed" || this.series.name === "Avg. speed" || this.series.name === "Max. speed" || this.series.name === "SpeedAvg" || this.series.name === "Speed vs HR") {
@@ -1544,6 +1541,7 @@
                                 }
                             }
                             else {
+                                s += '<br/><b>' + this.series.name + '</b>: ';
                                 if (isInt(this.y))
                                     s += this.y.toString();
                                 else
