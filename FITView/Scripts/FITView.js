@@ -6,8 +6,7 @@
     var lapxAxisID = 'lapxAxis',
         rawdataxAxis = 'rawdataxAxis';
 
-    // TO DO, fix namespace...?
-
+    // Based on info. in profile.xls from FIT SDK
     var FITSport = {
 
         generic: 0,
@@ -38,24 +37,84 @@
 
     var FITUtil =
         {
+            isUndefined : function (what)
+            {
+                if (typeof (what) === "undefined")
+                    return true;
+                else
+                    return false;
+            },
+
+            isEmpty: function (arr)
+            {
+                if (arr.length === 0)
+                    return true;
+                else
+                    return false;
+            },
+
             hasGPSData: function (rawdata) {
+
                 if (rawdata.record.position_lat === undefined) {
                     console.info("No position data (position_lat)");
-
                 }
 
                 if (rawdata.record.position_long === undefined) {
                     console.info("No position data (position_lat)");
-
                 }
 
                 return (rawdata.record.position_lat === undefined || rawdata.record.position_long === undefined) ? false : true;
 
             },
 
+            // Combines two series, i.e heart rate and speed
+            // It is only used after (combine-func. with timestamps = series) to allow for filtering done there
+            combineTwo : function (series1,series2)
+            {
+                // Pre-conditions
+
+                if (FITUtil.isUndefined(series1) || FITUtil.isUndefined(series2))
+                {
+                    console.error("Undefined series, cannot combine them.");
+                    return undefined;
+                }
+
+                if (FITUtil.isEmpty(series1) || FITUtil.isEmpty(series2)) {
+                    console.error("Empty series, cannot combine them.");
+                    return undefined;
+                }
+
+                var lenSeries1 = series1.length;
+                var lenSeries2 = series2.length;
+
+                if (lenSeries1 !== lenSeries2)
+                {
+                    console.warn("Length of combined series does not match ",lenSeries1,lenSeries2);
+                }
+
+                var elementNr;
+                var combined = [];
+                var timestamp = 0;
+                var value = 1;
+               
+                for (elementNr = 0; elementNr < lenSeries1 && elementNr < lenSeries2; elementNr++) {
+                    if (series1[elementNr][timestamp] === series2[elementNr][timestamp]) // If equal timestamps
+                        combined.push([series1[elementNr][value],series2[elementNr][value]]);
+                }
+
+                return combined;
+            },
+
+
+            // This function combines a series of data, i.e heart rate with timestamps to facilitate easy setup for plotting in Highcharts
+            // It also can calculate averaging over a specific time period, i.e to smooth out speed curve that has a tendency to fluctate rather much when based on GPS
             combine: function (rawdata, values, timestamps, startTimestamp, endTimestamp, converter, seriesName, averaging, avgSampleTime) {
 
                 var combined = [];
+                var localTimestamp;  // Timestamp in local time zone
+                var valuesForAvgerage;
+                var len, nr, timestamp, nextTimestamp, prevTimetampNr;
+                var sum, avg;
 
                 if (timestamps == undefined) {
                     console.warn("Found no timestamps to combine with data measurements.", seriesName);
@@ -72,19 +131,12 @@
                     // But, could perhaps add relative start time...?
                 }
 
+               
+                len = timestamps.length;
 
+                for (nr = 0; nr < len; nr++) {
 
-                var localTimestamp;  // Timestamp in local time zone
-                var valuesForAvgerage;
-
-
-
-                var len = timestamps.length;
-
-                for (var nr = 0; nr < len; nr++) {
-
-                    var timestamp = timestamps[nr];  // UTC timestamp in rawdata
-
+                    timestamp = timestamps[nr];  // UTC timestamp in rawdata
 
                     if (rawdata.dirty[nr]) // Skip dirty data
                         continue;
@@ -95,8 +147,7 @@
                             //console.log("Nr. before avg:", nr);
 
                             valuesForAverage = [];
-                            var nextTimestamp = timestamp;
-                            var prevTimetampNr;
+                            nextTimestamp = timestamp;
 
                             while (nextTimestamp - timestamp <= avgSampleTime && nextTimestamp <= endTimestamp && nr < len) {
 
@@ -122,7 +173,7 @@
                             //console.log("Nr. after avg:", nr);
 
                             //Credit to: http://stackoverflow.com/questions/10359907/array-sum-and-average
-                            var sum, avg;
+                           
                             if (valuesForAverage.length > 0) {
                                 sum = valuesForAverage.reduce(function (a, b) { return a + b });
                                 avg = sum / valuesForAverage.length;
@@ -294,7 +345,7 @@
 
                 } else { // Create a generic session of all data
 
-                    rawData.session.sport.push(0);
+                    rawData.session.sport.push(FITSport.generic);
 
                     if (rawData.record) {
                         var lastRecordIndex = rawData.record.timestamp.length - 1;
@@ -484,28 +535,13 @@
                 else
                     minPr100M = 0;
 
-                var minutes = Math.floor(minPr100M);
-                var seconds = ((minPr100M - minutes) * 60).toFixed(); // implicit rounding
-
-                var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                return result;
+                return converter.formatToMMSS(minPr100M);
             }, self);
 
             this.toMINprKM = ko.computed(function () {
 
-                if (speedMprSEC > 0)
-                    minPrKM = 1 / (speedMprSEC * 60 / 1000); // min/km
-                else
-                    minPrKM = 0;
-
-                var minutes = Math.floor(minPrKM);
-                var seconds = parseInt(((minPrKM - minutes) * 60).toFixed(), 10); // implicit rounding
-                if (seconds === 60) {
-                    seconds = 0;
-                    minutes += 1;
-                }
-                var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                return result;
+                minPrKM = converter.convertSpeedToMinPrKM(speedMprSEC);
+                return converter.formatToMMSS(minPrKM);
             }, self);
 
             this.toKMprH = ko.computed(function () {
@@ -531,6 +567,7 @@
 
     var FITViewUI = {
 
+        //View models
         masterVM: {
 
             speedMode: ko.observable(),
@@ -650,7 +687,6 @@
                 alert("This application will not work due to lack of geolocation");
             }
 
-
             this.inpFITFile = document.getElementById('inpFITFile');
             this.inpFITFile.addEventListener('change', this.onFitFileSelected, false);
 
@@ -719,13 +755,10 @@
             this.masterVM.lapVM.tempoOrSpeed = ko.observable(undefined);
             this.masterVM.lapVM.selectedLap = ko.observable(undefined);
 
-
-
             // Maybe: set rawdata on masterVM
             this.masterVM.sessionVM.setRawdata = function (self, rawData) {
                 self.masterVM.sessionVM.rawData = rawData;
             }
-
 
             this.masterVM.lapVM.setRawdata = function (self, rawData) {
                 self.masterVM.lapVM.rawData = rawData;
@@ -752,10 +785,7 @@
                 self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
-
-
             }
-
 
             this.masterVM.lapVM.showLap = function (data, event) {
                 // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
@@ -777,10 +807,7 @@
                 self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
-
-
             }
-
 
             ko.applyBindings(this.masterVM, bodyElement); // Initialize master model with DOM 
             jqueryBodyElement.show();
@@ -788,11 +815,9 @@
             // Initialize map
             if (this.map === undefined)
                 this.map = this.initMap();
-
         },
 
         adjustSpeed: function (forceSpeedKMprH) {
-
 
             var speedSeries, speedAvgSeries;
             var speedSeriesData, speedAvgSeriesData;
@@ -1042,22 +1067,17 @@
 
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
-            // this.showLapChart(rawData, startTimestamp, endTimestamp, sport);
-
+            // Clean up previous chart
             // http://api.highcharts.com/highcharts#Chart.destroy()
             if (this.multiChart)
                 this.multiChart.destroy();
 
-
-
-
-
-            var chartId = "testChart";
+            var chartId = "multiChart";
             var divChart = document.getElementById(chartId);
             divChart.style.visibility = "visible";
             var seriesSetup = []; // Options name,id
             var seriesData = []; // Actual data in chart
-            var heartRateSeries;
+            var heartRateSeriesOptions;
             var heartRateSeriesData;
             var altitudeSeries;
             var altitudeSeriesData;
@@ -1077,25 +1097,34 @@
 
             var allRawdata = rawData;
 
-
-
             // Record data
 
-            var yAxisNr = 0; // Give each series a y-axis
+            var yAxisNr = 0; // Give each series a new y-axis
             var yAxisOptions = [];
             var speedYAxisNr;
             var heartRateYAxisNr;
 
             var id;
 
-            if (rawData.record) {
+            var combinedxAxisID = "combinedxAxis"; // For speed vs HR
 
+            if (typeof (rawData.record) === "undefined") {
+                console.error("No rawdata present on rawdata.record, cannot render chart");
+
+            }
+
+            if (rawData.record.length === 0) {
+                console.warn("Empty rawdata on rawdata.record, nothing to render in chart");
+
+            }
+
+            if (rawData.record) {
                 if (rawData.record.heart_rate) {
                     id = 'heartrateseries';
                     heartRateSeriesData = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                     seriesData[id] = heartRateSeriesData;
                     heartRateYAxisNr = yAxisNr;
-                    heartRateSeries = {
+                    heartRateSeriesOptions = {
                         id: id,
                         name: 'Heart rate',
                         yAxis: yAxisNr++,
@@ -1103,7 +1132,7 @@
                         data: seriesData[id],
                         zIndex: 100,
                     };
-                    seriesSetup.push(heartRateSeries);
+                    seriesSetup.push(heartRateSeriesOptions);
                     yAxisOptions.push({
                         gridLineWidth: 1,
                         title: {
@@ -1114,15 +1143,13 @@
 
                 }
 
-
-
                 this.masterVM.speedMode(undefined);
 
                 if (rawData.record.speed) {
                     id = 'speedseries';
 
                     if (self.masterVM.settingsVM.forceSpeedKMprH())
-                        sport = 0;
+                        sport = FITSport.generic;
 
 
                     switch (sport) {
@@ -1139,6 +1166,7 @@
                             speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, false);
                             break;
                     }
+
                     seriesData[id] = speedSeriesData;
                     speedYAxisNr = yAxisNr;
                     speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 99 };
@@ -1159,7 +1187,7 @@
                     id = 'speedavgseries';
 
                     if (self.masterVM.settingsVM.forceSpeedKMprH())
-                        sport = 0;
+                        sport = FITSport.generic;
 
                     var avgSampleInterval = this.masterVM.settingsVM.averageSampleTime();
 
@@ -1179,7 +1207,7 @@
                     }
                     seriesData[id] = speedAvgSeriesData;
                     //speedYAxisNr = yAxisNr;
-                    speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', zIndex: 99 };
+                    speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99 };
                     seriesSetup.push(speedAvgSeries);
                     //yAxisOptions.push({
                     //    gridLineWidth: 0,
@@ -1192,14 +1220,12 @@
                     //});
                 }
 
-
-
                 if (rawData.record.power) {
                     id = 'powerseries';
                     powerSeriesData = FITUtil.combine(rawData, rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                     seriesData[id] = powerSeriesData;
 
-                    powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 98, visible : false };
+                    powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 98, visible: false };
                     seriesSetup.push(powerSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -1207,8 +1233,6 @@
                             text: 'Power'
                         },
                         opposite: true,
-
-
                     });
                 }
 
@@ -1217,7 +1241,7 @@
                     cadenceSeriesData = FITUtil.combine(rawData, rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                     seriesData[id] = cadenceSeriesData;
 
-                    cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', visible : false, zIndex: 97 };
+                    cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', visible: false, zIndex: 97 };
 
                     seriesSetup.push(cadenceSeries);
                     yAxisOptions.push({
@@ -1254,7 +1278,7 @@
                     id = 'temperatureseries';
                     temperatureSeriesData = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
                     seriesData[id] = temperatureSeriesData;
-                    temperatureSeries = { name: 'Temperature', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 95 };
+                    temperatureSeries = { name: 'Temperature', id: id, yAxis: yAxisNr++, data: seriesData[id], visible : false, type: 'line', zIndex: 95 };
                     seriesSetup.push(temperatureSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -1268,6 +1292,57 @@
                 }
 
             }
+
+
+            var arr = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
+            id = 'speedVSHR';
+            seriesData[id] = arr;
+            seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible : false, zIndex: 94 });
+            //yAxisOptions.push({
+            //    gridLineWidth: 0,
+            //    type : 'scatter',
+            //    title: {
+            //        text: 'HR!'
+            //    }
+
+
+            //});
+
+            //this.scatterChart = new Highcharts.Chart({
+            //    chart: {
+            //        renderTo: 'scatterChart',
+            //        //type: 'scatter'
+            //    },
+            //    //plotOptions: {
+            //    //    scatter: {
+            //    //        marker: {
+            //    //            radius: 5,
+            //    //            states: {
+            //    //                hover: {
+            //    //                    enabled: true,
+            //    //                    lineColor: 'rgb(100,100,100)'
+            //    //                }
+            //    //            }
+            //    //        }
+            //    //    }
+            //    //},
+
+            //    title: {
+            //        text: ''
+            //    },
+            //    //yAxis: [{
+            //    //    type : 'scatter'}],
+            //    xAxis: [{
+            //        id: combinedxAxisID
+            //    }],
+            //    series : [{
+            //        name: 'Speed vs HR',
+            //        type : 'scatter',
+            //        //color: 'rgba(223, 83, 83, .5)',
+            //        data: arr
+            //    }]
+
+            //});
 
             var lap = {
                 categories: [],
@@ -1331,13 +1406,13 @@
                 }
 
                 if (lap.avg_speed && lap.avg_speed.length > 0)
-                  seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1 });
+                    seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1 });
                 if (lap.max_speed && lap.max_speed.length > 0)
-                  seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
+                    seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
                 if (lap.avg_heart_rate && lap.avg_heart_rate.length > 0)
-                  seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
+                    seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
                 if (lap.max_heart_rate && lap.max_heart_rate.length > 0)
-                  seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
+                    seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
             }
             else
                 console.warn("No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
@@ -1378,6 +1453,7 @@
             console.log("Starting highchart now " + d);
 
 
+       
 
 
             this.multiChart = new Highcharts.Chart({
@@ -1408,10 +1484,12 @@
                     //plotLines: lapLinesConfig
                     //reversed : true
                 }, {
-                    type: 'linear',
                     id: lapxAxisID,
                     categories: lap.categories
-                }],
+                }, {
+                    id: combinedxAxisID
+                }
+                    ],
                 //yAxis: [{
                 //    title: {
                 //        text: null
@@ -1503,7 +1581,19 @@
                 },
 
                 plotOptions: {
-                    series: {
+                    spline: {
+                        marker: {
+                            enabled: false,  // Will speed up drawing, no need to call drawPoints in Highcharts....for entire series
+                            states: {
+                                hover: {
+                                    enabled: true
+                                }
+                            }
+                        }
+                    },
+
+                    line: {
+
                         marker: {
                             enabled: false,  // Will speed up drawing, no need to call drawPoints in Highcharts....for entire series
                             states: {
@@ -1512,8 +1602,11 @@
                                 }
                             }
                         },
+
                         animation: false,
+
                         allowPointSelect: true,
+
                         point: {
 
                             events: {
@@ -1524,12 +1617,9 @@
 
                                 mouseOver: function () {
 
-                                    // Skip handling if mouse is over lap x axis
-                                    // Maybe : include support to update map with lap polyline
-
-                                    var lapxAxis = self.multiChart.get(lapxAxisID);
-                                    if (this.series.xAxis === lapxAxis)
-                                        return;
+                                    //var lapxAxis = self.multiChart.get(lapxAxisID);
+                                    //if (this.series.xAxis === lapxAxis)
+                                    //    return;
 
                                     var lat, long;
 

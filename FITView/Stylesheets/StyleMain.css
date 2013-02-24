@@ -205,7 +205,7 @@ display  : flex;
 }
 
 
-#testChart {
+#multiChart {
     /*visibility : hidden;*/
     /*-webkit-flex : 5 1;*/
     float:left;
