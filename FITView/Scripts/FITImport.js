@@ -519,6 +519,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                 activityCounter: 0,
                 eventCounter: 0,
                 recordCounter: 0,
+                hrvCounter : 0,
 
                 // Sport setting
 
@@ -669,11 +670,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                
                                 case "device_info":
                                     counter.deviceInfoCounter++;
-                                    // Hmmm. 910XT seems to record 2 set of identically device info records
-                                    // One record at the start, then one record just before storing only hrv 2 min recovery heart rate
-                                    //addRawdata(deviceinfoStore, { timestamp: { value: new Date().getTime() }});
-                                    
                                     addRawdata(deviceinfoStore, datarec);
+                                    break;
+
+                                case "hrv":
+                                    counter.hrvCounter++;
+                                    // TO DO : add hrv
                                     break;
 
                                     // Sport setting
@@ -717,6 +719,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                                     if (val !== undefined) {
 
+                                        // Initialize rawdata for message and property if necessary
                                         if (rawdata[(datarec.message)][prop] === undefined)
                                             rawdata[(datarec.message)][prop] = [];
 
@@ -747,6 +750,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                                 break;
                                             case "record":
                                                 rawdata[datarec.message][prop][counter.recordCounter - 1] = val;
+                                                break;
+                                            case "hrv":
+                                                rawdata[datarec.message][prop][counter.hrvCounter - 1] = val;
                                                 break;
                                             default:
                                                 rawdata[datarec.message][prop].push(val);
@@ -820,9 +826,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
             var msg = { "message": getGlobalMessageTypeName(globalMsgType) };
             msg.globalMessageType = globalMsgType;
-
-           
-
 
             //if (globalMsg === undefined)
                 

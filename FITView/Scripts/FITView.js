@@ -5,7 +5,8 @@
 
     var lapxAxisID = 'lapxAxis',
         rawdataxAxis = 'rawdataxAxis',
-        combinedxAxisID = "combinedxAxis"; // For speed vs HR
+        combinedxAxisID = "combinedxAxis", // For speed vs HR
+        hrvxAxisID = "hrvxAxis"; 
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -100,7 +101,6 @@
 
                 return combined;
             },
-
 
             // This function combines a series of data, i.e heart rate with timestamps to facilitate easy setup for plotting in Highcharts
             // It also can calculate averaging over a specific time period, i.e to smooth out speed curve that has a tendency to fluctate rather much when based on GPS
@@ -1338,6 +1338,22 @@
             else
                 console.warn("No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
 
+
+            if (rawData.hrv !== undefined) {
+                if (rawData.hrv.time !== undefined) {
+
+                    seriesSetup.push({ name: 'HRV', id: 'HRV', xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible : false, type : 'scatter' });
+                    yAxisOptions.push({
+                        gridLineWidth: 0,
+                        opposite: true,
+                        title: {
+                            text: 'HRV'
+                        }
+                    });
+                }
+
+            }
+
             var xAxisType = 'datetime';
 
             var chartOptions = {
@@ -1477,7 +1493,8 @@
                     categories: lap.categories // for each lap avg/max speed/HR
                 }, {
                     id: combinedxAxisID
-                }
+                },
+                { id: hrvxAxisID }
                 ],
 
                 yAxis: yAxisOptions,
@@ -1500,10 +1517,13 @@
                             var speed, s;
 
                             var onLapxAxis;
-                            (this.series.xAxis === self.multiChart.get(lapxAxisID)) ? onLapxAxis = true : onLapxAxis = false;
-
                             var onSpeedVSHRxAxis;
+                            var onHrvxAxis;
+
+                            (this.series.xAxis === self.multiChart.get(lapxAxisID)) ? onLapxAxis = true : onLapxAxis = false;
                             (this.series.xAxis === self.multiChart.get(combinedxAxisID)) ? onSpeedVSHRxAxis = true : onSpeedVSHRxAxis = false;
+                            (this.series.xAxis === self.multiChart.get(hrvxAxisID)) ? onHrvxAxis = true : onHrvxAxis = false;
+
                             // Check to see if its a tooltip for lap axis
                             if (onLapxAxis) {
                                 var lapNr = this.x;
@@ -1514,6 +1534,9 @@
 
                             else if (onSpeedVSHRxAxis) {
                                 s = "<b>Heart rate:</b>" + this.y;
+                            }
+                            else if (onHrvxAxis) {
+                                s = '<b>RR time :</b>' + Highcharts.numberFormat(this.y, 3) + " s";
                             }
                             else
                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
@@ -1540,7 +1563,7 @@
                                         break;
                                 }
                             }
-                            else {
+                            else if (this.series.name !== 'HRV') {
                                 s += '<br/><b>' + this.series.name + '</b>: ';
                                 if (isInt(this.y))
                                     s += this.y.toString();
@@ -2273,7 +2296,7 @@
                     // Seems like line rendering is much faster than bar...
                     //divChart.style.visibility = 'visible';
                     divChart.style.display = 'block';
-                    seriesSetup.push({ name: 'Heart rate variability (RR-interval)', data: rawData.hrv.time });
+                    seriesSetup.push({ name: 'HRV', data: rawData.hrv.time });
                 }
 
             }
