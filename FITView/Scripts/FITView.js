@@ -1,3 +1,5 @@
+// JSHint options
+/* global ko:true, Highcharts:true, Modernizr:true, google:true, indexedDB:true, FITCRCTimestampUtility:true, FIT:true */
 //use strict
 
 (function () {
@@ -108,11 +110,11 @@
 
                 var combined = [];
                 var localTimestamp;  // Timestamp in local time zone
-                var valuesForAvgerage;
-                var len, nr, timestamp, nextTimestamp, prevTimetampNr;
-                var sum, avg;
+                var valuesForAverage;
+                var len, nr, timestamp, nextTimestamp, prevTimestampNr;
+                var sum, avg, val;
 
-                if (timestamps == undefined) {
+                if (timestamps === undefined) {
                     console.warn("Found no timestamps to combine with data measurements.", seriesName);
                     return values;
                 }
@@ -147,7 +149,7 @@
 
                             while (nextTimestamp - timestamp <= avgSampleTime && nextTimestamp <= endTimestamp && nr < len) {
 
-                                var val = values[nr];
+                                 val = values[nr];
 
                                 if (val !== undefined) {
                                     localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(timestamp);
@@ -171,7 +173,7 @@
                             //Credit to: http://stackoverflow.com/questions/10359907/array-sum-and-average
 
                             if (valuesForAverage.length > 0) {
-                                sum = valuesForAverage.reduce(function (a, b) { return a + b });
+                                sum = valuesForAverage.reduce(function (a, b) { return a + b; });
                                 avg = sum / valuesForAverage.length;
                             } else {
                                 console.warn("Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
@@ -180,9 +182,9 @@
 
                             combined.push([localTimestamp, avg]);
                         }
-                        else if (FITUtil.isUndefined(averaging) || averaging == false || averaging === null) {
+                        else if (FITUtil.isUndefined(averaging) || averaging === false || averaging === null) {
 
-                            var val = values[nr];
+                            val = values[nr];
 
                             if (val !== undefined) {
                                 localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(timestamp);
@@ -256,7 +258,16 @@
             },
 
             restoreSession: function (rawData) {
-                var prevSession = rawData.session;
+               
+                var currentSport;
+                var prevSport;
+                var lastEndtimstamp;
+                var total_elapsed_time;
+                var total_timer_time;
+                var total_distance;
+                var total_calories;
+                var diff;
+                var recordNr;
 
                 rawData.session = {};
                 rawData.session.sport = [];
@@ -271,13 +282,7 @@
                 // Try to restore session from available lap data
                 if (rawData.lap) {
                     var numberOfLaps = rawData.lap.timestamp.length;
-                    var currentSport;
-                    var prevSport;
-                    var lastEndtimstamp;
-                    var total_elapsed_time;
-                    var total_timer_time;
-                    var total_distance;
-                    var total_calories;
+                   
 
 
                     for (var lapNr = 0; lapNr < numberOfLaps; lapNr++) {
@@ -310,7 +315,7 @@
 
 
                             rawData.session.sport.push(currentSport);
-                            rawData.session.start_time.push(rawData.lap.start_time[lapNr])
+                            rawData.session.start_time.push(rawData.lap.start_time[lapNr]);
 
 
                         } else {
@@ -352,7 +357,7 @@
                         var start_time = rawData.record.timestamp[0];
                         rawData.session.start_time.push(start_time);
 
-                        var total_elapsed_time = (timestamp - start_time) / 1000;
+                        total_elapsed_time = (timestamp - start_time) / 1000;
                         if (total_elapsed_time && total_elapsed_time >= 0) {
                             rawData.session.total_elapsed_time.push(total_elapsed_time);
                             rawData.session.total_timer_time.push(total_elapsed_time);
@@ -505,7 +510,7 @@
                 var seconds = parseInt(totalSec % 60, 10);
 
                 var hourResult;
-                if (hours != 0)
+                if (hours !== 0)
                     hourResult = (hours < 10 ? "0" + hours : hours) + ":";
                 else
                     hourResult = "";
@@ -551,9 +556,9 @@
         convertToFullDate: function (UTCmillisec)
             //// Callback on "create" from knockout
         {
-            this.value = UTCmillsec;
+            this.value = UTCmillisec;
             this.fullDate = ko.computed(function () {
-                return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec)
+                return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec);
             }, this);
         },
 
@@ -596,7 +601,7 @@
                 showHeaderInfo: ko.observable(false),
                 forceSpeedKMprH: ko.observable(false),
                 requestAveragingOnSpeed: ko.observable(true),
-                averageSampleTime: ko.observable(15000)
+                averageSampleTime: ko.observable(5000)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -613,7 +618,7 @@
             // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
             // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
             // virtual elements and something with "changed" value notification. Introducing empty observables on unused properties gives a performance penalty.
-            getEmptyViewModel = function (msg) {
+            function getEmptyViewModel(msg) {
                 var ViewModel = {};
 
                 for (var fieldDefNr in msg)
@@ -755,11 +760,11 @@
             // Maybe: set rawdata on masterVM
             this.masterVM.sessionVM.setRawdata = function (self, rawData) {
                 self.masterVM.sessionVM.rawData = rawData;
-            }
+            };
 
             this.masterVM.lapVM.setRawdata = function (self, rawData) {
                 self.masterVM.lapVM.rawData = rawData;
-            }
+            };
 
             this.masterVM.sessionVM.showSession = function (data, event) {
                 // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
@@ -782,7 +787,7 @@
                 self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
-            }
+            };
 
             this.masterVM.lapVM.showLap = function (data, event) {
                 // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
@@ -804,7 +809,7 @@
                 self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
-            }
+            };
 
             ko.applyBindings(this.masterVM, bodyElement); // Initialize master model with DOM 
             jqueryBodyElement.show();
@@ -818,18 +823,17 @@
 
             var speedSeries, speedAvgSeries;
             var speedSeriesData, speedAvgSeriesData;
-            var lapAvgSpeedSeries, lapMaxSpeedSeries
-            var lapAvgSpeedSeriesData, lapMaxSpeedSeriesData;
-
+            var lapAvgSpeedSeries, lapMaxSpeedSeries;
+            
             var rawData = self.masterVM.sessionVM.rawData;
-            var timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC()
+            var timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
             var startTimestamp, endTimestamp;
 
             var updatePoint = function (data, property, converter) {
                 for (var pointNr = 0; pointNr < data.length; pointNr++)
                     data[pointNr].update(converter(rawData.lap[property][pointNr]), false);
 
-            }
+            };
 
             if (self.multiChart) {
                 speedSeries = self.multiChart.get('speedseries');
@@ -912,16 +916,19 @@
 
             var lapLinesConfig = [];
 
-
             var lapLabel;
+            var lapNr;
+            var len;
+
             if (rawData.lap) {
-                for (var lapNr = 0, len = rawData.lap.timestamp.length ; lapNr < len; lapNr++) {
+                len = rawData.lap.timestamp.length;
+                for (lapNr = 0 ; lapNr < len; lapNr++) {
                     if (rawData.lap.timestamp && rawData.lap.timestamp[lapNr]) {
                         switch (rawData.lap.lap_trigger[lapNr]) {
                             case lap_trigger.manual:  // LAP pressed
                             case lap_trigger.distance: // Distance
                             case lap_trigger.session_end: // Session end
-                                lapLabel = ""
+                                lapLabel = "";
 
 
                                 if (rawData.lap.avg_speed && rawData.lap.avg_speed[lapNr]) {
@@ -980,7 +987,7 @@
                 }
             }
 
-            for (var lapNr = 0; lapNr < lapLinesConfig.length; lapNr++) {
+            for (lapNr = 0; lapNr < lapLinesConfig.length; lapNr++) {
                 axis.addPlotLine(lapLinesConfig[lapNr]);
             }
 
@@ -1008,11 +1015,11 @@
             var speedAvgSeries;
             var speedAvgSeriesData;
 
-            var cadenceSeries
+            var cadenceSeries;
             var cadenceSeriesData;
-            var powerSeries
+            var powerSeries;
             var powerSeriesData;
-            var temperatureSeries
+            var temperatureSeries;
             var temperatureSeriesData;
 
             var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
@@ -1028,10 +1035,12 @@
 
             var id;
 
-            if (FITUtil.isUndefined(rawData.record)) 
+            var timezoneDiff;
+
+            if (FITUtil.isUndefined(rawData.record))
                 console.error("No rawdata present on rawdata.record, cannot render chart");
 
-            if (FITUtil.isEmpty(rawData.record)) 
+            if (FITUtil.isEmpty(rawData.record))
                 console.warn("Empty rawdata on rawdata.record, nothing to render in chart");
 
             if (rawData.record) {
@@ -1264,7 +1273,7 @@
                 max_speed: [],
                 avg_heart_rate: [],
                 max_heart_rate: []
-            }
+            };
 
             // Setup lap categories
             if (rawData.lap) {
@@ -1288,7 +1297,7 @@
                         console.warn("Found no lap." + property + " in rawdata");
                         return undefined;
                     }
-                }
+                };
 
                 for (lapNr = 0; lapNr < len; lapNr++) {
 
@@ -1318,13 +1327,11 @@
                                 pushData("max_heart_rate");
                                 break;
                         }
-
-
                     }
                 }
 
                 if (lap.avg_speed && lap.avg_speed.length > 0)
-                    seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1 });
+                    seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: false, zIndex: 1 });
 
                 if (lap.max_speed && lap.max_speed.length > 0)
                     seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
@@ -1338,16 +1345,17 @@
             else
                 console.warn("No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
 
+            // HRV
 
             if (rawData.hrv !== undefined) {
                 if (rawData.hrv.time !== undefined) {
 
-                    seriesSetup.push({ name: 'HRV', id: 'HRV', xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible : false, type : 'scatter' });
+                    seriesSetup.push({ name: 'HRV', id: 'HRV', xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible: false, type: 'scatter' });
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         opposite: true,
                         title: {
-                            text: 'HRV'
+                            text: 'Heart Rate Variability'
                         }
                     });
                 }
@@ -1394,7 +1402,7 @@
             var mouseHandler =
                 {
                     select: function () {
-                        console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y)
+                        console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y);
                     },
 
                     mouseOut: function () {
@@ -1412,7 +1420,23 @@
 
                         var lat, long;
 
-                        if (rawData.record != undefined) {
+                        function setMarker() {
+                            if (FITUtil.isUndefined(google)) // Allows working without map
+                                return;
+
+                            prevMarker = new google.maps.Marker({
+                                position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long)),
+                                icon: {
+                                    path: google.maps.SymbolPath.CIRCLE,
+                                    scale: 3
+                                },
+                                draggable: true,
+                                map: self.map
+                            });
+                        }
+
+                       
+                        if (rawData.record !== undefined) {
 
                             var index = rawData.record.timestamp.indexOf(this.x - FITUtil.timestampUtil.getTimezoneOffsetFromUTC());
 
@@ -1422,25 +1446,10 @@
                                 return;
                             }
 
-                            setMarker = function () {
-                                if (FITUtil.isUndefined(google)) // Allows working without map
-                                    return;
-
-                                prevMarker = new google.maps.Marker({
-                                    position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long)),
-                                    icon: {
-                                        path: google.maps.SymbolPath.CIRCLE,
-                                        scale: 3
-                                    },
-                                    draggable: true,
-                                    map: self.map
-                                });
-                            }
-
-                            if (rawData.record.position_lat != undefined)
+                            if (rawData.record.position_lat !== undefined)
                                 lat = rawData.record.position_lat[index];
 
-                            if (rawData.record.position_long != undefined)
+                            if (rawData.record.position_long !== undefined)
                                 long = rawData.record.position_long[index];
 
                             //console.log("Lat, long ", lat, long);
@@ -1473,13 +1482,16 @@
                     type: xAxisType, // datetime
                     events: {
                         afterSetExtremes: function (event) {
-                            // Remember x-axis is local time, but rawdata is accessed by UTC
-                            // Highchart "reset zoom"-button fires here with values on event.min/max (setExtremes gave undefined)
-                            timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
-                            //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
-                            var startTimestampUTC = Math.round(event.min) - timezoneDiff;
-                            var endTimestampUTC = Math.round(event.max) - timezoneDiff;
-                            self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
+                            // Callback after zoom out, Highcharts uses a jquery event mechanism with event.min/max === undefined for axes != datetime
+                            if (event.max && event.min) {
+                                // Remember x-axis is local time, but rawdata is accessed by UTC
+                                // Highchart "reset zoom"-button fires here with values on event.min/max (setExtremes gave undefined)
+                                timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
+                                //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
+                                var startTimestampUTC = Math.round(event.min) - timezoneDiff;
+                                var endTimestampUTC = Math.round(event.max) - timezoneDiff;
+                                self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
+                            }
                         }
 
                         //setExtremes: function (event) {
@@ -1520,9 +1532,9 @@
                             var onSpeedVSHRxAxis;
                             var onHrvxAxis;
 
-                            (this.series.xAxis === self.multiChart.get(lapxAxisID)) ? onLapxAxis = true : onLapxAxis = false;
-                            (this.series.xAxis === self.multiChart.get(combinedxAxisID)) ? onSpeedVSHRxAxis = true : onSpeedVSHRxAxis = false;
-                            (this.series.xAxis === self.multiChart.get(hrvxAxisID)) ? onHrvxAxis = true : onHrvxAxis = false;
+                            onLapxAxis = (this.series.xAxis === self.multiChart.get(lapxAxisID));
+                            onSpeedVSHRxAxis = (this.series.xAxis === self.multiChart.get(combinedxAxisID));
+                            onHrvxAxis = (this.series.xAxis === self.multiChart.get(hrvxAxisID));
 
                             // Check to see if its a tooltip for lap axis
                             if (onLapxAxis) {
@@ -1536,7 +1548,7 @@
                                 s = "<b>Heart rate:</b>" + this.y;
                             }
                             else if (onHrvxAxis) {
-                                s = '<b>RR time :</b>' + Highcharts.numberFormat(this.y, 3) + " s";
+                                s = '<b>RR time :</b>' + Highcharts.numberFormat(this.y, 3) + " s"; // Hrv time in seconds 0.xxx
                             }
                             else
                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
@@ -1633,10 +1645,9 @@
 
                         }
                     }
-                }
-                ,
+                },
 
-                series: seriesSetup,
+                series: seriesSetup
 
             }
                 //, function () {
@@ -1743,12 +1754,13 @@
             var xpos, ypos;
             var srcImgDeviceInfo, titleDeviceInfo;
             var SVGDeviceInfoElement;
+            var previousTimestamp;
 
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
             var width = this.multiChart.xAxis[0].width;
-            var extremes = this.multiChart.xAxis[0].getExtremes();
-            var max = this.multiChart.xAxis[0].max
+            //var extremes = this.multiChart.xAxis[0].getExtremes();
+            var max = this.multiChart.xAxis[0].max;
             var min = this.multiChart.xAxis[0].min;
 
             console.log("Deviceinfo xaxis extreemes datamin,datamax : ", min, max);
@@ -1806,7 +1818,7 @@
                 srcImgDeviceInfo = "Images/deviceinfo/unknown.png";
                 titleDeviceInfo = "";
                 if (manufact === manufacturer.garmin)
-                    titleDeviceInfo = "Manufacturer : Garmin"
+                    titleDeviceInfo = "Manufacturer : Garmin";
                 else if (manufact)
                     titleDeviceInfo = "Manufacturer : " + manufact.toString();
                 if (product)
@@ -1878,26 +1890,26 @@
 
                 if (type === device_type.stride_speed_distance) {
                     srcImgDeviceInfo = "Images/deviceinfo/garmin/footpod.jpg";
-                    titleDeviceInfo = "Footpod (stride/speed/distance)"
+                    titleDeviceInfo = "Footpod (stride/speed/distance)";
                 }
 
 
                 if (type === device_type.bike_power) {
                     srcImgDeviceInfo = "Images/power.png";
-                    titleDeviceInfo = "Bike power"
+                    titleDeviceInfo = "Bike power";
                 }
 
                 if (type === device_type.environment_sensor_legacy && FITUtil.isUndefined(product) && FITUtil.isUndefined(manufact)) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
-                    titleDeviceInfo = "Barometre/Temperature sensor"
+                    titleDeviceInfo = "Barometre/Temperature sensor";
                 }
 
                 if (type === device_type.environment_sensor_legacy && FITUtil.isUndefined(product) && manufact === manufacturer.garmin) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
-                    titleDeviceInfo = "Accelerometre"
+                    titleDeviceInfo = "Accelerometre";
                 }
 
-                titleDeviceInfo += " "
+                titleDeviceInfo += " ";
                 if (rawdata.device_info.software_version[deviceInfoNr])
                     titleDeviceInfo += "Firmware : " + rawdata.device_info.software_version[deviceInfoNr].toString();
                 if (rawdata.device_info.serial_number[deviceInfoNr])
@@ -1984,7 +1996,7 @@
                 return;
             }
 
-            var eventIndex = 0;
+           
             var xpos, ypos;
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
@@ -2038,7 +2050,7 @@
                 var ev = rawdata.event.event[eventNr];
                 var ev_type = rawdata.event.event_type[eventNr];
 
-                srcImgEvent = "Images/event/unknown.png"
+                srcImgEvent = "Images/event/unknown.png";
                 titleEvent = "Event: " + ev.toString() + " Event type: " + ev_type.toString();
 
                 switch (ev) {
@@ -2146,9 +2158,9 @@
         removeSVGGroup: function (SVG_group) {
             // Remove - http://stackoverflow.com/questions/6635995/remove-image-symbol-from-highchart-graph
             if (SVG_group)
-                $(SVG_group.element).remove()
+                $(SVG_group.element).remove();
 
-            this.masterVM.freeYPOS = {} // Loose state of ypos for triggers,deviceinfo,events in multichart
+            this.masterVM.freeYPOS = {}; // Loose state of ypos for triggers,deviceinfo,events in multichart
         },
 
         showLapTriggers: function (rawdata) {
@@ -2168,7 +2180,7 @@
 
             var lapLen = rawdata.lap.timestamp.length;
 
-            if (FITUtil.isUndefined(lapLen)|| lapLen === 0) {
+            if (FITUtil.isUndefined(lapLen) || lapLen === 0) {
                 console.error("No timestamp information from lap, lap.timestamp");
                 return;
             }
@@ -2179,19 +2191,20 @@
 
             }
 
-            var lapIndex = 0;
+           
             var xpos, ypos;
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
             var width = this.multiChart.xAxis[0].width;
-            var extremes = this.multiChart.xAxis[0].getExtremes();
+            //var extremes = this.multiChart.xAxis[0].getExtremes();
             var max = this.multiChart.xAxis[0].max;
             var min = this.multiChart.xAxis[0].min;
 
             console.log("Lap triggers xaxis extremes datamin,datamax : ", min, max);
 
             var srcImg, title;
-            var SVGE_elmImg;
+            var SVG_elmImg;
+           
 
             this.removeSVGGroup(this.masterVM.lapTriggerGroup);
 
@@ -2283,71 +2296,7 @@
 
         },
 
-        showChartHrv: function (rawData) {
-            var chartId = "hrvChart";
-            var divChart = document.getElementById(chartId);
-            //divChart.style.visibility = "visible";
-            var seriesSetup = [];
-
-            if (rawData.hrv !== undefined) {
-                if (rawData.hrv.time !== undefined) {
-
-                    //chartType = 'bar';
-                    // Seems like line rendering is much faster than bar...
-                    //divChart.style.visibility = 'visible';
-                    divChart.style.display = 'block';
-                    seriesSetup.push({ name: 'HRV', data: rawData.hrv.time });
-                }
-
-            }
-            else {
-                divChart.style.display = 'none';
-                return;
-            }
-
-            var xAxisType = '';
-
-            var chartOptions = {
-                renderTo: chartId,
-                type: 'line',
-                // Allow zooming
-                zoomType: 'xy'
-            };
-
-
-            var chart1 = new Highcharts.Chart({
-                chart: chartOptions,
-                title: {
-                    text: 'Heart rate variability'
-                },
-                xAxis: {
-                    //categories : ['Apples', 'Bananas', 'Oranges']
-                    type: xAxisType,
-                    //reversed : true
-                    events: {
-                        setExtremes: function (event) {
-                            console.log("setExtremes xAxis ", event.min, event.max);
-                        }
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: ''
-                    },
-                    events: {
-                        setExtremes: function (event) {
-                            console.log("setExtremes yAxis ", event.min, event.max);
-                        }
-                    }
-                },
-
-                series: seriesSetup
-
-            });
-
-
-        },
-
+        
         showHRZones: function (rawdata, startTimestamp, endTimestamp) {
 
             var divChartId = 'zonesChart';
@@ -2472,7 +2421,7 @@
 
             var startIndex = FITUtil.getIndexOfTimestamp(rawdata.record, startTimestamp);
             var endIndex = FITUtil.getIndexOfTimestamp(rawdata.record, endTimestamp);
-
+            console.log("Basing HR zone chart on start_time UTC :", new Date(startTimestamp), " at index ", startIndex, "on rawdata.record, and timestamp UTC :", new Date(endTimestamp), " at index: ", endIndex);
 
             for (var zone = 0; zone < myZones.length; zone++)
                 myZones[zone].timeInZone = 0;
@@ -2483,8 +2432,6 @@
             for (var datap = startIndex; datap <= endIndex; datap++) {
 
                 // var hry = rawData["heart_rate"][datap][1];
-
-
 
                 if (datap < endIndex) {
                     timeInZoneMillisec = rawdata.record.timestamp[datap + 1] - rawdata.record.timestamp[datap];
@@ -2515,7 +2462,7 @@
                     console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
                 else {
                     // Count Heart rate data points in zone
-                    for (var zone = 0; zone < myZones.length; zone++)
+                    for (zone = 0; zone < myZones.length; zone++)
                         if (hry <= myZones[zone].max && hry >= myZones[zone].min) {
 
                             myZones[zone].timeInZone += timeInZoneMillisec;
@@ -2556,7 +2503,7 @@
 
             var session = rawdata.session;
 
-            setMapCenter = function (sport, lat, long) {
+            var setMapCenter = function (sport, lat, long) {
                 var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long));
                 console.info("Setting map center for sport ", sport, " at ", latlong);
                 map.setCenter(latlong);
@@ -2879,7 +2826,7 @@
 
             for (var index = indexStartTime; index <= indexEndTime; index++) {
                 if (index === indexStartTime || (index % sampleInterval === 0) || index === indexEndTime)
-                    if (record.position_long[index] !== undefined && record.position_lat[index] !== undefined && rawdata.dirty[index] != true) {
+                    if (record.position_long[index] !== undefined && record.position_lat[index] !== undefined && rawdata.dirty[index] !== true) {
                         //console.log("Setting lat,long in activityCoordinates",record.position_lat[index],record.position_long[index]," index", index);
                         self.masterVM.activityCoordinates[type].push(new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(record.position_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(record.position_long[index])));
                     }
@@ -2907,9 +2854,9 @@
                 return -1;
             }
 
-            if (counter.fileIdCounter != 1)
+            if (counter.fileIdCounter !== 1)
                 console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
-            if (counter.fileCreatorCounter != 1)
+            if (counter.fileCreatorCounter !== 1)
                 console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
 
             if (type === 4) { // Activity
@@ -2958,12 +2905,12 @@
                 custom: 0,
                 percent_max_hr: 1,
                 percent_hrr: 2
-            }
+            };
 
             var pwr_zone_calc = {
                 custom: 0,
                 percent_ftp: 1
-            }
+            };
 
             // rawData.hr_zone
             // "{"name":["HR Zone 0","HR Zone 1","HR Zone 2","HR Zone 3","HR Zone 4","HR Zone 5"],"message_index":[0,1,2,3,4,5],"high_bpm":[106,140,150,159,171,177]}"
@@ -3044,7 +2991,7 @@
 
                 if (start_time === undefined) {
                     console.warn("Session start time not found in first lap either, trying record head");
-                    start_time === rawData.record.timestamp[0];
+                    start_time = rawData.record.timestamp[0];
                 }
 
                 console.info("Found start_time for session:", start_time);
@@ -3065,7 +3012,7 @@
                 if (timestamp === undefined) {
                     console.warn("Session end not found in timestamp for lap", rawData.session.num_laps);
                     var len = rawData.record.timestamp.length;
-                    timestamp === rawData.record.timestamp[len - 1];
+                    timestamp = rawData.record.timestamp[len - 1];
                     console.info("Timestamp of last rawdata.record is :", timestamp);
                 }
                 rawData.session.timestamp = [];
@@ -3188,14 +3135,14 @@
                     self.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
 
 
-                    if (headerInfo.estimatedFitFileSize != headerInfo.fitFile.size)
+                    if (headerInfo.estimatedFitFileSize !== headerInfo.fitFile.size)
                         console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFile.size.toString() + " bytes.");
                     break;
 
                 case 'error':
                     var errMsg = eventdata.data;
 
-                    if (eventdata.event != undefined) {
+                    if (eventdata.event !== undefined) {
                         errMsg += " Event; ";
                         for (var prop in eventdata.event) {
                             if (typeof prop === "string")
@@ -3235,7 +3182,7 @@
         onFITManagerError: function (e) {
             console.error("Error in worker, status " + e.toString());
         },
-        
+
         // Handles file selection for import
         onFitFileSelected: function (e) {
 
@@ -3273,16 +3220,16 @@
             var files = self.selectedFiles;
 
             // Setup mutiple/batch workers
-            console.log("Setup of " + files.length + " workers.");
-            for (var fileNr = 0; fileNr < files.length; fileNr++) {
+            //console.log("Setup of " + files.length + " workers.");
+            //for (var fileNr = 0; fileNr < files.length; fileNr++) {
                 //FITUI["fitFileManager" + fileNr.toString()] = new Worker("Scripts/fitFileManager.js")
                 //FITUI["fitFileManager" + fileNr.toString()].addEventListener('message', FITUI.onFITManagerMsg, false);
                 //FITUI["fitFileManager" + fileNr.toString()].addEventListener('error', FITUI.onFITManagerError, false);
 
-            }
+            //}
 
             // Make sure we terminate previous worker
-            if (self.fitFileManager !== undefined) {
+            if (self.fitFileManager) {
                 self.fitFileManager.removeEventListener('error', self.onFITManagerError, false);
                 self.fitFileManager.removeEventListener('message', self.onFITManagerMsg, false);
                 self.fitFileManager.terminate();
@@ -3369,7 +3316,7 @@
                 self.divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
             });
         }
-    }
+    };
 
     window.onload = function () {
         FITViewUI.init();  // Let's get started....
@@ -3414,7 +3361,7 @@
         var myZonesJSONString = localStorage.getItem(key);
 
         var myZones;
-        if (myZonesJSONString != null)
+        if (myZonesJSONString !== null)
             myZones = JSON.parse(myZonesJSONString);
         else {
             console.info("Local storage of " + key + " not found, using default HR Zones");
