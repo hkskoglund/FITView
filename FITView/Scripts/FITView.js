@@ -3086,8 +3086,9 @@
 
                 case 'rawData':
 
-
                     var rawData = eventdata.rawdata;
+
+                    // TO DO: push rawdata in an viewmodel for imported rawdata files....
 
                     if (FITUtil.isUndefined(rawData)) {
                         console.error("Received undefined rawdata from import worker thread");
