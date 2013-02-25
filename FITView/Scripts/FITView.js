@@ -1,8 +1,9 @@
 // JSHint options
 /* global ko:true, Highcharts:true, Modernizr:true, google:true, indexedDB:true, FITCRCTimestampUtility:true, FIT:true */
-//use strict
+
 
 (function () {
+    "use strict";
     var self;
 
     var lapxAxisID = 'lapxAxis',
@@ -41,6 +42,12 @@
 
     var FITUtil =
         {
+            getTimestampString: function(timestamp)
+            {
+                return timestamp.toString()+" = "+(new Date(timestamp)).toUTCString();
+              
+            },
+
             isUndefined: function (what) {
                 if (typeof (what) === "undefined")
                     return true;
@@ -114,6 +121,10 @@
                 var len, nr, timestamp, nextTimestamp, prevTimestampNr;
                 var sum, avg, val;
 
+                function sumTwoNumbers(a, b) {
+                    return a + b;
+                }
+
                 if (timestamps === undefined) {
                     console.warn("Found no timestamps to combine with data measurements.", seriesName);
                     return values;
@@ -141,7 +152,7 @@
 
                     if (timestamp >= startTimestamp && timestamp <= endTimestamp) {
 
-                        if (averaging) {
+                        if (!FITUtil.isUndefined(averaging) && averaging) {
                             //console.log("Nr. before avg:", nr);
 
                             valuesForAverage = [];
@@ -153,13 +164,14 @@
 
                                 if (val !== undefined) {
                                     localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(timestamp);
+
                                     if (converter)
                                         valuesForAverage.push(converter(val));
                                     else
                                         valuesForAverage.push(val);
 
                                 } else
-                                    console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
+                                    console.log("Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
 
                                 prevTimestampNr = nr;
                                 nextTimestamp = timestamps[++nr];
@@ -173,7 +185,7 @@
                             //Credit to: http://stackoverflow.com/questions/10359907/array-sum-and-average
 
                             if (valuesForAverage.length > 0) {
-                                sum = valuesForAverage.reduce(function (a, b) { return a + b; });
+                                sum = valuesForAverage.reduce(sumTwoNumbers);
                                 avg = sum / valuesForAverage.length;
                             } else {
                                 console.warn("Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
@@ -194,7 +206,7 @@
                                 else
                                     combined.push([localTimestamp, val]);
                             } else
-                                console.log("Tried to combine timestamp ", timestamp, " with undefined value at index", nr, " series: ", seriesName);
+                                console.log("Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
 
                         }
 
@@ -213,35 +225,40 @@
             setDirtyTimestamps: function (rawdata, timestamps) {
 
                 if (FITUtil.isUndefined(timestamps)) {
-                    console.error("No timestamps - undefined");
+                    console.error("No timestamps - its undefined");
                     return undefined;
                 }
 
                 if (timestamps.length === 0) {
-                    console.warn("Empty timestamps");
+                    console.warn("Empty timestamps, no one found to analyze for artifacts");
                     return undefined;
                 }
 
                 rawdata.dirty = [];
 
-
-                var max = 1000 * 60 * 24;
-                var oneWeek = 1000 * 60 * 24 * 7;
+                var max = 1000 * 60*60 ; // Allows for 1 hour between timestamps
+                var oneWeek = 1000 * 60*60 * 24 * 7; // Allows for 1 week multisport activity
 
                 var len = timestamps.length;
-                var timeDiff;
+                var timeDiff; // Difference between succeeding timestamp
 
                 var start_time = timestamps[0];
                 var maxLimit = start_time + oneWeek;
 
+               
+
+                console.log("Start time is", FITUtil.getTimestampString(start_time),", marking timestamps with UTC over ", FITUtil.getTimestampString(maxLimit), "and if time difference between timestamps is over ",max," millisec. as dirty");
+                var dirtyCounter = 0;
+
                 for (var index = 0; index < len; index++) {
                     if (index + 1 <= len - 1) {
                         timeDiff = timestamps[index + 1] - timestamps[index];
-                        if (timeDiff > 0 && timeDiff < max && timestamps[index] < maxLimit)
+                        if (timeDiff > 0 && timeDiff <= max && timestamps[index] <= maxLimit)
                             rawdata.dirty[index] = false;
                         else {
-                            console.warn("Found dirty timestamp ", timestamps[index], " at index ", index);
+                            console.warn("Found dirty timestamp ", timestamps[index], " at index ", index,"time difference between timestamp is ",timeDiff);
                             rawdata.dirty[index] = true;
+                            dirtyCounter++;
                         }
                     } else  // Last timestap
                     {
@@ -250,10 +267,12 @@
                         else {
                             console.warn("Found dirty timestamp ", timestamps[index], " at index ", index);
                             rawdata.dirty[index] = true;
+                            dirtyCounter++;
                         }
                     }
                 }
 
+                console.log("Number of dirty timestamps : ", dirtyCounter);
 
             },
 
@@ -448,7 +467,7 @@
 
                 indexTimestamp = record.timestamp.indexOf(timestamp);
                 if (indexTimestamp === -1) {
-                    console.warn("Direct lookup for timestamp ", timestamp, " not found, looping through available timestamps on message property record.timestamp to find nearest");
+                    console.warn("Direct lookup for timestamp ", FITUtil.getTimestampString(timestamp), " not found, looping through available timestamps on message property record.timestamp to find nearest");
                     indexTimestamp = findNearestTimestamp(timestamp);
                 }
 
@@ -456,7 +475,7 @@
 
             },
 
-            timestampUtil: FITCRCTimestampUtility()
+            timestampUtil: new FITCRCTimestampUtility() // Returns exposable functions that can be called in an object literal
         };
 
     var fitActivity = FIT.ActivityFile();
@@ -3070,6 +3089,11 @@
 
                     var rawData = eventdata.rawdata;
 
+                    if (FITUtil.isUndefined(rawData)) {
+                        console.error("Received undefined rawdata from import worker thread");
+                        break;
+                    }
+
                     if (rawData.file_id)
                         console.info("file_id message : ", JSON.stringify(rawData.file_id));
 
@@ -3191,8 +3215,6 @@
                 return;
             }
 
-
-
             // console.log(e);
             e.preventDefault();
 
@@ -3221,10 +3243,11 @@
 
             // Setup mutiple/batch workers
             //console.log("Setup of " + files.length + " workers.");
+
             //for (var fileNr = 0; fileNr < files.length; fileNr++) {
-                //FITUI["fitFileManager" + fileNr.toString()] = new Worker("Scripts/fitFileManager.js")
-                //FITUI["fitFileManager" + fileNr.toString()].addEventListener('message', FITUI.onFITManagerMsg, false);
-                //FITUI["fitFileManager" + fileNr.toString()].addEventListener('error', FITUI.onFITManagerError, false);
+            //    self["fitFileManager" + fileNr.toString()] = new Worker("Scripts/FITImport.js")
+            //    self["fitFileManager" + fileNr.toString()].addEventListener('message', FITUI.onFITManagerMsg, false);
+            //    self["fitFileManager" + fileNr.toString()].addEventListener('error', FITUI.onFITManagerError, false);
 
             //}
 
@@ -3239,41 +3262,17 @@
             self.fitFileManager.addEventListener('message', self.onFITManagerMsg, false);
             self.fitFileManager.addEventListener('error', self.onFITManagerError, false);
 
-
-            // Need to adjust timestamps in the underlying data from Garmin time/System time
-
-            // Start our worker now
-            //var msg = { request: 'loadFitFile', "fitfile": files[0], "timeCalibration" : timeCalibration, "globalmessage" : "record", "fields" : "heart_rate altitude cadence speed", skipTimestamps : false };
-
-            //var query = [];
-
-            //query.push(
-
-            //   // { message: "hrv", fields: "time" },
-            //   { message: "file_id", fields: "type manufacturer product serial_number time_created number" },
-            //   { message: "file_creator", fields: "software_version hardware_version" },
-            //   { message: "record", fields: "timestamp position_lat position_long heart_rate altitude speed" },
-            //   { message: "session", fields: "timestamp start_time start_position_lat start_position_long total_training_effect num_laps" },
-            //   { message: "activity", fields: "timestamp total_timer_time num_sessions type event event_type local_timestamp event_group" },
-            //  { message: "hrv", fields: "time" }
-            //   );
-
-            // deleteDb();
-
             var msg = {
                 request: 'importFitFile',
-                fitfile: files[0],
+                fitfiles : files,
+                fitfile: undefined,
                 store: self.masterVM.settingsVM.storeInIndexedDB()
                 //, "query": query
             };
 
-
-
             $("#progressFITimport").show();
 
-            self.fitFileManager.postMessage(msg);
-
-
+            self.fitFileManager.postMessage(msg); // Let's import FIT file in the background...
 
         },
 

@@ -6,9 +6,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
  function () {
 
-     var util = FITCRCTimestampUtility();
+     var util = new FITCRCTimestampUtility();
 
-    var fitFileManager;
+    var fitFileManager = [];
 
     var workerThreadContext = self;
 
@@ -28,16 +28,27 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
             case 'importFitFile':
                 var options = {
+                    fitfiles : data.fitfiles,
                     fitfile: data.fitfile,
                     store: data.store
                     //,query: data.query,
 
                 };
 
-                fitFileManager = FitFileImport(options);
-                fitFileManager.readFitFile();
-                
+                if (typeof (options.fitfiles) === "undefined") {  // Only single file
+                    fitFileManager = FitFileImport(options);
+                    fitFileManager.readFitFile();
+                }
 
+                // Batch import
+                var fileNr;
+                var len = options.fitfiles.length;
+                for (fileNr = 0; fileNr < len; fileNr++) {
+                    options.fitfile = options.fitfiles[fileNr];
+                    fitFileManager.push(new FitFileImport(options));
+                    fitFileManager[fileNr].readFitFile(fileNr===0);
+                }
+                
                 break;
             default:
                 self.postMessage('Unrecognized command' + data.request);
@@ -1186,7 +1197,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
 
         }
-
         
         getFITHeader = function (arrayBufferFITFile, fitFile) {
 
@@ -1458,7 +1468,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
 
 
-        exposeFunc.readFitFile = function () {
+        exposeFunc.readFitFile = function (deleteDB) {
             fitFileReader = new FileReaderSync(); // For web worker
 
             try {
@@ -1469,16 +1479,15 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
             }
 
 
-            deleteDb();
+            if (deleteDB)
+                deleteDb();
+            else
+                openDb();
 
             // openDb();
 
-
-
-
-
-
         }
+
         return exposeFunc;
 
     }
