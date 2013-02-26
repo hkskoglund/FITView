@@ -398,17 +398,24 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              if (isFIT(headerInfo)) {
                  // Store header to indexedDB
-                 self.postMessage({ response: "header", header: headerInfo });
+                 //self.postMessage({ response: "header", header: headerInfo });
 
                  var metaStore = getObjectStore(META_OBJECTSTORE_NAME, "readwrite");
                  addRawdata(metaStore, headerInfo);
 
+                
                  rawData = getFITDataRecords(fileBuffer,headerInfo);
+                 if (typeof (rawData) === "undefined") 
+                     rawData = {}; // Allow for hooking up headerinfo on rawdata object
+                 
+                 rawData._headerInfo_ = headerInfo;
 
                  self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records });
 
                  return rawData;
+
              } else
+
                  return undefined;
 
 
@@ -1472,7 +1479,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var rawData;
 
              for (fileNr = 0; fileNr < len; fileNr++) {
-                 fitFileReader = new FileReaderSync(); // For web worker
+                 fitFileReader = new FileReaderSync(); // For web worker, hopefully used readers are released from memory by GC, have not tried shared single reader
                  try {
                      fileBuffers.push(fitFileReader.readAsArrayBuffer(options.fitfiles[fileNr]))
                      rawData = getRawdata(fileBuffers[fileNr], options.fitfiles[fileNr]); // Implicitly sends data to requesting process via postMessage 

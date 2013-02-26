@@ -77,10 +77,7 @@
                                 <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
                                 <!-- /ko -->
 
-
                                 <!-- Session trigger -->
-
-
 
                                 <!-- ko if: trigger()[$index()] === 0 -->
                                 <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" />
@@ -105,13 +102,7 @@
                         </li>
                     </ul>
 
-
-
-
-
                 </li>
-
-
 
                 <!-- /ko -->
 
@@ -180,8 +171,6 @@
                                 <!-- /ko -->
                                 <!-- /ko -->
 
-                                
-
                                 <!-- SWIMMING TO DO .... -->
 
                                 <!-- ko if: sport()[$index()] === 5  -->
@@ -194,7 +183,6 @@
                                 <span title="Max speed" data-bind="text: max_speed()[$index()].toMINpr100M()"></span>
                                 <!-- /ko -->
                                 <!-- /ko -->
-
 
                                 <!-- HEART RATE -->
 
@@ -218,9 +206,6 @@
                                 <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
                                 <!-- /ko -->
 
-
-
-
                                 <!-- POWER -->
 
                                 <!-- ko if: avg_power()[$index()] >= 0  ||  max_power()[$index()] >= 0  -->
@@ -232,8 +217,6 @@
                                 <span title="Max power (w)" data-bind="text: max_power()[$index()]"></span>
 
                                 <!-- /ko -->
-
-
 
                                 <!-- CADENCE/STRIDES -->
 
@@ -321,7 +304,6 @@
 
                 <!-- ko with: settingsVM -->
                 <li><a href="#">Settings</a>
-
                     <ul>
                         <li><a href="#">
 
@@ -428,72 +410,28 @@
                         </li>
 
                     </ul>
-
                 </li>
                 <!-- /ko -->
 
-                <!-- ko with: loadChartVM -->
+                <!-- ko with: importedActivityVM -->
+                <li style="display: none" data-bind="visible: activity().length > 0"><a href="#">Activity</a>
 
-                <!-- 
-             <li id="liLoad" style="display: none">
-                 <a href="#">Load</a>
-                 <ul>
-                     <li>
-                         <button class="loadButton" title="Load heartrate" data-bind="click: loadChart.bind({name:
-                             'Heart rate', id : 'heartrateseries'})">
-                             <img class="inlineIcon" src="Images/heart.png" /></button>
-                     </li>
-                     <li>
-                         <button class="loadButton" title="Load altitude" data-bind="click: loadChart.bind({name:
-                             'Altitude', id : 'altitudeseries'})">
-                             <img class="inlineIcon" src="Images/ascent.png" /></button>
+                    <ul style="max-height: 300px; overflow-y: scroll; overflow-x: scroll" data-bind="foreach: activity">
 
-                     </li>
-                     <li>
-                         <button class="loadButton" title="Load speed" data-bind="click: loadChart.bind({name : 
-                             'Speed', id : 'speedseries'})">
-                             <img class="inlineIcon" src="Images/speed.png" /></button>
+                        <li><a href="#"><span data-bind="text: _headerInfo_.fitFile.name"></span></a></li>
 
-                     </li>
-                     <li>
-                         <button class="loadButton" title="Load cadence" data-bind="click: loadChart.bind({name : 
-                             'Cadence', id: 'cadenceseries'})">
-                             <img class="inlineIcon" src="Images/cadence.png" /></button>
-
-                     </li>
-                     <li>
-                         <button class="loadButton" title="Load power" data-bind="click: loadChart.bind({name:
-                             'Power', id : 'powerseries'})">
-                             <img class="inlineIcon" src="Images/power.png" /></button>
-
-                     </li>
-                     <li>
-                         <button class="loadButton" title="Load temperature" data-bind="click: loadChart.bind({name : 
-                             'Temperature', id : 'temperatureseries'})">
-                             <img class="inlineIcon" src="Images/temperature.png" /></button>
-
-                     </li>
-                 </ul>
-
-             </li> -->
-
+                    </ul>
+                </li>
                 <!-- /ko -->
 
-                <li>
-                    <!--  <a href="#"></a>-->
+<!--               <li>
+                   <div data-bind="text: ko.toJSON($root)"></div>
 
-                </li>
-
-                <!--<li>
-                  
-            <div data-bind="text: ko.toJSON($root)"></div>
-
-           
-             </li>-->
-
+               </li>   -->
 
             </ul>
           </nav>  
+
             <!-- ko with: headerInfoVM -->
            
            <!-- <div id="divHeartRateZones" style="width: 30%">

@@ -28,7 +28,6 @@
         all: 254 // All is for goals only to include all sports.
     };
 
-
     var lap_trigger = {
         manual: 0,
         time: 1,
@@ -38,6 +37,11 @@
         position_waypoint: 5,
         position_marked: 6,
         session_end: 7
+    };
+
+    var FITFileType = {
+        sportsettingfile : 3,
+        activityfile : 4
     };
 
     var FITUtil =
@@ -585,10 +589,15 @@
 
     var FITViewUIConverter = converter;
 
+    //View models
     var FITViewUI = {
 
-        //View models
+        
         masterVM: {
+
+            importedActivityVM : {
+                activity : ko.observableArray()
+            },
 
             speedMode: ko.observable(),
 
@@ -2184,13 +2193,10 @@
 
         showLapTriggers: function (rawdata) {
 
-
             if (FITUtil.isUndefined(rawdata)) {
                 console.error("No rawdata, cannot show lap triggers");
                 return;
             }
-
-
 
             if (FITUtil.isUndefined(rawdata.lap)) {
                 console.error("No lap information");
@@ -2209,7 +2215,6 @@
                 return;
 
             }
-
            
             var xpos, ypos;
             var plotLeft = this.multiChart.plotLeft;
@@ -2223,7 +2228,6 @@
 
             var srcImg, title;
             var SVG_elmImg;
-           
 
             this.removeSVGGroup(this.masterVM.lapTriggerGroup);
 
@@ -2231,7 +2235,6 @@
 
             if (FITUtil.isUndefined(this.masterVM.freeYPOS))  // Used for stacked layout
                 this.masterVM.freeYPOS = {};
-
 
             var waitForDelay = 3 * 60 * 1000;
 
@@ -2303,7 +2306,6 @@
                         title = undefined;
                 }
 
-
                 if (srcImg !== undefined) {
                     SVG_elmImg = renderer.image(srcImg, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.lapTriggerGroup);
                     if (title)
@@ -2311,11 +2313,8 @@
                 }
 
             }
-
-
         },
 
-        
         showHRZones: function (rawdata, startTimestamp, endTimestamp) {
 
             var divChartId = 'zonesChart';
@@ -2334,11 +2333,8 @@
 
             //$('#zonesChart').show();
 
-
             if (self.HRZonesChart)
                 self.HRZonesChart.destroy();
-
-
 
             //var options = {
             //    chart: {
@@ -2410,7 +2406,6 @@
                 tooltip: {
                     formatter: function () {
                         return this.series.name + ': ' + Highcharts.numberFormat(this.y, 1);
-
                     }
                 },
                 plotOptions: {
@@ -2512,9 +2507,6 @@
 
         showSessionMarkers: function (map, rawdata) {
             // Plot markers for start of each session
-
-
-
 
             var sessionStartPosFound = false;
 
@@ -2648,10 +2640,9 @@
 
         showSessionsAsOverlay: function (map, rawdata) {
 
-
-
             var session = rawdata.session;
-
+            var sessionCoords = [];
+            var fillColors = [];
             // Remove previous overlays
             if (this.sessionRectangles !== undefined) {
                 this.sessionRectangles.forEach(function (element, index, array) {
@@ -2667,10 +2658,9 @@
                 return false;
             }
 
-
-            var sessionCoords = [];
+           
             self.sessionRectangles = [];
-            var fillColors = [];
+           
 
             session.swc_lat.forEach(function (value, index, array) {
 
@@ -2720,13 +2710,13 @@
 
         initMap: function () {
 
+            var myCurrentPosition, newMap;
+
             // f.ex in case google maps api is not downloaded due to network problems....
             // http://joshua-go.blogspot.no/2010/07/javascript-checking-for-undeclared-and.html
 
             if (FITUtil.isUndefined(google))
                 return undefined;
-
-            var myCurrentPosition, newMap;
 
             var mapOptions = {
                 zoom: 11,
@@ -2772,10 +2762,6 @@
                 if (strokeOptions.strokeOpacity)
                     chosenStrokeOpacity = strokeOptions.strokeOpacity;
             }
-
-
-
-
 
             // Clear previous polylines
             if (self.masterVM.activityPolyline) {
@@ -2863,8 +2849,6 @@
             self.masterVM.activityPolyline[type].setMap(map);
 
             return true;
-
-
         },
 
         intepretMessageCounters: function (counter, type) {
@@ -2878,7 +2862,7 @@
             if (counter.fileCreatorCounter !== 1)
                 console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
 
-            if (type === 4) { // Activity
+            if (type === FITFileType.activityfile) { // Activity
 
                 if (counter.sessionCounter === 0)
                     console.error("Session msg. should be at least 1, but is ", counter.sessionCounter);
@@ -2938,8 +2922,8 @@
 
         // Handles an ordinary activity file with measurement and GPS data
         processActivityFile: function (rawData, counter) {
-            var activityFITfileType = 4;
-            self.intepretMessageCounters(counter, activityFITfileType);
+           
+            self.intepretMessageCounters(counter, FITFileType.activityfile);
 
             if (rawData.record)
                 FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
@@ -3070,10 +3054,6 @@
         onFITManagerMsg: function (e) {
             // NB Callback, this reference....
 
-
-
-
-
             var eventdata = e.data;
 
             var fileIdType;
@@ -3112,20 +3092,21 @@
 
                         if (rawData.session || rawData.lap || rawData.record) {
                             console.log("No file_id message in FIT file, but assume its an acivity file - found session or lap or record");
-                            fileIdType = 4;
+                            fileIdType = FITFileType.activityfile;
                         }
                     }
 
                     switch (fileIdType) {
                         // Activity file
-                        case 4:
+                        case FITFileType.activityfile:
                             console.info("Processing an activity file");
+                            self.masterVM.importedActivityVM.activity.push(rawData);
                             self.processActivityFile(rawData, self.messageCounter);
                             break;
 
                             // Sport settings (HR zones)
 
-                        case 3:
+                        case FITFileType.sportsettingfile:
                             console.info("Processing a sport settings file");
                             self.processSportSettingFile(rawData);
                             break;
@@ -3141,28 +3122,27 @@
 
                     break;
 
-                case 'header':
-                    var headerInfo = eventdata.header;
+                //case 'header':
+                //    var headerInfo = eventdata.header;
 
-                    console.info("FIT file header : " + JSON.stringify(headerInfo));
+                //    console.info("FIT file header : " + JSON.stringify(headerInfo));
 
-                    // Copy to view model
-                    self.masterVM.headerInfoVM.fileName(headerInfo.fitFile.name);
-                    self.masterVM.headerInfoVM.fileSize(headerInfo.fitFile.size);
-                    self.masterVM.headerInfoVM.protocolVersion(headerInfo.protocolVersionMajor + "." + headerInfo.protocolVersionMinor);
+                //    // Copy to view model
+                //    self.masterVM.headerInfoVM.fileName(headerInfo.fitFile.name);
+                //    self.masterVM.headerInfoVM.fileSize(headerInfo.fitFile.size);
+                //    self.masterVM.headerInfoVM.protocolVersion(headerInfo.protocolVersionMajor + "." + headerInfo.protocolVersionMinor);
 
-                    self.masterVM.headerInfoVM.profileVersion(headerInfo.profileVersionMajor + "." + headerInfo.profileVersionMinor);
-                    self.masterVM.headerInfoVM.dataType(headerInfo.dataType);
-                    self.masterVM.headerInfoVM.headerCRC(headerInfo.headerCRC);
-                    self.masterVM.headerInfoVM.verifyHeaderCRC(headerInfo.verifyHeaderCRC);
-                    self.masterVM.headerInfoVM.headerSize(headerInfo.headerSize);
-                    self.masterVM.headerInfoVM.dataSize(headerInfo.dataSize);
-                    self.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
+                //    self.masterVM.headerInfoVM.profileVersion(headerInfo.profileVersionMajor + "." + headerInfo.profileVersionMinor);
+                //    self.masterVM.headerInfoVM.dataType(headerInfo.dataType);
+                //    self.masterVM.headerInfoVM.headerCRC(headerInfo.headerCRC);
+                //    self.masterVM.headerInfoVM.verifyHeaderCRC(headerInfo.verifyHeaderCRC);
+                //    self.masterVM.headerInfoVM.headerSize(headerInfo.headerSize);
+                //    self.masterVM.headerInfoVM.dataSize(headerInfo.dataSize);
+                //    self.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
 
-
-                    if (headerInfo.estimatedFitFileSize !== headerInfo.fitFile.size)
-                        console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFile.size.toString() + " bytes.");
-                    break;
+                //    if (headerInfo.estimatedFitFileSize !== headerInfo.fitFile.size)
+                //        console.warn("Header reports FIT file size " + headerInfo.estimatedFitFileSize.toString() + " bytes, but file system reports: " + headerInfo.fitFile.size.toString() + " bytes.");
+                //    break;
 
                 case 'error':
                     var errMsg = eventdata.data;
@@ -3205,7 +3185,7 @@
         },
 
         onFITManagerError: function (e) {
-            console.error("Error in worker, status " + e.toString());
+            console.error("Error in worker, event: ", e);
         },
 
         // Handles file selection for import
