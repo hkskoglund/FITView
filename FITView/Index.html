@@ -9,7 +9,7 @@
     <script src="Scripts/3party/knockout-2.2.1.debug.js"></script>
     <script src="Scripts/3party/knockout.mapping-latest.debug.js"></script>
     <script src="Scripts/3party/modernizr-2.6.2.js"></script>
-   <!-- <script src="Scripts/3party/highcharts.src.js"></script>-->
+    <!-- <script src="Scripts/3party/highcharts.src.js"></script>-->
     <script src="Scripts/3party/highcharts30betasrc.js"></script>
 
     <script src="Scripts/FITCRCTimestampUtility.js"></script>
@@ -17,371 +17,369 @@
 
     <script defer="defer" src="Scripts/FITView.js"></script>
 
+    <link href="Stylesheets/dropdownmenu.css" rel="stylesheet" />
     <link href="Stylesheets/StyleMain.css" rel="stylesheet" />
 </head>
 
 <body id="body">
 
-
     <div>
 
-        
         <div id="divSessionLap">
 
             <!-- <div data-bind="text: ko.toJSON($root.headerInfoVM)"></div> -->
-            
-          <nav>
-            <ul class="menu">
 
-                <li><a href="#">FITView</a>
+            <nav>
 
-                    <ul>
-                        <li><a href="#">
-                            <input id="inpFITFile" type="file" multiple="multiple" />
+                <ul class="menu">
 
-                            <progress class="FITprogressImport" id="progressFITimport" max="100" data-bind="value: progressVM.progress"></progress>
+                    <li><a href="#">FITView</a>
 
+                        <ul>
+                            <li><a href="#">
+                                <input id="inpFITFile" type="file" multiple="multiple" />
 
-                        </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- ko with: sessionVM -->
-
-                <li id="liSessions" style="display: none" data-bind="visible: timestamp().length > 0"><a href="#">Sessions</a>
-
-                    <ul style="max-height: 300px; overflow-y: auto; overflow-x: hidden" data-bind="foreach: timestamp">
-
-                        <li data-bind="with: $parent">
-
-                            <a href="#" data-bind="click: showSession.bind($index())">
-
-                                <!-- ko if: sport()[$index()] === 1 -->
-                                <img class="sessionSport" alt="Running" title="Running" src="Images/sport/running.png" />
-                                <!-- /ko -->
-
-                                <!-- ko if: sport()[$index()] === 2 -->
-                                <img class="sessionSport" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
-                                <!-- /ko -->
-
-                                <!-- ko if: sport()[$index()] === 5 -->
-                                <img class="sessionSport" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
-                                <!-- /ko -->
-
-                                <!-- ko if: total_elapsed_time().length > 0  -->
-                                <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
-                                <!-- /ko -->
-
-                                <!-- ko if: total_distance().length > 0 -->
-                                <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
-                                <!-- /ko -->
-
-                                <!-- Session trigger -->
-
-                                <!-- ko if: trigger()[$index()] === 0 -->
-                                <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" />
-                                <!-- /ko -->
-
-                                <!-- ko if: trigger()[$index()] === 1 -->
-                                <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" />
-                                <!-- /ko -->
-
-                                <!-- ko if: trigger()[$index()] === 2 -->
-                                <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
-                                <!-- /ko -->
-
-                                <!-- ko if: trigger()[$index()] === 3 -->
-                                <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
-                                <!-- /ko -->
-
-                                <!-- /ko -->
+                                <progress class="FITprogressImport" id="progressFITimport" max="100" data-bind="value: progressVM.progress"></progress>
 
                             </a>
+                            </li>
+                        </ul>
+                    </li>
 
-                        </li>
-                    </ul>
+                    <!-- ko with: sessionVM -->
 
-                </li>
+                    <li id="liSessions" style="display: none" data-bind="visible: timestamp().length > 0"><a href="#">Sessions</a>
 
-                <!-- /ko -->
+                        <ul style="max-height: 300px; overflow-y: auto; overflow-x: hidden" data-bind="foreach: timestamp">
 
+                            <li data-bind="with: $parent">
 
-                <!-- ko with: lapVM -->
+                                <a href="#" data-bind="click: showSession.bind($index())">
 
-                <li id="liLaps" style="display: none" data-bind="visible: timestamp().length > 0"><a href="#">Laps</a>
+                                    <!-- ko if: sport()[$index()] === 1 -->
+                                    <img class="sessionSport" alt="Running" title="Running" src="Images/sport/running.png" />
+                                    <!-- /ko -->
 
-                    <ul style="max-height: 300px; overflow-y: scroll; overflow-x: scroll" data-bind="foreach: timestamp">
+                                    <!-- ko if: sport()[$index()] === 2 -->
+                                    <img class="sessionSport" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
+                                    <!-- /ko -->
 
-                        <li data-bind="with: $parent">
+                                    <!-- ko if: sport()[$index()] === 5 -->
+                                    <img class="sessionSport" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
+                                    <!-- /ko -->
 
-                            <a href="#" data-bind="click: showLap.bind($index())">
+                                    <!-- ko if: total_elapsed_time().length > 0  -->
+                                    <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
+                                    <!-- /ko -->
 
-                                <!-- ko if:  sport()[$index()] === 1 -->
-                                <img class="lapSport" src="Images/sport/running.png" title="Running" alt="Running" />
-                                <!-- /ko -->
+                                    <!-- ko if: total_distance().length > 0 -->
+                                    <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
+                                    <!-- /ko -->
 
-                                <!-- ko if:  sport()[$index()] === 2 -->
-                                <img class="lapSport" src="Images/sport/cycling.png" title="Cycling" alt="Cycling" />
-                                <!-- /ko -->
+                                    <!-- Session trigger -->
 
-                                <!-- ko if:  sport()[$index()] === 5 -->
-                                <img class="lapSport" src="Images/sport/swimming.png" title="Swimming" alt="Swimming" />
-                                <!-- /ko -->
+                                    <!-- ko if: trigger()[$index()] === 0 -->
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" />
+                                    <!-- /ko -->
 
+                                    <!-- ko if: trigger()[$index()] === 1 -->
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" />
+                                    <!-- /ko -->
 
-                                <!-- ko if: total_elapsed_time().length > 0  -->
-                                <time><span class="lapHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
-                                <!-- /ko -->
+                                    <!-- ko if: trigger()[$index()] === 2 -->
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
+                                    <!-- /ko -->
 
-                                <!-- ko if: total_distance().length > 0 -->
-                                <span class="lapTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
-                                <!-- /ko -->
+                                    <!-- ko if: trigger()[$index()] === 3 -->
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
+                                    <!-- /ko -->
 
-                                <!-- SPEED -->
+                                    <!-- /ko -->
 
-                                <!-- ko if: avg_speed()[$index()]  || max_speed()[$index()]  -->
-                                <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
-                                <!-- /ko -->
+                                </a>
 
+                            </li>
+                        </ul>
 
-                                <!-- BIKING/GENERIC -->
-                                <!-- ko if: sport()[$index()] === 2 || sport()[$index()] === 0 || (sport()[$index()] === 1 && $root.speedMode() === 2)-->
+                    </li>
 
+                    <!-- /ko -->
 
-                                <!-- ko if: avg_speed()[$index()] -->
-                                <span title="Average speed" data-bind="text: avg_speed()[$index()].toKMprH()"></span>
-                                <!-- /ko -->
+                    <!-- ko with: lapVM -->
 
-                                <!-- ko if: max_speed()[$index()]  -->
-                                <span title="Max speed" data-bind="text: max_speed()[$index()].toKMprH()"></span>
-                                <!-- /ko -->
-                                <!-- /ko -->
+                    <li id="liLaps" style="display: none" data-bind="visible: timestamp().length > 0"><a href="#">Laps</a>
 
-                                <!-- RUNNING -->
+                        <ul style="max-height: 300px; overflow-y: scroll; overflow-x: scroll" data-bind="foreach: timestamp">
 
-                                <!-- ko if: sport()[$index()] === 1  && !((sport()[$index()] === 1 && $root.speedMode() === 2)) -->
+                            <li data-bind="with: $parent">
 
-                                <!-- ko if: avg_speed()[$index()] -->
-                                <span title="Average speed" data-bind="text: avg_speed()[$index()].toMINprKM()"></span>
-                                <!-- /ko -->
+                                <a href="#" data-bind="click: showLap.bind($index())">
 
-                                <!-- ko if: max_speed()[$index()] -->
-                                <span title="Max speed" data-bind="text: max_speed()[$index()].toMINprKM()"></span>
-                                <!-- /ko -->
-                                <!-- /ko -->
+                                    <!-- ko if:  sport()[$index()] === 1 -->
+                                    <img class="lapSport" src="Images/sport/running.png" title="Running" alt="Running" />
+                                    <!-- /ko -->
 
-                                <!-- SWIMMING TO DO .... -->
+                                    <!-- ko if:  sport()[$index()] === 2 -->
+                                    <img class="lapSport" src="Images/sport/cycling.png" title="Cycling" alt="Cycling" />
+                                    <!-- /ko -->
 
-                                <!-- ko if: sport()[$index()] === 5  -->
-
-                                <!-- ko if: avg_speed()[$index()] -->
-                                <span title="Average speed" data-bind="text: avg_speed()[$index()].toMINpr100M()"></span>
-                                <!-- /ko -->
-
-                                <!-- ko if: max_speed()[$index()] -->
-                                <span title="Max speed" data-bind="text: max_speed()[$index()].toMINpr100M()"></span>
-                                <!-- /ko -->
-                                <!-- /ko -->
-
-                                <!-- HEART RATE -->
-
-                                <!-- ko if: avg_heart_rate()[$index()] ||  max_heart_rate()[$index()] -->
-                                <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
-                                <!-- /ko -->
+                                    <!-- ko if:  sport()[$index()] === 5 -->
+                                    <img class="lapSport" src="Images/sport/swimming.png" title="Swimming" alt="Swimming" />
+                                    <!-- /ko -->
 
 
-                                <!-- ko if:  avg_heart_rate()[$index()]  >= 0 -->
-                                <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[$index()]"></span>
-                                <!-- /ko -->
+                                    <!-- ko if: total_elapsed_time().length > 0  -->
+                                    <time><span class="lapHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
+                                    <!-- /ko -->
 
-                                <!-- ko if: max_heart_rate()[$index()] >= 0 -->
-                                <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[$index()]"></span>
-                                <!-- /ko -->
+                                    <!-- ko if: total_distance().length > 0 -->
+                                    <span class="lapTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
+                                    <!-- /ko -->
+
+                                    <!-- SPEED -->
+
+                                    <!-- ko if: avg_speed()[$index()]  || max_speed()[$index()]  -->
+                                    <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
+                                    <!-- /ko -->
 
 
-                                <!-- ko if: total_calories()[$index()] > 0 -->
-                                <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+                                    <!-- BIKING/GENERIC -->
+                                    <!-- ko if: sport()[$index()] === 2 || sport()[$index()] === 0 || (sport()[$index()] === 1 && $root.speedMode() === 2)-->
 
-                                <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
-                                <!-- /ko -->
 
-                                <!-- POWER -->
+                                    <!-- ko if: avg_speed()[$index()] -->
+                                    <span title="Average speed" data-bind="text: avg_speed()[$index()].toKMprH()"></span>
+                                    <!-- /ko -->
 
-                                <!-- ko if: avg_power()[$index()] >= 0  ||  max_power()[$index()] >= 0  -->
+                                    <!-- ko if: max_speed()[$index()]  -->
+                                    <span title="Max speed" data-bind="text: max_speed()[$index()].toKMprH()"></span>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
 
-                                <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
+                                    <!-- RUNNING -->
 
-                                <span title="Average power (w)" data-bind="text: avg_power()[$index()]"></span>
+                                    <!-- ko if: sport()[$index()] === 1  && !((sport()[$index()] === 1 && $root.speedMode() === 2)) -->
 
-                                <span title="Max power (w)" data-bind="text: max_power()[$index()]"></span>
+                                    <!-- ko if: avg_speed()[$index()] -->
+                                    <span title="Average speed" data-bind="text: avg_speed()[$index()].toMINprKM()"></span>
+                                    <!-- /ko -->
 
-                                <!-- /ko -->
+                                    <!-- ko if: max_speed()[$index()] -->
+                                    <span title="Max speed" data-bind="text: max_speed()[$index()].toMINprKM()"></span>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
 
-                                <!-- CADENCE/STRIDES -->
+                                    <!-- SWIMMING TO DO .... -->
 
-                                <!-- ko if: avg_cadence()[$index()] >= 0 || 
+                                    <!-- ko if: sport()[$index()] === 5  -->
+
+                                    <!-- ko if: avg_speed()[$index()] -->
+                                    <span title="Average speed" data-bind="text: avg_speed()[$index()].toMINpr100M()"></span>
+                                    <!-- /ko -->
+
+                                    <!-- ko if: max_speed()[$index()] -->
+                                    <span title="Max speed" data-bind="text: max_speed()[$index()].toMINpr100M()"></span>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+
+                                    <!-- HEART RATE -->
+
+                                    <!-- ko if: avg_heart_rate()[$index()] ||  max_heart_rate()[$index()] -->
+                                    <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
+                                    <!-- /ko -->
+
+
+                                    <!-- ko if:  avg_heart_rate()[$index()]  >= 0 -->
+                                    <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[$index()]"></span>
+                                    <!-- /ko -->
+
+                                    <!-- ko if: max_heart_rate()[$index()] >= 0 -->
+                                    <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[$index()]"></span>
+                                    <!-- /ko -->
+
+
+                                    <!-- ko if: total_calories()[$index()] > 0 -->
+                                    <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+
+                                    <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
+                                    <!-- /ko -->
+
+                                    <!-- POWER -->
+
+                                    <!-- ko if: avg_power()[$index()] >= 0  ||  max_power()[$index()] >= 0  -->
+
+                                    <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
+
+                                    <span title="Average power (w)" data-bind="text: avg_power()[$index()]"></span>
+
+                                    <span title="Max power (w)" data-bind="text: max_power()[$index()]"></span>
+
+                                    <!-- /ko -->
+
+                                    <!-- CADENCE/STRIDES -->
+
+                                    <!-- ko if: avg_cadence()[$index()] >= 0 || 
                             max_cadence()[$index()] >= 0 ||  
                           total_cycles_strides()[$index()] >=0 -->
-                                <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
-                                <!-- /ko -->
+                                    <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
+                                    <!-- /ko -->
 
-                                <!-- ko if:  avg_cadence().length > 0  -->
-                                <span title="Average cadence" data-bind="text: avg_cadence()[$index()]"></span>
-                                <!-- /ko -->
+                                    <!-- ko if:  avg_cadence().length > 0  -->
+                                    <span title="Average cadence" data-bind="text: avg_cadence()[$index()]"></span>
+                                    <!-- /ko -->
 
-                                <!-- ko if: max_cadence().length > 0  -->
-                                <span title="Max cadence" data-bind="text: max_cadence()[$index()]"></span>
-                                <!-- /ko -->
+                                    <!-- ko if: max_cadence().length > 0  -->
+                                    <span title="Max cadence" data-bind="text: max_cadence()[$index()]"></span>
+                                    <!-- /ko -->
 
-                                <!-- ko if: total_cycles_strides().length > 0  -->
-                                <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[$index()]"></span>
+                                    <!-- ko if: total_cycles_strides().length > 0  -->
+                                    <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[$index()]"></span>
 
-                                <!-- /ko -->
+                                    <!-- /ko -->
 
-                                <!-- ASCENT/DESCENT -->
+                                    <!-- ASCENT/DESCENT -->
 
-                                <!-- ko if: total_ascent()[$index()] >= 0  ||  total_descent()[$index()] >= 0 -->
+                                    <!-- ko if: total_ascent()[$index()] >= 0  ||  total_descent()[$index()] >= 0 -->
 
-                                <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
+                                    <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
 
-                                <span title="Total ascent (m)" data-bind="text: total_ascent()[$index()]"></span>
+                                    <span title="Total ascent (m)" data-bind="text: total_ascent()[$index()]"></span>
 
-                                <span title="Total descent (m)" data-bind="text: total_descent()[$index()]"></span>
+                                    <span title="Total descent (m)" data-bind="text: total_descent()[$index()]"></span>
 
-                                <!-- /ko -->
-
-
-                                <!-- ko if: avg_temperature()[$index()] >= 0  ||  max_temperature()[$index()] >= 0  -->
-
-                                <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
-
-                                <span title="Average temperature (C)" data-bind="text: avg_temperature()[$index()]"></span>
-
-                                <span title="Max temperature (C)" data-bind="text: max_temperature()[$index()]"></span>
-
-                                <!-- /ko -->
-
-                                <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 0 -->
-                                <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed" />
-                                <!-- /ko -->
+                                    <!-- /ko -->
 
 
-                                <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 1 -->
-                                <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" />
-                                <!-- /ko -->
+                                    <!-- ko if: avg_temperature()[$index()] >= 0  ||  max_temperature()[$index()] >= 0  -->
 
-                                <!-- ko if: lap_trigger && lap_trigger()[$index()] === 2 -->
-                                <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
-                                <!-- /ko -->
+                                    <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
 
-                                <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 3 -->
-                                <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
-                                <!-- /ko -->
+                                    <span title="Average temperature (C)" data-bind="text: avg_temperature()[$index()]"></span>
 
-                                <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 4 -->
-                                <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
-                                <!-- /ko -->
+                                    <span title="Max temperature (C)" data-bind="text: max_temperature()[$index()]"></span>
 
-                                <!-- ko if: lap_trigger && lap_trigger()[$index()] === 5 -->
-                                <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
-                                <!-- /ko -->
+                                    <!-- /ko -->
 
-                                <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 6 -->
-                                <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
-                                <!-- /ko -->
+                                    <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 0 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed" />
+                                    <!-- /ko -->
 
-                                <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 7 -->
-                                <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
-                                <!-- /ko -->
+
+                                    <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 1 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" />
+                                    <!-- /ko -->
+
+                                    <!-- ko if: lap_trigger && lap_trigger()[$index()] === 2 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
+                                    <!-- /ko -->
+
+                                    <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 3 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
+                                    <!-- /ko -->
+
+                                    <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 4 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
+                                    <!-- /ko -->
+
+                                    <!-- ko if: lap_trigger && lap_trigger()[$index()] === 5 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
+                                    <!-- /ko -->
+
+                                    <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 6 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
+                                    <!-- /ko -->
+
+                                    <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 7 -->
+                                    <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
+                                    <!-- /ko -->
+
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- /ko -->
+
+                    <!-- ko with: settingsVM -->
+                    <li><a href="#">Settings</a>
+                        <ul>
+                            <li><a href="#">
+
+                                <div>
+                                    <input type="checkbox" data-bind="checked: showLapLines" />
+                                    Lap lines
+                                </div>
 
                             </a>
-                        </li>
-                    </ul>
-                </li>
+                            </li>
 
-                <!-- /ko -->
+                            <li><a href="#">
 
-                <!-- ko with: settingsVM -->
-                <li><a href="#">Settings</a>
-                    <ul>
-                        <li><a href="#">
+                                <div>
+                                    <input type="checkbox" data-bind="checked: showLapTriggers" />
+                                    Lap triggers
+                                </div>
 
-                            <div>
-                                <input type="checkbox" data-bind="checked: showLapLines" />
-                                Lap lines
-                            </div>
+                            </a>
+                            </li>
 
-                        </a>
-                        </li>
+                            <li><a href="#">
 
-                        <li><a href="#">
+                                <div>
+                                    <input type="checkbox" data-bind="checked: showEvents" />
+                                    Events
+                                </div>
 
-                            <div>
-                                <input type="checkbox" data-bind="checked: showLapTriggers" />
-                                Lap triggers
-                            </div>
+                            </a>
+                            </li>
 
-                        </a>
-                        </li>
+                            <li><a href="#">
 
-                        <li><a href="#">
+                                <div>
+                                    <input type="checkbox" data-bind="checked: showLegends" />
+                                    Chart legends
+                                </div>
 
-                            <div>
-                                <input type="checkbox" data-bind="checked: showEvents" />
-                                Events
-                            </div>
+                            </a>
+                            </li>
 
-                        </a>
-                        </li>
+                            <li><a href="#">
 
-                        <li><a href="#">
+                                <div>
+                                    <input type="checkbox" data-bind="checked: storeInIndexedDB" />
+                                    Use IndexedDB
+                                </div>
+                            </a>
+                            </li>
 
-                            <div>
-                                <input type="checkbox" data-bind="checked: showLegends" />
-                                Chart legends
-                            </div>
+                            <li><a href="#">
 
-                        </a>
-                        </li>
+                                <div>
+                                    <input type="checkbox" data-bind="checked: showDeviceInfo" />
+                                    Devices/Sensors
+                                </div>
+                            </a>
+                            </li>
 
-                        <li><a href="#">
+                            <li><a href="#">
 
-                            <div>
-                                <input type="checkbox" data-bind="checked: storeInIndexedDB" />
-                                Use IndexedDB
-                            </div>
-                        </a>
-                        </li>
+                                <div>
+                                    <input type="checkbox" data-bind="checked: showHeaderInfo" />
+                                    FIT header info.
+                                </div>
+                            </a>
+                            </li>
 
-                        <li><a href="#">
+                            <li><a href="#">
 
-                            <div>
-                                <input type="checkbox" data-bind="checked: showDeviceInfo" />
-                                Devices/Sensors
-                            </div>
-                        </a>
-                        </li>
+                                <div>
+                                    <input type="checkbox" data-bind="checked: forceSpeedKMprH" />
+                                    Run speed in km/h
+                                </div>
+                            </a>
+                            </li>
 
-                        <li><a href="#">
-
-                            <div>
-                                <input type="checkbox" data-bind="checked: showHeaderInfo" />
-                                FIT header info.
-                            </div>
-                        </a>
-                        </li>
-
-                        <li><a href="#">
-
-                            <div>
-                                <input type="checkbox" data-bind="checked: forceSpeedKMprH" />
-                                Run speed in km/h
-                            </div>
-                        </a>
-                        </li>
-
-                        <!--<li><a href="#">
+                            <!--<li><a href="#">
 
                             <div>
                                 <input type="checkbox" data-bind="checked: requestHideAltitude" />
@@ -390,51 +388,43 @@
                         </a>
                         </li>-->
 
-                        <li><a href="#">
+                            <li><a href="#">
 
-                            <div>
-                                <input type="checkbox" data-bind="checked: requestAveragingOnSpeed" />
-                                Average speed
-                            </div>
-                        </a>
-                        </li>
+                                <div>
+                                    <input type="checkbox" data-bind="checked: requestAveragingOnSpeed" />
+                                    Average speed
+                                </div>
+                            </a>
+                            </li>
 
-                        <li><a href="#">
+                            <li><a href="#">
 
-                            <div>
-                                 Avg.speed sample
+                                <div>
+                                    Avg.speed sample
                                 <input type="range" min="3000" max="120000" data-bind="value: averageSampleTime" />
-                                <span data-bind="text: averageSampleTime"></span> ms
-                            </div>
-                        </a>
-                        </li>
+                                    <span data-bind="text: averageSampleTime"></span>ms
+                                </div>
+                            </a>
+                            </li>
 
-                    </ul>
-                </li>
-                <!-- /ko -->
+                        </ul>
+                    </li>
+                    <!-- /ko -->
 
-                <!-- ko with: importedActivityVM -->
-                <li style="display: none" data-bind="visible: activity().length > 0"><a href="#">Activity</a>
 
-                    <ul style="max-height: 300px; overflow-y: scroll; overflow-x: scroll" data-bind="foreach: activity">
-
-                        <li><a href="#"><span data-bind="text: _headerInfo_.fitFile.name"></span></a></li>
-
-                    </ul>
-                </li>
-                <!-- /ko -->
-
-<!--               <li>
+                    <!--               <li>
                    <div data-bind="text: ko.toJSON($root)"></div>
 
                </li>   -->
 
-            </ul>
-          </nav>  
+                </ul>
+            </nav>
+
+            <!-- <div data-bind="text: ko.toJSON($root.activityVM)"></div>-->
 
             <!-- ko with: headerInfoVM -->
-           
-           <!-- <div id="divHeartRateZones" style="width: 30%">
+
+            <!-- <div id="divHeartRateZones" style="width: 30%">
                 <h1 style="font-size: larger; text-align: center">Heart rate zones</h1>
                 <ul style="list-style : none">
                     <li>
@@ -452,17 +442,17 @@
                 <button id="btnSaveHRZones" style="float: right">Save</button>
             </div>-->
 
-            <div  id="divHeaderInfo" data-bind="visible: $parent.settingsVM.showHeaderInfo">
+            <div id="divHeaderInfo" data-bind="visible: $parent.settingsVM.showHeaderInfo">
                 Header info: 
                 <span title="File name" data-bind="text: fileName"></span>
                 <span title="File size" data-bind="text: fileSize"></span>
                 <span title="Data type" data-bind="text: dataType"></span>
-                 <span title="Header size" data-bind="text: headerSize"></span>
-                 <span title="Data size" data-bind="text: dataSize"></span>
-                 <span title="Protocol version" data-bind="text: protocolVersion"></span>
-                 <span title="Profile version" data-bind="text: profileVersion"></span>
-                 <span title="CRC" data-bind="text: headerCRC"></span>
-                 
+                <span title="Header size" data-bind="text: headerSize"></span>
+                <span title="Data size" data-bind="text: dataSize"></span>
+                <span title="Protocol version" data-bind="text: protocolVersion"></span>
+                <span title="Profile version" data-bind="text: profileVersion"></span>
+                <span title="CRC" data-bind="text: headerCRC"></span>
+
             </div>
             <!-- /ko -->
 
@@ -507,7 +497,7 @@
                 <!-- /ko -->
 
                 <!-- SPEED -->
-              
+
                 <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
                 <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
                 <!-- /ko -->
@@ -562,14 +552,14 @@
                 <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINpr100M()"></span>
                 <!-- /ko -->
                 <!-- /ko -->
-               
-                     <!-- HEART RATE -->
+
+                <!-- HEART RATE -->
 
                 <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
                 <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
                 <!-- /ko -->
-                
-              
+
+
                 <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
                 <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
                 <!-- /ko -->
@@ -577,7 +567,7 @@
                 <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
                 <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
                 <!-- /ko -->
-                
+
 
                 <!-- ko if: total_calories()[selectedSession()] > 0 -->
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
@@ -719,7 +709,7 @@
                 <!-- /ko -->
 
                 <!-- SPEED -->
-              
+
                 <!-- ko if: avg_speed()[selectedLap()]  || max_speed()[selectedLap()]  -->
                 <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
                 <!-- /ko -->
@@ -774,14 +764,14 @@
                 <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toMINpr100M()"></span>
                 <!-- /ko -->
                 <!-- /ko -->
-               
-                     <!-- HEART RATE -->
+
+                <!-- HEART RATE -->
 
                 <!-- ko if: avg_heart_rate()[selectedLap()] ||  max_heart_rate()[selectedLap()] -->
                 <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
                 <!-- /ko -->
-                
-              
+
+
                 <!-- ko if:  avg_heart_rate()[selectedLap()]  >= 0 -->
                 <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedLap()]"></span>
                 <!-- /ko -->
@@ -789,7 +779,7 @@
                 <!-- ko if: max_heart_rate()[selectedLap()] >= 0 -->
                 <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedLap()]"></span>
                 <!-- /ko -->
-                
+
 
                 <!-- ko if: total_calories()[selectedLap()] > 0 -->
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
@@ -898,10 +888,6 @@
 
 
 
-            <!-- 
-        <div class="SessionLapErrorUndefined" data-bind="if: !hasSession" >
-            <p>No sessions found</p>
-        </div> -->
 
             <section id="divLaps">
 
@@ -919,53 +905,138 @@
 
             </section>
 
-            <!-- 
-        <div class="SessionLapErrorUndefined" data-bind="if: !hasLap" >
-            <p>No laps found</p>
-        </div>-->
+            <div id="divMapWrapper">
+                <div>
+                    <img id="liveImage" src="http://195.18.181.101/mjpg/video.mjpg" />
+                </div>
+                <!-- ko with: activityVM -->
+                <div id="importedActivities">
 
-        </div>
+                    <div style="position: relative; top: 10px; left: 10px; font-weight:bold" data-bind="visible: activity().length === 0">Please import activities to explore</div>
 
-        <div id ="divMapWrapper">
-            <div>
-               <img id="liveImage" src="http://195.18.181.101/mjpg/video.mjpg" /> 
+                    <ul id="activityList" data-bind=" foreach: activity">
+
+                        <li class="newActivity" >
+
+                            <div style="float: left; width: 200px">
+                                <a href="#" data-bind="click: $parent.showActivity.bind($index())">
+                                    <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
+                                        <span style="display: inline" data-bind="text : (new Date(record.timestamp[0])).toLocaleString()"></span>
+                                    <!-- /ko -->
+
+                                    <!-- ko if: typeof (record) === "undefined" -->
+                                        <span style="display: inline">No data.</span>
+                                    <!-- /ko -->
+
+                                    <!-- ko ifnot:  (typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0) -->
+                                        <!-- ko if: session && session.start_time && session.start_time.length > 0 -->
+                                            <span style="display: inline" data-bind="text : (new Date(session.start_time[0])).toLocaleString()"></span>
+                                        <!-- /ko -->
+                                    <!-- /ko -->
+
+                                    <!-- ko with: session -->
+
+                                        <!--  <div data-bind="text: ko.toJSON(total_distance)"></div>-->
+
+                                        <ul id="sportList" data-bind="foreach: sport">
+
+                                            <li style="display: inline" data-bind="with: $parent">
+                                                <div style="display: inline-block">
+
+                                                    <!-- ko if: sport[$index()] === 1 -->
+                                                        <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
+                                                    <!-- /ko -->
+
+                                                    <!-- ko if: sport[$index()] === 2 -->
+                                                        <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
+                                                    <!-- /ko -->
+
+                                                    <!-- ko if: sport[$index()] === 5 -->
+                                                        <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
+                                                    <!-- /ko -->
+
+                                                    <!-- ko if: sport[$index()] !== 5 && sport[$index()]!== 2 && sport[$index()] !== 1 -->
+                                                        <img class="inlineIcon" src="Images/sport/generic.png" data-bind="attr: {title : 'Sport is '+sport[$index()],
+                                                            alt : 'Sport is '+sport[$index()]}" />
+                                                    <!-- /ko -->
+
+                                                    <!-- ko if: typeof (total_distance) !== "undefined" && total_distance.length > 0  -->
+
+                                                        <!-- ko if: total_distance[$index()] > 0 && total_distance[$index()] < 1000 -->
+                                                            <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance[$index()].toFixed(0)+ ' m'"></span>
+                                                        <!-- /ko -->
+
+                                                        <!-- ko if: total_distance[$index()] > 0 && total_distance[$index()] > 1000 -->
+                                                            <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()]/1000).toFixed(1)+' km'"></span>
+                                                        <!-- /ko -->
+                                                     <!-- /ko -->
+                                                
+                                                          <!-- ko if: typeof (avg_heart_rate) !== "undefined" || typeof (max_heart_rate) !== "undefined" -->
+                                                                 <img class="inlineIcon" alt="Heart rate" title="bpm" src="Images/heart.png" />
+
+                                                                    <!-- ko if:  avg_heart_rate[$index()]  >= 0 -->
+                                                                        <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate[$index()]"></span>
+                                                                    <!-- /ko -->
+
+                                                                    <!-- ko if: max_heart_rate[$index()] >= 0 -->
+                                                                        <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate[$index()]"></span>
+                                                                    <!-- /ko -->
+
+                                                           <!-- /ko -->
+
+                                                        <!-- ko if: typeof (total_calories) !== "undefined" && total_calories.length > 0 && total_calories[$index()] > 0 -->
+                                                            <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+
+                                                            <span title="Total calories (kcal)" data-bind="text: total_calories[$index()]"></span>
+                                                        <!-- /ko -->
+                                                
+
+                                                    <!-- ko if: typeof (total_training_effect) !== "undefined" &&  total_training_effect[$index()] >= 1 -->
+                                                            TE
+                                                         <span data-bind="text: total_training_effect[$index()]"></span>
+
+                                                        <!-- meter tag ignored in  IE 10, but works in Chrome -->
+                                                        <meter title="Training effect" style="padding-left: 5px; padding-bottom: 6px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect[$index()]"></meter>
+                                                    <!-- /ko -->
+                                                </div>
+                                            </li>
+
+                                        </ul>
+                                    
+                                    <!-- /ko -->
+                                </a>
+                            </div>
+
+                            <div style="float: right; width: 100px">
+                                <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
+                                <img data-bind="attr: { src :  _staticGoogleMapSrc }" />
+                                <!-- /ko -->
+                            </div>
+
+                        </li>
+
+                    </ul>
+
+               </div>
+                 <!-- /ko -->
+
+                <div id="activityMap"></div>
+               
             </div>
-            <div id="activityMap"></div>
-         
 
         </div>
-
-        <div id ="scatterChart"></div>
 
         <div id="divChartWrapper">
 
             <div id="multiChart"></div>
             <div id="zonesChart"></div>
+
         </div>
-
-
-        <section style="clear: both" id="hrvChart"></section>
-
 
         <div id="divMsgMap"></div>
 
-        <div>
-            <div id="speedVsHRChart"></div>
-            <!--<div id="zonesChart"></div>-->
-        </div>
-
-
-        <!--    <div id="divHRZones"  >
-        <h3 style="text-align:center">Heart Rate Zones</h3>
-        <button id="btnSaveZones" type="button">Save</button>
-        <button id="btnNewZone" type="button">New</button>
-   
-    </div>-->
 
     </div>
-
-
-
 
 </body>
 

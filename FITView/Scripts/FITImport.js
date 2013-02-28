@@ -1,24 +1,29 @@
 ﻿//use strict
-
+// JSHint options
+/* global indexedDB:true, FITCRCTimestampUtility:true, importScripts:true, FIT:true, FileReaderSync:true, self:true */
+// NB!  self = dedicatedWorkerContext automatically set in the global namespace
 importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITActivityFile.js', '/Scripts/Messages/FITSportSetting.js', 'FITCRCTimestampUtility.js');
 
 (
-
  function () {
+     "use strict";
 
-     var util = new FITCRCTimestampUtility();
+     //var self = this;
+    
+     var util = FIT.CRCTimestampUtility();
 
      var fitFileManager = [];
 
      var workerThreadContext = self;
 
-     // self = dedicatedWorkerContext
+     
      // console = undefined in worker -> comment out console.* msg
 
-     self.addEventListener('message', function (e) {
+     function messageHandler(e) {
          // We get an MessageEvent of type message = e
          var data = e.data;
          var currentFileBuffer;
+         var options;
 
          if (data.request === undefined) {
              self.postMessage("Unrecognized command!");
@@ -28,7 +33,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          switch (data.request) {
 
              case 'importFitFile':
-                 var options = {
+
+                  options = {
                      fitfiles: data.fitfiles,
                      fitfile: data.fitfile,
                      store: data.store
@@ -37,22 +43,25 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  };
 
                  if (typeof (options.fitfiles) === "undefined") {  // Only single file
-                     fitFileManager = FitFileImport(options);
+                     fitFileManager = new FitFileImport(options);
                      currentFileBuffer = fitFileManager.readFitFile();
                  }
 
                  // Batch import
 
-                 FitFileImport(options);
+                 fitFileManager = new FitFileImport(options);
 
                  break;
+
              default:
+
                  self.postMessage('Unrecognized command' + data.request);
                  break;
          }
+     }
 
-
-     }, false);
+     // Listen to events to start import
+     self.addEventListener('message', messageHandler , false);
 
 
      function FitFileImport(options) {
@@ -114,7 +123,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          var activityStore;
          var lengthStore;
          var eventStore;
-         var fileidStore
+         var fileidStore;
          var deviceinfoStore;
          var metaStore;
 
@@ -227,35 +236,36 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  "name": "byte",
                  "invalidValue": 0xFF
              }
-         }
+         };
 
 
         function deleteDb() {
              // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
 
-             self.postMessage({ response: "info", data: "deleteDb()" });
+            if (storeInIndexedDB) {
+                self.postMessage({ response: "info", data: "deleteDb()" });
 
-             var req;
+                var req;
 
-             //indexedDB = indexedDB || mozIndexedDB;
-             try {
-                 req = indexedDB.deleteDatabase(DB_NAME);
-             } catch (e) {
-                 self.postMessage({ response: "error", data: e.message });
-             }
-             //req.onblocked = function (evt) {
-             //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
-             //}
+                //indexedDB = indexedDB || mozIndexedDB;
+                try {
+                    req = indexedDB.deleteDatabase(DB_NAME);
+                } catch (e) {
+                    self.postMessage({ response: "error", data: e.message });
+                }
+                //req.onblocked = function (evt) {
+                //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+                //}
 
 
-             req.onsuccess = function (evt) {
-                 self.postMessage({ response: "info", data: "Success deleting database" });
-             };
+                req.onsuccess = function (evt) {
+                    self.postMessage({ response: "info", data: "Success deleting database" });
+                };
 
-             req.onerror = function (evt) {
-                 self.postMessage({ response: "error", data: "Error deleting database" });
-             };
-
+                req.onerror = function (evt) {
+                    self.postMessage({ response: "error", data: "Error deleting database" });
+                };
+            }
          }
 
 
@@ -263,64 +273,67 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var rawData;
              var req;
              //console.log("openDb ...");
-             self.postMessage({ response: "info", data: "Starting openDb(), version " + DB_VERSION.toString() });
-             req = indexedDB.open(DB_NAME, DB_VERSION);
+             if (storeInIndexedDB) {
+                 self.postMessage({ response: "info", data: "Starting openDb(), version " + DB_VERSION.toString() });
+                 req = indexedDB.open(DB_NAME, DB_VERSION);
 
-             req.onblocked = function (evt) {
-                 self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
-             }
+                 req.onblocked = function (evt) {
+                     self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+                 };
 
-             req.onsuccess = function (evt) {
-                 // Better use "this" than "req" to get the result to avoid problems with
-                 // garbage collection.
-                 // db = req.result;
-                 self.postMessage({ response: "info", data: "Success openDb(), version " + DB_VERSION.toString() });
-                 db = this.result;
+                 req.onsuccess = function (evt) {
+                     // Better use "this" than "req" to get the result to avoid problems with
+                     // garbage collection.
+                     // db = req.result;
+                     self.postMessage({ response: "info", data: "Success openDb(), version " + DB_VERSION.toString() });
+                     db = this.result;
 
-                 // Main handler for DB errors - takes care of bubbling events 
-                 db.onerror = function (evt) {
-                     self.postMessage({
-                         response: "error", data: "Database error "
-                     });
-                     //+ evt.target.errorCode.toString()
+                     // Main handler for DB errors - takes care of bubbling events 
+                     db.onerror = function (evt) {
+                         self.postMessage({
+                             response: "error", data: "Database error "
+                         });
+                         //+ evt.target.errorCode.toString()
 
-                 }
-                 // console.log("openDb DONE");
+                     };
+                     // console.log("openDb DONE");
+                     callback();
+                     // getRawdata();
+
+                     // rawData = getRawdata(fileBuffer);
+
+                     //self.close();  // Free resources, terminate worker
+                 };
+
+                 req.onerror = function (evt) {
+                     //console.error("openDb:", evt.target.errorCode);
+                     self.postMessage({ response: "error", data: "openDB error " + evt.target.errorCode.toString() });
+
+                 };
+
+                 req.onupgradeneeded = function (evt) {
+                     //console.log("openDb.onupgradeneeded");
+                     self.postMessage({ response: "info", data: "Starting onupgradeneeded, version " + DB_VERSION.toString() });
+                     // self.postMessage({response : "onupgradeneeded", data : evt});
+                     recordStore = evt.currentTarget.result.createObjectStore(RECORD_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                     lapStore = evt.currentTarget.result.createObjectStore(LAP_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                     sessionStore = evt.currentTarget.result.createObjectStore(SESSION_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                     hrvStore = evt.currentTarget.result.createObjectStore(HRV_OBJECTSTORE_NAME, { keyPath: 'start_time', autoIncrement: false });
+                     activityStore = evt.currentTarget.result.createObjectStore(ACTIVITY_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                     lengthStore = evt.currentTarget.result.createObjectStore(LENGTH_OBJECTSTORE_NAME, { keyPath: 'start_time.value', autoIncrement: false });
+                     eventStore = evt.currentTarget.result.createObjectStore(EVENT_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
+                     fileidStore = evt.currentTarget.result.createObjectStore(FILEID_OBJECTSTORE_NAME, { keyPath: 'time_created.value', autoIncrement: false });
+                     deviceinfoStore = evt.currentTarget.result.createObjectStore(DEVICEINFO_OBJECTSTORE_NAME, { autoIncrement: true });
+                     metaStore = evt.currentTarget.result.createObjectStore(META_OBJECTSTORE_NAME, { keyPath: 'fitFile.name' });
+                     //getRawdata();
+
+
+                     deviceinfoStore.createIndex('timestamp', 'timestamp.value', { unique: false }); // Several device_indexes can have same timestamp
+                     //store.createIndex('title', 'title', { unique: false });
+                     //store.createIndex('year', 'year', { unique: false });
+                 };
+             } else
                  callback();
-                 // getRawdata();
-
-                // rawData = getRawdata(fileBuffer);
-
-                 //self.close();  // Free resources, terminate worker
-             };
-
-             req.onerror = function (evt) {
-                 //console.error("openDb:", evt.target.errorCode);
-                 self.postMessage({ response: "error", data: "openDB error " + evt.target.errorCode.toString() });
-
-             };
-
-             req.onupgradeneeded = function (evt) {
-                 //console.log("openDb.onupgradeneeded");
-                 self.postMessage({ response: "info", data: "Starting onupgradeneeded, version " + DB_VERSION.toString() });
-                 // self.postMessage({response : "onupgradeneeded", data : evt});
-                 recordStore = evt.currentTarget.result.createObjectStore(RECORD_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
-                 lapStore = evt.currentTarget.result.createObjectStore(LAP_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
-                 sessionStore = evt.currentTarget.result.createObjectStore(SESSION_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
-                 hrvStore = evt.currentTarget.result.createObjectStore(HRV_OBJECTSTORE_NAME, { keyPath: 'start_time', autoIncrement: false });
-                 activityStore = evt.currentTarget.result.createObjectStore(ACTIVITY_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
-                 lengthStore = evt.currentTarget.result.createObjectStore(LENGTH_OBJECTSTORE_NAME, { keyPath: 'start_time.value', autoIncrement: false });
-                 eventStore = evt.currentTarget.result.createObjectStore(EVENT_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
-                 fileidStore = evt.currentTarget.result.createObjectStore(FILEID_OBJECTSTORE_NAME, { keyPath: 'time_created.value', autoIncrement: false });
-                 deviceinfoStore = evt.currentTarget.result.createObjectStore(DEVICEINFO_OBJECTSTORE_NAME, { autoIncrement: true });
-                 metaStore = evt.currentTarget.result.createObjectStore(META_OBJECTSTORE_NAME, { keyPath: 'fitFile.name' });
-                 //getRawdata();
-
-
-                 deviceinfoStore.createIndex('timestamp', 'timestamp.value', { unique: false }); // Several device_indexes can have same timestamp
-                 //store.createIndex('title', 'title', { unique: false });
-                 //store.createIndex('year', 'year', { unique: false });
-             };
          }
 
          /**
@@ -328,8 +341,11 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
      * @param {string} mode either "readonly" or "readwrite"
      */
          function getObjectStore(store_name, mode) {
-             var tx = db.transaction(store_name, mode);
-             return tx.objectStore(store_name);
+             if (storeInIndexedDB) {
+                 var tx = db.transaction(store_name, mode);
+                 return tx.objectStore(store_name);
+             } else
+                 return undefined;
          }
 
          function addRawdata(store, datarec) {
@@ -403,7 +419,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  var metaStore = getObjectStore(META_OBJECTSTORE_NAME, "readwrite");
                  addRawdata(metaStore, headerInfo);
 
-                
                  rawData = getFITDataRecords(fileBuffer,headerInfo);
                  if (typeof (rawData) === "undefined") 
                      rawData = {}; // Allow for hooking up headerinfo on rawdata object
@@ -421,49 +436,49 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
          }
 
-         /**
-      * @param {number} key
-      * @param {IDBObjectStore=} store
-      */
-         function deletePublication(key, store) {
-             //console.log("deletePublication:", arguments);
+      //   /**
+      //* @param {number} key
+      //* @param {IDBObjectStore=} store
+      //*/
+      //   function deletePublication(key, store) {
+      //       //console.log("deletePublication:", arguments);
 
 
-             if (typeof store == 'undefined')
-                 store = getObjectStore(DB_STORE_NAME, 'readwrite');
+      //       if (typeof store === 'undefined')
+      //           store = getObjectStore(DB_STORE_NAME, 'readwrite');
 
-             // As per spec http://www.w3.org/TR/IndexedDB/#object-store-deletion-operation
-             // the result of the Object Store Deletion Operation algorithm is
-             // undefined, so it's not possible to know if some records were actually
-             // deleted by looking at the request result.
-             var req = store.get(key);
-             req.onsuccess = function (evt) {
-                 var record = evt.target.result;
-                 //console.log("record:", record);
-                 if (typeof record == 'undefined') {
-                     //displayActionFailure("No matching record found");
-                     return;
-                 }
-                 // Warning: The exact same key used for creation needs to be passed for
-                 // the deletion. If the key was a Number for creation, then it needs to
-                 // be a Number for deletion.
-                 req = store.delete(key);
-                 req.onsuccess = function (evt) {
-                     //console.log("evt:", evt);
-                     //console.log("evt.target:", evt.target);
-                     //console.log("evt.target.result:", evt.target.result);
-                     //console.log("delete successful");
-                     //displayActionSuccess("Deletion successful");
-                     //displayPubList(store);
-                 };
-                 req.onerror = function (evt) {
-                     //console.error("deletePublication:", evt.target.errorCode);
-                 };
-             };
-             req.onerror = function (evt) {
-                 //console.error("deletePublication:", evt.target.errorCode);
-             };
-         }
+      //       // As per spec http://www.w3.org/TR/IndexedDB/#object-store-deletion-operation
+      //       // the result of the Object Store Deletion Operation algorithm is
+      //       // undefined, so it's not possible to know if some records were actually
+      //       // deleted by looking at the request result.
+      //       var req = store.get(key);
+      //       req.onsuccess = function (evt) {
+      //           var record = evt.target.result;
+      //           //console.log("record:", record);
+      //           if (typeof record === 'undefined') {
+      //               //displayActionFailure("No matching record found");
+      //               return;
+      //           }
+      //           // Warning: The exact same key used for creation needs to be passed for
+      //           // the deletion. If the key was a Number for creation, then it needs to
+      //           // be a Number for deletion.
+      //           req = store.delete(key);
+      //           req.onsuccess = function (evt) {
+      //               //console.log("evt:", evt);
+      //               //console.log("evt.target:", evt.target);
+      //               //console.log("evt.target.result:", evt.target.result);
+      //               //console.log("delete successful");
+      //               //displayActionSuccess("Deletion successful");
+      //               //displayPubList(store);
+      //           };
+      //           req.onerror = function (evt) {
+      //               //console.error("deletePublication:", evt.target.errorCode);
+      //           };
+      //       };
+      //       req.onerror = function (evt) {
+      //           //console.error("deletePublication:", evt.target.errorCode);
+      //       };
+      //   }
 
          function getFITDataRecords(fileBuffer,headerInfo) {
 
@@ -504,12 +519,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              //    self.postMessage({ response: "info", data: "device info transaction complete" });
              //}
 
-             var prevTimestamp = undefined;
+             var prevTimestamp;
              var TIMESTAMP_THRESHOLD = 60 * 60 * 1000; // 60 minute max. threshold for acceptable consequtive timestamps
              var unacceptableTimestamp = false;
 
-             var prevLat = undefined;
-             var prevLong = undefined;
+             var prevLat;
+             var prevLong;
 
              var SEMICIRCLE_THRESHOLD = 1520000;
              var unacceptableLat = false;
@@ -719,15 +734,13 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              // Build rawdata structure tailored for integration with highchart
 
                              if (!unacceptableTimestamp && !unacceptableLat && !unacceptableLong) {
+
                                  for (var prop in datarec) {
 
-                                     //if (rec[prop] !== undefined) {
-                                     //  console.log("Found field " + filter+" i = "+i.toString());
-
-                                     //if (rec[prop].value !== undefined) {
+                                     if (prop === "message" || prop === "globalMessageType") 
+                                         continue; // Skip these, they don't have a .value property
 
                                      var val = datarec[prop].value;
-
 
                                      if (val !== undefined) {
 
@@ -751,6 +764,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                                  break;
                                              case "length":
                                                  rawdata[datarec.message][prop][counter.lengthCounter - 1] = val;
+                                                 break;
                                              case "device_info":
                                                  rawdata[datarec.message][prop][counter.deviceInfoCounter - 1] = val;
                                                  break;
@@ -771,12 +785,11 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                                  break;
                                          }
                                      }
-                                     //else
-                                     //    data[rec.message][field].push([util.convertTimestampToUTC(timestamp)+timeOffset, val]);
-                                     // }
+                                     else
+                                         self.postMessage({ response: "info", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
                                  }
                              }
-                             //}
+                             
                          } else
                              self.postMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
                      }
@@ -786,12 +799,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              clearInterval(progressHandle);
 
              self.postMessage({ response: "importFinished", data: 100 });
-             self.postMessage({ response: "messageCounter", counter: counter });
-
+            // self.postMessage({ response: "messageCounter", counter: counter });
+             rawdata._msgCounter_ = counter;
              // Persist file_id msg.
 
              if (fileidRec !== undefined)
-                 if (fileidRec.time_created != undefined)
+                 if (fileidRec.time_created !== undefined)
                      addRawdata(fileidStore, fileidRec);
                  else
                      self.postMessage({ response: "error", data: "Undefined time_created in file_id record, cannot save to indexedDB, skipped" });
@@ -835,6 +848,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var msg = { "message": getGlobalMessageTypeName(globalMsgType) };
              msg.globalMessageType = globalMsgType;
 
+             var prop;
+
              //if (globalMsg === undefined)
 
              //    self.postMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
@@ -859,7 +874,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  if (!rec.content[field].invalid) {
 
                      if (globalMsg[fieldDefNr] !== undefined && globalMsg[fieldDefNr] !== null) {
-                         var prop = globalMsg[fieldDefNr].property;
+                         prop = globalMsg[fieldDefNr].property;
 
                          var unit = globalMsg[fieldDefNr].unit;
                          var scale = globalMsg[fieldDefNr].scale;
@@ -1001,7 +1016,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          }
                      } else {
 
-
                          // Allow for auto generating unknown properties than have data (not defined in FITActivitiyFile.js)
                          if (fieldDefNr === 253) { // Seems like field def. 253 is always a timestamp
                              prop = "timestamp";
@@ -1011,7 +1025,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          }
 
                          else {
-                             if (fieldDefNr == undefined)
+                             if (fieldDefNr === undefined)
                                  fieldDefNr = "undefined";
 
                              prop = "unknown_fieldDefinitionNr_" + fieldDefNr.toString();
@@ -1021,11 +1035,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          msg[prop] = { "value": rec.content[field].value };
 
                      }
-
-
                  }
-
-
 
                  logger += fieldDefNr.toString();
 
@@ -1041,7 +1051,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              }
 
              // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
-             if (globalMsgType != GLOBAL_FIT_MSG.RECORD && globalMsgType != GLOBAL_FIT_MSG.HRV)
+             if (globalMsgType !== GLOBAL_FIT_MSG.RECORD && globalMsgType !== GLOBAL_FIT_MSG.HRV)
                  self.postMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
              //}
 
@@ -1099,7 +1109,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                  22: "source",
                  104: "battery"
-             }
+             };
 
              var globalMessage = mesg_num[globalMessageType];
              if (globalMessage === undefined)
@@ -1273,21 +1283,18 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              return headerInfo;
 
-         };
+         }
 
          function getRecord(dviewFit, maxReadToByte) {
 
-
-
+             var fieldNr;
 
              var recHeader = {};
              var recContent = {};
              var record = {};
 
-
              var FIT_NORMAL_HEADER = 0;
              var FIT_COMPRESSED_TIMESTAMP = 1;
-
 
              // HEADER
 
@@ -1334,7 +1341,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      // VARIABLE content - field definitions as properties
 
                      var fdefNr, fsize, fbtype;
-                     for (var fieldNr = 0; fieldNr < recContent.fieldNumbers && index < maxReadToByte - 3 ; fieldNr++) {
+                     for (fieldNr = 0; fieldNr < recContent.fieldNumbers && index < maxReadToByte - 3 ; fieldNr++) {
 
                          fdefNr = dviewFit.getUint8(index++);
                          fsize = dviewFit.getUint8(index++);
@@ -1373,7 +1380,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                      // var logging = "";
                      var currentField, bType, bSize;
-                     for (var fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
+                     for (fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
                          currentField = "field" + fieldNr.toString();
                          bType = localMsgDefinition.content[currentField].baseType;
                          bSize = localMsgDefinition.content[currentField].size;
@@ -1481,25 +1488,21 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              for (fileNr = 0; fileNr < len; fileNr++) {
                  fitFileReader = new FileReaderSync(); // For web worker, hopefully used readers are released from memory by GC, have not tried shared single reader
                  try {
-                     fileBuffers.push(fitFileReader.readAsArrayBuffer(options.fitfiles[fileNr]))
+                     fileBuffers.push(fitFileReader.readAsArrayBuffer(options.fitfiles[fileNr]));
                      rawData = getRawdata(fileBuffers[fileNr], options.fitfiles[fileNr]); // Implicitly sends data to requesting process via postMessage 
                  } catch (e) {
                      self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes", event: e });
                  }
              }
 
-             db.close();
+             if (storeInIndexedDB && db)
+              db.close();
          });
 
-
-
      }
+ }
+) // Func. expression
 
-
- })
-
-();
-
-
+(); // Self-invoking function
 
 

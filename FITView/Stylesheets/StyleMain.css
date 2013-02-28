@@ -1,139 +1,11 @@
 ﻿header, footer {
- 
-   
     /*background-image: -webkit-linear-gradient( left, #ff0000, #ffa500 13.0%,#ffff00 26.0%,#0000ff 39.0%,#008000 52.0%,#4b0082 65.0%,#ee82ee 78.0%)*/
-     background-color : lightblue;
-    background-image : -webkit-linear-gradient( 45deg, lightblue  , blue );
-    background-image : -ms-linear-gradient( 45deg,lightblue,blue);
-    background-image:  -moz-linear-gradient( 45deg, lightblue,blue);
-    background-image : linear-gradient(45deg, lightblue,blue);
-  
+    background-color: lightblue;
+    background-image: -webkit-linear-gradient( 45deg, lightblue, blue );
+    background-image: -ms-linear-gradient( 45deg,lightblue,blue);
+    background-image: -moz-linear-gradient( 45deg, lightblue,blue);
+    background-image: linear-gradient(45deg, lightblue,blue);
 }
-
-/*http://designmodo.com/css3-dropdown-menu/*/
-
-.menu,
-.menu ul,
-.menu li,
-.menu a {
-    margin: 0;
-    padding: 0;
-    border: none;
-    outline: none;
-}
- 
-.menu {
-    height: 40px;
-    width: 100%;
- 
-    background: #4c4e5a;
-    background: -webkit-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
-    background: -moz-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
-    background: -o-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
-    background: -ms-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
-    background: linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
- 
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-    margin-top:2px;
-    margin-bottom:2px;
-}
- 
-.menu li {
-    z-index: 1;
-    position: relative;
-    list-style: none;
-    float: left;
-    display: block;
-    height: 40px;
-}
-
-
-
-.menu li a {
-    display: block;
-    padding: 0 5px;
-    margin: 6px 0;
-    line-height: 28px;
-    text-decoration: none;
- 
-    border-left: 1px solid #393942;
-    border-right: 1px solid #4f5058;
- 
-    font-family: Helvetica, Arial, sans-serif;
-    font-weight: bold;
-    font-size: 13px;
- 
-    color: #f3f3f3;
-    text-shadow: 1px 1px 1px rgba(0,0,0,.6);
- 
-    -webkit-transition: color .2s ease-in-out;
-    -moz-transition: color .2s ease-in-out;
-    -o-transition: color .2s ease-in-out;
-    -ms-transition: color .2s ease-in-out;
-    transition: color .2s ease-in-out;
-}
- 
-.menu li:first-child a { border-left: none; }
-.menu li:last-child a { border-right: none; }
- 
-.menu li:hover > a { color: #8fde62; }
-
-.menu ul {
-    max-width : 300px;
-
-    z-index : 1;
-    position: absolute;
-    top: 40px;
-    left: 0;
- 
-    opacity: 0;
-    background: #1f2024;
-
-    overflow-x: scroll;
- 
-    -webkit-border-radius: 0 0 5px 5px;
-    -moz-border-radius: 0 0 5px 5px;
-    border-radius: 0 0 5px 5px;
- 
-    -webkit-transition: opacity .25s ease .1s;
-    -moz-transition: opacity .25s ease .1s;
-    -o-transition: opacity .25s ease .1s;
-    -ms-transition: opacity .25s ease .1s;
-    transition: opacity .25s ease .1s;
-}
- 
-.menu li:hover > ul { opacity: 1; }
- 
-.menu ul li {
-    height: 0;
-    overflow: hidden;
-    padding: 0;
- 
-    -webkit-transition: height .25s ease .1s;
-    -moz-transition: height .25s ease .1s;
-    -o-transition: height .25s ease .1s;
-    -ms-transition: height .25s ease .1s;
-    transition: height .25s ease .1s;
-}
- 
-.menu li:hover > ul li {
-    height: 36px;
-    overflow: visible;
-    padding: 0;
-}
-
-.menu ul li a {
-    width: 600px;
-    /*padding: 4px 0 4px 40px;*/
-    margin: 0;
- 
-    border: none;
-    border-bottom: 1px solid #353539;
-}
- 
-.menu ul li:last-child a { border: none; }
 
 
 /*.sessionList li { 
@@ -146,45 +18,71 @@ white-space: nowrap;
 }*/
 
 #divHeaderInfo {
-  margin-left : 5px;
-  margin-top : 2px;
+    margin-left: 5px;
+    margin-top: 2px;
 }
-
 
 #divMapWrapper {
     min-height: 270px;
 }
 
+#importedActivities {
+    overflow-y: scroll;
+    width: 30%;
+    height: 270px;
+    float: right;
+}
+
+#activityList {
+    list-style-type: none;
+    padding-left: 0px;
+    -webkit-padding-start: 0px; /* Defaults to 40px in Chrome*/
+}
+
+.newActivity {
+    clear: both;
+    /*border-bottom: 1px solid black;*/
+    height: 100px;
+    margin-bottom: 2px;
+}
+
+#activityList li a {
+    text-decoration: none;
+}
+
+#sportList {
+    list-style-type: none;
+    padding-left: 0px;
+    -webkit-padding-start: 0px;
+}
+
 #activityMap {
-    width: 69%;
-    height : 270px;
+    width: 49%;
+    height: 270px;
     /*height : 270px;*/
     /*background-color : white;*/
-    float : right;
-    
+    float: right;
     /*display : none; */
 }
 
-
-
 #liveImage {
-   width : 30%;
+    width: 20%;
     /*height : 270px;*/
-   height : 270px;
-   margin-left : 5px;
-   float : left;
+    height: 270px;
+    margin-left: 5px;
+    float: left;
 }
 
 .loadButton {
     height: 30px;
-    padding : 0;
-    background : transparent;
+    padding: 0;
+    background: transparent;
     border: none;
 }
 
 #divLoading {
-  width: 45px;
-  background: #4c4e5a;
+    width: 45px;
+    background: #4c4e5a;
     background: -webkit-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
     background: -moz-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
     background: -o-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
@@ -193,52 +91,36 @@ white-space: nowrap;
 }
 
 #divChartWrapper {
-margin-top : 5px;
-
-/*display : -webkit-flex;
+    margin-top: 5px;
+    /*display : -webkit-flex;
 display : -ms-flexbox;
 display : -moz-flex; 
 display  : flex;
 -webkit-flex-flow :row wrap;
 -webkit-align-items : stretch;*/
- height: 550px;
+    height: 550px;
 }
 
 
 #multiChart {
     /*visibility : hidden;*/
     /*-webkit-flex : 5 1;*/
-    float:left;
-   width: 90%;
-    height : inherit;
+    float: left;
+    width: 90%;
+    height: inherit;
 }
 
 #zonesChart {
     /*display : none;*/
     /*visibility : hidden;*/
-   /*z-index : 1;*/
+    /*z-index : 1;*/
     /*-webkit-flex : 1  1;*/
-   
     /*height: 200px;*/
     /*float : left;*/
     float: right;
-    width : 10%;
+    width: 10%;
     height: inherit;
 }
-
-#hrvChart {
-    width: 100%;
-}
-
-
-#speedVsHRChart {
-   width : 49%;
-    /*height: 200px;*/
-    float : left;
-    visibility : hidden
-    
-}
-
 
 
 #divHRZones {
@@ -246,35 +128,33 @@ display  : flex;
     width: 50%;
 }
 
-
-
 /* FIT global messages for map */
 
 .FITrecord {
-    padding : 1px;
-    width : 1px;
-    float : left;
-    background :   #000;
+    padding: 1px;
+    width: 1px;
+    float: left;
+    background: #000;
 }
 
 
 .FITfile_id {
-    padding : 1px;
+    padding: 1px;
     width: 5px;
     float: left;
     background: #ffd800;
 }
 
 .FITunknown {
-    padding : 1px;
-        width: 1px;
+    padding: 1px;
+    width: 1px;
     float: left;
     background: #f00;
 }
 
 .FIThrv {
-    padding : 1px;
-     width: 1px;
+    padding: 1px;
+    width: 1px;
     float: left;
     background: #808080;
 }
@@ -301,28 +181,28 @@ display  : flex;
 }
 
 .FITdevice_info {
-    padding : 1px;
+    padding: 1px;
     width: 5px;
     float: left;
     background: lightblue;
 }
 
 .FITevent {
-    padding : 1px;
+    padding: 1px;
     width: 7px;
     float: left;
     background: #b200ff;
 }
 
 .FITfile_creator {
-    padding : 1px;
+    padding: 1px;
     width: 3px;
     float: left;
     background: #b6ff00;
 }
 
 .FITlength {
-    padding : 1px;
+    padding: 1px;
     width: 3px;
     float: left;
     background: #0ff;
@@ -332,24 +212,21 @@ section#lapList {
     margin-left: 0;
     padding-left: 0;
     clear: both;
-    display : none;
-    
+    display: none;
 }
 
 #lapList article {
-    float : left;
-    text-align : center;
-
+    float: left;
+    text-align: center;
     /*list-style-type: none;*/
-
     padding-right: 10px;
-    background-color:  #0094ff;
-    border : 1px solid black;
+    background-color: #0094ff;
+    border: 1px solid black;
     /*padding : 5px;*/
-    margin-top : 5px;
+    margin-top: 5px;
     margin-left: 0px;
     margin-right: 5px;
-    margin-bottom : 5px;
+    margin-bottom: 5px;
 }
 
     #lapList article a {
@@ -357,62 +234,59 @@ section#lapList {
     }
 
 .lapNr {
-    font-size : x-large;
+    font-size: x-large;
 }
 
 .lapSport {
-  /*float : left;*/
-  padding-left : 5px;
-  width : 16px;
-  height : 16px;
-  border : none;
+    /*float : left;*/
+    padding-left: 5px;
+    width: 16px;
+    height: 16px;
+    border: none;
 }
 
 .lapTrigger {
     /*float: right;*/
-    height : 16px;
-    width : 16px;
-    border : none;
+    height: 16px;
+    width: 16px;
+    border: none;
 }
 
 .sessionSport {
-    border : none;  /* IE 10 sets border by default*/
+    border: none; /* IE 10 sets border by default*/
     width: 24px;
     height: 24px;
-    padding : 2px;
+    padding: 2px;
 }
 
 .sessionFullDate {
-  /*font-size : larger;*/
+    /*font-size : larger;*/
 }
 
-.sessionHHMMSS  {
+.sessionHHMMSS {
     /*color : lightgray;*/
     /*font-size: larger;*/
 }
 
 .lapHHMMSS {
     /*color : lightgray;*/
-   /* font-size: larger; */ 
+    /* font-size: larger; */
 }
 
 .lapTOTALDISTANCE {
     /*color: lightgray;*/
     /*font-size: larger;*/
 }
+
 .sessionTOTALDISTANCE {
     /*color: lightgray;*/
     /*font-size: larger;*/
 }
 
 #sessionDetails {
-   /*color: lightgray;*/
-   /*font-size: larger;*/
-  
-  
-   padding-left : 5px;
-   
-  
+    /*color: lightgray;*/
+    /*font-size: larger;*/
+    padding-left: 5px;
     /*background: #4c4e5a;
     background: -webkit-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
     background: -moz-linear-gradient(top, #4c4e5a 0%,#2c2d33 100%);
@@ -430,58 +304,54 @@ ul#sessionList {
     padding-left: 0;
     white-space: nowrap;
     /*background-color: lightgrey;*/
-   
     /*display : none;*/
 }
 
 #sessionList li {
-    font-size :medium;
-    float : left;
+    font-size: medium;
+    float: left;
     /*list-style-type: none;*/
     /*padding-right: 10px;*/
     /*background-color:  lightgrey;*/
-     margin-top : 5px;
+    margin-top: 5px;
     margin-left: 0px;
     margin-right: 5px;
-    margin-bottom : 5px;
-    height : 40px;
+    margin-bottom: 5px;
+    height: 40px;
     /*clear : both;*/ /*Added to force newline*/
 }
 
-#sessionList li a {
-    text-decoration: none;
-}
+    #sessionList li a {
+        text-decoration: none;
+    }
 
 
 .sessionTrigger {
-    
     height: 16px;
     width: 16px;
-    border : none;
+    border: none;
 }
 
 .SessionLapErrorUndefined {
-    background-color : red;
+    background-color: red;
 }
 
 
 
 
 #divSessionLap {
-    display: none;  /* Turn off to allow for Applybindings (Knockoutjs data-binding) to get effect ...*/
+    display: none; /* Turn off to allow for Applybindings (Knockoutjs data-binding) to get effect ...*/
 }
 
 .inlineIcon {
     padding-top: 3px;
-    border : none; /* Turn off default IE 10 border*/
-    height : 16px;
+    border: none; /* Turn off default IE 10 border*/
+    height: 16px;
     padding-right: 5px;
     padding-left: 5px;
-    
 }
 
 .FITprogressImport {
     display: none;
     /*float : right;*/
-    
 }

@@ -5,10 +5,7 @@ if (typeof (FIT) === "undefined")
 
 FIT.ActivityFile = function () {
 
-
-
     var recordProperties = {
-
 
         253: { "property": "timestamp", "unit": "s" },
         0: { "property": "position_lat", "unit": "semicirles" },
@@ -37,6 +34,7 @@ FIT.ActivityFile = function () {
     };
 
     var sessionProperties = {
+
         254: { "property": "message_index" },
         253: { "property": "timestamp", "unit": "s" },   // Session end time
         0: { "property": "event" },

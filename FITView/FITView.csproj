@@ -104,6 +104,7 @@
     <Content Include="Images\laptrigger\time.png" />
     <Content Include="Images\laptrigger\distance.png" />
     <Content Include="Images\laptrigger\manual.png" />
+    <Content Include="Images\sport\generic.png" />
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
     <Content Include="Scripts\Messages\FITCommonMessage.js" />
@@ -130,6 +131,7 @@
     <Content Include="Snippets\loadchart.html" />
     <Content Include="Snippets\SessionView.html" />
     <Content Include="Snippets\VaryingArrays.txt" />
+    <Content Include="Stylesheets\dropdownmenu.css" />
     <Content Include="Stylesheets\StyleMain.css" />
     <Content Include="Web.config" />
   </ItemGroup>

@@ -1,4 +1,7 @@
-﻿function FITCRCTimestampUtility() {
+﻿if (typeof (FIT) === "undefined")
+    var FIT = {};
+
+FIT.CRCTimestampUtility = function () {
     var expose = {};
 
     var d = new Date();
@@ -70,12 +73,26 @@
         return timestamp * 1000 + OFFSET + timezoneOffset; // millisec.
     }
 
+    //expose.getLocalTimestampString = function (timestamp) {
+    //    var localTimestamp = expose.addTimezoneOffsetToUTC(timestamp); // no need for this....
+    //    var d = new Date();
+    //    d.setTime(localTimestamp);
+    //    var str = d.toLocaleString(); --> automatically converts UTC date to local time
+    //    return str;
+    //}
+
+
 
     expose.getTimezoneOffsetFromUTC = function () {
         return timezoneOffset;
     }
 
 
+    expose.getLatLongStringForUrl = function (semilat, semilong) {
+        var comma = '%2C'; // ,
+        var expr = expose.semiCirclesToDegrees(semilat).toString() + comma + expose.semiCirclesToDegrees(semilong).toString();
+        return expr;
+    }
 
     expose.semiCirclesToDegrees = function (semicircles) {
         return semicircles * 180 / 2147483648;  // 2 147 483 648 = 2^31

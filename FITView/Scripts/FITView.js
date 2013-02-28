@@ -1,6 +1,5 @@
 // JSHint options
-/* global ko:true, Highcharts:true, Modernizr:true, google:true, indexedDB:true, FITCRCTimestampUtility:true, FIT:true */
-
+/* global ko:true, Highcharts:true, Modernizr:true, google:true, indexedDB:true, FIT:true */
 
 (function () {
     "use strict";
@@ -29,6 +28,7 @@
     };
 
     var lap_trigger = {
+
         manual: 0,
         time: 1,
         distance: 2,
@@ -40,6 +40,7 @@
     };
 
     var FITFileType = {
+
         sportsettingfile : 3,
         activityfile : 4
     };
@@ -77,7 +78,6 @@
                 }
 
                 return (rawdata.record.position_lat === undefined || rawdata.record.position_long === undefined) ? false : true;
-
             },
 
             // Combines two series, i.e heart rate and speed
@@ -143,7 +143,6 @@
                     return values;
                     // But, could perhaps add relative start time...?
                 }
-
 
                 len = timestamps.length;
 
@@ -214,11 +213,8 @@
 
                         }
 
-
-
                         if (timestamp > endTimestamp)
                             break;
-
                     }
                 }
 
@@ -248,8 +244,6 @@
 
                 var start_time = timestamps[0];
                 var maxLimit = start_time + oneWeek;
-
-               
 
                 console.log("Start time is", FITUtil.getTimestampString(start_time),", marking timestamps with UTC over ", FITUtil.getTimestampString(maxLimit), "and if time difference between timestamps is over ",max," millisec. as dirty");
                 var dirtyCounter = 0;
@@ -301,12 +295,9 @@
                 rawData.session.total_distance = [];
                 rawData.session.total_calories = [];
 
-
                 // Try to restore session from available lap data
                 if (rawData.lap) {
                     var numberOfLaps = rawData.lap.timestamp.length;
-                   
-
 
                     for (var lapNr = 0; lapNr < numberOfLaps; lapNr++) {
                         currentSport = rawData.lap.sport[lapNr];
@@ -328,18 +319,14 @@
                                 rawData.session.total_calories.push(total_calories);
                             total_calories = rawData.lap.total_calories[lapNr];
 
-
-
                             if (lastEndtimstamp !== undefined)
                                 rawData.session.timestamp.push(rawData.lap.timestamp[lapNr - 1]);
 
                             if (numberOfLaps === 1)
                                 lastEndtimstamp = rawData.lap.timestamp[lapNr];
 
-
                             rawData.session.sport.push(currentSport);
                             rawData.session.start_time.push(rawData.lap.start_time[lapNr]);
-
 
                         } else {
                             total_elapsed_time += rawData.lap.total_elapsed_time[lapNr];
@@ -413,7 +400,6 @@
                                     break;
                             }
 
-
                             rawData.session.total_ascent = [];
                             rawData.session.total_descent = [];
 
@@ -432,15 +418,17 @@
 
             getIndexOfTimestamp: function (record, timestamp) {
 
-
                 var findNearestTimestamp = function (timestamp) {
 
                     // Try to get from cache first
+                    if (typeof (self.timestampIndexCache) === "undefined") {
+                        console.log("Initialized timestamp index cache");
+                        self.timestampIndexCache = [];
+                    }
 
                     for (var cacheItem = 0; cacheItem < self.timestampIndexCache.length; cacheItem++)
                         if (self.timestampIndexCache[cacheItem].key === timestamp)
                             return self.timestampIndexCache[cacheItem].value;
-
 
                     var indxNr = -1;
                     var breaked = false;
@@ -479,7 +467,7 @@
 
             },
 
-            timestampUtil: new FITCRCTimestampUtility() // Returns exposable functions that can be called in an object literal
+            timestampUtil: FIT.CRCTimestampUtility() // Returns exposable functions that can be called in an object literal
         };
 
     var fitActivity = FIT.ActivityFile();
@@ -573,7 +561,6 @@
                 return kmPrH;
             }, self);
 
-
         },
 
         convertToFullDate: function (UTCmillisec)
@@ -591,11 +578,11 @@
 
     //View models
     var FITViewUI = {
-
         
         masterVM: {
 
-            importedActivityVM : {
+            activityVM: {
+                selectedActivity : ko.observable(undefined),
                 activity : ko.observableArray()
             },
 
@@ -647,6 +634,7 @@
             // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
             // virtual elements and something with "changed" value notification. Introducing empty observables on unused properties gives a performance penalty.
             function getEmptyViewModel(msg) {
+
                 var ViewModel = {};
 
                 for (var fieldDefNr in msg)
@@ -816,6 +804,22 @@
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
+
+            this.masterVM.activityVM.showActivity = function (data, event) {
+                // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
+                //var index = this;
+                //var VM = self.masterVM.sessionVM;
+                //var start_time = VM.rawData.session.start_time[index];
+                //var timestamp = VM.rawData.session.timestamp[index];
+                //var sport = VM.rawData.session.sport[index];
+                var index = this;
+                var VM = self.masterVM.activityVM;
+                var rawData = VM.activity()[index];  // Takes the index element of an observable array which is an observable with value an array -> tracks elements in array not properties
+                self.processActivityFile(rawData);
+            };
+
+            this.masterVM.activityVM.selectedActivity.subscribe(function (selectedActivity) {
+            });
 
             this.masterVM.lapVM.showLap = function (data, event) {
                 // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
@@ -1067,9 +1071,9 @@
 
             if (FITUtil.isUndefined(rawData.record))
                 console.error("No rawdata present on rawdata.record, cannot render chart");
-
-            if (FITUtil.isEmpty(rawData.record))
-                console.warn("Empty rawdata on rawdata.record, nothing to render in chart");
+            else
+                if (FITUtil.isEmpty(rawData.record))
+                    console.warn("Empty rawdata on rawdata.record, nothing to render in chart");
 
             if (rawData.record) {
                 if (rawData.record.heart_rate) {
@@ -1241,13 +1245,14 @@
                     });
                 }
 
-            }
 
-            var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
-            if (speedVSHR) {
-                id = 'speedVSHR';
-                seriesData[id] = speedVSHR;
-                seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: false, zIndex: 94 });
+
+                var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
+                if (speedVSHR) {
+                    id = 'speedVSHR';
+                    seriesData[id] = speedVSHR;
+                    seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: false, zIndex: 94 });
+                }
             }
             //yAxisOptions.push({
             //    gridLineWidth: 0,
@@ -1358,7 +1363,33 @@
                     }
                 }
 
-                if (lap.avg_speed && lap.avg_speed.length > 0)
+                // in case of empty rawdata, but lap data available
+                if (typeof (heartRateYAxisNr) === "undefined" && ((lap.avg_heart_rate && lap.avg_heart_rate.length > 0) || (lap.max_heart_rate && lap.max_heart_rate.length > 0))) {
+
+                    yAxisOptions.push({
+                        gridLineWidth: 1,
+                        title: {
+                            text: 'Heart rate'
+                        }
+                    });
+
+                    heartRateYAxisNr = yAxisNr;
+                  
+                }
+
+                if (typeof (speedYAxisNr) === "undefined" && ((lap.avg_speed && lap.avg_speed.length > 0) || (lap.max_speed && lap.max_speed.length > 0))) {
+
+                    yAxisOptions.push({
+                        gridLineWidth: 1,
+                        title: {
+                            text: 'Speed'
+                        }
+                    });
+
+                    speedYAxisNr = yAxisNr++;
+                }
+
+                if (lap.avg_speed && lap.avg_speed.length > 0) 
                     seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: false, zIndex: 1 });
 
                 if (lap.max_speed && lap.max_speed.length > 0)
@@ -1904,44 +1935,56 @@
                 if (type === device_type.heart_rate) {
                     srcImgDeviceInfo = "Images/deviceinfo/HRM.jpg";
                     titleDeviceInfo = "Heart rate monitor";
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.environment_sensor_legacy && manufact === manufacturer.garmin && product === 1080) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
                     titleDeviceInfo = "GPS/SIRF";
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.bike_speed_cadence) {
                     srcImgDeviceInfo = "Images/deviceinfo/garmin/gsc-10.jpg";
                     titleDeviceInfo = "Bike speed/cadence sensor";
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.stride_speed_distance) {
                     srcImgDeviceInfo = "Images/deviceinfo/garmin/footpod.jpg";
                     titleDeviceInfo = "Footpod (stride/speed/distance)";
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
 
                 if (type === device_type.bike_power) {
                     srcImgDeviceInfo = "Images/power.png";
                     titleDeviceInfo = "Bike power";
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.environment_sensor_legacy && FITUtil.isUndefined(product) && FITUtil.isUndefined(manufact)) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
                     titleDeviceInfo = "Barometre/Temperature sensor";
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.environment_sensor_legacy && FITUtil.isUndefined(product) && manufact === manufacturer.garmin) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
                     titleDeviceInfo = "Accelerometre";
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 titleDeviceInfo += " ";
-                if (rawdata.device_info.software_version[deviceInfoNr])
+                if (rawdata.device_info.software_version[deviceInfoNr]) {
                     titleDeviceInfo += "Firmware : " + rawdata.device_info.software_version[deviceInfoNr].toString();
-                if (rawdata.device_info.serial_number[deviceInfoNr])
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
+                }
+
+                if (rawdata.device_info.serial_number[deviceInfoNr]) {
                     titleDeviceInfo += " Serial number : " + rawdata.device_info.serial_number[deviceInfoNr].toString();
+                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
+                }
 
 
 
@@ -2315,7 +2358,16 @@
             }
         },
 
-        showHRZones: function (rawdata, startTimestamp, endTimestamp) {
+        showHRZones: function (rawdata, startTimestamp, endTimestamp, destroy) {
+
+            if (typeof (destroy) !== "undefined") {
+                if (destroy) {
+                    if (self.HRZonesChart) {
+                        self.HRZonesChart.destroy();
+                        self.HRZonesChart = undefined;
+                    }
+                }
+            }
 
             var divChartId = 'zonesChart';
             //var divChart = document.getElementById(divChartId);
@@ -2920,9 +2972,37 @@
 
         },
 
+        resetLapSessionViewModel : function ()
+        {
+            // Clean up UI state
+            self.masterVM.sessionVM.selectedSession(undefined);
+            self.masterVM.lapVM.selectedLap(undefined);
+            self.resetViewModel(self.masterVM.sessionVM, fitActivity.session());
+            self.resetViewModel(self.masterVM.lapVM, fitActivity.lap());
+            //// http://api.highcharts.com/highcharts#Chart.destroy()
+
+            //if (self.multiChart) {
+            //    self.multiChart.destroy();
+            //    self.multiChart = undefined;
+            //}
+
+        },
+
+        resetTimestampIndexCache: function () {
+            if (typeof (self.timestampIndexCache) === "undefined")
+                self.timestampIndexCache = [];
+            else
+                self.timestampIndexCache.splice(0); // Explicit remove, but could probably use = [] ant let GC take care of the old array
+        },
+
         // Handles an ordinary activity file with measurement and GPS data
-        processActivityFile: function (rawData, counter) {
+        processActivityFile: function (rawData) {
            
+            self.resetLapSessionViewModel();
+            self.resetTimestampIndexCache(); // Tries to speed up lookup of timestamps
+
+            var counter = rawData._msgCounter_;
+
             self.intepretMessageCounters(counter, FITFileType.activityfile);
 
             if (rawData.record)
@@ -2930,8 +3010,6 @@
             else
                 console.warn("No rawdata present on rawdata.record - no data in file");
 
-            // Holds index of previously lookedup timestamps in rawdata.record.timestamp array
-            self.timestampIndexCache = [];
 
 
             // Value converters that are run on "create"-event/callback in knockout
@@ -2963,10 +3041,8 @@
                 }
             };
 
-
             if (rawData.session === undefined)
-                rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
-
+               rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
 
             self.masterVM.sessionVM.setRawdata(self, rawData);
 
@@ -2974,11 +3050,8 @@
 
             self.masterVM.sessionVM.selectedSession(0);  // Start with first session, there is no session object but an common index for a timestamp to all arrays 
 
-
             self.masterVM.lapVM.setRawdata(self, rawData);
             ko.mapping.fromJS(rawData.lap, mappingOptions, self.masterVM.lapVM);
-
-
 
             // Activity file
 
@@ -3004,9 +3077,8 @@
             } else
                 start_time = rawData.session.start_time[0];
 
-
-
             var timestamp;
+
             if (FITUtil.isUndefined(rawData.session.timestamp)) {
                 console.warn("Session end time not found");
                 timestamp = rawData.lap.timestamp[rawData.session.num_laps - 1];
@@ -3023,9 +3095,6 @@
             } else
                 timestamp = rawData.session.timestamp[0];
 
-
-
-
             if (self.map) {
                 var sessionMarkerSet = self.showSessionMarkers(self.map, rawData);
 
@@ -3041,13 +3110,70 @@
             //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
             //   $('#activityMap').show();
 
-
-            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
-            self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
-
-            //FITUI.showChartHrv(rawData);
+            var destroy = true;
+            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0],destroy);
+            self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0],destroy);
 
             //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
+        },
+
+        getStartPosition : function(rawdata)
+        {
+            // In case recording is started before GPS signal is aquired, no start_position is written in rawdata
+
+            function restoreStartPos(root,property,value) {
+                if (root) {  
+                    root[property] = [];
+                    root[property].push(value);
+                }
+            }
+
+            // Steps; first check session, then lap, then record head
+            var lat, long;
+
+            // Session
+            if (rawdata.session && rawdata.session.start_position_lat && rawdata.session.start_position_lat.length >= 1)
+                lat = rawdata.session.start_position_lat[0];
+
+            if (rawdata.session && rawdata.session.start_position_long && rawdata.session.start_position_long.length >= 1)
+                long = rawdata.session.start_position_long[0];
+
+            // Lap
+            if (typeof (lat) === "undefined" && rawdata.lap && rawdata.lap.start_position_lat && rawdata.session.start_position_lat.length >= 1) {
+
+                lat = rawdata.lap.start_position_lat[0];
+                restoreStartPos(rawdata.session, "start_position_lat", lat);
+                
+            }
+
+            if (typeof (long) === "undefined" && rawdata.lap && rawdata.lap.start_position_long && rawdata.session.start_position_long.length >= 1) {
+
+                long = rawdata.lap.start_position_long[0];
+                restoreStartPos(rawdata.session, "start_position_long", long);
+            }
+
+            // Record
+
+            if (typeof (lat) === "undefined" && typeof (long) === "undefined" && rawdata.record && rawdata.record.position_lat && rawdata.record.position_long) {
+                var len = rawdata.record.position_lat.length;
+                for (var posNr = 0; posNr < len; posNr++) {
+                    lat = rawdata.record.position_lat[posNr];
+                    long = rawdata.record.position_long[posNr];
+                    if (lat !== undefined && long !== undefined)
+                        break;
+                }
+
+                restoreStartPos(rawdata.session, "start_position_lat", lat);
+                restoreStartPos(rawdata.session, "start_position_long", long);
+                restoreStartPos(rawdata.lap, "start_position_lat", lat);
+                restoreStartPos(rawdata.lap, "start_position_long", long);
+            }
+
+            return {
+                lat: lat,
+                long: long
+            };
+
         },
 
         // Communication with import file worker thread
@@ -3057,21 +3183,22 @@
             var eventdata = e.data;
 
             var fileIdType;
+            var rawData;
 
             switch (eventdata.response) {
 
-                case 'messageCounter':
-                    self.messageCounter = eventdata.counter;
-                    break;
+                //case 'messageCounter':
+                //    self.messageCounter = eventdata.counter;
+                //    break;
 
                 case 'rawData':
-
-                    var rawData = eventdata.rawdata;
-
+                   
+                     rawData = eventdata.rawdata;
+                 
                     // TO DO: push rawdata in an viewmodel for imported rawdata files....
 
                     if (FITUtil.isUndefined(rawData)) {
-                        console.error("Received undefined rawdata from import worker thread");
+                        console.error("Received undefined rawdata from import worker thread, its discarded, no further processing necessary");
                         break;
                     }
 
@@ -3099,9 +3226,25 @@
                     switch (fileIdType) {
                         // Activity file
                         case FITFileType.activityfile:
+
                             console.info("Processing an activity file");
-                            self.masterVM.importedActivityVM.activity.push(rawData);
-                            self.processActivityFile(rawData, self.messageCounter);
+                            var latLongString;
+                            var startPosition = self.getStartPosition(rawData);
+                            
+                            if (startPosition.lat && startPosition.long) {
+                                latLongString = (new FIT.CRCTimestampUtility()).getLatLongStringForUrl(startPosition.lat, startPosition.long);
+
+                                // https://developers.google.com/maps/documentation/staticmaps/index
+
+                                rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString
+                                    + '&zoom=8&size=100x100&maptype=roadmap&sensor=false&scale=1'+
+                                    '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
+
+                                //rawData._staticGoogleMapSrc = ko.observable('http://localhost:24021/Images/kcalorie.png');
+                            }
+
+                            self.masterVM.activityVM.activity.push(rawData); // Let knockoujs track new activities - calls knockouts push function on array
+                            //self.processActivityFile(rawData);
                             break;
 
                             // Sport settings (HR zones)
@@ -3113,11 +3256,7 @@
 
                         default:
                             console.error("Cannot process file id with type : ", fileIdType);
-
-
-
                             break;
-
                     }
 
                     break;
@@ -3201,22 +3340,7 @@
 
             //$('#activityMap').hide();
 
-            // Clean up UI state
-            self.masterVM.sessionVM.selectedSession(undefined);
-            self.masterVM.lapVM.selectedLap(undefined);
-            self.resetViewModel(self.masterVM.sessionVM, fitActivity.session());
-            self.resetViewModel(self.masterVM.lapVM, fitActivity.lap());
-            //// http://api.highcharts.com/highcharts#Chart.destroy()
-
-            if (self.multiChart) {
-                self.multiChart.destroy();
-                self.multiChart = undefined;
-            }
-
-            if (self.HRZonesChart) {
-                self.HRZonesChart.destroy();
-                self.HRZonesChart = undefined;
-            }
+           
 
             self.selectedFiles = e.target.files;
 
