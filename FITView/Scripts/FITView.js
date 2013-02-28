@@ -815,11 +815,12 @@
                 var index = this;
                 var VM = self.masterVM.activityVM;
                 var rawData = VM.activity()[index];  // Takes the index element of an observable array which is an observable with value an array -> tracks elements in array not properties
+                VM.selectedActivity(index);
                 self.processActivityFile(rawData);
             };
 
-            this.masterVM.activityVM.selectedActivity.subscribe(function (selectedActivity) {
-            });
+            //this.masterVM.activityVM.selectedActivity.subscribe(function (selectedActivity) {
+            //});
 
             this.masterVM.lapVM.showLap = function (data, event) {
                 // In callback from knockoutjs, this = first argument to showDetails.bind(...) == index, then $data and event is pushed
@@ -2314,35 +2315,38 @@
                 switch (rawdata.lap.lap_trigger[lapNr]) {
                     case lap_trigger.manual:
                         srcImg = "Images/laptrigger/manual.png";
-                        title = "LAP pressed";
+                        title = "LAP"+" "+Highcharts.dateFormat('%H:%M:%S',timestamp);
                         break;
                     case lap_trigger.time:
                         srcImg = "Images/laptrigger/time.png";
-                        title = "Time";
+                        title = "Time" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
                         break;
                     case lap_trigger.distance:
                         srcImg = "Images/laptrigger/distance.png";
                         title = "Distance";
+                        if (rawdata.lap.total_distance[lapNr])
+                            title += " "+rawdata.lap.total_distance[lapNr].toString()+" m";
+                        title += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
                         break;
                     case lap_trigger.position_start:
                         srcImg = "Images/laptrigger/position_start.png";
-                        title = "Position start";
+                        title = "Position start" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
                         break;
                     case lap_trigger.position_lap:
                         srcImg = "Images/laptrigger/position_lap.png";
-                        title = "Position lap";
+                        title = "Position lap" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
                         break;
                     case lap_trigger.position_waypoint:
                         srcImg = "Images/laptrigger/position_waypoint.png";
-                        title = "Position waypoint";
+                        title = "Position waypoint" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
                         break;
                     case lap_trigger.position_marked:
                         srcImg = "Images/laptrigger/position_marked.png";
-                        title = "Position marked";
+                        title = "Position marked" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
                         break;
                     case lap_trigger.session_end:
                         srcImg = "Images/laptrigger/session_end.png";
-                        title = "Session end";
+                        title = "Session end" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
                         break;
                     default:
                         srcImg = undefined;
@@ -3244,7 +3248,12 @@
                             }
 
                             self.masterVM.activityVM.activity.push(rawData); // Let knockoujs track new activities - calls knockouts push function on array
-                            //self.processActivityFile(rawData);
+
+                            // If not previous activity has been selected process this one...
+                            if (self.masterVM.activityVM.selectedActivity() === undefined) {
+                                self.masterVM.activityVM.selectedActivity(self.masterVM.activityVM.activity().length - 1);
+                                self.processActivityFile(rawData);
+                            }
                             break;
 
                             // Sport settings (HR zones)
