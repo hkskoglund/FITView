@@ -264,7 +264,6 @@
                                     <img class="lapTrigger" src="Images/laptrigger/manual.png" title="Manual - LAP pressed" />
                                     <!-- /ko -->
 
-
                                     <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 1 -->
                                     <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" />
                                     <!-- /ko -->
@@ -411,6 +410,34 @@
                     </li>
                     <!-- /ko -->
 
+                     <!-- ko with: exportVM -->
+                    <li>
+                        <a href="#">Export</a>
+                        <ul>
+                            
+                             <li>
+                                <div>
+                                    <input type="checkbox" title="Include header in CSV (top row)" data-bind="checked: csv.header"/>
+                                    <label style="color: white">Header</label>
+                                   <!-- <input type="text"  title="Name of CSV data column" data-bind="value: headerTitle" /> -->
+                                    <select data-bind="options: csv.type, value: csv.selectedType" title="Type of CSV export"></select>
+                                    <label style="color: white">Scale</label>
+                                    <input type="text"  title="1 = seconds, 1000 = ms." data-bind="value: csv.scale" /> 
+                                </div>
+                             <a href="#"></>
+                            </li>
+
+                            <li >
+                                <a id="aExportHRV_CSV" title="Export HRV as CSV">
+                                    Export HRV as CSV 
+                            </a>
+                            </li>
+                            
+                            
+                        </ul>
+
+                    </li>
+                    <!-- /ko -->
 
                     <!--               <li>
                    <div data-bind="text: ko.toJSON($root)"></div>

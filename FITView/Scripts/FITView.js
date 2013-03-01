@@ -581,6 +581,17 @@
         
         masterVM: {
 
+            exportVM: {
+                csv: {
+                    type: ko.observableArray(['raw', 'scatter', 'bar/column']),
+                    selectedType: ko.observable(),
+                    header: ko.observable(false),
+                    headerTitle: ko.observable('time'),
+                    scale: ko.observable(1),
+                    url: ko.observable()
+                } // URL for CSV blob
+            },
+
             activityVM: {
                 selectedActivity : ko.observable(undefined),
                 activity : ko.observableArray()
@@ -686,6 +697,8 @@
 
             //}
 
+            self.masterVM.exportVM.csv.selectedType(self.masterVM.exportVM.csv.type()[0]); // Raw CSV export by default
+
 
             self.masterVM.sessionVM = getEmptyViewModel(fitActivity.session());
             self.masterVM.lapVM = getEmptyViewModel(fitActivity.lap());
@@ -718,6 +731,19 @@
             this.divSessionLap = $('#divSessionLap');
 
             //this.masterVM.lapVM.speedMode = ko.observable();
+
+            // Make sure we always is ready to export CSV data when user changes parameters
+            this.masterVM.exportVM.csv.header.subscribe(function (header) {
+                self.setupHRVexport(self.masterVM.sessionVM.rawData);
+            });
+
+            this.masterVM.exportVM.csv.scale.subscribe(function (scale) {
+                self.setupHRVexport(self.masterVM.sessionVM.rawData);
+            });
+
+            this.masterVM.exportVM.csv.selectedType.subscribe(function (scale) {
+                self.setupHRVexport(self.masterVM.sessionVM.rawData);
+            });
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
             this.masterVM.settingsVM.showLapLines.subscribe(function (showLapLines) {
@@ -2999,6 +3025,86 @@
                 self.timestampIndexCache.splice(0); // Explicit remove, but could probably use = [] ant let GC take care of the old array
         },
 
+        hasHRVdata: function(rawdata) {
+            if (rawdata && rawdata.hrv && rawdata.hrv.time && rawdata.hrv.time.length > 0)
+                return true;
+            else
+                return false;
+
+        },
+
+        setupHRVexport: function (rawdata) {
+            // Max string length in Chrome : 512MB http://stackoverflow.com/questions/4695187/javascript-maximum-size-for-types
+            // http://updates.html5rocks.com/2012/06/Don-t-Build-Blobs-Construct-Them
+            // http://updates.html5rocks.com/2011/08/Downloading-resources-in-HTML5-a-download
+            if (!self.hasHRVdata(rawdata)) {
+                console.warn("No HRV data available for export as CSV");
+                return;
+            }
+
+            var CRLF = '\r\n';
+
+            var type = self.masterVM.exportVM.csv.selectedType();
+            var header = self.masterVM.exportVM.csv.header();
+            var scale = self.masterVM.exportVM.csv.scale();
+           // var headerTitle = self.masterVM.exportVM.headerTitle();
+
+
+            var headerStr ;
+            var CSVtimeStr;
+
+            var len = rawdata.hrv.time.length;
+
+            function setCSVString() {
+                CSVtimeStr = "";
+                headerStr = "";
+                if (header) {
+                    if (type === "scatter")
+                        headerStr = 'point,';
+                    else if (type === "bar/column")
+                        headerStr = 'category,';
+                    else if (type !== "raw")
+                        console.warn("Unknown CSV export type", type, "choosing default raw");
+
+                    headerStr += 'time' + CRLF;
+                    CSVtimeStr = headerStr;
+                }
+
+                for (var pointNr = 0; pointNr < len; pointNr++) {
+                    if (type === "scatter")
+                        CSVtimeStr += pointNr.toString() + ',';
+                    else if (type === "bar/column")
+                        CSVtimeStr += 'time,';
+
+                    CSVtimeStr += rawdata.hrv.time[pointNr] * scale + CRLF
+                }
+                
+            }
+
+            setCSVString();
+            
+            // Strip off last CRLF
+            CSVtimeStr = CSVtimeStr.slice(0, CRLF.length * -1);
+
+            // Blob(array,objectliteral)
+            var blob = new Blob([CSVtimeStr], { type: 'text/csv' });
+            console.log("Size of CSV blob:", blob.size," bytes");
+
+            window.URL = window.URL || window.webkitURL;
+
+            if (self.masterVM.exportVM.csv.url())
+                window.URL.revokeObjectURL(self.masterVM.exportVM.csv.url()); // Get rid of prev. url
+
+            self.masterVM.exportVM.csv.url(window.URL.createObjectURL(blob));
+
+            var aHRVExport = document.getElementById('aExportHRV_CSV');
+            aHRVExport.href = self.masterVM.exportVM.csv.url();
+            aHRVExport.download = "export.csv";
+
+
+        },
+
+
         // Handles an ordinary activity file with measurement and GPS data
         processActivityFile: function (rawData) {
            
@@ -3014,8 +3120,10 @@
             else
                 console.warn("No rawdata present on rawdata.record - no data in file");
 
-
-
+            // Enable export of HRV data
+            
+            self.setupHRVexport(rawData);
+            
             // Value converters that are run on "create"-event/callback in knockout
             var mappingOptions = {
                 //'start_time' : {
@@ -3240,6 +3348,7 @@
 
                                 // https://developers.google.com/maps/documentation/staticmaps/index
 
+                                // Can use javascript escape(string) to make transferable URL
                                 rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString
                                     + '&zoom=8&size=100x100&maptype=roadmap&sensor=false&scale=1'+
                                     '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
