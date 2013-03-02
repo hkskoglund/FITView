@@ -1975,58 +1975,51 @@
                 if (type === device_type.heart_rate) {
                     srcImgDeviceInfo = "Images/deviceinfo/HRM.jpg";
                     titleDeviceInfo = "Heart rate monitor";
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.environment_sensor_legacy && manufact === manufacturer.garmin && product === 1080) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
                     titleDeviceInfo = "GPS/SIRF";
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
+                    
                 }
 
                 if (type === device_type.bike_speed_cadence) {
                     srcImgDeviceInfo = "Images/deviceinfo/garmin/gsc-10.jpg";
                     titleDeviceInfo = "Bike speed/cadence sensor";
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
+                   
                 }
 
                 if (type === device_type.stride_speed_distance) {
                     srcImgDeviceInfo = "Images/deviceinfo/garmin/footpod.jpg";
                     titleDeviceInfo = "Footpod (stride/speed/distance)";
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
+                   
                 }
-
 
                 if (type === device_type.bike_power) {
                     srcImgDeviceInfo = "Images/power.png";
                     titleDeviceInfo = "Bike power";
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.environment_sensor_legacy && FITUtil.isUndefined(product) && FITUtil.isUndefined(manufact)) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
                     titleDeviceInfo = "Barometre/Temperature sensor";
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (type === device_type.environment_sensor_legacy && FITUtil.isUndefined(product) && manufact === manufacturer.garmin) {
                     srcImgDeviceInfo = "Images/deviceinfo/env_sensor_legacy.png";
                     titleDeviceInfo = "Accelerometre";
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 titleDeviceInfo += " ";
                 if (rawdata.device_info.software_version[deviceInfoNr]) {
                     titleDeviceInfo += "Firmware : " + rawdata.device_info.software_version[deviceInfoNr].toString();
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
                 if (rawdata.device_info.serial_number[deviceInfoNr]) {
                     titleDeviceInfo += " Serial number : " + rawdata.device_info.serial_number[deviceInfoNr].toString();
-                    titleDeviceInfo += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);
                 }
 
-
+                titleDeviceInfo += " @ " + Highcharts.dateFormat('%H:%M:%S', timestamp);
 
                 if (srcImgDeviceInfo !== undefined) {
                     SVGDeviceInfoElement = renderer.image(srcImgDeviceInfo, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.deviceInfoGroup);
@@ -2165,51 +2158,54 @@
                 titleEvent = "Event: " + ev.toString() + " Event type: " + ev_type.toString();
 
                 switch (ev) {
+
                     case event.timer:
 
                         switch (ev_type) {
+
                             case event_type.start:
                                 srcImgEvent = "Images/event_type/start_0.png";
                                 titleEvent = "START";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
+
                             case event_type.stop:
                                 srcImgEvent = "Images/event_type/stop_all_4.png";
                                 titleEvent = "STOP";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
+
                             case event_type.stop_all:
                                 srcImgEvent = "Images/event_type/stop_all_4.png";
                                 titleEvent = "STOP ALL";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
+
                             case event_type.stop_disable:
                                 srcImgEvent = "Images/event_type/stop_all_4.png";
                                 titleEvent = "STOP DISABLE";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
+
                             case event_type.stop_disable_all:
                                 srcImgEvent = "Images/event_type/stop_disable_all9.png";
                                 titleEvent = "STOP DISABLE ALL";
-                                titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
                                 break;
 
                         }
+
+                      
                         break;
 
-
                     case event.battery: // Don't check for event_type marker
+
                         srcImgEvent = "Images/event/battery_marker.png";
                         titleEvent = "Battery";
                         if (rawdata.event.data[eventNr])
                             titleEvent += " - " + rawdata.event.data[eventNr].toString();
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        
                         break;
 
                     case event.recovery_hr: // Don't check for event type marker
                         srcImgEvent = "Images/heart.png";
                         titleEvent = "Recovery HR";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                       
 
                         if (rawdata.event.data[eventNr])
                             titleEvent += " - " + rawdata.event.data[eventNr].toString();
@@ -2220,34 +2216,36 @@
                         titleEvent = "Battery low";
                         if (rawdata.event.data[eventNr])
                             titleEvent += " - " + rawdata.event.data[eventNr].toString();
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                       
                         break;
 
                     case event.power_down:
                         srcImgEvent = "Images/event/power_down.png";
                         titleEvent = "Power down";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                        
                         break;
 
                     case event.power_up:
                         srcImgEvent = "Images/event/power_up.png";
                         titleEvent = "Power up";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                       
                         break;
 
                     case event.session:
                         srcImgEvent = "Images/laptrigger/session_end.png";
                         titleEvent = "Stop - end of session";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                       
                         break;
 
                     case event.course_point:
                         srcImgEvent = "Images/laptrigger/position_marked.png";
                         titleEvent = "Course point";
-                        titleEvent += " " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
+                       
                         break;
 
                 }
+
+                titleEvent += " @ " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
 
                 var eventRendered = false;
                 if (srcImgEvent !== undefined) {
@@ -2354,43 +2352,45 @@
                 switch (rawdata.lap.lap_trigger[lapNr]) {
                     case lap_trigger.manual:
                         srcImg = "Images/laptrigger/manual.png";
-                        title = "LAP"+" "+Highcharts.dateFormat('%H:%M:%S',timestamp);
+                        title = "LAP";
                         break;
                     case lap_trigger.time:
                         srcImg = "Images/laptrigger/time.png";
-                        title = "Time" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
+                        title = "Time";
                         break;
                     case lap_trigger.distance:
                         srcImg = "Images/laptrigger/distance.png";
                         title = "Distance";
                         if (rawdata.lap.total_distance[lapNr])
                             title += " "+rawdata.lap.total_distance[lapNr].toString()+" m";
-                        title += " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
+                        
                         break;
                     case lap_trigger.position_start:
                         srcImg = "Images/laptrigger/position_start.png";
-                        title = "Position start" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
+                        title = "Position start";
                         break;
                     case lap_trigger.position_lap:
                         srcImg = "Images/laptrigger/position_lap.png";
-                        title = "Position lap" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
+                        title = "Position lap";
                         break;
                     case lap_trigger.position_waypoint:
                         srcImg = "Images/laptrigger/position_waypoint.png";
-                        title = "Position waypoint" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
+                        title = "Position waypoint";
                         break;
                     case lap_trigger.position_marked:
                         srcImg = "Images/laptrigger/position_marked.png";
-                        title = "Position marked" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
+                        title = "Position marked";
                         break;
                     case lap_trigger.session_end:
                         srcImg = "Images/laptrigger/session_end.png";
-                        title = "Session end" + " " + Highcharts.dateFormat('%H:%M:%S', timestamp);;
+                        title = "Session end";
                         break;
                     default:
                         srcImg = undefined;
                         title = undefined;
                 }
+
+                title += " @ " + Highcharts.dateFormat('%H:%M:%S', timestamp);
 
                 if (srcImg !== undefined) {
                     SVG_elmImg = renderer.image(srcImg, xpos, this.masterVM.freeYPOS[timestamp], 16, 16).add(this.masterVM.lapTriggerGroup);
