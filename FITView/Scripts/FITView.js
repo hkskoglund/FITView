@@ -3478,16 +3478,13 @@
             self.selectedFiles = e.target.files;
 
             var files = self.selectedFiles;
+            var firefox_compatible_files = [];
 
-            // Setup mutiple/batch workers
-            //console.log("Setup of " + files.length + " workers.");
-
-            //for (var fileNr = 0; fileNr < files.length; fileNr++) {
-            //    self["fitFileManager" + fileNr.toString()] = new Worker("Scripts/FITImport.js")
-            //    self["fitFileManager" + fileNr.toString()].addEventListener('message', FITUI.onFITManagerMsg, false);
-            //    self["fitFileManager" + fileNr.toString()].addEventListener('error', FITUI.onFITManagerError, false);
-
-            //}
+            var len = self.selectedFiles.length;
+            for (var fileNr = 0; fileNr < len; fileNr++) {
+                firefox_compatible_files.push(files[fileNr]);
+            }
+            
 
             // Make sure we terminate previous worker
             if (self.fitFileManager) {
@@ -3500,9 +3497,10 @@
             self.fitFileManager.addEventListener('message', self.onFITManagerMsg, false);
             self.fitFileManager.addEventListener('error', self.onFITManagerError, false);
 
+            // Firefox bug : cannot pass FileList -> dataclone error
             var msg = {
                 request: 'importFitFile',
-                fitfiles : files,
+                fitfiles : firefox_compatible_files,
                 fitfile: undefined,
                 store: self.masterVM.settingsVM.storeInIndexedDB()
                 //, "query": query
