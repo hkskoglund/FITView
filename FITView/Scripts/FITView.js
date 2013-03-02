@@ -588,6 +588,7 @@
                     header: ko.observable(false),
                     headerTitle: ko.observable('time'),
                     scale: ko.observable(1),
+                    blob : {},
                     url: ko.observable()
                 } // URL for CSV blob
             },
@@ -718,6 +719,8 @@
                 alert("This application will not work due to lack of geolocation");
             }
 
+          
+
             this.inpFITFile = document.getElementById('inpFITFile');
             this.inpFITFile.addEventListener('change', this.onFitFileSelected, false);
 
@@ -744,6 +747,16 @@
             this.masterVM.exportVM.csv.selectedType.subscribe(function (scale) {
                 self.setupHRVexport(self.masterVM.sessionVM.rawData);
             });
+
+            this.masterVM.exportVM.csv.tryMSBlobSave = function (data, event) {
+               
+                //http://knockoutjs.com/documentation/click-binding.html Note 3 - return true to let event let event navigate to href
+                //http://msdn.microsoft.com/en-us/library/ie/hh779016(v=vs.85).aspx Saving files locally using Blob and msSaveBlob
+                if (typeof window.navigator.msSaveBlob !== "undefined") {
+                    window.navigator.msSaveBlob(self.masterVM.exportVM.csv.blob, "export.csv");
+                } else
+                  return true;
+            };
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
             this.masterVM.settingsVM.showLapLines.subscribe(function (showLapLines) {
@@ -3087,16 +3100,18 @@
             CSVtimeStr = CSVtimeStr.slice(0, CRLF.length * -1);
 
             // Blob(array,objectliteral)
-            var blob = new Blob([CSVtimeStr], { type: 'text/csv' });
-            console.log("Size of CSV blob:", blob.size," bytes");
+         
+            self.masterVM.exportVM.csv.blob = new Blob([CSVtimeStr], { type: 'text/csv' });
+            console.log("Size of CSV blob:", self.masterVM.exportVM.csv.blob.size, " bytes");
 
             window.URL = window.URL || window.webkitURL;
 
             if (self.masterVM.exportVM.csv.url())
                 window.URL.revokeObjectURL(self.masterVM.exportVM.csv.url()); // Get rid of prev. url
 
-            self.masterVM.exportVM.csv.url(window.URL.createObjectURL(blob));
+            self.masterVM.exportVM.csv.url(window.URL.createObjectURL(self.masterVM.exportVM.csv.blob));
 
+            // Chrome
             var aHRVExport = document.getElementById('aExportHRV_CSV');
             aHRVExport.href = self.masterVM.exportVM.csv.url();
             aHRVExport.download = "export.csv";
