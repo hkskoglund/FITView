@@ -1941,22 +1941,47 @@
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/910xt.png";
                             titleDeviceInfo = "910XT";
                             break;
+
                         case garmin_product.fr610:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/fr610.png";
                             titleDeviceInfo = "FR610";
                             break;
+
                         case garmin_product.fr310xt:
                         case garmin_product.fr310xt_4t:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/310xt.jpg";
-                            titleDeviceInfo = "FR610";
+                            titleDeviceInfo = "FR310XT";
                             break;
+
                         case garmin_product.fr405:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/405.jpg";
-                            titleDeviceInfo = "FR610";
+                            titleDeviceInfo = "FR405";
                             break;
+
                         case garmin_product.fr110:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/fr110.png";
                             titleDeviceInfo = "FR110";
+                            break;
+
+                        //case garmin_product.fr210:
+                        //    srcImgDeviceInfo = "Images/deviceinfo/garmin/fr210.jpg";
+                        //    titleDeviceInfo = "FR210";
+                        //    break;
+
+                        case garmin_product.fr70:
+                            srcImgDeviceInfo = "Images/deviceinfo/garmin/fr70.jpg";
+                            titleDeviceInfo = "FR70";
+                            break;
+
+                        case garmin_product.fr60:
+                            srcImgDeviceInfo = "Images/deviceinfo/garmin/fr60.jpg";
+                            titleDeviceInfo = "FR60";
+                            break;
+
+
+                        case garmin_product.fr50:
+                            srcImgDeviceInfo = "Images/deviceinfo/garmin/fr50.jpg";
+                            titleDeviceInfo = "FR50";
                             break;
 
                             // Cycling
@@ -1964,19 +1989,21 @@
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/edge800.jpg";
                             titleDeviceInfo = "EDGE 800";
                             break;
+
                         case garmin_product.edge500:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/edge500.jpg";
                             titleDeviceInfo = "EDGE 500";
                             break;
+
                         case garmin_product.edge200:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/edge200.jpg";
                             titleDeviceInfo = "EDGE 200";
                             break;
 
-                            //default:
-                            //    srcImgDeviceInfo = "Images/deviceinfo/unknown.jpg";
-                            //    titleDeviceInfo = "Product :" + product.toString();
-                            //    break;
+                         default:
+                             srcImgDeviceInfo = "Images/deviceinfo/unknown.jpg";
+                             titleDeviceInfo = "Product :" + product.toString();
+                             break;
                     }
                 }
 

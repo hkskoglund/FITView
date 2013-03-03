@@ -66,10 +66,14 @@
     <Content Include="Images\deviceinfo\garmin\edge800.jpg" />
     <Content Include="Images\deviceinfo\garmin\footpod.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr110.png" />
+    <Content Include="Images\deviceinfo\garmin\fr210.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr310xt.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr405.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr410.jpg" />
+    <Content Include="Images\deviceinfo\garmin\fr50.jpg" />
+    <Content Include="Images\deviceinfo\garmin\fr60.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr610.png" />
+    <Content Include="Images\deviceinfo\garmin\fr70.jpg" />
     <Content Include="Images\deviceinfo\garmin\gsc-10.jpg" />
     <Content Include="Images\deviceinfo\HRM.jpg" />
     <Content Include="Images\deviceinfo\unknown.png" />
