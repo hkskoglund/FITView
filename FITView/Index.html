@@ -948,7 +948,7 @@
                             <div style="float: left; width: 200px">
                                 <a href="#" data-bind="click: $parent.showActivity.bind($index())">
                                     <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
-                                        <span style="display: inline" data-bind="text : (new Date(record.timestamp[0])).toLocaleString()"></span>
+                                        <span style="display: inline" data-bind="text : (new Date(record.timestamp[0])).toLocaleString(), attr: { title: 'Filename: '+ _headerInfo_.fitFile.name + ' Size: '+_headerInfo_.fitFile.size+ ' bytes'}"></span>
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof (record) === "undefined" -->
@@ -963,7 +963,7 @@
 
                                     <!-- ko with: session -->
 
-                                        <!--  <div data-bind="text: ko.toJSON(total_distance)"></div>-->
+                                      <!--  <div data-bind="text: ko.toJSON($parent.hrv)"></div>-->
 
                                         <ul id="sportList" data-bind="foreach: sport">
 
@@ -1010,6 +1010,12 @@
                                                                     <!-- /ko -->
 
                                                            <!-- /ko -->
+
+                                                    <!-- ko with: $parents[2] -->
+                                                    <!-- ko if: typeof (hrv) !== "undefined" && typeof (hrv.time) !== "undefined" && hrv.time.length > 0 -->
+                                                           <span data-bind="attr: { title: 'Contains '+hrv.time.length+' heart rate variability measurements'}">HRV</span>
+                                                      <!-- /ko -->
+                                                    <!-- /ko -->
 
                                                         <!-- ko if: typeof (total_calories) !== "undefined" && total_calories.length > 0 && total_calories[$index()] > 0 -->
                                                             <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />

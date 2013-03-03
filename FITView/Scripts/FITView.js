@@ -137,7 +137,6 @@
                 if (values.length !== timestamps.length)
                     self.loggMessage("warn","Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString(), seriesName);
 
-
                 if (startTimestamp === undefined || endTimestamp === undefined) {
                     self.loggMessage("error","Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps, series:", seriesName);
                     return values;
