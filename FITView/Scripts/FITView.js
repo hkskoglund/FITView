@@ -1858,10 +1858,17 @@
 
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
-            var width = this.multiChart.xAxis[0].width;
+            var xaxis = this.multiChart.get(rawdataxAxis);
+
+            var width = xaxis.width;
             //var extremes = this.multiChart.xAxis[0].getExtremes();
-            var max = this.multiChart.xAxis[0].max;
-            var min = this.multiChart.xAxis[0].min;
+            var max = xaxis.max;
+            var min = xaxis.min;
+
+            if (typeof max === "undefined" || typeof min === "undefined") {
+                self.loggMessage("log", "Max/Min of axis is undefined, cannot show device/sensor info.");
+                return;
+            }
 
             self.loggMessage("log","Deviceinfo xaxis extreemes datamin,datamax : ", min, max);
 
@@ -2105,10 +2112,17 @@
             var xpos, ypos;
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
-            var width = this.multiChart.xAxis[0].width;
-            var extremes = this.multiChart.xAxis[0].getExtremes();
-            var max = this.multiChart.xAxis[0].max;
-            var min = this.multiChart.xAxis[0].min;
+            var xaxis = this.multiChart.get(rawdataxAxis);
+
+            var width = xaxis.width;
+            //var extremes = this.multiChart.xAxis[0].getExtremes();
+            var max = xaxis.max;
+            var min = xaxis.min;
+
+            if (typeof max === "undefined" || typeof min === "undefined") {
+                self.loggMessage("log", "Max/Min of axis is undefined, cannot show events");
+                return;
+            }
 
             self.loggMessage("log","Event xaxis extremes datamin,datamax : ", min, max);
 
@@ -2301,10 +2315,18 @@
             var xpos, ypos;
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
-            var width = this.multiChart.xAxis[0].width;
+
+            var xaxis = this.multiChart.get(rawdataxAxis);
+
+            var width = xaxis.width;
             //var extremes = this.multiChart.xAxis[0].getExtremes();
-            var max = this.multiChart.xAxis[0].max;
-            var min = this.multiChart.xAxis[0].min;
+            var max = xaxis.max;
+            var min = xaxis.min;
+
+            if (typeof max === "undefined" || typeof min === "undefined") {
+                self.loggMessage("log", "Max/Min of axis is undefined, cannot show lap triggers");
+                return;
+            }
 
             self.loggMessage("log","Lap triggers xaxis extremes datamin,datamax : ", min, max);
 
@@ -3322,7 +3344,9 @@
                 case 'rawData':
                    
                     // Clean up reference to file blob
-                   // window.URL.revokeObjectURL(eventdata.file);
+                    //window.URL = window.URL || window.webkitURL;
+
+                    //window.URL.revokeObjectURL(eventdata.file);
 
                      rawData = eventdata.rawdata;
                  
