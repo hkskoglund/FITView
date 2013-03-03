@@ -26,7 +26,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          var options;
 
          if (data.request === undefined) {
-             self.postMessage("Unrecognized command!");
+             self.postMessage("Undefined command command!");
              return;
          }
 
@@ -37,15 +37,16 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                   options = {
                      fitfiles: data.fitfiles,
                      fitfile: data.fitfile,
-                     store: data.store
+                     store: data.store,
+                     logging : data.logging
                      //,query: data.query,
 
                  };
 
-                 if (typeof (options.fitfiles) === "undefined") {  // Only single file
-                     fitFileManager = new FitFileImport(options);
-                     currentFileBuffer = fitFileManager.readFitFile();
-                 }
+                 //if (typeof (options.fitfiles) === "undefined") {  // Only single file
+                 //    fitFileManager = new FitFileImport(options);
+                 //    currentFileBuffer = fitFileManager.readFitFile();
+                 //}
 
                  // Batch import
 
@@ -73,6 +74,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          var fitFile = options.fitfile; // Reference to FIT file in browser - FILE API
          var fitFiles = options.fitfiles;
          var storeInIndexedDB = options.store;
+         var logging = options.logging;
 
          var index = 0; // Pointer to next unread byte in FIT file
          var records = []; // Holds every global message nr. contained in FIT file
@@ -238,12 +240,17 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              }
          };
 
+         function loggMessage(msg) {
+             if (logging)
+                 self.postMessage(msg);
+         }
+
 
         function deleteDb() {
              // https://developer.mozilla.org/en-US/docs/IndexedDB/IDBFactory#deleteDatabase
 
             if (storeInIndexedDB) {
-                self.postMessage({ response: "info", data: "deleteDb()" });
+                loggMessage({ response: "info", data: "deleteDb()" });
 
                 var req;
 
@@ -251,19 +258,19 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                 try {
                     req = indexedDB.deleteDatabase(DB_NAME);
                 } catch (e) {
-                    self.postMessage({ response: "error", data: e.message });
+                    loggMessage({ response: "error", data: e.message });
                 }
                 //req.onblocked = function (evt) {
-                //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+                //    loggMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
                 //}
 
 
                 req.onsuccess = function (evt) {
-                    self.postMessage({ response: "info", data: "Success deleting database" });
+                    loggMessage({ response: "info", data: "Success deleting database" });
                 };
 
                 req.onerror = function (evt) {
-                    self.postMessage({ response: "error", data: "Error deleting database" });
+                    loggMessage({ response: "error", data: "Error deleting database" });
                 };
             }
          }
@@ -274,23 +281,23 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var req;
              //console.log("openDb ...");
              if (storeInIndexedDB) {
-                 self.postMessage({ response: "info", data: "Starting openDb(), version " + DB_VERSION.toString() });
+                 loggMessage({ response: "info", data: "Starting openDb(), version " + DB_VERSION.toString() });
                  req = indexedDB.open(DB_NAME, DB_VERSION);
 
                  req.onblocked = function (evt) {
-                     self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
+                     loggMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
                  };
 
                  req.onsuccess = function (evt) {
                      // Better use "this" than "req" to get the result to avoid problems with
                      // garbage collection.
                      // db = req.result;
-                     self.postMessage({ response: "info", data: "Success openDb(), version " + DB_VERSION.toString() });
+                     loggMessage({ response: "info", data: "Success openDb(), version " + DB_VERSION.toString() });
                      db = this.result;
 
                      // Main handler for DB errors - takes care of bubbling events 
                      db.onerror = function (evt) {
-                         self.postMessage({
+                         loggMessage({
                              response: "error", data: "Database error "
                          });
                          //+ evt.target.errorCode.toString()
@@ -307,14 +314,14 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                  req.onerror = function (evt) {
                      //console.error("openDb:", evt.target.errorCode);
-                     self.postMessage({ response: "error", data: "openDB error " + evt.target.errorCode.toString() });
+                     loggMessage({ response: "error", data: "openDB error " + evt.target.errorCode.toString() });
 
                  };
 
                  req.onupgradeneeded = function (evt) {
                      //console.log("openDb.onupgradeneeded");
-                     self.postMessage({ response: "info", data: "Starting onupgradeneeded, version " + DB_VERSION.toString() });
-                     // self.postMessage({response : "onupgradeneeded", data : evt});
+                     loggMessage({ response: "info", data: "Starting onupgradeneeded, version " + DB_VERSION.toString() });
+                     // loggMessage({response : "onupgradeneeded", data : evt});
                      recordStore = evt.currentTarget.result.createObjectStore(RECORD_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                      lapStore = evt.currentTarget.result.createObjectStore(LAP_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
                      sessionStore = evt.currentTarget.result.createObjectStore(SESSION_OBJECTSTORE_NAME, { keyPath: 'timestamp.value', autoIncrement: false });
@@ -369,16 +376,16 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  //    displayActionFailure("This engine doesn't know how to clone a Blob, " +
                  //                         "use Firefox");
                  //throw e;
-                 self.postMessage({ response: "error", data: "Could not write data to objectstore, global msg. = " + datarec.message + ", event = " + e.toString(), event: e });
+                 loggMessage({ response: "error", data: "Could not write data to objectstore, global msg. = " + datarec.message + ", event = " + e.toString(), event: e });
              }
 
              //req.transaction.oncompleted = function (evt) {
-             //    self.postMessage({ response: "info", data: "Transaction completed" });
+             //    loggMessage({ response: "info", data: "Transaction completed" });
              //}
 
              req.onsuccess = function (evt) {
-                 //self.postMessage({ response: "importedFITToIndexedDB"});
-                 //  self.postMessage({ response: "info", data: "Add transaction completed" });
+                 //loggMessage({ response: "importedFITToIndexedDB"});
+                 //  loggMessage({ response: "info", data: "Add transaction completed" });
                  //console.log("Insertion in DB successful");
                  //displayActionSuccess();
                  //displayPubList(store);
@@ -400,7 +407,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          errMsg += " start_time " + datarec.start_time.value.toString();
                  }
 
-                 self.postMessage({ response: "error", data: "Could not write object to store, message = " + errMsg });
+                 loggMessage({ response: "error", data: "Could not write object to store, message = " + errMsg });
                  //console.error("addPublication error", this.error);
                  //displayActionFailure(this.error);
              };
@@ -414,7 +421,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              if (isFIT(headerInfo)) {
                  // Store header to indexedDB
-                 //self.postMessage({ response: "header", header: headerInfo });
+                 //loggMessage({ response: "header", header: headerInfo });
 
                  var metaStore = getObjectStore(META_OBJECTSTORE_NAME, "readwrite");
                  addRawdata(metaStore, headerInfo);
@@ -425,14 +432,16 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  
                  rawData._headerInfo_ = headerInfo;
 
-                 self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records });
+                 if (self.webkitPostMessage)
+                     self.webkitpostMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file : fitFile });
+                 else
+                     self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file : fitFile });
 
                  return rawData;
 
              } else
 
                  return undefined;
-
 
          }
 
@@ -500,7 +509,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              //var tx = db.transaction([RECORD_OBJECTSTORE_NAME,LAP_OBJECTSTORE_NAME, SESSION_OBJECTSTORE_NAME,HRV_OBJECTSTORE_NAME], "readwrite");
 
              //tx.onerror = function (evt) {
-             //    self.postMessage({ response: "error", data: evt });
+             //    loggMessage({ response: "error", data: evt });
              //}
 
              var recordStore = getObjectStore(RECORD_OBJECTSTORE_NAME, "readwrite");
@@ -512,11 +521,11 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var eventStore = getObjectStore(EVENT_OBJECTSTORE_NAME, "readwrite");
              var fileidStore = getObjectStore(FILEID_OBJECTSTORE_NAME, "readwrite");
              //fileidStore.transaction.oncomplete = function (evt) {
-             //    self.postMessage({ response: "info", data: "file id transaction complete" });
+             //    loggMessage({ response: "info", data: "file id transaction complete" });
              //}
              var deviceinfoStore = getObjectStore(DEVICEINFO_OBJECTSTORE_NAME, "readwrite");
              //deviceinfoStore.transaction.oncomplete = function (evt) {
-             //    self.postMessage({ response: "info", data: "device info transaction complete" });
+             //    loggMessage({ response: "info", data: "device info transaction complete" });
              //}
 
              var prevTimestamp;
@@ -608,7 +617,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          fileidRec.file_creator = datarec;
 
                                      } else
-                                         self.postMessage({ response: "error", data: "file_creator msg. found, but not file_id, skipped saving" });
+                                         loggMessage({ response: "error", data: "file_creator msg. found, but not file_id, skipped saving" });
                                      break;
 
                                      // Activity
@@ -619,7 +628,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          if (prevTimestamp !== undefined)
                                              if (Math.abs(datarec.timestamp.value - prevTimestamp.value) >= TIMESTAMP_THRESHOLD) {
                                                  unacceptableTimestamp = true;
-                                                 self.postMessage({ response: "error", data: "Unacceptable timestamp found, filtering out this" });
+                                                 loggMessage({ response: "error", data: "Unacceptable timestamp found, filtering out this" });
                                              }
 
                                          // Check position_lat
@@ -628,7 +637,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                              if (prevLat !== undefined)
                                                  if (Math.abs(datarec.position_lat.value - prevLat.value) >= SEMICIRCLE_THRESHOLD) {
                                                      unacceptableLat = true;
-                                                     self.postMessage({ response: "error", data: "Unacceptable latitude found, filtering out this" });
+                                                     loggMessage({ response: "error", data: "Unacceptable latitude found, filtering out this" });
                                                  }
 
                                              // Check pos. long
@@ -636,7 +645,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                              if (prevLong !== undefined && datarec.position_long.value !== undefined)
                                                  if (Math.abs(datarec.position_long.value - prevLong.value) >= SEMICIRCLE_THRESHOLD) {
                                                      unacceptableLong = true;
-                                                     self.postMessage({ response: "error", data: "Unacceptable longitude found, filtering out this" });
+                                                     loggMessage({ response: "error", data: "Unacceptable longitude found, filtering out this" });
                                                  }
                                          }
 
@@ -652,7 +661,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      }
                                      else {
                                          speedDistanceRecs.push(datarec);
-                                         //self.postMessage({ response: "error", data: "No timestamp found in message record (probably swim data - speed/distance), skipped saving" });
+                                         //loggMessage({ response: "error", data: "No timestamp found in message record (probably swim data - speed/distance), skipped saving" });
                                      }
                                      break;
                                  case "lap":
@@ -660,7 +669,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      if (datarec.timestamp !== undefined)
                                          addRawdata(lapStore, datarec);
                                      else
-                                         self.postMessage({ response: "error", data: "No timestamp found in lap message, not written to indexedDB" });
+                                         loggMessage({ response: "error", data: "No timestamp found in lap message, not written to indexedDB" });
                                      break;
                                  case "session":
                                      counter.sessionCounter++;
@@ -675,16 +684,16 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          if (!isNaN(datarec.timestamp.value))
                                              addRawdata(activityStore, datarec);
                                          else
-                                             self.postMessage({ response: "error", data: "Got timestamp NaN, activity record not written to indexedDB" });
+                                             loggMessage({ response: "error", data: "Got timestamp NaN, activity record not written to indexedDB" });
                                      break;
                                  case "length":
-                                     //self.postMessage({ response: "info", data: "Found length message" });
+                                     //loggMessage({ response: "info", data: "Found length message" });
                                      //addRawdata(lengthStore, datarec);
                                      counter.lengthCounter++;
                                      if (datarec.start_time !== undefined)
                                          addRawdata(lengthStore, datarec);
                                      else
-                                         self.postMessage({ response: "error", data: "No start_time found in message : length, cannot save to indexedDB" });
+                                         loggMessage({ response: "error", data: "No start_time found in message : length, cannot save to indexedDB" });
 
                                      break;
                                  case "event":
@@ -692,7 +701,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      if (datarec.timestamp !== undefined)
                                          addRawdata(eventStore, datarec);
                                      else
-                                         self.postMessage({ response: "error", data: "No timestamp in event message, not written to indexedDB" });
+                                         loggMessage({ response: "error", data: "No timestamp in event message, not written to indexedDB" });
                                      break;
 
                                  case "device_info":
@@ -786,12 +795,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          }
                                      }
                                      else
-                                         self.postMessage({ response: "info", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
+                                         loggMessage({ response: "info", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
                                  }
                              }
                              
                          } else
-                             self.postMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
+                             loggMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
                      }
                  }
              }
@@ -807,7 +816,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  if (fileidRec.time_created !== undefined)
                      addRawdata(fileidStore, fileidRec);
                  else
-                     self.postMessage({ response: "error", data: "Undefined time_created in file_id record, cannot save to indexedDB, skipped" });
+                     loggMessage({ response: "error", data: "Undefined time_created in file_id record, cannot save to indexedDB, skipped" });
 
              // Persist hrv data if any
 
@@ -830,7 +839,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var definitionMsg = localMsgDef["localMsgDefinition" + localMsgType];
 
              if (definitionMsg === undefined) {
-                 self.postMessage({ response: "error", data: "No msg. definition found for local msg. type = " + localMsgType });
+                 loggMessage({ response: "error", data: "No msg. definition found for local msg. type = " + localMsgType });
                  return undefined;
              }
 
@@ -838,7 +847,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              var fieldNrs = definitionMsg.content.fieldNumbers;
 
-             // self.postMessage({ response: "info", data: "Global message nr "+globalMsgType.toString()+" has according to definition message; total field numbers = "+fieldNrs.toString() });
+             // loggMessage({ response: "info", data: "Global message nr "+globalMsgType.toString()+" has according to definition message; total field numbers = "+fieldNrs.toString() });
 
 
              var logger = "";
@@ -852,7 +861,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              //if (globalMsg === undefined)
 
-             //    self.postMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
+             //    loggMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
 
              //else {
 
@@ -862,13 +871,13 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
 
                  if (rec.content[field] === undefined) {
-                     self.postMessage({ response: "error", data: "Cannot read content of field " + field + " global message type " + globalMsgType.toString() });
+                     loggMessage({ response: "error", data: "Cannot read content of field " + field + " global message type " + globalMsgType.toString() });
                      break;
                  }
 
                  var fieldDefNr = rec.content[field].fieldDefinitionNumber;
 
-                 // self.postMessage({ response: "info", data: "Parsing  " + field +" in record content, it contains data for field definition number"+fieldDefNr });
+                 // loggMessage({ response: "info", data: "Parsing  " + field +" in record content, it contains data for field definition number"+fieldDefNr });
 
                  // Skip fields with invalid value
                  if (!rec.content[field].invalid) {
@@ -1011,7 +1020,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  break;
 
                              default:
-                                 self.postMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
+                                 loggMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
                                  break;
                          }
                      } else {
@@ -1029,7 +1038,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  fieldDefNr = "undefined";
 
                              prop = "unknown_fieldDefinitionNr_" + fieldDefNr.toString();
-                             self.postMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() + " unknown field generated to store data" });
+                             loggMessage({ response: "error", data: "Cannot find defining property of fieldDefNr " + fieldDefNr.toString() + " on global message type " + globalMsgType.toString() + " unknown field generated to store data" });
                          }
 
                          msg[prop] = { "value": rec.content[field].value };
@@ -1052,7 +1061,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
              if (globalMsgType !== GLOBAL_FIT_MSG.RECORD && globalMsgType !== GLOBAL_FIT_MSG.HRV)
-                 self.postMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
+                 loggMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
              //}
 
              return msg;
@@ -1192,7 +1201,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      break;
 
                  default:
-                     self.postMessage({ response: "error", data: "No message properties found, global message type : " + globalMessageType });
+                     loggMessage({ response: "error", data: "No message properties found, global message type : " + globalMessageType });
                      message.properties = {};
                      break;
 
@@ -1243,7 +1252,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  headerInfo.dataType += String.fromCharCode(dviewFitHeader.getUint8(indx));
 
              if (!isFIT(headerInfo))
-                 self.postMessage({ response: "error", data: "Header reports data type " + headerInfo.dataType.toString() + ", expected .FIT." });
+                 loggMessage({ response: "error", data: "Header reports data type " + headerInfo.dataType.toString() + ", expected .FIT." });
 
              var firstPartOfHeaderLength = 12;
              index = firstPartOfHeaderLength;
@@ -1256,11 +1265,11 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  headerInfo.headerCRC = dviewFitHeader.getUint16(12, true);
                  index += 2;
                  if (headerInfo.headerCRC === 0)
-                     self.postMessage({ response: "info", data: "Header CRC was not stored in the file" });
+                     loggMessage({ response: "info", data: "Header CRC was not stored in the file" });
                  else {
                      headerInfo.verifyHeaderCRC = util.fitCRC(dviewFitHeader, 0, firstPartOfHeaderLength, 0);
                      if (headerInfo.verifyHeaderCRC !== headerInfo.headerCRC)
-                         self.postMessage({ response: "error", data: "Header CRC (bigendian) =" + headerInfo.headerCRC.toString(16) + ", but verified CRC (bigendian) =" + headerInfo.verifyHeaderCRC.toString(16) });
+                         loggMessage({ response: "error", data: "Header CRC (bigendian) =" + headerInfo.headerCRC.toString(16) + ", but verified CRC (bigendian) =" + headerInfo.verifyHeaderCRC.toString(16) });
                  }
 
              }
@@ -1272,14 +1281,14 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var CRCbytesLength = 2;
 
              headerInfo.CRC = dviewFitHeader.getUint16(fileLength - CRCbytesLength, true); // Force little endian
-             self.postMessage({ response: "info", data: "Stored 16-bit CRC at end FIT file is (MSBLSB=bigendian) : " + headerInfo.CRC.toString(16) });
+             loggMessage({ response: "info", data: "Stored 16-bit CRC at end FIT file is (MSBLSB=bigendian) : " + headerInfo.CRC.toString(16) });
 
 
 
              headerInfo.verifyCRC = util.fitCRC(dviewFitHeader, 0, fileLength - CRCbytesLength, 0);
 
              if (headerInfo.CRC !== headerInfo.verifyCRC)
-                 self.postMessage({ response: "error", data: "Verification of CRC gives a value of (MSBLSB=bigendian) : " + headerInfo.verifyCRC.toString(16) + " that does not match CRC stored at end of file." });
+                 loggMessage({ response: "error", data: "Verification of CRC gives a value of (MSBLSB=bigendian) : " + headerInfo.verifyCRC.toString(16) + " that does not match CRC stored at end of file." });
 
              return headerInfo;
 
@@ -1348,7 +1357,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          fbtype = dviewFit.getUint8(index++);
 
                          if (fdefNr === undefined || fsize === undefined || fbtype === undefined) {
-                             self.postMessage({ response: "error", data: "Undefined field - field def. nr/size/basetype, index is " + index.toString() });
+                             loggMessage({ response: "error", data: "Undefined field - field def. nr/size/basetype, index is " + index.toString() });
                              break;
                          }
 
@@ -1359,7 +1368,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          };
                      }
 
-                     self.postMessage({ response: "info", data: "Raw record content of definition message : " + JSON.stringify(recContent) });
+                     loggMessage({ response: "info", data: "Raw record content of definition message : " + JSON.stringify(recContent) });
 
                      //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
 
@@ -1369,7 +1378,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      var localMsgDefinition = localMsgDef["localMsgDefinition" + recHeader.localMessageType.toString()];
                      if (localMsgDefinition === undefined || localMsgDefinition === null) {
                          //  throw new Error("Could not find message definition of data message - local message type = " + recHeader.localMessageType.toString());
-                         self.postMessage({ response: "error", data: "Could not find message definition of data message - local message type = " + recHeader.localMessageType.toString() });
+                         loggMessage({ response: "error", data: "Could not find message definition of data message - local message type = " + recHeader.localMessageType.toString() });
                          break;
 
                      }
@@ -1388,7 +1397,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
 
                          if (fitBaseTypesInvalidValues[bType] === undefined || fitBaseTypesInvalidValues[bType] === null) {
-                             self.postMessage({ response: "error", data: "Base type not found for base type " + bType + " reported size is " + bSize + " bytes." });
+                             loggMessage({ response: "error", data: "Base type not found for base type " + bType + " reported size is " + bSize + " bytes." });
                              recContent[currentField].invalid = true;
                              // Advance to next field value position
                              index = index + bSize;
@@ -1396,7 +1405,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          }
 
                          if (index + bSize - 1 > maxReadToByte + 1) {
-                             self.postMessage({ response: "error", data: "Attempt to read field beyond end of file, index is " + index.toString() + ", can max read to : " + maxReadToByte.toString() + ", size of field is " + bSize.toString() + " bytes" });
+                             loggMessage({ response: "error", data: "Attempt to read field beyond end of file, index is " + index.toString() + ", can max read to : " + maxReadToByte.toString() + ", size of field is " + bSize.toString() + " bytes" });
                              break;
                          }
 
@@ -1446,7 +1455,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                                  break;
                              default:
-                                 self.postMessage({ response: "error", data: "Base type " + bType.toString() + " not found in lookup switch" });
+                                 loggMessage({ response: "error", data: "Base type " + bType.toString() + " not found in lookup switch" });
                                  break;
                          }
 
@@ -1464,7 +1473,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                      }
 
-                     // self.postMessage({ response: "info", data: "Raw record content of data message : " + JSON.stringify(recContent) });
+                     // loggMessage({ response: "info", data: "Raw record content of data message : " + JSON.stringify(recContent) });
 
 
 
@@ -1484,14 +1493,15 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var fileBuffers = [];
              var fitFileReader;
              var rawData;
-
+             fitFileReader = new FileReaderSync();
              for (fileNr = 0; fileNr < len; fileNr++) {
-                 fitFileReader = new FileReaderSync(); // For web worker, hopefully used readers are released from memory by GC, have not tried shared single reader
+                 //fitFileReader = new FileReaderSync(); // For web worker, hopefully used readers are released from memory by GC, have not tried shared single reader
                  try {
                      fileBuffers.push(fitFileReader.readAsArrayBuffer(options.fitfiles[fileNr]));
+                    
                      rawData = getRawdata(fileBuffers[fileNr], options.fitfiles[fileNr]); // Implicitly sends data to requesting process via postMessage 
                  } catch (e) {
-                     self.postMessage({ response: "error", data: "Could not initialize fit file reader with bytes", event: e });
+                     loggMessage({ response: "error", data: "Could not initialize fit file reader with bytes", event: e });
                  }
              }
 

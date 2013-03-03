@@ -70,11 +70,11 @@
             hasGPSData: function (rawdata) {
 
                 if (rawdata.record.position_lat === undefined) {
-                    console.info("No position data (position_lat)");
+                    self.loggMessage("info","No position data (position_lat)");
                 }
 
                 if (rawdata.record.position_long === undefined) {
-                    console.info("No position data (position_lat)");
+                    self.loggMessage("info","No position data (position_lat)");
                 }
 
                 return (rawdata.record.position_lat === undefined || rawdata.record.position_long === undefined) ? false : true;
@@ -86,12 +86,12 @@
                 // Pre-conditions
 
                 if (FITUtil.isUndefined(series1) || FITUtil.isUndefined(series2)) {
-                    console.error("Undefined series, cannot combine them.");
+                    self.loggMessage("error","Undefined series, cannot combine them.");
                     return undefined;
                 }
 
                 if (FITUtil.isEmpty(series1) || FITUtil.isEmpty(series2)) {
-                    console.error("Empty series, cannot combine them.");
+                    self.loggMessage("error","Empty series, cannot combine them.");
                     return undefined;
                 }
 
@@ -99,7 +99,7 @@
                 var lenSeries2 = series2.length;
 
                 if (lenSeries1 !== lenSeries2) {
-                    console.warn("Length of combined series does not match ", lenSeries1, lenSeries2);
+                    self.loggMessage("warn","Length of combined series does not match ", lenSeries1, lenSeries2);
                 }
 
                 var elementNr;
@@ -130,16 +130,16 @@
                 }
 
                 if (timestamps === undefined) {
-                    console.warn("Found no timestamps to combine with data measurements.", seriesName);
+                    self.loggMessage("warn","Found no timestamps to combine with data measurements.", seriesName);
                     return values;
                 }
 
                 if (values.length !== timestamps.length)
-                    console.warn("Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString(), seriesName);
+                    self.loggMessage("warn","Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString(), seriesName);
 
 
                 if (startTimestamp === undefined || endTimestamp === undefined) {
-                    console.error("Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps, series:", seriesName);
+                    self.loggMessage("error","Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps, series:", seriesName);
                     return values;
                     // But, could perhaps add relative start time...?
                 }
@@ -174,7 +174,7 @@
                                         valuesForAverage.push(val);
 
                                 } else
-                                    console.log("Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
+                                    self.loggMessage("log","Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
 
                                 prevTimestampNr = nr;
                                 nextTimestamp = timestamps[++nr];
@@ -191,7 +191,7 @@
                                 sum = valuesForAverage.reduce(sumTwoNumbers);
                                 avg = sum / valuesForAverage.length;
                             } else {
-                                console.warn("Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
+                                self.loggMessage("warn","Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
                                 avg = 0;
                             }
 
@@ -209,7 +209,7 @@
                                 else
                                     combined.push([localTimestamp, val]);
                             } else
-                                console.log("Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
+                                self.loggMessage("log","Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
 
                         }
 
@@ -225,12 +225,12 @@
             setDirtyTimestamps: function (rawdata, timestamps) {
 
                 if (FITUtil.isUndefined(timestamps)) {
-                    console.error("No timestamps - its undefined");
+                    self.loggMessage("error","No timestamps - its undefined");
                     return undefined;
                 }
 
                 if (timestamps.length === 0) {
-                    console.warn("Empty timestamps, no one found to analyze for artifacts");
+                    self.loggMessage("warn","Empty timestamps, no one found to analyze for artifacts");
                     return undefined;
                 }
 
@@ -245,7 +245,7 @@
                 var start_time = timestamps[0];
                 var maxLimit = start_time + oneWeek;
 
-                console.log("Start time is", FITUtil.getTimestampString(start_time),", marking timestamps with UTC over ", FITUtil.getTimestampString(maxLimit), "and if time difference between timestamps is over ",max," millisec. as dirty");
+                self.loggMessage("log","Start time is", FITUtil.getTimestampString(start_time),", marking timestamps with UTC over ", FITUtil.getTimestampString(maxLimit), "and if time difference between timestamps is over ",max," millisec. as dirty");
                 var dirtyCounter = 0;
 
                 for (var index = 0; index < len; index++) {
@@ -254,7 +254,7 @@
                         if (timeDiff > 0 && timeDiff <= max && timestamps[index] <= maxLimit)
                             rawdata.dirty[index] = false;
                         else {
-                            console.warn("Found dirty timestamp ", timestamps[index], " at index ", index,"time difference between timestamp is ",timeDiff);
+                            self.loggMessage("warn","Found dirty timestamp ", timestamps[index], " at index ", index,"time difference between timestamp is ",timeDiff);
                             rawdata.dirty[index] = true;
                             dirtyCounter++;
                         }
@@ -263,14 +263,14 @@
                         if (timestamps[index] < maxLimit)
                             rawdata.dirty[index] = false;
                         else {
-                            console.warn("Found dirty timestamp ", timestamps[index], " at index ", index);
+                            self.loggMessage("warn","Found dirty timestamp ", timestamps[index], " at index ", index);
                             rawdata.dirty[index] = true;
                             dirtyCounter++;
                         }
                     }
                 }
 
-                console.log("Number of dirty timestamps : ", dirtyCounter);
+                self.loggMessage("log","Number of dirty timestamps : ", dirtyCounter);
 
             },
 
@@ -373,7 +373,7 @@
                             rawData.session.total_timer_time.push(total_elapsed_time);
                         }
                         else
-                            console.error("Something is wrong with start and/or end timestamp", start_time, timestamp);
+                            self.loggMessage("error","Something is wrong with start and/or end timestamp", start_time, timestamp);
 
                         // Take a guess on distance - assume one single session
                         // Drawback : does not check for multiple sessions
@@ -407,7 +407,7 @@
                             rawData.session.total_descent.push(parseFloat(total_descent.toFixed(1)));
                         }
                     } else
-                        console.warn("No data present on rawdata.record for restoration of session");
+                        self.loggMessage("warn","No data present on rawdata.record for restoration of session");
 
                     // TO DO : calculate avg./max for speed, HR, ... not prioritized
 
@@ -422,7 +422,7 @@
 
                     // Try to get from cache first
                     if (typeof (self.timestampIndexCache) === "undefined") {
-                        console.log("Initialized timestamp index cache");
+                        self.loggMessage("log","Initialized timestamp index cache");
                         self.timestampIndexCache = [];
                     }
 
@@ -451,7 +451,7 @@
                 };
 
                 if (timestamp === undefined) {
-                    console.error("Cannot lookup/find index in timestamp array of an undefined timestamp");
+                    self.loggMessage("error","Cannot lookup/find index in timestamp array of an undefined timestamp");
                     return -1;
                 }
 
@@ -459,7 +459,7 @@
 
                 indexTimestamp = record.timestamp.indexOf(timestamp);
                 if (indexTimestamp === -1) {
-                    console.warn("Direct lookup for timestamp ", FITUtil.getTimestampString(timestamp), " not found, looping through available timestamps on message property record.timestamp to find nearest");
+                    self.loggMessage("warn","Direct lookup for timestamp ", FITUtil.getTimestampString(timestamp), " not found, looping through available timestamps on message property record.timestamp to find nearest");
                     indexTimestamp = findNearestTimestamp(timestamp);
                 }
 
@@ -628,7 +628,8 @@
                 showHeaderInfo: ko.observable(false),
                 forceSpeedKMprH: ko.observable(false),
                 requestAveragingOnSpeed: ko.observable(true),
-                averageSampleTime: ko.observable(5000)
+                averageSampleTime: ko.observable(5000),
+                logging : ko.observable(false)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1031,7 +1032,7 @@
                         }
 
                     } else
-                        console.warn("No timestamps for lap in rawdata to lay out lap lines");
+                        self.loggMessage("warn","No timestamps for lap in rawdata to lay out lap lines");
 
                     lapLinesConfig[lapNr] = {
                         id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
@@ -1110,10 +1111,10 @@
             var timezoneDiff;
 
             if (FITUtil.isUndefined(rawData.record))
-                console.error("No rawdata present on rawdata.record, cannot render chart");
+                self.loggMessage("error","No rawdata present on rawdata.record, cannot render chart");
             else
                 if (FITUtil.isEmpty(rawData.record))
-                    console.warn("Empty rawdata on rawdata.record, nothing to render in chart");
+                    self.loggMessage("warn","Empty rawdata on rawdata.record, nothing to render in chart");
 
             if (rawData.record) {
                 if (rawData.record.heart_rate) {
@@ -1367,7 +1368,7 @@
                     }
                     else {
 
-                        console.warn("Found no lap." + property + " in rawdata");
+                        self.loggMessage("warn","Found no lap." + property + " in rawdata");
                         return undefined;
                     }
                 };
@@ -1442,7 +1443,7 @@
                     seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
             }
             else
-                console.warn("No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
+                self.loggMessage("warn","No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
 
             // HRV
 
@@ -1494,14 +1495,14 @@
             //    chartOptions.inverted = true;
 
             var d = new Date();
-            console.log("Starting multichart setup now " + d);
+            self.loggMessage("log","Starting multichart setup now " + d);
 
 
             // Shared mouse event handler for spline/line series in multichart
             var mouseHandler =
                 {
                     select: function () {
-                        console.log(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y);
+                        self.loggMessage("log",(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y));
                     },
 
                     mouseOut: function () {
@@ -1541,7 +1542,7 @@
 
 
                             if (index === -1) {
-                                console.error("Could not find index of timestamp ", this.x);
+                                self.loggMessage("error","Could not find index of timestamp ", this.x);
                                 return;
                             }
 
@@ -1775,7 +1776,7 @@
                 self.addLapLines(rawData, self.multiChart, false);
 
             d = new Date();
-            console.log("Finishing multichart setup now " + d);
+            self.loggMessage("log","Finishing multichart setup now " + d);
         },
 
         // Shows info about devices used during an activty
@@ -1834,19 +1835,19 @@
             };
 
             if (FITUtil.isUndefined(rawdata)) {
-                console.error("No rawdata available");
+                self.loggMessage("error","No rawdata available");
                 return;
             }
 
             if (FITUtil.isUndefined(rawdata.device_info)) {
-                console.error("No device information on rawdata.device_info");
+                self.loggMessage("error","No device information on rawdata.device_info");
                 return;
             }
 
             var deviceInfoLen = rawdata.device_info.timestamp.length;
 
             if (FITUtil.isUndefined(deviceInfoLen) || deviceInfoLen === 0) {
-                console.error("No timestamp information in device_info, device_info.timestamp");
+                self.loggMessage("error","No timestamp information in device_info, device_info.timestamp");
                 return;
             }
 
@@ -1862,7 +1863,7 @@
             var max = this.multiChart.xAxis[0].max;
             var min = this.multiChart.xAxis[0].min;
 
-            console.log("Deviceinfo xaxis extreemes datamin,datamax : ", min, max);
+            self.loggMessage("log","Deviceinfo xaxis extreemes datamin,datamax : ", min, max);
 
             this.removeSVGGroup(this.masterVM.deviceInfoGroup);
             this.masterVM.deviceInfoGroup = renderer.g('deviceinfo').add();
@@ -2084,19 +2085,19 @@
 
 
             if (FITUtil.isUndefined(rawdata)) {
-                console.error("No rawdata available");
+                self.loggMessage("error","No rawdata available");
                 return;
             }
 
             if (FITUtil.isUndefined(rawdata.event)) {
-                console.error("No event information");
+                self.loggMessage("error","No event information");
                 return;
             }
 
             var eventLen = rawdata.event.timestamp.length;
 
             if (FITUtil.isUndefined(eventLen) || eventLen === 0) {
-                console.error("No timestamp information from event, event.timestamp");
+                self.loggMessage("error","No timestamp information from event, event.timestamp");
                 return;
             }
 
@@ -2109,7 +2110,7 @@
             var max = this.multiChart.xAxis[0].max;
             var min = this.multiChart.xAxis[0].min;
 
-            console.log("Event xaxis extremes datamin,datamax : ", min, max);
+            self.loggMessage("log","Event xaxis extremes datamin,datamax : ", min, max);
 
             var srcImgEvent, titleEvent;
             var SVGeventElement;
@@ -2275,24 +2276,24 @@
         showLapTriggers: function (rawdata) {
 
             if (FITUtil.isUndefined(rawdata)) {
-                console.error("No rawdata, cannot show lap triggers");
+                self.loggMessage("error","No rawdata, cannot show lap triggers");
                 return;
             }
 
             if (FITUtil.isUndefined(rawdata.lap)) {
-                console.error("No lap information");
+                self.loggMessage("error","No lap information");
                 return;
             }
 
             var lapLen = rawdata.lap.timestamp.length;
 
             if (FITUtil.isUndefined(lapLen) || lapLen === 0) {
-                console.error("No timestamp information from lap, lap.timestamp");
+                self.loggMessage("error","No timestamp information from lap, lap.timestamp");
                 return;
             }
 
             if (FITUtil.isUndefined(this.multiChart)) {
-                console.error("Multichart not defined");
+                self.loggMessage("error","Multichart not defined");
                 return;
 
             }
@@ -2305,7 +2306,7 @@
             var max = this.multiChart.xAxis[0].max;
             var min = this.multiChart.xAxis[0].min;
 
-            console.log("Lap triggers xaxis extremes datamin,datamax : ", min, max);
+            self.loggMessage("log","Lap triggers xaxis extremes datamin,datamax : ", min, max);
 
             var srcImg, title;
             var SVG_elmImg;
@@ -2416,12 +2417,12 @@
             //var divChart = document.getElementById(divChartId);
 
             if (FITUtil.isUndefined(rawdata.record)) {
-                console.warn("Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
+                self.loggMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
                 return -1;
             }
 
             if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
-                console.warn("No HR data found, skipping HR Zones chart");
+                self.loggMessage("warn","No HR data found, skipping HR Zones chart");
                 //$('#zonesChart').hide();
                 return;
             }
@@ -2530,7 +2531,7 @@
 
             var startIndex = FITUtil.getIndexOfTimestamp(rawdata.record, startTimestamp);
             var endIndex = FITUtil.getIndexOfTimestamp(rawdata.record, endTimestamp);
-            console.log("Basing HR zone chart on start_time UTC :", new Date(startTimestamp), " at index ", startIndex, "on rawdata.record, and timestamp UTC :", new Date(endTimestamp), " at index: ", endIndex);
+            self.loggMessage("log","Basing HR zone chart on start_time UTC :", new Date(startTimestamp), " at index ", startIndex, "on rawdata.record, and timestamp UTC :", new Date(endTimestamp), " at index: ", endIndex);
 
             for (var zone = 0; zone < myZones.length; zone++)
                 myZones[zone].timeInZone = 0;
@@ -2547,12 +2548,12 @@
                     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/isNaN
 
                     if (isNaN(timeInZoneMillisec)) {// Should not happen....
-                        console.error("Time in zone is NaN");
+                        self.loggMessage("error","Time in zone is NaN");
                         break;
                     }
 
                     if (timeInZoneMillisec > maxTimeDifference) {
-                        console.warn("Greater than ", maxTimeDifference, "ms difference between timestamps, skipped (not calculated in HR zones)");
+                       self.loggMessage("warn","Greater than ", maxTimeDifference, "ms difference between timestamps, skipped (not calculated in HR zones)");
                         continue;
                     }
 
@@ -2568,7 +2569,7 @@
                 //    hry = undefined;
 
                 if (hry === undefined || hry === null)
-                    console.error("Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
+                    self.loggMessage("error","Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
                 else {
                     // Count Heart rate data points in zone
                     for (zone = 0; zone < myZones.length; zone++)
@@ -2611,7 +2612,7 @@
 
             var setMapCenter = function (sport, lat, long) {
                 var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long));
-                console.info("Setting map center for sport ", sport, " at ", latlong);
+                self.loggMessage("info","Setting map center for sport ", sport, " at ", latlong);
                 map.setCenter(latlong);
 
                 if (self.sessionMarkers === undefined || self.sessionMarkers === null)
@@ -2722,11 +2723,11 @@
                     sport = 0; // Default to generic
 
                 if (lat && long) {
-                    console.info("No start position was found in session data, got a position at start of record messages.", lat, long);
+                    self.loggMessage("info","No start position was found in session data, got a position at start of record messages.", lat, long);
                     setMapCenter(sport, lat, long);
                     mapCenterSet = true;
                 } else
-                    console.warn("Got no start position from head/index 0 of position_lat/long");
+                    self.loggMessage("info","Got no start position from head/index 0 of position_lat/long");
             }
 
             return mapCenterSet;
@@ -2749,7 +2750,7 @@
                 return false;
 
             if (session.swc_lat === undefined || session.swc_long === undefined || session.nec_lat === undefined || session.nec_long === undefined) {
-                console.info("No swc/nec data available in session");
+                self.loggMessage("info","No swc/nec data available in session");
                 return false;
             }
 
@@ -2874,7 +2875,7 @@
                 self.masterVM.activityPolyline = {};
 
             if (record === undefined) {
-                console.info("No record msg. to based plot of polyline data for session,lap etc.");
+                self.loggMessage("info","No record msg. to based plot of polyline data for session,lap etc.");
                 return false;
             }
 
@@ -2895,7 +2896,7 @@
             var latLength = record.position_lat.length;
             var longLength = record.position_long.length;
 
-            console.info("Total GPS points available (position_lat,position_long) : ", latLength, longLength);
+            self.loggMessage("info","Total GPS points available (position_lat,position_long) : ", latLength, longLength);
 
             //var sampleInterval = Math.floor(latLength / 30);
 
@@ -2904,7 +2905,7 @@
 
             var sampleInterval = 2; // Max. sampling rate for 910XT is 1 second 
 
-            console.info("Sample length for polyline is ", sampleInterval);
+            self.loggMessage("info","Sample length for polyline is ", sampleInterval);
 
             //var sample = 0;
 
@@ -2932,7 +2933,7 @@
                     }
             }
 
-            console.info("Total length of polyline array with coordinates is : ", self.masterVM.activityCoordinates[type].length.toString());
+            self.loggMessage("info","Total length of polyline array with coordinates is : ", self.masterVM.activityCoordinates[type].length.toString());
 
             self.masterVM.activityPolyline[type] = new google.maps.Polyline({
                 path: self.masterVM.activityCoordinates[type],
@@ -2948,27 +2949,27 @@
 
         intepretMessageCounters: function (counter, type) {
             if (FITUtil.isUndefined(counter)) {
-                console.warn("Message counters is undefined, cannot intepret counter of global messages in FIT file");
+                self.loggMessage("warn","Message counters is undefined, cannot intepret counter of global messages in FIT file");
                 return -1;
             }
 
             if (counter.fileIdCounter !== 1)
-                console.error("File id msg. should be 1, but is ", counter.fileIdCounter);
+                self.loggMessage("error","File id msg. should be 1, but is ", counter.fileIdCounter);
             if (counter.fileCreatorCounter !== 1)
-                console.error("File creator msg. should be 1, but is ", counter.fileCreatorCounter);
+                self.loggMessage("error","File creator msg. should be 1, but is ", counter.fileCreatorCounter);
 
             if (type === FITFileType.activityfile) { // Activity
 
                 if (counter.sessionCounter === 0)
-                    console.error("Session msg. should be at least 1, but is ", counter.sessionCounter);
+                    self.loggMessage("error","Session msg. should be at least 1, but is ", counter.sessionCounter);
                 if (counter.lapCounter === 0)
-                    console.error("Lap msg. should be at least 1, but is ", counter.lapCounter);
+                    self.loggMessage("error","Lap msg. should be at least 1, but is ", counter.lapCounter);
                 if (counter.activityCounter !== 1)
-                    console.error("Activity msg. should be 1, but is ", counter.activityCounter);
+                    self.loggMessage("error","Activity msg. should be 1, but is ", counter.activityCounter);
                 if (counter.deviceInfoCounter === 0)
-                    console.error("Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
+                    self.loggMessage("error","Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
                 if (counter.recordCounter === 0)
-                    console.error("No record msg. ", counter.lapCounter);
+                    self.loggMessage("error","No record msg. ", counter.lapCounter);
             }
 
         },
@@ -3051,7 +3052,7 @@
             // http://updates.html5rocks.com/2012/06/Don-t-Build-Blobs-Construct-Them
             // http://updates.html5rocks.com/2011/08/Downloading-resources-in-HTML5-a-download
             if (!self.hasHRVdata(rawdata)) {
-                console.warn("No HRV data available for export as CSV");
+                self.loggMessage("warn","No HRV data available for export as CSV");
                 return;
             }
 
@@ -3077,7 +3078,7 @@
                     else if (type === "bar/column")
                         headerStr = 'category,';
                     else if (type !== "raw")
-                        console.warn("Unknown CSV export type", type, "choosing default raw");
+                        self.loggMessage("warn","Unknown CSV export type", type, "choosing default raw");
 
                     headerStr += 'time' + CRLF;
                     CSVtimeStr = headerStr;
@@ -3102,7 +3103,7 @@
             // Blob(array,objectliteral)
          
             self.masterVM.exportVM.csv.blob = new Blob([CSVtimeStr], { type: 'text/csv' });
-            console.log("Size of CSV blob:", self.masterVM.exportVM.csv.blob.size, " bytes");
+            self.loggMessage("log","Size of CSV blob:", self.masterVM.exportVM.csv.blob.size, " bytes");
 
             window.URL = window.URL || window.webkitURL;
 
@@ -3133,7 +3134,7 @@
             if (rawData.record)
                 FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
             else
-                console.warn("No rawdata present on rawdata.record - no data in file");
+                self.loggMessage("warn","No rawdata present on rawdata.record - no data in file");
 
             // Enable export of HRV data
             
@@ -3189,15 +3190,15 @@
 
             if (FITUtil.isUndefined(rawData.session.start_time)) {
 
-                console.warn("Session start time not found");
+                self.loggMessage("warn","Session start time not found");
                 start_time = rawData.lap.start_time[0];
 
                 if (start_time === undefined) {
-                    console.warn("Session start time not found in first lap either, trying record head");
+                    self.loggMessage("warn","Session start time not found in first lap either, trying record head");
                     start_time = rawData.record.timestamp[0];
                 }
 
-                console.info("Found start_time for session:", start_time);
+                self.loggMessage("info","Found start_time for session:", start_time);
 
                 rawData.session.start_time = [];
                 rawData.session.start_time.push(start_time);
@@ -3207,15 +3208,15 @@
             var timestamp;
 
             if (FITUtil.isUndefined(rawData.session.timestamp)) {
-                console.warn("Session end time not found");
+                self.loggMessage("warn","Session end time not found");
                 timestamp = rawData.lap.timestamp[rawData.session.num_laps - 1];
-                console.info("Timestamp of lap", rawData.session_num_laps, "is :", timestamp);
+                self.loggMessage("info","Timestamp of lap", rawData.session_num_laps, "is :", timestamp);
 
                 if (timestamp === undefined) {
-                    console.warn("Session end not found in timestamp for lap", rawData.session.num_laps);
+                    self.loggMessage("warn","Session end not found in timestamp for lap", rawData.session.num_laps);
                     var len = rawData.record.timestamp.length;
                     timestamp = rawData.record.timestamp[len - 1];
-                    console.info("Timestamp of last rawdata.record is :", timestamp);
+                    self.loggMessage("info","Timestamp of last rawdata.record is :", timestamp);
                 }
                 rawData.session.timestamp = [];
                 rawData.session.timestamp.push(timestamp);
@@ -3320,32 +3321,35 @@
 
                 case 'rawData':
                    
+                    // Clean up reference to file blob
+                   // window.URL.revokeObjectURL(eventdata.file);
+
                      rawData = eventdata.rawdata;
                  
                     // TO DO: push rawdata in an viewmodel for imported rawdata files....
 
                     if (FITUtil.isUndefined(rawData)) {
-                        console.error("Received undefined rawdata from import worker thread, its discarded, no further processing necessary");
+                        self.loggMessage("error","Received undefined rawdata from import worker thread, its discarded, no further processing necessary");
                         break;
                     }
 
                     if (rawData.file_id)
-                        console.info("file_id message : ", JSON.stringify(rawData.file_id));
+                        self.loggMessage("info","file_id message : ", JSON.stringify(rawData.file_id));
 
                     if (rawData.file_creator)
-                        console.info("file_creator message : ", JSON.stringify(rawData.file_creator));
+                        self.loggMessage("info","file_creator message : ", JSON.stringify(rawData.file_creator));
 
                     if (rawData.file_id) {
                         fileIdType = rawData.file_id.type[0];
 
                         if (rawData.file_id.type.length > 1)
-                            console.warn("More than 1 file_id type");
+                            self.loggMessage("warn","More than 1 file_id type");
                     }
                     else {
                         // Normally FIT files contains exactly ONE file_id message at the start
 
                         if (rawData.session || rawData.lap || rawData.record) {
-                            console.log("No file_id message in FIT file, but assume its an acivity file - found session or lap or record");
+                            self.loggMessage("log","No file_id message in FIT file, but assume its an acivity file - found session or lap or record");
                             fileIdType = FITFileType.activityfile;
                         }
                     }
@@ -3354,7 +3358,7 @@
                         // Activity file
                         case FITFileType.activityfile:
 
-                            console.info("Processing an activity file");
+                            self.loggMessage("info","Processing an activity file");
                             var latLongString;
                             var startPosition = self.getStartPosition(rawData);
                             
@@ -3383,12 +3387,12 @@
                             // Sport settings (HR zones)
 
                         case FITFileType.sportsettingfile:
-                            console.info("Processing a sport settings file");
+                            self.loggMessage("info","Processing a sport settings file");
                             self.processSportSettingFile(rawData);
                             break;
 
                         default:
-                            console.error("Cannot process file id with type : ", fileIdType);
+                            self.loggMessage("info","Cannot process file id with type : ", fileIdType);
                             break;
                     }
 
@@ -3426,11 +3430,11 @@
                                 errMsg += "property " + prop + " : " + eventdata.event.prop;
                         }
                     }
-                    console.error(errMsg);
+                    self.loggMessage("error",errMsg);
                     break;
 
                 case 'info':
-                    console.info(eventdata.data);
+                    self.loggMessage("info",eventdata.data);
                     break;
 
                 case 'importProgress':
@@ -3448,7 +3452,7 @@
                     break;
 
                 default:
-                    console.error("Received unrecognized message from worker " + eventdata.response);
+                    self.loggMessage("error","Received unrecognized message from worker " + eventdata.response);
                     break;
             }
 
@@ -3456,15 +3460,21 @@
 
         },
 
+        loggMessage: function (type,msg)
+        {
+            if (self.masterVM.settingsVM.logging())
+                console[type](msg);
+        },
+
         onFITManagerError: function (e) {
-            console.error("Error in worker, event: ", e);
+            self.loggMessageg("error","Error in worker, event: ", e);
         },
 
         // Handles file selection for import
         onFitFileSelected: function (e) {
 
             if (FITUtil.isUndefined(e.target.files) || e.target.files.length === 0) {
-                console.warn("No file selected for import");
+                self.loggMessage("warn","No file selected for import");
                 return;
             }
 
@@ -3502,7 +3512,8 @@
                 request: 'importFitFile',
                 fitfiles : firefox_compatible_files,
                 fitfile: undefined,
-                store: self.masterVM.settingsVM.storeInIndexedDB()
+                store: self.masterVM.settingsVM.storeInIndexedDB(),
+                logging : self.masterVM.settingsVM.logging()
                 //, "query": query
             };
 
@@ -3567,7 +3578,7 @@
         try {
             req = indexedDB.deleteDatabase("fit-import");
         } catch (e) {
-            console.error(e.message);
+            self.loggMessage("error",e.message);
         }
         //req.onblocked = function (evt) {
         //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
@@ -3575,12 +3586,12 @@
 
 
         req.onsuccess = function (evt) {
-            console.info("Delete " + evt.currentTarget.readyState);
+            self.loggMessage("info","Delete " + evt.currentTarget.readyState);
 
         };
 
         req.onerror = function (evt) {
-            console.error("Error deleting database");
+            self.loggMessage("error","Error deleting database");
         };
 
     }
@@ -3599,7 +3610,7 @@
         if (myZonesJSONString !== null)
             myZones = JSON.parse(myZonesJSONString);
         else {
-            console.info("Local storage of " + key + " not found, using default HR Zones");
+            self.loggMessage("info","Local storage of " + key + " not found, using default HR Zones");
             myZones = [{ name: 'Zone 1', min: 106, max: 140 },   // No storage found use default
                      { name: 'Zone 2', min: 141, max: 150 },
                      { name: 'Zone 3', min: 151, max: 159 },
