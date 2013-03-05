@@ -628,7 +628,8 @@
                 forceSpeedKMprH: ko.observable(false),
                 requestAveragingOnSpeed: ko.observable(true),
                 averageSampleTime: ko.observable(5000),
-                logging : ko.observable(false)
+                logging: ko.observable(false),
+                distanceOnXAxis : ko.observable(false)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -798,6 +799,11 @@
                     self.removeSVGGroup(self.masterVM.deviceInfoGroup);
 
 
+            });
+
+            this.masterVM.settingsVM.distanceOnXAxis.subscribe(function (distanceOnXAxis) {
+                if (self.multiChart)
+                    self.multiChart.redraw();
             });
 
             this.masterVM.settingsVM.forceSpeedKMprH.subscribe(self.adjustSpeed);
@@ -1348,9 +1354,14 @@
                 max_heart_rate: []
             };
 
+            self.masterVM.tickPositions = [];  // Tick at end of each lap
+            self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
+            var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
+
             // Setup lap categories
             if (rawData.lap) {
                 var len = rawData.lap.timestamp.length;
+
 
                 var lapNr;
 
@@ -1400,6 +1411,14 @@
                                 pushData("max_heart_rate");
                                 break;
                         }
+
+                        lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
+                        if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp])
+                            self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
+                        else
+                            self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr]);
+
+                        self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
                     }
                 }
 
@@ -1481,13 +1500,12 @@
 
                         if (self.masterVM.settingsVM.showDeviceInfo())
                             self.showDeviceInfo(rawData);
+
+
                     }
                 }
                 //marginBottom: 120,
                 //marginTop:50
-
-
-
 
             };
             //if (rawData.hrv !== undefined)
@@ -1596,7 +1614,36 @@
                         //setExtremes: function (event) {
                         //    console.log("setExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                         //}
-                    }
+                    },
+                    //tickPositions: self.masterVM.tickPositions,
+                    tickPositioner: function () {
+               
+                        // Copy array of tickpositions -> due to Highchart library for some reason deletes labels when zooming out again...
+                        var tickPositions = [];
+                        var len = self.masterVM.tickPositions.length;
+                        for (var posNr=0; posNr < len; posNr++)
+                            tickPositions.push(self.masterVM.tickPositions[posNr]);
+
+                        return tickPositions;
+                    },
+                    //dateTimeLabelFormats: {
+                    //    day: '%e of %b'
+                    //},
+                    labels: {
+                        formatter: function () {
+                            // return Highcharts.dateFormat('%H:%M:%S', this.value);
+                            var distanceKm;
+                            if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value]) {
+                                distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
+                                if (distanceKm < 1)
+                                    return self.masterVM.distanceAtTick[this.value] + ' m';
+                                else
+                                    return distanceKm.toFixed(0) +' km';
+                            }
+                            else
+                                return Highcharts.dateFormat('%H:%M:%S', this.value);
+                        }
+                    },
                     //plotLines: lapLinesConfig
                     //reversed : true
                 }, {

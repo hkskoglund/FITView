@@ -7943,8 +7943,8 @@ Axis.prototype = {
 
 		} else { // doesn't have data
 			for (n in ticks) {
-				ticks[n].destroy();
-				delete ticks[n];
+				//ticks[n].destroy();
+				//delete ticks[n];
 			}
 		}
 
