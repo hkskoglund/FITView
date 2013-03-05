@@ -5,6 +5,8 @@
     "use strict";
     var self;
 
+    var ge; // Google earth plugin
+
     var lapxAxisID = 'lapxAxis',
         rawdataxAxis = 'rawdataxAxis',
         combinedxAxisID = "combinedxAxis", // For speed vs HR
@@ -698,6 +700,8 @@
 
             //}
 
+            
+
             self.masterVM.exportVM.csv.selectedType(self.masterVM.exportVM.csv.type()[0]); // Raw CSV export by default
 
 
@@ -1095,6 +1099,7 @@
             var temperatureSeriesData;
 
             var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
+            var prevMarker3D = null;
 
             var allRawdata = rawData;
 
@@ -1188,14 +1193,17 @@
                     var avgSampleInterval = this.masterVM.settingsVM.averageSampleTime();
 
                     switch (sport) {
+
                         case FITSport.running: // Running
                             this.masterVM.speedMode(1); // min/km
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, id, avgReq, avgSampleInterval);
                             break;
+
                         case FITSport.cycling: // Cycling
                             this.masterVM.speedMode(2); // km/h
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, avgReq, avgSampleInterval);
                             break;
+
                         default:
                             this.masterVM.speedMode(2);
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, avgReq, avgSampleInterval);
@@ -1509,6 +1517,12 @@
                             prevMarker.setMap(null);
                             prevMarker = null; // GC takes over...
                         }
+
+                        if (prevMarker !== undefined && prevMarker3D !== null) {
+                            if (ge)
+                              ge.getFeatures().removeChild(prevMarker3D);
+                            prevMarker3D = null;
+                        }
                     },
 
                     mouseOver: function () {
@@ -1520,11 +1534,15 @@
                         var lat, long;
 
                         function setMarker() {
+
                             if (FITUtil.isUndefined(google)) // Allows working without map
                                 return;
 
+                            var latConv = FITUtil.timestampUtil.semiCirclesToDegrees(lat);
+                            var longConv = FITUtil.timestampUtil.semiCirclesToDegrees(long);
+
                             prevMarker = new google.maps.Marker({
-                                position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long)),
+                                position: new google.maps.LatLng(latConv, longConv),
                                 icon: {
                                     path: google.maps.SymbolPath.CIRCLE,
                                     scale: 3
@@ -1532,13 +1550,18 @@
                                 draggable: true,
                                 map: self.map
                             });
+
+                            if (ge) {
+                                prevMarker3D = self.createPlacemark("", 'http://' + window.document.location.host + '/Images/pointer.png', latConv, longConv); // Just get the default marker for 3D
+
+                                var la = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+                                self.lookAt3D(latConv, longConv, undefined, la.getRange(), la.getTilt(), la.getHeading());
+                            }
                         }
 
-                       
                         if (rawData.record !== undefined) {
 
                             var index = rawData.record.timestamp.indexOf(this.x - FITUtil.timestampUtil.getTimezoneOffsetFromUTC());
-
 
                             if (index === -1) {
                                 self.loggMessage("error","Could not find index of timestamp ", this.x);
@@ -1554,14 +1577,21 @@
                             //console.log("Lat, long ", lat, long);
 
                             if (lat && long) {
-                                if (prevMarker === null) {
+
+                                if (prevMarker === null && prevMarker3D === null) {
                                     setMarker();
                                 } else {
                                     // Clear previous marker
                                     prevMarker.setMap(null);
                                     prevMarker = null;
+                                    if (ge) {
+                                        ge.getFeatures().removeChild(prevMarker3D);
+                                        prevMarker3D = null;
+                                    }
                                     setMarker();
                                 }
+
+                                
                             }
 
                         }
@@ -2649,6 +2679,71 @@
             self.HRZonesChart = new Highcharts.Chart(options);
         },
 
+        lookAt3D: function (lat,long,altitude,range,tilt,heading)
+        {
+            if (typeof ge === "undefined" ) {
+                self.loggMessage("error", "Undefined google earth plugin - ge");
+                return;
+            }
+
+            if (typeof lat === "undefined" || typeof long === "undefined")
+            {
+                self.loggMessage("error","Undefined lat or long in configuration on google earth 3D plugin");
+                return;
+            }
+
+            var lookAt = ge.createLookAt('');
+
+            lookAt.setLatitude(lat);
+            lookAt.setLongitude(long);
+
+            if (range)
+              lookAt.setRange(range);
+            //var tilt = lookAt.getTilt();  // Defaults to 0 - top down
+
+            if (tilt)
+                lookAt.setTilt(tilt);
+
+            if (heading)
+                lookAt.setHeading(heading);
+
+            ge.getView().setAbstractView(lookAt);
+        },
+
+        // https://code.google.com/apis/ajax/playground/?exp=earth#creating_placemarks
+        createPlacemark: function (name, href, latConv, longConv) {
+
+            if (typeof ge === "undefined")
+                return;
+            
+                var placemark = ge.createPlacemark(''); // Arg. is id of placemark
+                placemark.setName(name);
+                ge.getFeatures().appendChild(placemark);  // Can use removeChild to remove...
+
+                if (href) {
+                    // Create style map for placemark
+                    var icon = ge.createIcon('');
+                    // http://php.refulz.com/getting-host-path-port-with-javascript/
+
+                    icon.setHref(href);
+                    var style = ge.createStyle('');
+                    style.getIconStyle().setIcon(icon);
+                    placemark.setStyleSelector(style);
+                }
+
+                // Create point
+                //var la = ge.getView().copyAsLookAt(ge.ALTITUDE_RELATIVE_TO_GROUND);
+                var point = ge.createPoint('');
+                point.setLatitude(latConv);
+                point.setLongitude(longConv);
+
+                placemark.setGeometry(point);
+
+                return placemark;
+            
+
+        },
+        
         showSessionMarkers: function (map, rawdata) {
             // Plot markers for start of each session
 
@@ -2659,12 +2754,19 @@
             var session = rawdata.session;
 
             var setMapCenter = function (sport, lat, long) {
-                var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long));
+                var latConv = FITUtil.timestampUtil.semiCirclesToDegrees(lat);
+                var longConv = FITUtil.timestampUtil.semiCirclesToDegrees(long);
+
+                var latlong = new google.maps.LatLng(latConv, longConv);
                 self.loggMessage("info","Setting map center for sport ", sport, " at ", latlong);
                 map.setCenter(latlong);
 
                 if (self.sessionMarkers === undefined || self.sessionMarkers === null)
                     self.sessionMarkers = [];
+
+                // 3d
+                if (self.sessionPlaceMarkers === undefined || self.sessionPlaceMarkers === null)
+                    self.sessionPlaceMarkers = [];
 
                 var markerOptions = {
                     position: latlong,
@@ -2672,7 +2774,9 @@
                 };
 
                 // Select session marker according to sport mode
-                var image;
+                var image, href;
+
+                var placemark;
 
                 function newMarkerImage(imageName) {
                     return new google.maps.MarkerImage(imageName,
@@ -2681,40 +2785,46 @@
                             new google.maps.Point(0, 32));
                 }
 
-                //generic 0
-                //running 1
-                //cycling 2
-                //transition 3 - Multisport transition
-                //fitness_equipment 4
-                //swimming 5
-                //basketball 6
-                //soccer 7
-                //tennis 8
-                //american_football 9
-                //training 10
-                //all 254 All is for goals only to include all sports.
-
+               
 
                 switch (sport) {
+
                     case FITSport.running:
 
                         image = newMarkerImage('Images/sport/running.png');
+                        placemark = self.createPlacemark("",'http://' + window.document.location.host + '/Images/sport/running.png',latConv,longConv);
                         break;
+
                     case FITSport.cycling:
                         image = newMarkerImage('Images/sport/cycling.png');
+                        placemark = self.createPlacemark("", 'http://' + window.document.location.host + '/Images/sport/cycling.png',latConv,longConv);
                         break;
 
                     case FITSport.swimming:
                         image = newMarkerImage('Images/sport/swimming.png');
+                        placemark = self.createPlacemark("",'http://' + window.document.location.host + '/Images/sport/swimming.png',latConv,longConv);
                         break;
                         // TO DO : Add more icons
+                    default:
+                        placemark = self.createPlacemark("",undefined,latConv,longConv);
+                        break;
                 }
 
                 if (image)
                     markerOptions.icon = image;
 
+                self.sessionPlaceMarkers.push(placemark);
                 self.sessionMarkers.push(new google.maps.Marker(markerOptions));
             };
+
+           
+
+
+            function showStartPos3D(lat, long) {
+                // Fly there...
+                self.lookAt3D(lat, long, undefined,400.0,80.0);
+
+            }
 
             // Clear previous session markers
             if (self.sessionMarkers) {
@@ -2725,7 +2835,18 @@
                 self.sessionMarkers = null;
             }
 
-            if (session && session.start_position_lat) {
+            // Clear previous session markers 3D
+            // http://stackoverflow.com/questions/10958999/javascript-for-adding-removing-placemarks-to-google-earth-plug-in-map
+            if (self.sessionPlaceMarkers) {
+                self.sessionPlaceMarkers.forEach(function (element, index, array) {
+                    if (ge)
+                      ge.getFeatures().removeChild(element);
+                });
+
+                self.sessionPlaceMarkers = null;
+            }
+
+            if (session && session.start_position_lat && session.start_position_lat.length > 0) {
 
                 session.start_position_lat.forEach(function (element, index, array) {
 
@@ -2740,9 +2861,11 @@
 
                         mapCenterSet = true;
 
-
                     }
                 });
+              
+                showStartPos3D(FITUtil.timestampUtil.semiCirclesToDegrees(session.start_position_lat[0]), FITUtil.timestampUtil.semiCirclesToDegrees(session.start_position_long[0]));
+
             }
 
 
@@ -2773,6 +2896,7 @@
                 if (lat && long) {
                     self.loggMessage("info","No start position was found in session data, got a position at start of record messages.", lat, long);
                     setMapCenter(sport, lat, long);
+                    showStartPos3D(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long));
                     mapCenterSet = true;
                 } else
                     self.loggMessage("info","Got no start position from head/index 0 of position_lat/long");
@@ -2787,7 +2911,9 @@
             var session = rawdata.session;
             var sessionCoords = [];
             var fillColors = [];
+
             // Remove previous overlays
+
             if (this.sessionRectangles !== undefined) {
                 this.sessionRectangles.forEach(function (element, index, array) {
                     self.sessionRectangles[index].setMap(null);
@@ -2802,12 +2928,9 @@
                 return false;
             }
 
-           
             self.sessionRectangles = [];
            
-
             session.swc_lat.forEach(function (value, index, array) {
-
 
                 if (session.swc_lat[index] &&
                     session.swc_long[index] &&
@@ -2856,11 +2979,37 @@
 
             var myCurrentPosition, newMap;
 
+            function initCB(instance) {
+                ge = instance;
+                ge.getWindow().setVisibility(true);
+
+                ge.getOptions().setStatusBarVisibility(true);
+                ge.getNavigationControl().setVisibility(ge.VISIBILITY_AUTO);
+
+
+                // Layers
+                //ge.getLayerRoot().enableLayerById(ge.LAYER_BORDERS, true);
+                ge.getLayerRoot().enableLayerById(ge.LAYER_ROADS, true);
+                ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, true);
+
+                // Set start pos if geolocatin is available
+                if (self.geolocationLat && self.geolocationLong)
+                 self.lookAt3D(self.geolocationLat, self.geolocationLong,undefined,400.0,80.0,0);
+            }
+
+            function failureCB(errorCode) {
+                self.loggMessage("error", "Error loading google earth plugin, error code: ", errorCode);
+            }
+
+          
+
             // f.ex in case google maps api is not downloaded due to network problems....
             // http://joshua-go.blogspot.no/2010/07/javascript-checking-for-undeclared-and.html
 
             if (FITUtil.isUndefined(google))
                 return undefined;
+
+            google.earth.createInstance('map3d', initCB, failureCB);
 
             var mapOptions = {
                 zoom: 11,
@@ -2873,11 +3022,18 @@
             if (navigator.geolocation) {
                 // Async call with anonymous callback..
                 navigator.geolocation.getCurrentPosition(function (position) {
+
+                    // Share with 3D 
+                    self.geolocationLat = position.coords.latitude;
+                    self.geolocationLong = position.coords.longitude;
+
                     myCurrentPosition = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                     var currentCenter = newMap.getCenter();
 
                     if (currentCenter === undefined)
                         newMap.setCenter(myCurrentPosition);
+
+                  
                 });
             }
 
@@ -2897,6 +3053,7 @@
             var chosenStrokeColor = "#FF0000";
             var chosenStrokeWeight = 1;
             var chosenStrokeOpacity = 1;
+            var latConv, longConv;
 
             if (strokeOptions) {
                 if (strokeOptions.strokeColor)
@@ -2922,6 +3079,12 @@
             else if (FITUtil.isUndefined(self.masterVM.activityPolyline))
                 self.masterVM.activityPolyline = {};
 
+            // Clear 3D lineplaceMark
+
+            if (self.masterVM.lineStringPlacemark && typeof ge !== "undefined") 
+                ge.getFeatures().removeChild(self.masterVM.lineStringPlacemark);
+            
+
             if (record === undefined) {
                 self.loggMessage("info","No record msg. to based plot of polyline data for session,lap etc.");
                 return false;
@@ -2937,7 +3100,32 @@
                 self.masterVM.activityCoordinates[type] = [];
             }
 
+            // https://code.google.com/apis/ajax/playground/?exp=earth#line_string_styling
 
+            if (ge) {
+                // create the line string placemark
+                self.masterVM.lineStringPlacemark = ge.createPlacemark('');
+
+                // create the line string geometry
+                var lineString = ge.createLineString('');
+                self.masterVM.lineStringPlacemark.setGeometry(lineString);
+
+                // tessellate (i.e. conform to ground elevation)
+                lineString.setTessellate(true);
+
+                // If lineStringPlacemark doesn't already have a Style associated
+                // with it, we create it now.
+                if (!self.masterVM.lineStringPlacemark.getStyleSelector()) {
+                    self.masterVM.lineStringPlacemark.setStyleSelector(ge.createStyle(''));
+                }
+
+                // The Style of a Feature is retrieved as feature.getStyleSelector().
+                // The Style itself contains a LineStyle, which is what we manipulate
+                // to change the color and width of the line.
+                var lineStyle = self.masterVM.lineStringPlacemark.getStyleSelector().getLineStyle();
+                lineStyle.setWidth(2);
+                lineStyle.getColor().set('ff0000ff');  // aabbggrr format
+            }
 
             // Build up polyline
 
@@ -2946,38 +3134,26 @@
 
             self.loggMessage("info","Total GPS points available (position_lat,position_long) : ", latLength, longLength);
 
-            //var sampleInterval = Math.floor(latLength / 30);
-
-            //if (sampleInterval < 1)
-            //    sampleInterval = 1;
-
             var sampleInterval = 2; // Max. sampling rate for 910XT is 1 second 
 
             self.loggMessage("info","Sample length for polyline is ", sampleInterval);
 
-            //var sample = 0;
-
-            //var sampleLimit = 100;
-
-            //var findNearestTimestamp = function(timestamp) {
-            //    var indxNr;
-            //    for (indxNr = 0; indxNr < latLength; indxNr++) {
-            //        if (record.timestamp[indxNr] >= timestamp)
-            //            break;
-            //    }
-            //    return indxNr;
-            //};
 
             var indexStartTime = FITUtil.getIndexOfTimestamp(record, startTimestamp);
-
             var indexEndTime = FITUtil.getIndexOfTimestamp(record, endTimestamp);
 
-
             for (var index = indexStartTime; index <= indexEndTime; index++) {
+
                 if (index === indexStartTime || (index % sampleInterval === 0) || index === indexEndTime)
+
                     if (record.position_long[index] !== undefined && record.position_lat[index] !== undefined && rawdata.dirty[index] !== true) {
+
                         //console.log("Setting lat,long in activityCoordinates",record.position_lat[index],record.position_long[index]," index", index);
-                        self.masterVM.activityCoordinates[type].push(new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(record.position_lat[index]), FITUtil.timestampUtil.semiCirclesToDegrees(record.position_long[index])));
+                        latConv = FITUtil.timestampUtil.semiCirclesToDegrees(record.position_lat[index]);
+                        longConv = FITUtil.timestampUtil.semiCirclesToDegrees(record.position_long[index]);
+                        self.masterVM.activityCoordinates[type].push(new google.maps.LatLng(latConv, longConv));
+                        if (ge)
+                            lineString.getCoordinates().pushLatLngAlt(latConv, longConv, 0);  // NB Altitude set to 0
                     }
             }
 
@@ -2991,6 +3167,10 @@
             });
 
             self.masterVM.activityPolyline[type].setMap(map);
+
+            // Add the feature to Earth
+            if (ge)
+              ge.getFeatures().appendChild(self.masterVM.lineStringPlacemark);
 
             return true;
         },

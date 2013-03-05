@@ -4,7 +4,18 @@
 <head>
     <title>FITView</title>
 
+    <!-- http://stackoverflow.com/questions/13641503/can-i-turn-on-ie-10-compatibility-view-using-javascript-or-html 
+        IE 10 has problems with running Google Earth plugin, seems to work in compatibility mode-->
+    <!--<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9" />-->
+
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false"></script>
+    
+    <!-- Google earth plugin -->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("earth","1");
+    </script>
+
     <script src="Scripts/3party/jquery-1.9.1.js"></script>
     <script src="Scripts/3party/knockout-2.2.1.debug.js"></script>
     <script src="Scripts/3party/knockout.mapping-latest.debug.js"></script>
@@ -933,9 +944,15 @@
             </section>
 
             <div id="divMapWrapper">
-                <div>
-                    <img id="liveImage" src="http://195.18.181.101/mjpg/video.mjpg" />
+
+               <!-- <div id="liveImage">
+                    <img  src="http://195.18.181.101/mjpg/video.mjpg" />
+                </div> -->
+
+                <div id="map3d">
+
                 </div>
+
                 <!-- ko with: activityVM -->
                 <div id="importedActivities">
 
@@ -1050,6 +1067,7 @@
 
                     </ul>
 
+                     <img  src="http://195.18.181.101/mjpg/video.mjpg" />
                </div>
                  <!-- /ko -->
 

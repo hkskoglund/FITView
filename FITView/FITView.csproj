@@ -57,6 +57,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\pointer.png" />
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
     <Content Include="Images\deviceinfo\env_sensor_legacy.png" />

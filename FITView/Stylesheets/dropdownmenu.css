@@ -27,7 +27,7 @@
 }
 
     .menu li {
-        z-index: 1;
+        z-index: 1; 
         position: relative;
         list-style: none;
         float: left; /* Will lay menu items in sequence from left to right*/
@@ -69,7 +69,7 @@
 
     .menu ul {
         max-width: 400px;
-        z-index: 1;
+        z-index: 1; 
         position: absolute;
         top: 40px;
         left: 0;

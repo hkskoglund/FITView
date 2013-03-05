@@ -17,21 +17,18 @@ padding-left: 0;
 white-space: nowrap;
 }*/
 
+
+
 #divHeaderInfo {
     margin-left: 5px;
     margin-top: 2px;
 }
 
 #divMapWrapper {
-    min-height: 270px;
+    min-height: 350px;
 }
 
-#importedActivities {
-    overflow-y: scroll;
-    width: 30%;
-    height: 270px;
-    float: right;
-}
+
 
 #activityList {
     list-style-type: none;
@@ -56,19 +53,34 @@ white-space: nowrap;
     -webkit-padding-start: 0px;
 }
 
+#importedActivities {
+    overflow-y: scroll;
+    width: 20%;
+    height: 350px;
+    float:left;
+}
+
 #activityMap {
-    width: 49%;
-    height: 270px;
+    width: 40%;
+    height: 350px;
     /*height : 270px;*/
     /*background-color : white;*/
     float: right;
     /*display : none; */
 }
 
+#map3d {
+    width: 39%;
+    /*height : 270px;*/
+    height: 350px;
+    margin-left: 5px;
+    float: right;
+}
+
 #liveImage {
     width: 20%;
     /*height : 270px;*/
-    height: 270px;
+    height: 350px;
     margin-left: 5px;
     float: left;
 }
