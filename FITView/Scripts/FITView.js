@@ -1649,9 +1649,15 @@
                             if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value]) {
                                 distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
                                 if (distanceKm < 1)
-                                    return self.masterVM.distanceAtTick[this.value] + ' m'+'<br/>'+toHHMMSS;
-                                else
-                                    return distanceKm.toFixed(0) +' km'+'<br/>'+toHHMMSS;
+                                    return self.masterVM.distanceAtTick[this.value] + ' m' + '<br/>' + toHHMMSS;
+                                else {
+                                    var label = distanceKm.toFixed(2);
+
+                                    if (label.lastIndexOf(".00") !== -1)
+                                        return label.slice(0, -3) + '<br/>' + toHHMMSS; // Remove .00
+                                    else
+                                        return label + '<br/>' + toHHMMSS;
+                                }
                             }
                             else
                                 return Highcharts.dateFormat('%H:%M:%S', this.value);
