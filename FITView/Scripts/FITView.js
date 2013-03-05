@@ -489,6 +489,25 @@
             return result;
         },
 
+        formatToHHMMSS : function (totalSec)
+        {
+            // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
+
+            var hours = parseInt(totalSec / 3600, 10) % 24;
+            var minutes = parseInt(totalSec / 60, 10) % 60;
+            var seconds = parseInt(totalSec % 60, 10);
+
+            var hourResult;
+            if (hours !== 0)
+                hourResult = (hours < 10 ? "0" + hours : hours) + ":";
+            else
+                hourResult = "";
+
+            var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+
+            return result;
+        },
+
         convertSpeedToMinPrKM: function (speed) {
             // speed in m/s to min/km
             if (speed === 0)
@@ -513,20 +532,10 @@
 
 
             this.toHHMMSS = ko.computed(function () {
-                // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
+              
+                return converter.formatToHHMMSS(totalSec);
 
-                var hours = parseInt(totalSec / 3600, 10) % 24;
-                var minutes = parseInt(totalSec / 60, 10) % 60;
-                var seconds = parseInt(totalSec % 60, 10);
-
-                var hourResult;
-                if (hours !== 0)
-                    hourResult = (hours < 10 ? "0" + hours : hours) + ":";
-                else
-                    hourResult = "";
-
-                var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
-                return result;
+               
             }, this);
         },
 
@@ -629,7 +638,7 @@
                 requestAveragingOnSpeed: ko.observable(true),
                 averageSampleTime: ko.observable(5000),
                 logging: ko.observable(false),
-                distanceOnXAxis : ko.observable(false)
+                distanceOnXAxis : ko.observable(true)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1358,6 +1367,7 @@
             self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
             var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
 
+            
             // Setup lap categories
             if (rawData.lap) {
                 var len = rawData.lap.timestamp.length;
@@ -1633,12 +1643,15 @@
                         formatter: function () {
                             // return Highcharts.dateFormat('%H:%M:%S', this.value);
                             var distanceKm;
+                            var elapsedTime = (this.value - FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)) / 1000;
+                            var toHHMMSS = FITViewUIConverter.formatToHHMMSS(elapsedTime);
+
                             if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value]) {
                                 distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
                                 if (distanceKm < 1)
-                                    return self.masterVM.distanceAtTick[this.value] + ' m';
+                                    return self.masterVM.distanceAtTick[this.value] + ' m'+'<br/>'+toHHMMSS;
                                 else
-                                    return distanceKm.toFixed(0) +' km';
+                                    return distanceKm.toFixed(0) +' km'+'<br/>'+toHHMMSS;
                             }
                             else
                                 return Highcharts.dateFormat('%H:%M:%S', this.value);
