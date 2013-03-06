@@ -10,18 +10,25 @@
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false"></script>
     
+<<<<<<< HEAD
     <!-- Google earth plugin -->
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
         google.load("earth","1");
     </script>
 
+=======
+>>>>>>> origin/master
     <script src="Scripts/3party/jquery-1.9.1.js"></script>
+
     <script src="Scripts/3party/knockout-2.2.1.debug.js"></script>
     <script src="Scripts/3party/knockout.mapping-latest.debug.js"></script>
+
     <script src="Scripts/3party/modernizr-2.6.2.js"></script>
+
     <!-- <script src="Scripts/3party/highcharts.src.js"></script>-->
     <script src="Scripts/3party/highcharts30betasrc.js"></script>
+    <!-- <script src="Scripts/3party/highstock.src.js"></script> -->
 
     <script src="Scripts/FITCRCTimestampUtility.js"></script>
     <script src="Scripts/Messages/FITActivityFile.js"></script>
@@ -421,6 +428,14 @@
                                 <div>
                                     <input type="checkbox" data-bind="checked: distanceOnXAxis" />
                                     Distance (km) on X-axis
+                                </div>
+                            </a>
+                            </li>
+
+                            <li><a href="#">
+                                <div>
+                                    <input type="checkbox" data-bind="checked: TEIntensityPlotbands" />
+                                    TE intensity plotbands
                                 </div>
                             </a>
                             </li>
@@ -1091,6 +1106,8 @@
             <div id="zonesChart"></div>
 
         </div>
+
+        <div id="divTrainingEffectHistory"></div>
 
         <div id="divMsgMap"></div>
 

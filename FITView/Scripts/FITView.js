@@ -10,7 +10,9 @@
     var lapxAxisID = 'lapxAxis',
         rawdataxAxis = 'rawdataxAxis',
         combinedxAxisID = "combinedxAxis", // For speed vs HR
-        hrvxAxisID = "hrvxAxis"; 
+        hrvxAxisID = "hrvxAxis",
+        TExAxisID = "TExAxis";
+
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -627,6 +629,10 @@
 
             },
 
+            TEVM: {
+                TEhistory: []
+            },
+
             settingsVM: {
                 timeZoneDifferenceUTC: FITUtil.timestampUtil.getTimezoneOffsetFromUTC(),
                 showLapLines: ko.observable(true),
@@ -640,7 +646,8 @@
                 requestAveragingOnSpeed: ko.observable(true),
                 averageSampleTime: ko.observable(5000),
                 logging: ko.observable(false),
-                distanceOnXAxis : ko.observable(true)
+                distanceOnXAxis: ko.observable(true),
+                TEIntensityPlotbands : ko.observable(false)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -772,7 +779,7 @@
                   return true;
             };
 
-            // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
+
             this.masterVM.settingsVM.showLapLines.subscribe(function (showLapLines) {
                 // Callback from knockoutjs
                 if (!showLapLines) {
@@ -784,14 +791,46 @@
                         self.addLapLines(self.masterVM.sessionVM.rawData, self.multiChart);
             });
 
+            // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
+            this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
+                // Callback from knockoutjs
+                if (typeof self.multiChart === "undefined")
+                    return;
+
+                var yaxis = self.multiChart.get('TEYAxis');
+                var series = self.multiChart.get('TE');
+
+                        if (TEIntensityPlotbands && series.visible) {
+                            yaxis.addPlotBand({ // mark high intensity
+                                color: '#CC0000',
+                                from: 4.0,
+                                to: 5.0,
+                                id: 'plot-band-TE-4.0-5.0'
+                            });
+
+                            yaxis.addPlotBand({ // mark low intensity
+                                color: '#336600',
+                                from: 1.0,
+                                to: 2.0,
+                                id: 'plot-band-TE-1.0-2.0'
+                            });
+                        }
+
+                    
+                    else if (!TEIntensityPlotbands) {
+                            yaxis.removePlotBand('plot-band-TE-4.0-5.0');
+                            yaxis.removePlotBand('plot-band-TE-1.0-2.0');
+                        }
+                    
+                
+            });
+
             this.masterVM.settingsVM.showLapTriggers.subscribe(function (showLapTriggers) {
 
                 if (showLapTriggers)
                     self.showLapTriggers(self.masterVM.sessionVM.rawData);
                 else
                     self.removeSVGGroup(self.masterVM.lapTriggerGroup);
-
-
             });
 
             this.masterVM.settingsVM.showEvents.subscribe(function (showEvents) {
@@ -908,6 +947,9 @@
             // Initialize map
             if (this.map === undefined)
                 this.map = this.initMap();
+
+
+            //self.initTEChart();
         },
 
         adjustSpeed: function (forceSpeedKMprH) {
@@ -1084,6 +1126,53 @@
 
         },
 
+        initTEChart: function(data)
+        {
+            //var date = new Date().getTime();
+            //var data = [[date, 3.2]];
+            // create the chart
+            //if (typeof loadCB === "undefined") {
+            //    self.loggMessage("warn", "No callback for loading data into training history chart");
+            //    return ;
+            //}
+
+            self.masterVM.TEChart = new Highcharts.StockChart({
+                chart: {
+                    renderTo: 'divTrainingEffectHistory',
+                    alignTicks: false
+                },
+
+                //events: {
+                //    load: loadCB
+                //},
+
+                rangeSelector: {
+                    selected: 1
+                },
+
+                title: {
+                    text: 'Training effect'
+                },
+
+                series: [{
+                    type: 'column',
+                    id: 'TEseries',
+                    name: 'Training effect history',
+                    //data : [],
+                    data: [data],
+                    dataGrouping: {
+                        units: [[
+                            'week', // unit name
+                            [1] // allowed multiples
+                        ], [
+                            'month',
+                            [1, 2, 3, 4, 6]
+                        ]]
+                    }
+                }]
+            });
+        },
+
         // Handles display of measurements in several graphs with multiple axis
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
@@ -1095,21 +1184,28 @@
             var chartId = "multiChart";
             var divChart = document.getElementById(chartId);
             divChart.style.visibility = "visible";
+
             var seriesSetup = []; // Options name,id
             var seriesData = []; // Actual data in chart
+
             var heartRateSeriesOptions;
             var heartRateSeriesData;
+
             var altitudeSeries;
             var altitudeSeriesData;
+
             var speedSeries;
             var speedSeriesData;
+
             var speedAvgSeries;
             var speedAvgSeriesData;
 
             var cadenceSeries;
             var cadenceSeriesData;
+
             var powerSeries;
             var powerSeriesData;
+
             var temperatureSeries;
             var temperatureSeriesData;
 
@@ -1154,7 +1250,8 @@
                         gridLineWidth: 1,
                         title: {
                             text: 'Heart rate'
-                        }
+                        },
+                        showEmpty  : false
 
                     });
 
@@ -1185,7 +1282,7 @@
 
                     seriesData[id] = speedSeriesData;
                     speedYAxisNr = yAxisNr;
-                    speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 99 };
+                    speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 99, showEmpty : false };
                     seriesSetup.push(speedSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -1194,7 +1291,7 @@
                         },
                         opposite: true,
 
-
+                        showEmpty  : false
                     });
                 }
 
@@ -1226,7 +1323,7 @@
                     }
                     seriesData[id] = speedAvgSeriesData;
                     //speedYAxisNr = yAxisNr;
-                    speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99 };
+                    speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99, showEmpty : false };
                     seriesSetup.push(speedAvgSeries);
                     //yAxisOptions.push({
                     //    gridLineWidth: 0,
@@ -1252,6 +1349,7 @@
                             text: 'Power'
                         },
                         opposite: true,
+                        showEmpty : false
                     });
                 }
 
@@ -1267,7 +1365,8 @@
                         gridLineWidth: 0,
                         title: {
                             text: 'Cadence'
-                        }
+                        },
+                        showEmpty : false
 
                     });
 
@@ -1287,8 +1386,8 @@
                         gridLineWidth: 0,
                         title: {
                             text: 'Altitude'
-                        }
-
+                        },
+                        showEmpty: false
                     });
                 }
 
@@ -1304,7 +1403,8 @@
                         opposite: true,
                         title: {
                             text: 'Temperature'
-                        }
+                        },
+                        showEmpty: false
                     });
                 }
 
@@ -1314,7 +1414,7 @@
                 if (speedVSHR) {
                     id = 'speedVSHR';
                     seriesData[id] = speedVSHR;
-                    seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: false, zIndex: 94 });
+                    seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: false, zIndex: 94});
                 }
             }
             //yAxisOptions.push({
@@ -1492,11 +1592,94 @@
                         opposite: true,
                         title: {
                             text: 'Heart Rate Variability'
-                        }
+                        },
+                        showEmpty : false
                     });
                 }
 
             }
+
+            // TE history
+            var TEyAxisNr = yAxisNr;
+
+            seriesSetup.push({
+                name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 10,
+                events: {
+                    // http://jsfiddle.net/jlbriggs/kqHzr/
+                    // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
+
+                    legendItemClick: function () {
+                        
+                        var yaxis = self.multiChart.get('TEYAxis');
+                        var TEseries = self.multiChart.get('TE');
+                        if (this.name == 'TE') {
+                            if (this.visible == false) { // Transition to visible series
+
+                                //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort( function (a, b)
+                                {
+                                    if (a[0] < b[0])
+                                    return -1;
+                                    if (a[0] > b[0])
+                                    return 1;
+                                    // a must be equal to b
+                                    return 0;
+                                }, true));
+                                
+
+                                if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
+                                    yaxis.addPlotBand({ // mark high intensity
+                                        color: '#CC0000',
+                                        from: 4.0,
+                                        to: 5.0,
+                                        id: 'plot-band-TE-4.0-5.0'
+                                    });
+
+                                    yaxis.addPlotBand({ // mark low intensity
+                                        color: '#336600',
+                                        from: 1.0,
+                                        to: 2.0,
+                                        id: 'plot-band-TE-1.0-2.0'
+                                    });
+                                }
+
+                            }
+                            else {
+                             
+                                if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
+                                    yaxis.removePlotBand('plot-band-TE-4.0-5.0');
+                                    yaxis.removePlotBand('plot-band-TE-1.0-2.0');
+                                }
+                            }
+
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true
+                }
+            });
+
+            yAxisOptions.push({
+
+                gridLineWidth: 0,
+
+                opposite: true,
+
+                title: {
+                    text: 'Training Effect'
+                },
+
+                // Both min/max specified -> will force axis labels ON, even when showEmpty is false?? bug?
+                //min: 1.0,
+                //max: 5.0,
+                min : 1.0,
+
+                showEmpty: false,
+
+                id : 'TEYAxis'
+                
+            });
 
             var xAxisType = 'datetime';
 
@@ -1520,7 +1703,8 @@
                             self.showDeviceInfo(rawData);
 
 
-                    }
+                    },
+                    
                 }
                 //marginBottom: 120,
                 //marginTop:50
@@ -1701,7 +1885,8 @@
                 }, {
                     id: combinedxAxisID
                 },
-                { id: hrvxAxisID }
+                { id: hrvxAxisID },
+                { id : TExAxisID, type : 'datetime' }
                 ],
 
                 yAxis: yAxisOptions,
@@ -1839,7 +2024,9 @@
                             }
 
                         }
-                    }
+                    },
+
+                    
                 },
 
                 series: seriesSetup
@@ -3411,9 +3598,7 @@
             aHRVExport.href = self.masterVM.exportVM.csv.url();
             aHRVExport.download = "export.csv";
 
-
         },
-
 
         // Handles an ordinary activity file with measurement and GPS data
         processActivityFile: function (rawData) {
@@ -3678,6 +3863,41 @@
                                 self.masterVM.activityVM.selectedActivity(self.masterVM.activityVM.activity().length - 1);
                                 self.processActivityFile(rawData);
                             }
+
+                            // http://api.highcharts.com/highstock#Series.addPoint()
+                            // addPoint (Object options, [Boolean redraw], [Boolean shift], [Mixed animation])
+                            
+                            var sessionStartTime;
+                            var TEseries = self.multiChart.get('TE');
+
+                            if (rawData.session && rawData.session.total_training_effect) 
+                                for (var sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+                                        sessionStartTime = rawData.session.start_time[sessionNr];
+
+                                    if (typeof sessionStartTime === "undefined") {
+                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+                                        continue;
+                                    }
+                                   
+                                    if (rawData.session.total_training_effect[sessionNr]) {
+                                       // TEseries.addPoint([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]], false, false, false);
+                                       
+                                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
+                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
+                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+                                        //TEseries.setData(self.masterVM.TEVM.TEhistory.sort(function (a, b) {
+                                        //    if (a[0] < b[0])
+                                        //        return -1;
+                                        //    if (a[0] > b[0])
+                                        //        return 1;
+                                        //    // a must be equal to b
+                                        //    return 0;
+                                        //}, true));
+                                    }
+                                    
+                                    }
+
                             break;
 
                             // Sport settings (HR zones)
