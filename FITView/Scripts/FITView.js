@@ -2463,9 +2463,31 @@
 
                 var ev = rawdata.event.event[eventNr];
                 var ev_type = rawdata.event.event_type[eventNr];
+                var ev_group = rawdata.event.event_group[eventNr];
+                var ev_data = rawdata.event.data[eventNr];
+
 
                 srcImgEvent = "Images/event/unknown.png";
-                titleEvent = "Event: " + ev.toString() + " Event type: " + ev_type.toString();
+               
+                if (ev)
+                    titleEvent = "Event: " + ev.toString();
+                else
+                    titleEvent = "Event: undefined";
+
+                if (ev_type)
+                    titleEvent += " type: " + ev_type.toString();
+                else
+                    titleEvent += " type: undefined";
+
+                if (ev_group)
+                    titleEvent += " group: " + ev_group.toString();
+                else
+                    titleEvent += " group: undefined";
+
+                if (ev_data)
+                    titleEvent += " data:" + ev_data.toString();
+                else
+                    titleEvent += " data: undefined";
 
                 switch (ev) {
 
@@ -2538,21 +2560,81 @@
                     case event.power_up:
                         srcImgEvent = "Images/event/power_up.png";
                         titleEvent = "Power up";
-                       
                         break;
 
                     case event.session:
                         srcImgEvent = "Images/laptrigger/session_end.png";
                         titleEvent = "Stop - end of session";
-                       
+                        break;
+
+                    case event.hr_high_alert:
+                        srcImgEvent = "Images/heart.png";
+                        titleEvent = "HR high" + ' (' + ev_data + ')';
+                        break;
+
+
+
+                    case event.hr_low_alert:
+                        srcImgEvent = "Images/heart.png";
+                        titleEvent = "HR low" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.cad_high_alert:
+
+                        srcImgEvent = "Images/cadence.png";
+                        titleEvent = "Cadence high" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.cad_low_alert:
+                        srcImgEvent = "Images/cadence.png";
+                        titleEvent = "Cadence low" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.speed_high_alert:
+
+                        srcImgEvent = "Images/speed.png";
+                        titleEvent = "Speed high" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.speed_low_alert:
+                        srcImgEvent = "Images/speed.png";
+                        titleEvent = "Speed low" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.calorie_duration_alert:
+                        srcImgEvent = "Images/kcalorie.png";
+                        titleEvent = "Calorie duration alert" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.distance_duration_alert:
+                        srcImgEvent = "Images/laptrigger/distance.png";
+                        titleEvent = "Distance duration alert" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.power_high_alert:
+                        srcImgEvent = "Images/power.png";
+                        titleEvent = "Power high" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.power_low_alert:
+                        srcImgEvent = "Images/power.png";
+                        titleEvent = "Power low" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.time_duration_alert:
+                        srcImgEvent = "Images/laptrigger/time.png";
+                        titleEvent = "Time duration alert" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.off_course:
+                        srcImgEvent = "Images/event/point--exclamation.png";
+                        titleEvent = "Off course";
                         break;
 
                     case event.course_point:
-                        srcImgEvent = "Images/laptrigger/position_marked.png";
+                        srcImgEvent = "Images/event/point.png";
                         titleEvent = "Course point";
-                       
                         break;
-
                 }
 
                 titleEvent += " @ " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
