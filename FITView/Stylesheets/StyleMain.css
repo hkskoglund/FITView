@@ -105,8 +105,8 @@ display  : flex;
 #multiChart {
     /*visibility : hidden;*/
     /*-webkit-flex : 5 1;*/
-    float: left;
-    width: 90%;
+    /*float: left;*/
+    width: 100%;
     height: inherit;
 }
 
@@ -118,8 +118,11 @@ display  : flex;
     /*height: 200px;*/
     /*float : left;*/
     /*float: right;*/
-    width: 100px;
-    height:40px;
+    margin:0px;
+    padding:0px;
+    width: 150px;
+    height: 35px;
+   
     /*height: inherit;*/
 }
 

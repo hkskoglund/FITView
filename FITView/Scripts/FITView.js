@@ -8,18 +8,9 @@
     var lapxAxisID = 'lapxAxis',
         rawdataxAxis = 'rawdataxAxis',
         combinedxAxisID = "combinedxAxis", // For speed vs HR
-<<<<<<< HEAD
-<<<<<<< HEAD
         hrvxAxisID = "hrvxAxis",
         TExAxisID = "TExAxis",
         HRZonesxAxisID = "HRZonesxAxis";
-
-=======
-        hrvxAxisID = "hrvxAxis"; 
->>>>>>> parent of 655e139... Added TE history
-=======
-        hrvxAxisID = "hrvxAxis"; 
->>>>>>> parent of 655e139... Added TE history
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -619,6 +610,10 @@
 
             speedMode: ko.observable(),
 
+            TEVM : {
+                TEhistory : []
+            },
+
             headerInfoVM: {
 
                 fileName: ko.observable(),
@@ -649,7 +644,8 @@
                 requestAveragingOnSpeed: ko.observable(true),
                 averageSampleTime: ko.observable(5000),
                 logging: ko.observable(false),
-                distanceOnXAxis : ko.observable(true)
+                distanceOnXAxis: ko.observable(true),
+                TEIntensityPlotbands: ko.observable(false)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -791,6 +787,72 @@
                         self.addLapLines(self.masterVM.sessionVM.rawData, self.multiChart);
             });
 
+            // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
+            	
+                  this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
+          	
+                      // Callback from knockoutjs
+        
+                      if (typeof self.multiChart === "undefined")
+           
+                          return;
+        
+      
+          	
+                     var yaxis = self.multiChart.get('TEYAxis');
+          	
+                     var series = self.multiChart.get('TE');
+          
+      
+           
+                              if (TEIntensityPlotbands && series.visible) {
+         
+                                 yaxis.addPlotBand({ // mark high intensity
+         
+                                    color: '#CC0000',
+         	
+                                 from: 4.0,
+         	
+                                    to: 5.0,
+        	
+                                    id: 'plot-band-TE-4.0-5.0'
+          	
+                                 });
+           
+      
+          	
+                                  yaxis.addPlotBand({ // mark low intensity
+          	
+                                     color: '#336600',
+          	
+                                    from: 1.0,
+         
+                                    to: 2.0,
+          	
+                                     id: 'plot-band-TE-1.0-2.0'
+           
+                                  });
+            
+                              }
+ 		
+
+ 	 	
+                    
+ 		
+                    else if (!TEIntensityPlotbands) {
+    	
+                            yaxis.removePlotBand('plot-band-TE-4.0-5.0');
+   
+                            yaxis.removePlotBand('plot-band-TE-1.0-2.0');
+    	
+                        }
+  	
+                    
+    	
+                
+    	            });
+
+
             this.masterVM.settingsVM.showLapTriggers.subscribe(function (showLapTriggers) {
 
                 if (showLapTriggers)
@@ -865,7 +927,7 @@
                         strokeWeight: 1
                     }, "session");
 
-                //self.showHRZones(VM.rawData, start_time, timestamp);
+               self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
@@ -904,7 +966,7 @@
                     strokeWeight: 2
                 }, "lap");
 
-               // self.showHRZones(VM.rawData, start_time, timestamp);
+                self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
@@ -1160,7 +1222,8 @@
                         gridLineWidth: 1,
                         title: {
                             text: 'Heart rate'
-                        }
+                        },
+                        showEmpty : false
 
                     });
 
@@ -1199,6 +1262,7 @@
                             text: 'Speed'
                         },
                         opposite: true,
+                        showEmpty : false,
 
 
                     });
@@ -1255,6 +1319,7 @@
                             text: 'Power'
                         },
                         opposite: true,
+                        showEmpty : false
                     });
                 }
 
@@ -1270,7 +1335,8 @@
                         gridLineWidth: 0,
                         title: {
                             text: 'Cadence'
-                        }
+                        },
+                        showEmpty : false,
 
                     });
 
@@ -1290,7 +1356,8 @@
                         gridLineWidth: 0,
                         title: {
                             text: 'Altitude'
-                        }
+                        },
+                        showEmpty : false
 
                     });
                 }
@@ -1307,7 +1374,8 @@
                         opposite: true,
                         title: {
                             text: 'Temperature'
-                        }
+                        },
+                        showEmpty : false
                     });
                 }
 
@@ -1495,14 +1563,13 @@
                         opposite: true,
                         title: {
                             text: 'Heart Rate Variability'
-                        }
+                        },
+                        showEmpty : false
                     });
                 }
 
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
             // TE history
             var TEyAxisNr = yAxisNr;
 
@@ -1586,50 +1653,50 @@
                 
             });
 
-            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
+//            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
 
-            var HRlen = hrSeriesOptions.length
-            var HRoption;
-            for (var optionNr = 0; optionNr < HRlen; optionNr++) {
-                HRoption = hrSeriesOptions[optionNr];
-                HRoption.xAxis = 5;
-                HRoption.yAxis = yAxisNr;
-                HRoption.visible = false;
-                seriesSetup.push(HRoption);
-            }
+//            var HRlen = hrSeriesOptions.length
+//            var HRoption;
+//            for (var optionNr = 0; optionNr < HRlen; optionNr++) {
+//                HRoption = hrSeriesOptions[optionNr];
+//                HRoption.xAxis = 5;
+//                HRoption.yAxis = yAxisNr;
+//                HRoption.visible = false;
+//                seriesSetup.push(HRoption);
+//            }
 
-            yAxisNr++;
+//            yAxisNr++;
 
-            yAxisOptions.push({
+//            yAxisOptions.push({
 
-                gridLineWidth: 0,
+//                gridLineWidth: 0,
 
-                opposite: true,
+//                opposite: true,
 
-                title: {
-                    text: 'Minutes'
-                },
+//                title: {
+//                    text: 'Minutes'
+//                },
 
-                showEmpty: false,
+//                showEmpty: false,
 
-                id: 'HRZonesYAxis',
-                min: 0,
+//                id: 'HRZonesYAxis',
+//                min: 0,
                 
-                stackLabels: {
-                    enabled: false,
-                    //style: {
-                    //    fontWeight: 'bold',
-                    //    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-                    //}
-                }
+//                stackLabels: {
+//                    enabled: false,
+//                    //style: {
+//                    //    fontWeight: 'bold',
+//                    //    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+//                    //}
+//                }
 
-            });
+//            });
 
-=======
->>>>>>> parent of 655e139... Added TE history
-=======
->>>>>>> parent of 655e139... Added TE history
-            var xAxisType = 'datetime';
+//=======
+//>>>>>>> parent of 655e139... Added TE history
+//=======
+//>>>>>>> parent of 655e139... Added TE history
+//            var xAxisType = 'datetime';
 
             var chartOptions = {
                 animation: false,
@@ -1735,6 +1802,8 @@
                     }
                 };
 
+            
+
             this.multiChart = new Highcharts.Chart({
                 chart: chartOptions,
                 //height : 700,
@@ -1745,7 +1814,7 @@
 
                 xAxis: [{
                     id: rawdataxAxis,
-                    type: xAxisType, // datetime
+                    type: 'datetime', // datetime
                     events: {
                         afterSetExtremes: function (event) {
                             // Callback after zoom out, Highcharts uses a jquery event mechanism with event.min/max === undefined for axes != datetime
@@ -1756,7 +1825,7 @@
                                 //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                                 var startTimestampUTC = Math.round(event.min) - timezoneDiff;
                                 var endTimestampUTC = Math.round(event.max) - timezoneDiff;
-                                //self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
+                                self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
                             }
                         }
 
@@ -1810,21 +1879,13 @@
                 }, {
                     id: combinedxAxisID
                 },
-<<<<<<< HEAD
-<<<<<<< HEAD
+
                 { id: hrvxAxisID },
                 { id: TExAxisID, type: 'datetime' },
                 {
                     id: HRZonesxAxisID,
                     categories: ['HR Zones']
-                }
-=======
-                { id: hrvxAxisID }
->>>>>>> parent of 655e139... Added TE history
-=======
-                { id: hrvxAxisID }
->>>>>>> parent of 655e139... Added TE history
-                ],
+                }],
 
                 yAxis: yAxisOptions,
 
@@ -1961,25 +2022,9 @@
                             }
 
                         }
-<<<<<<< HEAD
-<<<<<<< HEAD
+
                     },
-
-                    column: {
-                        stacking: 'normal',
-                        //dataLabels: {
-                        //    enabled: false,
-                        //    color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
-                        //}
-                    }
-
                     
-=======
-                    }
->>>>>>> parent of 655e139... Added TE history
-=======
-                    }
->>>>>>> parent of 655e139... Added TE history
                 },
 
                 series: seriesSetup
@@ -2686,7 +2731,7 @@
             }
         },
 
-        getHRZonesSeriesOptions: function (rawdata, startTimestamp, endTimestamp) {
+        showHRZones: function (rawdata, startTimestamp, endTimestamp) {
 
             //if (typeof (destroy) !== "undefined") {
             //    if (destroy) {
@@ -2698,62 +2743,54 @@
             //}
 
             var divChartId = 'zonesChart';
-            ////var divChart = document.getElementById(divChartId);
+            var divChart = document.getElementById(divChartId);
 
-            //if (FITUtil.isUndefined(rawdata.record)) {
-            //    self.loggMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
-            //    return -1;
-            //}
+            if (FITUtil.isUndefined(rawdata.record)) {
+                self.loggMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
+                return -1;
+            }
 
-            //if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
-            //    self.loggMessage("warn","No HR data found, skipping HR Zones chart");
-            //    //$('#zonesChart').hide();
-            //    return;
-            //}
+            if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
+                self.loggMessage("warn","No HR data found, skipping HR Zones chart");
+                //$('#zonesChart').hide();
+                return;
+            }
 
-            ////$('#zonesChart').show();
+            //$('#zonesChart').show();
 
-            //if (self.HRZonesChart)
-            //    self.HRZonesChart.destroy();
+            if (self.HRZonesChart)
+                self.HRZonesChart.destroy();
 
-            //var options = {
-            //    chart: {
-            //        renderTo: 'zonesChart',
-            //        type: 'bar'
-            //    },
-            //    title: {
-            //        text: ''
-            //    },
-            //    xAxis: {
-
-            //        //categories: [myZones[0].name, myZones[1].name, myZones[2].name, myZones[3].name, myZones[4].name]
-            //        //type : 'datetime'
-            //    },
-            //    yAxis: {
-            //        title: {
-            //            text: 'Minutes'
-            //        }
-            //    }
-
-            //    // Assuming 1 sec. sampling of data point -> divide by 60 to get number of minutes in zone
-            //    //series: []
-            //};
+            
 
             // http://highcharts.com/demo/column-stacked
             var options = {
                 chart: {
                     renderTo: divChartId,
-                    type: 'column'
+                    type: 'bar',
+                    backgroundColor: 'transparent',
+                    spacingLeft:0,
+                    spacingBottom: 0,
+                    spacingTop:7
                 },
                 title: {
                     text: ''
                 },
                 xAxis: {
-
+                    labels:
+                            {
+                                enabled: false
+                            },
                     //categories: ['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
                     categories: ['HR Zones']
                 },
+        
                 yAxis: {
+                    gridLineWidth: 0,
+                    labels:
+                            {
+                                enabled: false
+                            },
                     min: 0,
                     title: {
                         text: null
@@ -2767,7 +2804,7 @@
                     }
                 },
                 legend: {
-                    enabled: false
+                    enabled: false // Turn off please
                 },
                 //legend: {
                 //    align: 'right',
@@ -2785,11 +2822,15 @@
                 },
                 tooltip: {
                     formatter: function () {
-                        return this.series.name + ': ' + Highcharts.numberFormat(this.y, 1);
-                    }
+                        return this.series.name + ': ' + FITViewUIConverter.formatToHHMMSS(this.y*60);
+                    },
+                    //positioner: function () {
+                    //    return { x: 50, y: 0 };
+                    //}
                 },
                 plotOptions: {
-                    column: {
+                    bar: {
+                        pointWidth: 7,
                         stacking: 'normal',
                         //dataLabels: {
                         //    enabled: false,
@@ -2809,7 +2850,6 @@
                 //    data: [3, 4, 4, 2, 5]
                 //}]
             };
-
 
             var myZones = getHRZones();
 
@@ -2881,9 +2921,9 @@
                 });
             }
 
-            return options.series;
+            
 
-           // self.HRZonesChart = new Highcharts.Chart(options);
+            self.HRZonesChart = new Highcharts.Chart(options);
         },
 
         showSessionMarkers: function (map, rawdata) {
@@ -3524,7 +3564,7 @@
             //   $('#activityMap').show();
 
             var destroy = true;
-           // self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0],destroy);
+            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
             self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0],destroy);
 
             //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
@@ -3669,6 +3709,57 @@
                                 self.masterVM.activityVM.selectedActivity(self.masterVM.activityVM.activity().length - 1);
                                 self.processActivityFile(rawData);
                             }
+
+
+                            // http://api.highcharts.com/highstock#Series.addPoint()
+                         
+                                                  // addPoint (Object options, [Boolean redraw], [Boolean shift], [Mixed animation])
+                            
+
+                            var sessionStartTime;
+
+                            var TEseries = self.multiChart.get('TE');
+
+
+
+                            if (rawData.session && rawData.session.total_training_effect)
+
+                                for (var sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+
+                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+
+                                        sessionStartTime = rawData.session.start_time[sessionNr];
+
+
+
+                                    if (typeof sessionStartTime === "undefined") {
+
+                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+
+                                        continue;
+
+                                    }
+
+
+                                    if (rawData.session.total_training_effect[sessionNr]) {
+
+                                        // TEseries.addPoint([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]], false, false, false);
+
+                                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
+
+                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
+
+                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+
+
+                                    }
+
+
+
+                                }
+
+
                             break;
 
                             // Sport settings (HR zones)
