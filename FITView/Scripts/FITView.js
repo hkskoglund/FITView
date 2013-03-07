@@ -9,10 +9,14 @@
         rawdataxAxis = 'rawdataxAxis',
         combinedxAxisID = "combinedxAxis", // For speed vs HR
 <<<<<<< HEAD
+<<<<<<< HEAD
         hrvxAxisID = "hrvxAxis",
         TExAxisID = "TExAxis",
         HRZonesxAxisID = "HRZonesxAxis";
 
+=======
+        hrvxAxisID = "hrvxAxis"; 
+>>>>>>> parent of 655e139... Added TE history
 =======
         hrvxAxisID = "hrvxAxis"; 
 >>>>>>> parent of 655e139... Added TE history
@@ -1498,6 +1502,7 @@
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             // TE history
             var TEyAxisNr = yAxisNr;
 
@@ -1620,6 +1625,8 @@
 
             });
 
+=======
+>>>>>>> parent of 655e139... Added TE history
 =======
 >>>>>>> parent of 655e139... Added TE history
             var xAxisType = 'datetime';
@@ -1804,12 +1811,16 @@
                     id: combinedxAxisID
                 },
 <<<<<<< HEAD
+<<<<<<< HEAD
                 { id: hrvxAxisID },
                 { id: TExAxisID, type: 'datetime' },
                 {
                     id: HRZonesxAxisID,
                     categories: ['HR Zones']
                 }
+=======
+                { id: hrvxAxisID }
+>>>>>>> parent of 655e139... Added TE history
 =======
                 { id: hrvxAxisID }
 >>>>>>> parent of 655e139... Added TE history
@@ -1951,6 +1962,7 @@
 
                         }
 <<<<<<< HEAD
+<<<<<<< HEAD
                     },
 
                     column: {
@@ -1962,6 +1974,9 @@
                     }
 
                     
+=======
+                    }
+>>>>>>> parent of 655e139... Added TE history
 =======
                     }
 >>>>>>> parent of 655e139... Added TE history
