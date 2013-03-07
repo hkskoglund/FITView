@@ -117,9 +117,10 @@ display  : flex;
     /*-webkit-flex : 1  1;*/
     /*height: 200px;*/
     /*float : left;*/
-    float: right;
-    width: 10%;
-    height: inherit;
+    /*float: right;*/
+    width: 100px;
+    height:40px;
+    /*height: inherit;*/
 }
 
 

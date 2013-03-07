@@ -9,7 +9,8 @@
         rawdataxAxis = 'rawdataxAxis',
         combinedxAxisID = "combinedxAxis", // For speed vs HR
         hrvxAxisID = "hrvxAxis",
-        TExAxisID = "TExAxis";
+        TExAxisID = "TExAxis",
+        HRZonesxAxisID = "HRZonesxAxis";
 
 
     // Based on info. in profile.xls from FIT SDK
@@ -893,7 +894,7 @@
                         strokeWeight: 1
                     }, "session");
 
-                self.showHRZones(VM.rawData, start_time, timestamp);
+                //self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
@@ -932,7 +933,7 @@
                     strokeWeight: 2
                 }, "lap");
 
-                self.showHRZones(VM.rawData, start_time, timestamp);
+               // self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
@@ -1595,7 +1596,7 @@
             var TEyAxisNr = yAxisNr;
 
             seriesSetup.push({
-                name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 10,
+                name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
                 events: {
                     // http://jsfiddle.net/jlbriggs/kqHzr/
                     // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
@@ -1606,7 +1607,7 @@
                         var TEseries = self.multiChart.get('TE');
                         if (this.name == 'TE') {
                             if (this.visible == false) { // Transition to visible series
-
+                                //yaxis.setExtremes(1, 5, true, false);
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
                                 TEseries.setData(self.masterVM.TEVM.TEhistory.sort( function (a, b)
                                 {
@@ -1663,6 +1664,7 @@
                 },
 
                 // Both min/max specified -> will force axis labels ON, even when showEmpty is false?? bug?
+                // https://github.com/highslide-software/highcharts.com/issues/705
                 //min: 1.0,
                 //max: 5.0,
                 min : 1.0,
@@ -1671,6 +1673,45 @@
 
                 id : 'TEYAxis'
                 
+            });
+
+            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
+
+            var HRlen = hrSeriesOptions.length
+            var HRoption;
+            for (var optionNr = 0; optionNr < HRlen; optionNr++) {
+                HRoption = hrSeriesOptions[optionNr];
+                HRoption.xAxis = 5;
+                HRoption.yAxis = yAxisNr;
+                HRoption.visible = false;
+                seriesSetup.push(HRoption);
+            }
+
+            yAxisNr++;
+
+            yAxisOptions.push({
+
+                gridLineWidth: 0,
+
+                opposite: true,
+
+                title: {
+                    text: 'Minutes'
+                },
+
+                showEmpty: false,
+
+                id: 'HRZonesYAxis',
+                min: 0,
+                
+                stackLabels: {
+                    enabled: false,
+                    //style: {
+                    //    fontWeight: 'bold',
+                    //    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                    //}
+                }
+
             });
 
             var xAxisType = 'datetime';
@@ -1801,7 +1842,7 @@
                                 //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                                 var startTimestampUTC = Math.round(event.min) - timezoneDiff;
                                 var endTimestampUTC = Math.round(event.max) - timezoneDiff;
-                                self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
+                                //self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
                             }
                         }
 
@@ -1856,7 +1897,11 @@
                     id: combinedxAxisID
                 },
                 { id: hrvxAxisID },
-                { id : TExAxisID, type : 'datetime' }
+                { id: TExAxisID, type: 'datetime' },
+                {
+                    id: HRZonesxAxisID,
+                    categories: ['HR Zones']
+                }
                 ],
 
                 yAxis: yAxisOptions,
@@ -1995,6 +2040,14 @@
 
                         }
                     },
+
+                    column: {
+                        stacking: 'normal',
+                        //dataLabels: {
+                        //    enabled: false,
+                        //    color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+                        //}
+                    }
 
                     
                 },
@@ -2703,35 +2756,35 @@
             }
         },
 
-        showHRZones: function (rawdata, startTimestamp, endTimestamp, destroy) {
+        getHRZonesSeriesOptions: function (rawdata, startTimestamp, endTimestamp) {
 
-            if (typeof (destroy) !== "undefined") {
-                if (destroy) {
-                    if (self.HRZonesChart) {
-                        self.HRZonesChart.destroy();
-                        self.HRZonesChart = undefined;
-                    }
-                }
-            }
+            //if (typeof (destroy) !== "undefined") {
+            //    if (destroy) {
+            //        if (self.HRZonesChart) {
+            //            self.HRZonesChart.destroy();
+            //            self.HRZonesChart = undefined;
+            //        }
+            //    }
+            //}
 
             var divChartId = 'zonesChart';
-            //var divChart = document.getElementById(divChartId);
+            ////var divChart = document.getElementById(divChartId);
 
-            if (FITUtil.isUndefined(rawdata.record)) {
-                self.loggMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
-                return -1;
-            }
+            //if (FITUtil.isUndefined(rawdata.record)) {
+            //    self.loggMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
+            //    return -1;
+            //}
 
-            if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
-                self.loggMessage("warn","No HR data found, skipping HR Zones chart");
-                //$('#zonesChart').hide();
-                return;
-            }
+            //if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
+            //    self.loggMessage("warn","No HR data found, skipping HR Zones chart");
+            //    //$('#zonesChart').hide();
+            //    return;
+            //}
 
-            //$('#zonesChart').show();
+            ////$('#zonesChart').show();
 
-            if (self.HRZonesChart)
-                self.HRZonesChart.destroy();
+            //if (self.HRZonesChart)
+            //    self.HRZonesChart.destroy();
 
             //var options = {
             //    chart: {
@@ -2898,8 +2951,9 @@
                 });
             }
 
+            return options.series;
 
-            self.HRZonesChart = new Highcharts.Chart(options);
+           // self.HRZonesChart = new Highcharts.Chart(options);
         },
 
         showSessionMarkers: function (map, rawdata) {
@@ -3538,7 +3592,7 @@
             //   $('#activityMap').show();
 
             var destroy = true;
-            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0],destroy);
+           // self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0],destroy);
             self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0],destroy);
 
             //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
