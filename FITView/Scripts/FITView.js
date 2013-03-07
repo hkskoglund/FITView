@@ -1304,14 +1304,17 @@
                         sport = FITSport.generic;
 
                     switch (sport) {
+
                         case FITSport.running: // Running
                             this.masterVM.speedMode(1); // min/km
                             speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, id, false);
                             break;
+
                         case FITSport.cycling: // Cycling
                             this.masterVM.speedMode(2); // km/h
                             speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, false);
                             break;
+
                         default:
                             this.masterVM.speedMode(2);
                             speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, false);
@@ -1433,7 +1436,6 @@
                     });
                 }
 
-
                 if (rawData.record.temperature) {
                     id = 'temperatureseries';
                     temperatureSeriesData = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
@@ -1451,8 +1453,6 @@
 
                     });
                 }
-
-
 
                 var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
                 if (speedVSHR) {
@@ -1732,7 +1732,6 @@
                 
             });
 
-
             var xAxisType = 'datetime';
 
 //            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
@@ -1773,8 +1772,6 @@
 //                }
 
 //            });
-
-
 
             var chartOptions = {
                 animation: false,
@@ -1902,8 +1899,6 @@
                         }
                     }
                 };
-
-            
 
             this.multiChart = new Highcharts.Chart({
                 chart: chartOptions,
@@ -2166,7 +2161,6 @@
 
         // Shows info about devices used during an activty
         showDeviceInfo: function (rawdata) {
-
 
             var device_type = {
                 antfs: 1,
