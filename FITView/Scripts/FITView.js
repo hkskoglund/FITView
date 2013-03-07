@@ -1045,6 +1045,13 @@
                     self.masterVM.settingsVM.showLapLines(true);
                 }
 
+                // Toggle events - to update speed 
+                if (self.masterVM.settingsVM.showEvents()) {
+
+                    self.masterVM.settingsVM.showEvents(false);
+                    self.masterVM.settingsVM.showEvents(true);
+                }
+
                 speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
                 if (self.masterVM.settingsVM.requestAveragingOnSpeed())
                     speedAvgSeries.setData(speedAvgSeriesData, true);
@@ -2593,12 +2600,46 @@
                     case event.speed_high_alert:
 
                         srcImgEvent = "Images/speed.png";
-                        titleEvent = "Speed high" + ' (' + ev_data + ')';
+                        ev_data = ev_data / 1000;
+                        var ev_data_str;
+                        if (self.masterVM.settingsVM.forceSpeedKMprH())
+                            ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                        else
+                        switch (self.masterVM.speedMode()) {
+                            case FITSport.running: // Running
+                                ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
+                                break;
+                            case FITSport.cycling: // Cycling
+                                ev_data_str =  FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+
+                            default:
+                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+                        }
+                        titleEvent = "Speed high" + ' (' + ev_data_str + ')';
                         break;
 
                     case event.speed_low_alert:
                         srcImgEvent = "Images/speed.png";
-                        titleEvent = "Speed low" + ' (' + ev_data + ')';
+                        ev_data = ev_data / 1000;
+                        var ev_data_str;
+                        if (self.masterVM.settingsVM.forceSpeedKMprH())
+                            ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                        else
+                        switch (self.masterVM.speedMode()) {
+                            case FITSport.running: // Running
+                                ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
+                                break;
+                            case FITSport.cycling: // Cycling
+                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+
+                            default:
+                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+                        }
+                        titleEvent = "Speed low" + ' (' + ev_data_str + ')';
                         break;
 
                     case event.calorie_duration_alert:
