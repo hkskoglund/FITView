@@ -356,9 +356,3 @@ ul#sessionList {
     display: none;
     /*float : right;*/
 }
-
-
-#divTrainingEffectHistory {
-    width : 100%;
-    height : 300px;
-}
