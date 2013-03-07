@@ -57,6 +57,8 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\event\point--exclamation.png" />
+    <Content Include="Images\event\point.png" />
     <Content Include="Images\pointer.png" />
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
