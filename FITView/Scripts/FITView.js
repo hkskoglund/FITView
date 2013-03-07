@@ -14,7 +14,6 @@
         TExAxisID = "TExAxis",
         HRZonesxAxisID = "HRZonesxAxis";
 
-
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
 
@@ -795,70 +794,58 @@
             });
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
-            	
-                  this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
-          	
-                      // Callback from knockoutjs
-        
-                      if (typeof self.multiChart === "undefined")
-           
-                          return;
-        
-      
-          	
-                     var yaxis = self.multiChart.get('TEYAxis');
-          	
-                     var series = self.multiChart.get('TE');
-          
-      
-           
-                              if (TEIntensityPlotbands && series.visible) {
-         
-                                 yaxis.addPlotBand({ // mark high intensity
-         
-                                    color: '#CC0000',
-         	
-                                 from: 4.0,
-         	
-                                    to: 5.0,
-        	
-                                    id: 'plot-band-TE-4.0-5.0'
-          	
-                                 });
-           
-      
-          	
-                                  yaxis.addPlotBand({ // mark low intensity
-          	
-                                     color: '#336600',
-          	
-                                    from: 1.0,
-         
-                                    to: 2.0,
-          	
-                                     id: 'plot-band-TE-1.0-2.0'
-           
-                                  });
-            
-                              }
- 		
 
- 	 	
-                    
- 		
-                    else if (!TEIntensityPlotbands) {
-    	
-                            yaxis.removePlotBand('plot-band-TE-4.0-5.0');
-   
-                            yaxis.removePlotBand('plot-band-TE-1.0-2.0');
-    	
-                        }
-  	
-                    
-    	
-                
-    	            });
+            this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
 
+                // Callback from knockoutjs
+
+                if (typeof self.multiChart === "undefined")
+
+                    return;
+
+                var yaxis = self.multiChart.get('TEYAxis');
+
+                var series = self.multiChart.get('TE');
+
+                if (TEIntensityPlotbands && series.visible) {
+
+                    yaxis.addPlotBand({ // mark high intensity
+
+                        color: '#CC0000',
+
+                        from: 4.0,
+
+                        to: 5.0,
+
+                        id: 'plot-band-TE-4.0-5.0'
+
+                    });
+
+                    yaxis.addPlotBand({ // mark low intensity
+
+                        color: '#336600',
+
+                        from: 1.0,
+
+                        to: 2.0,
+
+                        id: 'plot-band-TE-1.0-2.0'
+
+                    });
+
+                }
+
+
+                else if (!TEIntensityPlotbands) {
+
+                    yaxis.removePlotBand('plot-band-TE-4.0-5.0');
+
+                    yaxis.removePlotBand('plot-band-TE-1.0-2.0');
+
+                }
+
+            });
+>>>>>>> origin/master
 
 
             this.masterVM.settingsVM.showLapTriggers.subscribe(function (showLapTriggers) {
@@ -1064,6 +1051,13 @@
 
                     self.masterVM.settingsVM.showLapLines(false);
                     self.masterVM.settingsVM.showLapLines(true);
+                }
+
+                // Toggle events - to update speed 
+                if (self.masterVM.settingsVM.showEvents()) {
+
+                    self.masterVM.settingsVM.showEvents(false);
+                    self.masterVM.settingsVM.showEvents(true);
                 }
 
                 speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
@@ -1289,7 +1283,7 @@
                         },
 
                         showEmpty : false
-
+>>>>>>> origin/master
 
                     });
 
@@ -1332,6 +1326,7 @@
                         },
                         opposite: true,
                         showEmpty : false,
+
                     });
                 }
 
@@ -1448,6 +1443,7 @@
                         title: {
                             text: 'Temperature'
                         },
+
 
                         showEmpty : false
 
@@ -1658,9 +1654,9 @@
                         
                         var yaxis = self.multiChart.get('TEYAxis');
                         var TEseries = self.multiChart.get('TE');
-                        if (this.name == 'TE') {
-                            if (this.visible == false) { // Transition to visible series
 
+                        if (this.name === 'TE') {
+                            if (this.visible === false) { // Transition to visible series
                                 //yaxis.setExtremes(1, 5, true, false);
 
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
@@ -1732,7 +1728,8 @@
                 
             });
 
-            var xAxisType = 'datetime';
+
+
 
 //            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
 
@@ -1900,6 +1897,8 @@
                     }
                 };
 
+            
+
             this.multiChart = new Highcharts.Chart({
                 chart: chartOptions,
                 //height : 700,
@@ -1976,14 +1975,12 @@
                     id: combinedxAxisID
                 },
 
-
                 { id: hrvxAxisID },
                 { id: TExAxisID, type: 'datetime' },
                 {
                     id: HRZonesxAxisID,
                     categories: ['HR Zones']
                 }],
-
 
                 yAxis: yAxisOptions,
 
@@ -2575,17 +2572,22 @@
                 var ev_group = rawdata.event.event_group[eventNr];
                 var ev_data = rawdata.event.data[eventNr];
 
+
+
                 srcImgEvent = "Images/event/unknown.png";
+               
                 if (ev)
                     titleEvent = "Event: " + ev.toString();
-                else 
+                else
+
                     titleEvent = "Event: undefined";
 
                 if (ev_type)
                     titleEvent += " type: " + ev_type.toString();
                 else
                     titleEvent += " type: undefined";
-                   
+
+
                 if (ev_group)
                     titleEvent += " group: " + ev_group.toString();
                 else
@@ -2667,13 +2669,109 @@
                     case event.power_up:
                         srcImgEvent = "Images/event/power_up.png";
                         titleEvent = "Power up";
-                       
                         break;
 
                     case event.session:
                         srcImgEvent = "Images/laptrigger/session_end.png";
                         titleEvent = "Stop - end of session";
-                       
+                        break;
+
+                    case event.hr_high_alert:
+                        srcImgEvent = "Images/heart.png";
+                        titleEvent = "HR high" + ' (' + ev_data + ')';
+                        break;
+
+
+
+                    case event.hr_low_alert:
+                        srcImgEvent = "Images/heart.png";
+                        titleEvent = "HR low" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.cad_high_alert:
+
+                        srcImgEvent = "Images/cadence.png";
+                        titleEvent = "Cadence high" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.cad_low_alert:
+                        srcImgEvent = "Images/cadence.png";
+                        titleEvent = "Cadence low" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.speed_high_alert:
+
+                        srcImgEvent = "Images/speed.png";
+                        ev_data = ev_data / 1000;
+                        var ev_data_str;
+                        if (self.masterVM.settingsVM.forceSpeedKMprH())
+                            ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                        else
+                        switch (self.masterVM.speedMode()) {
+                            case FITSport.running: // Running
+                                ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
+                                break;
+                            case FITSport.cycling: // Cycling
+                                ev_data_str =  FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+
+                            default:
+                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+                        }
+                        titleEvent = "Speed high" + ' (' + ev_data_str + ')';
+                        break;
+
+                    case event.speed_low_alert:
+                        srcImgEvent = "Images/speed.png";
+                        ev_data = ev_data / 1000;
+                        var ev_data_str;
+                        if (self.masterVM.settingsVM.forceSpeedKMprH())
+                            ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                        else
+                        switch (self.masterVM.speedMode()) {
+                            case FITSport.running: // Running
+                                ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
+                                break;
+                            case FITSport.cycling: // Cycling
+                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+
+                            default:
+                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                break;
+                        }
+                        titleEvent = "Speed low" + ' (' + ev_data_str + ')';
+                        break;
+
+                    case event.calorie_duration_alert:
+                        srcImgEvent = "Images/kcalorie.png";
+                        titleEvent = "Calorie duration alert" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.distance_duration_alert:
+                        srcImgEvent = "Images/laptrigger/distance.png";
+                        titleEvent = "Distance duration alert" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.power_high_alert:
+                        srcImgEvent = "Images/power.png";
+                        titleEvent = "Power high" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.power_low_alert:
+                        srcImgEvent = "Images/power.png";
+                        titleEvent = "Power low" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.time_duration_alert:
+                        srcImgEvent = "Images/laptrigger/time.png";
+                        titleEvent = "Time duration alert" + ' (' + ev_data + ')';
+                        break;
+
+                    case event.off_course:
+                        srcImgEvent = "Images/event/point--exclamation.png";
+                        titleEvent = "Off course";
                         break;
 
                     case event.hr_high_alert:
@@ -2741,7 +2839,6 @@
                         srcImgEvent = "Images/event/point.png";
                         titleEvent = "Course point";
                         break;
-
                 }
 
                 titleEvent += " @ " + Highcharts.dateFormat('%H:%M:%S', FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.event.timestamp[eventNr]));
@@ -3742,7 +3839,7 @@
                     else if (type === "bar/column")
                         CSVtimeStr += 'time,';
 
-                    CSVtimeStr += rawdata.hrv.time[pointNr] * scale + CRLF
+                    CSVtimeStr += rawdata.hrv.time[pointNr] * scale + CRLF;
                 }
                 
             }
@@ -4020,9 +4117,8 @@
                                 // https://developers.google.com/maps/documentation/staticmaps/index
 
                                 // Can use javascript escape(string) to make transferable URL
-                                rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString
-                                    + '&zoom=8&size=100x100&maptype=roadmap&sensor=false&scale=1'+
-                                    '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
+                                rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString +
+                                    '&zoom=8&size=100x100&maptype=roadmap&sensor=false&scale=1' + '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
 
                                 //rawData._staticGoogleMapSrc = ko.observable('http://localhost:24021/Images/kcalorie.png');
                             }
@@ -4034,6 +4130,7 @@
                                 self.masterVM.activityVM.selectedActivity(self.masterVM.activityVM.activity().length - 1);
                                 self.processActivityFile(rawData);
                             }
+
 
 
 
@@ -4084,8 +4181,6 @@
 
 
                                 }
-
-
 
                             break;
 
