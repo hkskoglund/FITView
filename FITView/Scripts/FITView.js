@@ -845,7 +845,6 @@
                 }
 
             });
->>>>>>> origin/master
 
 
             this.masterVM.settingsVM.showLapTriggers.subscribe(function (showLapTriggers) {
@@ -1283,7 +1282,7 @@
                         },
 
                         showEmpty : false
->>>>>>> origin/master
+
 
                     });
 
