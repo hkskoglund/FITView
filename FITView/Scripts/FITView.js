@@ -11,13 +11,9 @@
         rawdataxAxis = 'rawdataxAxis',
         combinedxAxisID = "combinedxAxis", // For speed vs HR
         hrvxAxisID = "hrvxAxis",
-<<<<<<< HEAD
-        TExAxisID = "TExAxis";
-
-=======
         TExAxisID = "TExAxis",
         HRZonesxAxisID = "HRZonesxAxis";
->>>>>>> origin/master
+
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -638,9 +634,6 @@
 
             },
 
-            TEVM: {
-                TEhistory: []
-            },
 
             settingsVM: {
                 timeZoneDifferenceUTC: FITUtil.timestampUtil.getTimezoneOffsetFromUTC(),
@@ -656,11 +649,8 @@
                 averageSampleTime: ko.observable(5000),
                 logging: ko.observable(false),
                 distanceOnXAxis: ko.observable(true),
-<<<<<<< HEAD
-                TEIntensityPlotbands : ko.observable(false)
-=======
                 TEIntensityPlotbands: ko.observable(false)
->>>>>>> origin/master
+
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -805,40 +795,6 @@
             });
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
-<<<<<<< HEAD
-            this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
-                // Callback from knockoutjs
-                if (typeof self.multiChart === "undefined")
-                    return;
-
-                var yaxis = self.multiChart.get('TEYAxis');
-                var series = self.multiChart.get('TE');
-
-                        if (TEIntensityPlotbands && series.visible) {
-                            yaxis.addPlotBand({ // mark high intensity
-                                color: '#CC0000',
-                                from: 4.0,
-                                to: 5.0,
-                                id: 'plot-band-TE-4.0-5.0'
-                            });
-
-                            yaxis.addPlotBand({ // mark low intensity
-                                color: '#336600',
-                                from: 1.0,
-                                to: 2.0,
-                                id: 'plot-band-TE-1.0-2.0'
-                            });
-                        }
-
-                    
-                    else if (!TEIntensityPlotbands) {
-                            yaxis.removePlotBand('plot-band-TE-4.0-5.0');
-                            yaxis.removePlotBand('plot-band-TE-1.0-2.0');
-                        }
-                    
-                
-            });
-=======
             	
                   this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
           	
@@ -903,7 +859,7 @@
                 
     	            });
 
->>>>>>> origin/master
+
 
             this.masterVM.settingsVM.showLapTriggers.subscribe(function (showLapTriggers) {
 
@@ -1331,11 +1287,9 @@
                         title: {
                             text: 'Heart rate'
                         },
-<<<<<<< HEAD
-                        showEmpty  : false
-=======
+
                         showEmpty : false
->>>>>>> origin/master
+
 
                     });
 
@@ -1375,8 +1329,6 @@
                         },
                         opposite: true,
                         showEmpty : false,
-
-                        showEmpty  : false
                     });
                 }
 
@@ -1451,11 +1403,9 @@
                         title: {
                             text: 'Cadence'
                         },
-<<<<<<< HEAD
-                        showEmpty : false
-=======
+
                         showEmpty : false,
->>>>>>> origin/master
+
 
                     });
 
@@ -1476,12 +1426,10 @@
                         title: {
                             text: 'Altitude'
                         },
-<<<<<<< HEAD
-                        showEmpty: false
-=======
+
                         showEmpty : false
 
->>>>>>> origin/master
+
                     });
                 }
 
@@ -1498,11 +1446,9 @@
                         title: {
                             text: 'Temperature'
                         },
-<<<<<<< HEAD
-                        showEmpty: false
-=======
+
                         showEmpty : false
->>>>>>> origin/master
+
                     });
                 }
 
@@ -1701,11 +1647,9 @@
             var TEyAxisNr = yAxisNr;
 
             seriesSetup.push({
-<<<<<<< HEAD
-                name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 10,
-=======
+
                 name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
->>>>>>> origin/master
+
                 events: {
                     // http://jsfiddle.net/jlbriggs/kqHzr/
                     // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
@@ -1716,11 +1660,9 @@
                         var TEseries = self.multiChart.get('TE');
                         if (this.name == 'TE') {
                             if (this.visible == false) { // Transition to visible series
-<<<<<<< HEAD
 
-=======
                                 //yaxis.setExtremes(1, 5, true, false);
->>>>>>> origin/master
+
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
                                 TEseries.setData(self.masterVM.TEVM.TEhistory.sort( function (a, b)
                                 {
@@ -1777,10 +1719,9 @@
                 },
 
                 // Both min/max specified -> will force axis labels ON, even when showEmpty is false?? bug?
-<<<<<<< HEAD
-=======
+
                 // https://github.com/highslide-software/highcharts.com/issues/705
->>>>>>> origin/master
+
                 //min: 1.0,
                 //max: 5.0,
                 min : 1.0,
@@ -1791,9 +1732,9 @@
                 
             });
 
-<<<<<<< HEAD
+
             var xAxisType = 'datetime';
-=======
+
 //            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
 
 //            var HRlen = hrSeriesOptions.length
@@ -1833,12 +1774,7 @@
 
 //            });
 
-//=======
-//>>>>>>> parent of 655e139... Added TE history
-//=======
-//>>>>>>> parent of 655e139... Added TE history
-//            var xAxisType = 'datetime';
->>>>>>> origin/master
+
 
             var chartOptions = {
                 animation: false,
@@ -2044,11 +1980,7 @@
                 }, {
                     id: combinedxAxisID
                 },
-<<<<<<< HEAD
-                { id: hrvxAxisID },
-                { id : TExAxisID, type : 'datetime' }
-                ],
-=======
+
 
                 { id: hrvxAxisID },
                 { id: TExAxisID, type: 'datetime' },
@@ -2056,7 +1988,7 @@
                     id: HRZonesxAxisID,
                     categories: ['HR Zones']
                 }],
->>>>>>> origin/master
+
 
                 yAxis: yAxisOptions,
 
@@ -2193,13 +2125,10 @@
                             }
 
                         }
-<<<<<<< HEAD
-                    },
 
-=======
 
                     },
->>>>>>> origin/master
+
                     
                 },
 
@@ -4034,42 +3963,7 @@
                                 self.processActivityFile(rawData);
                             }
 
-<<<<<<< HEAD
-                            // http://api.highcharts.com/highstock#Series.addPoint()
-                            // addPoint (Object options, [Boolean redraw], [Boolean shift], [Mixed animation])
-                            
-                            var sessionStartTime;
-                            var TEseries = self.multiChart.get('TE');
 
-                            if (rawData.session && rawData.session.total_training_effect) 
-                                for (var sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
-                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
-                                        sessionStartTime = rawData.session.start_time[sessionNr];
-
-                                    if (typeof sessionStartTime === "undefined") {
-                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
-                                        continue;
-                                    }
-                                   
-                                    if (rawData.session.total_training_effect[sessionNr]) {
-                                       // TEseries.addPoint([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]], false, false, false);
-                                       
-                                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
-                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
-                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-                                        //TEseries.setData(self.masterVM.TEVM.TEhistory.sort(function (a, b) {
-                                        //    if (a[0] < b[0])
-                                        //        return -1;
-                                        //    if (a[0] > b[0])
-                                        //        return 1;
-                                        //    // a must be equal to b
-                                        //    return 0;
-                                        //}, true));
-                                    }
-                                    
-                                    }
-
-=======
 
                             // http://api.highcharts.com/highstock#Series.addPoint()
                          
@@ -4120,7 +4014,7 @@
                                 }
 
 
->>>>>>> origin/master
+
                             break;
 
                             // Sport settings (HR zones)
