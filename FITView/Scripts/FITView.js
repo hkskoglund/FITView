@@ -788,69 +788,57 @@
             });
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
-            	
-                  this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
-          	
-                      // Callback from knockoutjs
-        
-                      if (typeof self.multiChart === "undefined")
-           
-                          return;
-        
-      
-          	
-                     var yaxis = self.multiChart.get('TEYAxis');
-          	
-                     var series = self.multiChart.get('TE');
-          
-      
-           
-                              if (TEIntensityPlotbands && series.visible) {
-         
-                                 yaxis.addPlotBand({ // mark high intensity
-         
-                                    color: '#CC0000',
-         	
-                                 from: 4.0,
-         	
-                                    to: 5.0,
-        	
-                                    id: 'plot-band-TE-4.0-5.0'
-          	
-                                 });
-           
-      
-          	
-                                  yaxis.addPlotBand({ // mark low intensity
-          	
-                                     color: '#336600',
-          	
-                                    from: 1.0,
-         
-                                    to: 2.0,
-          	
-                                     id: 'plot-band-TE-1.0-2.0'
-           
-                                  });
-            
-                              }
- 		
 
- 	 	
-                    
- 		
-                    else if (!TEIntensityPlotbands) {
-    	
-                            yaxis.removePlotBand('plot-band-TE-4.0-5.0');
-   
-                            yaxis.removePlotBand('plot-band-TE-1.0-2.0');
-    	
-                        }
-  	
-                    
-    	
-                
-    	            });
+            this.masterVM.settingsVM.TEIntensityPlotbands.subscribe(function (TEIntensityPlotbands) {
+
+                // Callback from knockoutjs
+
+                if (typeof self.multiChart === "undefined")
+
+                    return;
+
+                var yaxis = self.multiChart.get('TEYAxis');
+
+                var series = self.multiChart.get('TE');
+
+                if (TEIntensityPlotbands && series.visible) {
+
+                    yaxis.addPlotBand({ // mark high intensity
+
+                        color: '#CC0000',
+
+                        from: 4.0,
+
+                        to: 5.0,
+
+                        id: 'plot-band-TE-4.0-5.0'
+
+                    });
+
+                    yaxis.addPlotBand({ // mark low intensity
+
+                        color: '#336600',
+
+                        from: 1.0,
+
+                        to: 2.0,
+
+                        id: 'plot-band-TE-1.0-2.0'
+
+                    });
+
+                }
+
+
+                else if (!TEIntensityPlotbands) {
+
+                    yaxis.removePlotBand('plot-band-TE-4.0-5.0');
+
+                    yaxis.removePlotBand('plot-band-TE-1.0-2.0');
+
+                }
+
+            });
 
 
             this.masterVM.settingsVM.showLapTriggers.subscribe(function (showLapTriggers) {
@@ -1583,8 +1571,8 @@
                         
                         var yaxis = self.multiChart.get('TEYAxis');
                         var TEseries = self.multiChart.get('TE');
-                        if (this.name == 'TE') {
-                            if (this.visible == false) { // Transition to visible series
+                        if (this.name === 'TE') {
+                            if (this.visible === false) { // Transition to visible series
                                 //yaxis.setExtremes(1, 5, true, false);
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
                                 TEseries.setData(self.masterVM.TEVM.TEhistory.sort( function (a, b)
@@ -3415,7 +3403,7 @@
                     else if (type === "bar/column")
                         CSVtimeStr += 'time,';
 
-                    CSVtimeStr += rawdata.hrv.time[pointNr] * scale + CRLF
+                    CSVtimeStr += rawdata.hrv.time[pointNr] * scale + CRLF;
                 }
                 
             }
@@ -3695,9 +3683,8 @@
                                 // https://developers.google.com/maps/documentation/staticmaps/index
 
                                 // Can use javascript escape(string) to make transferable URL
-                                rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString
-                                    + '&zoom=8&size=100x100&maptype=roadmap&sensor=false&scale=1'+
-                                    '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
+                                rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString +
+                                    '&zoom=8&size=100x100&maptype=roadmap&sensor=false&scale=1' + '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
 
                                 //rawData._staticGoogleMapSrc = ko.observable('http://localhost:24021/Images/kcalorie.png');
                             }
