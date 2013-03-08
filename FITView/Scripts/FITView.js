@@ -10,7 +10,9 @@
         combinedxAxisID = "combinedxAxis", // For speed vs HR
         hrvxAxisID = "hrvxAxis",
         TExAxisID = "TExAxis",
-        HRZonesxAxisID = "HRZonesxAxis";
+       //HRZonesxAxisID = "HRZonesxAxis",
+        weeklyxAxisID = "weeklyxAxis";
+    
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -617,7 +619,9 @@
                         bc = 'transparent';
 
                     return bc;
-                }
+                },
+                weeklyCalories: {
+                } // Sum of calorie expenditure each week .weekNr = sumCalories
             },
 
             speedMode: ko.observable(),
@@ -1580,6 +1584,16 @@
             // TE history
             var TEyAxisNr = yAxisNr;
 
+            function comparator (a,b) {
+                    if (a[0] < b[0])
+                        return -1;
+                    if (a[0] > b[0])
+                        return 1;
+                    // a must be equal to b
+                    return 0;
+             
+            }
+            
             seriesSetup.push({
                 name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
                 events: {
@@ -1594,15 +1608,7 @@
                             if (this.visible === false) { // Transition to visible series
                                 //yaxis.setExtremes(1, 5, true, false);
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort( function (a, b)
-                                {
-                                    if (a[0] < b[0])
-                                    return -1;
-                                    if (a[0] > b[0])
-                                    return 1;
-                                    // a must be equal to b
-                                    return 0;
-                                }, true));
+                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true));
                                 
 
                                 if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
@@ -1660,50 +1666,71 @@
                 
             });
 
-//            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
+            function getWeeklySortedCalories() {
+                // Calories weekly
 
-//            var HRlen = hrSeriesOptions.length
-//            var HRoption;
-//            for (var optionNr = 0; optionNr < HRlen; optionNr++) {
-//                HRoption = hrSeriesOptions[optionNr];
-//                HRoption.xAxis = 5;
-//                HRoption.yAxis = yAxisNr;
-//                HRoption.visible = false;
-//                seriesSetup.push(HRoption);
-//            }
+                var weeklyCalories = [];
+                for (var prop in self.masterVM.activityVM.weeklyCalories)
+                    if (self.masterVM.activityVM.weeklyCalories.hasOwnProperty(prop)) {
+                        weeklyCalories.push([parseInt(prop, 10), self.masterVM.activityVM.weeklyCalories[prop]]);
+                    }
 
-//            yAxisNr++;
+                return weeklyCalories.sort(comparator);
+            }
 
-//            yAxisOptions.push({
+            function setWeeklyCategories(xAxis) {
+                var weekCategories = getWeeklySortedCalories().map(function (item, index, arr) {
+                    var weeklyMoment = moment.utc(item[0]);
+                    return weeklyMoment.week() + ' '+weeklyMoment.format('MMM')+' ' + weeklyMoment.year();
+                });
+                xAxis.setCategories(weekCategories);
+            }
 
-//                gridLineWidth: 0,
+            function getWeeklyCaloriesData() {
+                var data =
+                 getWeeklySortedCalories().map(function (item, index, arr) {
+                     return item[1]; // Total calorie
+                 });
+                return data;
+            }
 
-//                opposite: true,
+            seriesSetup.push({
+                name: 'Calories', id: 'weeklyCalories', xAxis: 5, yAxis: yAxisNr++,
+                data: getWeeklyCaloriesData(), visible: false, type: 'column',
+                //pointWidth: 15,
+                events: {
+                    legendItemClick: function () {
+                        var weeklyCaloriesxAxis = self.multiChart.get('weeklyxAxis');
+                        //var yaxis = self.multiChart.get('weeklyCaloriesYAxis');
+                        var weeklyCalorieSeries = self.multiChart.get('weeklyCalories');
+                        setWeeklyCategories(weeklyCaloriesxAxis);
+                        if (this.visible === false)
+                            weeklyCalorieSeries.setData(getWeeklyCaloriesData());
 
-//                title: {
-//                    text: 'Minutes'
-//                },
+                    }
+                },
+                dataLabels: {
+                    enabled: true
+                }
+            });
 
-//                showEmpty: false,
+            yAxisOptions.push({
 
-//                id: 'HRZonesYAxis',
-//                min: 0,
-                
-//                stackLabels: {
-//                    enabled: false,
-//                    //style: {
-//                    //    fontWeight: 'bold',
-//                    //    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-//                    //}
-//                }
+                gridLineWidth: 0,
 
-//            });
+                opposite: true,
 
-//=======
-//>>>>>>> parent of 655e139... Added TE history
-//=======
-//>>>>>>> parent of 655e139... Added TE history
-//            var xAxisType = 'datetime';
+                title: {
+                    text: 'Weekly calories'
+                },
+
+                showEmpty: false,
+
+                id: 'weeklyCaloriesYAxis'
+
+            });
+           
+            
 
             var chartOptions = {
                 animation: false,
@@ -1890,8 +1917,10 @@
                 { id: hrvxAxisID },
                 { id: TExAxisID, type: 'datetime' },
                 {
-                    id: HRZonesxAxisID,
-                    categories: ['HR Zones']
+                    id: weeklyxAxisID,
+                    categories: getWeeklySortedCalories().map(function (item) {
+                        return moment(item[0]).week() + "-" + moment(item[0]).year();
+                    })
                 }],
 
                 yAxis: yAxisOptions,
@@ -1915,11 +1944,12 @@
 
                             var onLapxAxis;
                             var onSpeedVSHRxAxis;
-                            var onHrvxAxis;
+                            var onHrvxAxis, onWeeklyxAxis;
 
                             onLapxAxis = (this.series.xAxis === self.multiChart.get(lapxAxisID));
                             onSpeedVSHRxAxis = (this.series.xAxis === self.multiChart.get(combinedxAxisID));
                             onHrvxAxis = (this.series.xAxis === self.multiChart.get(hrvxAxisID));
+                            onWeeklyxAxis = (this.series.xAxis === self.multiChart.get(weeklyxAxisID));
 
                             // Check to see if its a tooltip for lap axis
                             if (onLapxAxis) {
@@ -1935,6 +1965,8 @@
                             else if (onHrvxAxis) {
                                 s = '<b>RR time :</b>' + Highcharts.numberFormat(this.y, 3) + " s"; // Hrv time in seconds 0.xxx
                             }
+                            else if (onWeeklyxAxis)
+                                s = '<b>Week:</b> ' + this.x
                             else
                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
 
@@ -1961,7 +1993,7 @@
                                 }
                             }
                             else if (this.series.name !== 'HRV') {
-                                s += '<br/><b>' + this.series.name + '</b>: ';
+                                s += '<br/><b>' + this.series.name + ':</b> ';
                                 if (isInt(this.y))
                                     s += this.y.toString();
                                 else
@@ -3826,12 +3858,7 @@
 
                             self.masterVM.activityVM.activity.push(rawData); // Let knockoujs track new activities - calls knockouts push function on array
 
-                            // If not previous activity has been selected process this one...
-                            if (self.masterVM.activityVM.selectedActivity() === undefined) {
-                                self.masterVM.activityVM.selectedActivity(self.masterVM.activityVM.activity().length - 1);
-                                self.processActivityFile(rawData);
-                            }
-
+                            
 
                             // http://api.highcharts.com/highstock#Series.addPoint()
                          
@@ -3839,9 +3866,6 @@
                             
 
                             var sessionStartTime;
-
-                            var TEseries = self.multiChart.get('TE');
-
 
 
                             if (rawData.session && rawData.session.total_training_effect)
@@ -3878,8 +3902,58 @@
                                     }
 
 
+                                    
+                                }
+
+                            var weekOfYear, year, startMoment, weekMoment;
+
+                            if (rawData.session && rawData.session.total_calories)
+
+                                for (var sessionNr = 0; sessionNr < rawData.session.total_calories.length; sessionNr++) {
+
+                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+
+                                        sessionStartTime = rawData.session.start_time[sessionNr];
+
+
+
+                                    if (typeof sessionStartTime === "undefined") {
+
+                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+
+                                        continue;
+
+                                    }
+
+                                    if (rawData.session.total_calories[sessionNr]) {
+
+                                        //http://momentjs.com/docs/#/get-set/week/
+                                        startMoment = moment.utc(sessionStartTime);
+                                        year = startMoment.year();
+                                        weekOfYear = startMoment.week();
+                                        weekMoment = moment.utc().year(year).week(weekOfYear).day(1).hours(0).minutes(0).seconds(0).millisecond(0); // Week start on monday ...
+                                        if (typeof self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] !== "undefined")
+                                          self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] += rawData.session.total_calories[sessionNr];
+                                        else
+                                            self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] = rawData.session.total_calories[sessionNr];
+                                        // self.loggMesage("info", "Weekly calories week: ", weekOfYear, " year:", year, " calories: ", weeklyCalories[year + '_' + weekOfYear]);
+                                       // self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
+
+                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
+
+                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+                                    }
+
+
 
                                 }
+
+                            // If not previous activity has been selected process this one...
+                            if (self.masterVM.activityVM.selectedActivity() === undefined) {
+                                self.masterVM.activityVM.selectedActivity(self.masterVM.activityVM.activity().length - 1);
+                                self.processActivityFile(rawData);
+                            }
 
 
                             break;

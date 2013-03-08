@@ -111,6 +111,7 @@
     <Content Include="Images\sport\generic.png" />
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
+    <Content Include="Scripts\3party\moment.js" />
     <Content Include="Scripts\Messages\FITCommonMessage.js" />
     <Content Include="Scripts\FITImport.js" />
     <Content Include="Scripts\Messages\FITSportSetting.js" />
