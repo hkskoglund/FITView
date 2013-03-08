@@ -605,7 +605,19 @@
 
             activityVM: {
                 selectedActivity : ko.observable(undefined),
-                activity : ko.observableArray()
+                activity: ko.observableArray(),
+                intenseActivity: function (activity) {
+                    var bc;
+                    
+                    
+                    if (activity.session && activity.session.total_training_effect && activity.session.total_training_effect.length >= 1)
+                        // In multisport, the last TE is greates...
+                        bc = activity.session.total_training_effect[activity.session.total_training_effect.length - 1] >= 4 ? 'lightgray' : 'transparent';
+                    else
+                        bc = 'transparent';
+
+                    return bc;
+                }
             },
 
             speedMode: ko.observable(),
