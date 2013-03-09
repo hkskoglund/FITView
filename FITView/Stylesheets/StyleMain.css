@@ -69,13 +69,10 @@ white-space: nowrap;
 }
 
 #activityMap {
-<<<<<<< HEAD
+    margin-left : 2px;
     width: 40%;
     height: 350px;
-=======
-    width: 59%;
-    height: 270px;
->>>>>>> origin/master
+
     /*height : 270px;*/
     /*background-color : white;*/
     float: left;
@@ -86,7 +83,7 @@ white-space: nowrap;
     width: 39%;
     /*height : 270px;*/
     height: 350px;
-    margin-left: 5px;
+    margin-left: 2px;
     float: right;
 }
 
@@ -131,15 +128,8 @@ display  : flex;
     /*visibility : hidden;*/
     /*-webkit-flex : 5 1;*/
     /*float: left;*/
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     width: 100%;
-=======
-    /*width: 100%;*/
->>>>>>> origin/master
-=======
-    /*width: 100%;*/
->>>>>>> origin/master
     height: inherit;
 }
 
