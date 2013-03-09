@@ -106,7 +106,7 @@ display  : flex;
     /*visibility : hidden;*/
     /*-webkit-flex : 5 1;*/
     /*float: left;*/
-    width: 100%;
+    /*width: 100%;*/
     height: inherit;
 }
 

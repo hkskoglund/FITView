@@ -111,6 +111,8 @@
     <Content Include="Images\sport\generic.png" />
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
+    <Content Include="Scripts\3party\highchart-more.src.js" />
+    <Content Include="Scripts\3party\highcharts30beta.src.js" />
     <Content Include="Scripts\3party\moment.js" />
     <Content Include="Scripts\Messages\FITCommonMessage.js" />
     <Content Include="Scripts\FITImport.js" />
@@ -123,7 +125,6 @@
     <Content Include="Scripts\Messages\FITActivityFile.js" />
     <Content Include="Scripts\FITCRCTimestampUtility.js" />
     <None Include="Scripts\3party\jquery-1.9.1.intellisense.js" />
-    <Content Include="Scripts\3party\highcharts30betasrc.js" />
     <Content Include="Scripts\3party\jquery-1.9.1.js" />
     <Content Include="Scripts\3party\jquery-1.9.1.min.js" />
     <Content Include="Scripts\3party\knockout-2.2.1.debug.js" />
