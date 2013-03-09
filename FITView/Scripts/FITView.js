@@ -3,8 +3,10 @@
 
 (function () {
     "use strict";
+
     var self;
 
+<<<<<<< HEAD
     var ge; // Google earth plugin
 
     var lapxAxisID = 'lapxAxis',
@@ -13,6 +15,42 @@
         hrvxAxisID = "hrvxAxis",
         TExAxisID = "TExAxis",
         HRZonesxAxisID = "HRZonesxAxis";
+=======
+    var xAxisID = {
+        lap: 'lapxAxis',
+        rawdata: 'rawdataxAxis',
+        speedVSHR: "combinedxAxis", // For speed vs HR
+        hrv: "hrvxAxis",
+        TE: "TExAxis",
+        //HRZonesxAxisID = "HRZonesxAxis",
+        weeklyCalories: "weeklyxAxis",
+        caloriesVSHRVSTE : "kcalVSHRVSTExAxis"
+    };
+
+    var yAxisID = {
+        TE: 'TEyAxis',
+        weeklyCalories : 'weeklyCaloriesyAxis'
+        
+    };
+
+    var seriesID = {
+        TE: 'TESeries',
+        HR: 'heartrateSeries',
+        speed: 'speedSeries',
+        speedAvg: 'speedavgSeries',
+        power: 'powerSeries',
+        cadence: 'cadenceSeries',
+        altitude: 'altitudeSeries',
+        temperature: 'temperatureSeries',
+        speedVSHR: 'speedVSHRSeries',
+        hrv: 'HRVSeries',
+        weeklyCalories: 'weeklyCaloriesSeries',
+        kcalVSHRVSTE_run: 'kcalHRTE_runSeries',
+        kcalVSHRVSTE_bike: 'kcalHRTE_bikeSeries',
+        kcalVSHRVSTE_other:'kcalHRTE_otherSeries',
+    }
+    
+>>>>>>> origin/master
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -607,7 +645,25 @@
 
             activityVM: {
                 selectedActivity : ko.observable(undefined),
-                activity : ko.observableArray()
+                activity: ko.observableArray(),
+                intenseActivity: function (activity) {
+                    var bc;
+                    
+                    
+                    if (activity.session && activity.session.total_training_effect && activity.session.total_training_effect.length >= 1)
+                        // In multisport, the last TE is greates...
+                        bc = activity.session.total_training_effect[activity.session.total_training_effect.length - 1] >= 4 ? 'lightgray' : 'transparent';
+                    else
+                        bc = 'transparent';
+
+                    return bc;
+                },
+                weeklyCalories: {
+                }, // Sum of calorie expenditure each week .weekNr = sumCalories,
+                kcalVSHRVSTE_run: [],
+                kcalVSHRVSTE_bike: [],
+                kcalVSHRVSTE_other: []
+                 
             },
 
             speedMode: ko.observable(),
@@ -649,7 +705,10 @@
                 logging: ko.observable(false),
                 distanceOnXAxis: ko.observable(true),
                 TEIntensityPlotbands: ko.observable(false)
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -803,9 +862,15 @@
 
                     return;
 
+<<<<<<< HEAD
                 var yaxis = self.multiChart.get('TEYAxis');
 
                 var series = self.multiChart.get('TE');
+=======
+                var yaxis = self.multiChart.get(yAxisID.TE);
+
+                var series = self.multiChart.get(seriesID.TE);
+>>>>>>> origin/master
 
                 if (TEIntensityPlotbands && series.visible) {
 
@@ -1074,7 +1139,7 @@
 
             //var self = this;
 
-            var axis = chart.get(rawdataxAxis);
+            var axis = chart.get(xAxisID.rawdata);
 
             var lapLinesConfig = [];
 
@@ -1261,28 +1326,37 @@
                     self.loggMessage("warn","Empty rawdata on rawdata.record, nothing to render in chart");
 
             if (rawData.record) {
+
                 if (rawData.record.heart_rate) {
-                    id = 'heartrateseries';
-                    heartRateSeriesData = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
-                    seriesData[id] = heartRateSeriesData;
+                    
+                    heartRateSeriesData = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.HR);
+                    seriesData[seriesID.HR] = heartRateSeriesData;
                     heartRateYAxisNr = yAxisNr;
+
                     heartRateSeriesOptions = {
-                        id: id,
+                        
+                        id: seriesID.HR,
                         name: 'Heart rate',
                         yAxis: yAxisNr++,
                         type: 'line',
-                        data: seriesData[id],
+                        data: seriesData[seriesID.HR],
                         zIndex: 100,
                     };
+
                     seriesSetup.push(heartRateSeriesOptions);
+
                     yAxisOptions.push({
                         gridLineWidth: 1,
                         title: {
                             text: 'Heart rate'
                         },
+<<<<<<< HEAD
 
                         showEmpty : false
 
+=======
+                        showEmpty : false
+>>>>>>> origin/master
 
                     });
 
@@ -1291,7 +1365,7 @@
                 this.masterVM.speedMode(undefined);
 
                 if (rawData.record.speed) {
-                    id = 'speedseries';
+                   
 
                     if (self.masterVM.settingsVM.forceSpeedKMprH())
                         sport = FITSport.generic;
@@ -1300,24 +1374,29 @@
 
                         case FITSport.running: // Running
                             this.masterVM.speedMode(1); // min/km
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, id, false);
+                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, seriesID.speed, false);
                             break;
 
                         case FITSport.cycling: // Cycling
                             this.masterVM.speedMode(2); // km/h
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, false);
+                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speed, false);
                             break;
 
                         default:
                             this.masterVM.speedMode(2);
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, false);
+                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speed, false);
                             break;
                     }
 
-                    seriesData[id] = speedSeriesData;
+                    seriesData[seriesID.speed] = speedSeriesData;
                     speedYAxisNr = yAxisNr;
+<<<<<<< HEAD
                     speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 99, showEmpty : false };
+=======
+                    speedSeries = { name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'line', zIndex: 99 };
+>>>>>>> origin/master
                     seriesSetup.push(speedSeries);
+
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
@@ -1325,13 +1404,17 @@
                         },
                         opposite: true,
                         showEmpty : false,
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 
                     });
                 }
 
                 var avgReq = this.masterVM.settingsVM.requestAveragingOnSpeed();
                 if (rawData.record.speed && avgReq) {
-                    id = 'speedavgseries';
+                  
 
                     if (self.masterVM.settingsVM.forceSpeedKMprH())
                         sport = FITSport.generic;
@@ -1342,22 +1425,26 @@
 
                         case FITSport.running: // Running
                             this.masterVM.speedMode(1); // min/km
-                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, id, avgReq, avgSampleInterval);
+                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, seriesID.speedAvg, avgReq, avgSampleInterval);
                             break;
 
                         case FITSport.cycling: // Cycling
                             this.masterVM.speedMode(2); // km/h
-                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, avgReq, avgSampleInterval);
+                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speedAvg, avgReq, avgSampleInterval);
                             break;
 
                         default:
                             this.masterVM.speedMode(2);
-                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, id, avgReq, avgSampleInterval);
+                            speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speedAvg, avgReq, avgSampleInterval);
                             break;
                     }
-                    seriesData[id] = speedAvgSeriesData;
+                    seriesData[seriesID.speedAvg] = speedAvgSeriesData;
                     //speedYAxisNr = yAxisNr;
+<<<<<<< HEAD
                     speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99, showEmpty : false };
+=======
+                    speedAvgSeries = { name: 'SpeedAvg', id: seriesID.speedAvg, yAxis: speedYAxisNr, data: seriesData[seriesID.speedAvg], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99 };
+>>>>>>> origin/master
                     seriesSetup.push(speedAvgSeries);
                     //yAxisOptions.push({
                     //    gridLineWidth: 0,
@@ -1371,11 +1458,11 @@
                 }
 
                 if (rawData.record.power) {
-                    id = 'powerseries';
-                    powerSeriesData = FITUtil.combine(rawData, rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
-                    seriesData[id] = powerSeriesData;
+                    
+                    powerSeriesData = FITUtil.combine(rawData, rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.power);
+                    seriesData[seriesID.power] = powerSeriesData;
 
-                    powerSeries = { name: 'Power', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 98, visible: false };
+                    powerSeries = { name: 'Power', id: seriesID.power, yAxis: yAxisNr++, data: seriesData[seriesID.power], type: 'line', zIndex: 98, visible: false };
                     seriesSetup.push(powerSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -1388,11 +1475,11 @@
                 }
 
                 if (rawData.record.cadence) {
-                    id = 'cadenceseries';
-                    cadenceSeriesData = FITUtil.combine(rawData, rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
-                    seriesData[id] = cadenceSeriesData;
+                   
+                    cadenceSeriesData = FITUtil.combine(rawData, rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.cadence);
+                    seriesData[seriesID.cadence] = cadenceSeriesData;
 
-                    cadenceSeries = { name: 'Cadence', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', visible: false, zIndex: 97 };
+                    cadenceSeries = { name: 'Cadence', id: seriesID.cadence, yAxis: yAxisNr++, data: seriesData[seriesID.cadence], type: 'line', visible: false, zIndex: 97 };
 
                     seriesSetup.push(cadenceSeries);
                     yAxisOptions.push({
@@ -1400,21 +1487,25 @@
                         title: {
                             text: 'Cadence'
                         },
+<<<<<<< HEAD
 
                         showEmpty : false,
 
+=======
+                        showEmpty : false,
+>>>>>>> origin/master
 
                     });
 
                 }
 
                 if (rawData.record.altitude) {
-                    id = 'altitudeseries';
-                    altitudeSeriesData = FITUtil.combine(rawData, rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
-                    seriesData[id] = altitudeSeriesData;
+                   
+                    altitudeSeriesData = FITUtil.combine(rawData, rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.altitude);
+                    seriesData[seriesID.altitude] = altitudeSeriesData;
                     var hasGPSdata = FITUtil.hasGPSData(rawData);
                     altitudeSeries = {
-                        name: 'Altitude', id: id, yAxis: yAxisNr++, data: seriesData[id], visible: false, type: 'line', zIndex: 96
+                        name: 'Altitude', id: seriesID.altitude, yAxis: yAxisNr++, data: seriesData[seriesID.altitude], visible: false, type: 'line', zIndex: 96
                     };
 
                     seriesSetup.push(altitudeSeries);
@@ -1423,18 +1514,22 @@
                         title: {
                             text: 'Altitude'
                         },
+<<<<<<< HEAD
 
                         showEmpty : false
 
+=======
+                        showEmpty : false
+>>>>>>> origin/master
 
                     });
                 }
 
                 if (rawData.record.temperature) {
-                    id = 'temperatureseries';
-                    temperatureSeriesData = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, id);
+                   
+                    temperatureSeriesData = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.temperature);
                     seriesData[id] = temperatureSeriesData;
-                    temperatureSeries = { name: 'Temperature', id: id, yAxis: yAxisNr++, data: seriesData[id], visible: false, type: 'line', zIndex: 95 };
+                    temperatureSeries = { name: 'Temperature', id: seriesID.temperature, yAxis: yAxisNr++, data: seriesData[seriesID.temperature], visible: false, type: 'line', zIndex: 95 };
                     seriesSetup.push(temperatureSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -1442,6 +1537,7 @@
                         title: {
                             text: 'Temperature'
                         },
+<<<<<<< HEAD
 
 
                         showEmpty : false
@@ -1454,53 +1550,20 @@
                     id = 'speedVSHR';
                     seriesData[id] = speedVSHR;
                     seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: false, zIndex: 94});
+=======
+                        showEmpty : false
+                    });
+                }
+
+                var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
+                if (speedVSHR) {
+                    
+                    seriesData[seriesID.speedVSHR] = speedVSHR;
+                    seriesSetup.push({ name: 'Speed vs HR', id: seriesID.speedVSHR, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[seriesID.speedVSHR], type: 'scatter', visible: false, zIndex: 94 });
+>>>>>>> origin/master
                 }
             }
-            //yAxisOptions.push({
-            //    gridLineWidth: 0,
-            //    type : 'scatter',
-            //    title: {
-            //        text: 'HR!'
-            //    }
-
-
-            //});
-
-            //this.scatterChart = new Highcharts.Chart({
-            //    chart: {
-            //        renderTo: 'scatterChart',
-            //        //type: 'scatter'
-            //    },
-            //    //plotOptions: {
-            //    //    scatter: {
-            //    //        marker: {
-            //    //            radius: 5,
-            //    //            states: {
-            //    //                hover: {
-            //    //                    enabled: true,
-            //    //                    lineColor: 'rgb(100,100,100)'
-            //    //                }
-            //    //            }
-            //    //        }
-            //    //    }
-            //    //},
-
-            //    title: {
-            //        text: ''
-            //    },
-            //    //yAxis: [{
-            //    //    type : 'scatter'}],
-            //    xAxis: [{
-            //        id: combinedxAxisID
-            //    }],
-            //    series : [{
-            //        name: 'Speed vs HR',
-            //        type : 'scatter',
-            //        //color: 'rgba(223, 83, 83, .5)',
-            //        data: arr
-            //    }]
-
-            //});
+           
 
             var lap = {
                 categories: [],
@@ -1625,7 +1688,7 @@
             if (rawData.hrv !== undefined) {
                 if (rawData.hrv.time !== undefined) {
 
-                    seriesSetup.push({ name: 'HRV', id: 'HRV', xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible: false, type: 'scatter' });
+                    seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible: false, type: 'scatter' });
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         opposite: true,
@@ -1641,16 +1704,33 @@
             // TE history
             var TEyAxisNr = yAxisNr;
 
+<<<<<<< HEAD
             seriesSetup.push({
 
                 name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
 
+=======
+            function comparator (a,b) {
+                    if (a[0] < b[0])
+                        return -1;
+                    if (a[0] > b[0])
+                        return 1;
+                    // a must be equal to b
+                    return 0;
+             
+            }
+            
+            
+            seriesSetup.push({
+                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
+>>>>>>> origin/master
                 events: {
                     // http://jsfiddle.net/jlbriggs/kqHzr/
                     // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
 
                     legendItemClick: function () {
                         
+<<<<<<< HEAD
                         var yaxis = self.multiChart.get('TEYAxis');
                         var TEseries = self.multiChart.get('TE');
 
@@ -1668,6 +1748,15 @@
                                     // a must be equal to b
                                     return 0;
                                 }, true));
+=======
+                        var yaxis = this.chart.get(yAxisID.TE);
+                        var TEseries = this.chart.get(seriesID.TE);
+                        if (this.name === 'TE') {
+                            if (this.visible === false) { // Transition to visible series
+                                //yaxis.setExtremes(1, 5, true, false);
+                                //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true));
+>>>>>>> origin/master
                                 
 
                                 if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
@@ -1714,15 +1803,20 @@
                 },
 
                 // Both min/max specified -> will force axis labels ON, even when showEmpty is false?? bug?
+<<<<<<< HEAD
 
                 // https://github.com/highslide-software/highcharts.com/issues/705
 
+=======
+                // https://github.com/highslide-software/highcharts.com/issues/705
+>>>>>>> origin/master
                 //min: 1.0,
                 //max: 5.0,
                 min : 1.0,
 
                 showEmpty: false,
 
+<<<<<<< HEAD
                 id : 'TEYAxis'
                 
             });
@@ -1768,6 +1862,117 @@
 //                }
 
 //            });
+=======
+                id : yAxisID.TE
+                
+            });
+
+            function getWeeklySortedCalories() {
+                // Calories weekly
+
+                var weeklyCalories = [];
+                for (var prop in self.masterVM.activityVM.weeklyCalories)
+                    if (self.masterVM.activityVM.weeklyCalories.hasOwnProperty(prop)) {
+                        weeklyCalories.push([parseInt(prop, 10), self.masterVM.activityVM.weeklyCalories[prop]]);
+                    }
+
+                return weeklyCalories.sort(comparator);
+            }
+
+            function setWeeklyCategories(xAxis) {
+                var weekCategories = getWeeklySortedCalories().map(function (item, index, arr) {
+                    var weeklyMoment = moment.utc(item[0]);
+                    return weeklyMoment.week() + ' '+weeklyMoment.format('MMM')+' ' + weeklyMoment.year();
+                });
+                xAxis.setCategories(weekCategories);
+            }
+
+            function getWeeklyCaloriesData() {
+                var data =
+                 getWeeklySortedCalories().map(function (item, index, arr) {
+                     return item[1]; // Total calorie
+                 });
+                return data;
+            }
+
+            seriesSetup.push({
+                name: 'Calories', id: seriesID.weeklyCalories, xAxis: 5, yAxis: yAxisNr++,
+                data: getWeeklyCaloriesData(), visible: false, type: 'column',
+                //pointWidth: 15,
+                events: {
+                    legendItemClick: function () {
+                        var weeklyCaloriesxAxis = this.chart.get(xAxisID.weeklyCalories);
+                        //var yaxis = self.multiChart.get('weeklyCaloriesYAxis');
+                        var weeklyCalorieSeries = this.chart.get(seriesID.weeklyCalories);
+                        setWeeklyCategories(weeklyCaloriesxAxis);
+                        if (this.visible === false)
+                            weeklyCalorieSeries.setData(getWeeklyCaloriesData());
+
+                    }
+                },
+                dataLabels: {
+                    enabled: true
+                }
+            });
+
+            yAxisOptions.push({
+
+                gridLineWidth: 0,
+
+                opposite: true,
+
+                title: {
+                    text: 'Weekly calories'
+                },
+
+                showEmpty: false,
+
+                id: yAxisID.weeklyCalories
+
+            });
+
+            // NB! from highcharts-more.js -  have some trouble integrating it with the other series -> tooltip missing, self.multiChart reference missing
+            // Another issue: will not resize chart if there is data in the bubble series
+            //seriesSetup.push({
+            //    name: 'Run', id: seriesID.kcalVSHRVSTE_run, xAxis: 6, yAxis:  heartRateYAxisNr,
+            //    data: self.masterVM.activityVM.kcalVSHRVSTE_run, visible: false, type: 'bubble',
+            //    events: {
+            //        legendItemClick: function () {
+            //            var kcalVSHRVSTESeries = this.chart.get(seriesID.kcalVSHRVSTE_run);
+            //            if (this.visible === false) // Update from import
+            //                kcalVSHRVSTESeries.setData(self.masterVM.activityVM.kcalVSHRVSTE_run);
+            //        }
+            //    }
+                
+            //});
+
+            //seriesSetup.push({
+            //    name: 'Bike', id: seriesID.kcalVSHRVSTE_bike, xAxis: 6, yAxis:  heartRateYAxisNr,
+            //    data: self.masterVM.activityVM.kcalVSHRVSTE_bike, visible: false, type: 'bubble',
+            //    events: {
+            //        legendItemClick: function () {
+            //            var kcalVSHRVSTESeries = this.chart.get(seriesID.kcalVSHRVSTE_bike);
+            //            if (this.visible === false) // Update from import
+            //                kcalVSHRVSTESeries.setData(self.masterVM.activityVM.kcalVSHRVSTE_bike);
+            //        }
+            //    }
+                
+            //});
+
+            //seriesSetup.push({
+            //    name: 'Other', id: seriesID.kcalVSHRVSTE_other, xAxis: 6, yAxis:  heartRateYAxisNr,
+            //    data: self.masterVM.activityVM.kcalVSHRVSTE_other, visible: false, type: 'bubble',
+            //    events: {
+            //        legendItemClick: function () {
+            //            var kcalVSHRVSTESeries = this.chart.get(seriesID.kcalVSHRVSTE_other);
+            //            if (this.visible === false) // Update from import
+            //                kcalVSHRVSTESeries.setData(self.masterVM.activityVM.kcalVSHRVSTE_other);
+            //        }
+            //    }
+                
+            //});
+           
+>>>>>>> origin/master
 
             var chartOptions = {
                 animation: false,
@@ -1898,7 +2103,11 @@
 
             
 
+<<<<<<< HEAD
             this.multiChart = new Highcharts.Chart({
+=======
+            self.multiChart = new Highcharts.Chart({
+>>>>>>> origin/master
                 chart: chartOptions,
                 //height : 700,
 
@@ -1907,7 +2116,12 @@
                 },
 
                 xAxis: [{
+<<<<<<< HEAD
                     id: rawdataxAxis,
+=======
+                    
+                    id: xAxisID.rawdata,
+>>>>>>> origin/master
                     type: 'datetime', // datetime
                     events: {
                         afterSetExtremes: function (event) {
@@ -1967,12 +2181,12 @@
                     },
                     //plotLines: lapLinesConfig
                     //reversed : true
-                }, {
-                    id: lapxAxisID,
-                    categories: lap.categories // for each lap avg/max speed/HR
-                }, {
-                    id: combinedxAxisID
                 },
+                {
+                    id: xAxisID.lap,
+                    categories: lap.categories // for each lap avg/max speed/HR
+                },
+<<<<<<< HEAD
 
                 { id: hrvxAxisID },
                 { id: TExAxisID, type: 'datetime' },
@@ -1980,6 +2194,28 @@
                     id: HRZonesxAxisID,
                     categories: ['HR Zones']
                 }],
+=======
+                {
+                    id: xAxisID.speedVSHR
+                },
+
+                { id: xAxisID.hrv },
+                {
+                    id: xAxisID.TE,
+                    type: 'datetime'
+                },
+                {
+                    id: xAxisID.weeklyCalories,
+                    categories: getWeeklySortedCalories().map(function (item) {
+                        return moment(item[0]).week() + "-" + moment(item[0]).year();
+                    })
+                },
+                {
+                    
+                    id: xAxisID.caloriesVSHRVSTE
+                }
+                ],
+>>>>>>> origin/master
 
                 yAxis: yAxisOptions,
 
@@ -1988,6 +2224,7 @@
                 },
                 // Shared tooltip for all series - maybe split this for each series type ...
                 tooltip: {
+                    animation : false,
                     //xDateFormat: '%Y-%m-%d',
                     formatter:
 
@@ -2002,11 +2239,14 @@
 
                             var onLapxAxis;
                             var onSpeedVSHRxAxis;
-                            var onHrvxAxis;
+                            var onHrvxAxis, onWeeklyxAxis, onkcalxAxis;
 
-                            onLapxAxis = (this.series.xAxis === self.multiChart.get(lapxAxisID));
-                            onSpeedVSHRxAxis = (this.series.xAxis === self.multiChart.get(combinedxAxisID));
-                            onHrvxAxis = (this.series.xAxis === self.multiChart.get(hrvxAxisID));
+                            // With highchart-more.js cannot find self.multiChart in closure anymore....? this.series.chart used instead
+                            onLapxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.lap));
+                            onSpeedVSHRxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.speedVSHR));
+                            onHrvxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.hrv));
+                            onWeeklyxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.weeklyCalories));
+                            onkcalxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.caloriesVSHRVSTE));
 
                             // Check to see if its a tooltip for lap axis
                             if (onLapxAxis) {
@@ -2022,6 +2262,12 @@
                             else if (onHrvxAxis) {
                                 s = '<b>RR time :</b>' + Highcharts.numberFormat(this.y, 3) + " s"; // Hrv time in seconds 0.xxx
                             }
+                            else if (onWeeklyxAxis)
+                                s = '<b>Week:</b> ' + this.x
+                            else if (onkcalxAxis)
+                                s = '<b>Kcal:</b>' + this.x + '<br/>' +
+                                    '<b>Avg.HR:</b>' + this.y + '<br/>' +
+                                    '<b>TE:</b>' + this.point.z;
                             else
                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
 
@@ -2047,8 +2293,8 @@
                                         break;
                                 }
                             }
-                            else if (this.series.name !== 'HRV') {
-                                s += '<br/><b>' + this.series.name + '</b>: ';
+                            else if (this.series.name !== 'HRV' && this.series.name !== 'Run' && this.series.name !== "Bike" && this.series.name !== "Other") {
+                                s += '<br/><b>' + this.series.name + ':</b> ';
                                 if (isInt(this.y))
                                     s += this.y.toString();
                                 else
@@ -2117,9 +2363,13 @@
 
                         }
 
+<<<<<<< HEAD
 
                     },
 
+=======
+                    },
+>>>>>>> origin/master
                     
                 },
 
@@ -2233,7 +2483,7 @@
 
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
-            var xaxis = this.multiChart.get(rawdataxAxis);
+            var xaxis = this.multiChart.get(xAxisID.rawdata);
 
             var width = xaxis.width;
             //var extremes = this.multiChart.xAxis[0].getExtremes();
@@ -2514,7 +2764,7 @@
             var xpos, ypos;
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
-            var xaxis = this.multiChart.get(rawdataxAxis);
+            var xaxis = this.multiChart.get(xAxisID.rawdata);
 
             var width = xaxis.width;
             //var extremes = this.multiChart.xAxis[0].getExtremes();
@@ -2571,14 +2821,20 @@
                 var ev_group = rawdata.event.event_group[eventNr];
                 var ev_data = rawdata.event.data[eventNr];
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 
                 srcImgEvent = "Images/event/unknown.png";
                
                 if (ev)
                     titleEvent = "Event: " + ev.toString();
                 else
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
                     titleEvent = "Event: undefined";
 
                 if (ev_type)
@@ -2586,7 +2842,10 @@
                 else
                     titleEvent += " type: undefined";
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
                 if (ev_group)
                     titleEvent += " group: " + ev_group.toString();
                 else
@@ -2771,6 +3030,7 @@
                     case event.off_course:
                         srcImgEvent = "Images/event/point--exclamation.png";
                         titleEvent = "Off course";
+<<<<<<< HEAD
                         break;
 
                     case event.hr_high_alert:
@@ -2832,6 +3092,8 @@
                     case event.off_course:
                         srcImgEvent = "Images/event/point--exclamation.png";
                         titleEvent = "Off course";
+=======
+>>>>>>> origin/master
                         break;
 
                     case event.course_point:
@@ -2896,7 +3158,7 @@
             var plotLeft = this.multiChart.plotLeft;
             var renderer = this.multiChart.renderer;
 
-            var xaxis = this.multiChart.get(rawdataxAxis);
+            var xaxis = this.multiChart.get(xAxisID.rawdata);
 
             var width = xaxis.width;
             //var extremes = this.multiChart.xAxis[0].getExtremes();
@@ -4124,6 +4386,122 @@
 
                             self.masterVM.activityVM.activity.push(rawData); // Let knockoujs track new activities - calls knockouts push function on array
 
+                            
+
+                            // http://api.highcharts.com/highstock#Series.addPoint()
+                         
+                                                  // addPoint (Object options, [Boolean redraw], [Boolean shift], [Mixed animation])
+                            
+
+                            var sessionStartTime;
+
+
+                            if (rawData.session && rawData.session.total_training_effect)
+
+                                for (var sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+
+                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+
+                                        sessionStartTime = rawData.session.start_time[sessionNr];
+
+
+
+                                    if (typeof sessionStartTime === "undefined") {
+
+                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+
+                                        continue;
+
+                                    }
+
+
+                                    if (rawData.session.total_training_effect[sessionNr]) {
+
+                                        // TEseries.addPoint([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]], false, false, false);
+
+                                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
+
+                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
+
+                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+
+
+                                    }
+
+
+                                    
+                                }
+
+                            var weekOfYear, year, startMoment, weekMoment;
+
+                            if (rawData.session && rawData.session.total_calories)
+
+                                for ( sessionNr = 0; sessionNr < rawData.session.total_calories.length; sessionNr++) {
+
+                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+
+                                        sessionStartTime = rawData.session.start_time[sessionNr];
+
+
+
+                                    if (typeof sessionStartTime === "undefined") {
+
+                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+
+                                        continue;
+
+                                    }
+
+                                    if (rawData.session.total_calories[sessionNr]) {
+
+                                        //http://momentjs.com/docs/#/get-set/week/
+                                        startMoment = moment.utc(sessionStartTime);
+                                        year = startMoment.year();
+                                        weekOfYear = startMoment.week();
+                                        weekMoment = moment.utc().year(year).week(weekOfYear).day(1).hours(0).minutes(0).seconds(0).millisecond(0); // Week start on monday ...
+                                        if (typeof self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] !== "undefined")
+                                          self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] += rawData.session.total_calories[sessionNr];
+                                        else
+                                            self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] = rawData.session.total_calories[sessionNr];
+                                        // self.loggMesage("info", "Weekly calories week: ", weekOfYear, " year:", year, " calories: ", weeklyCalories[year + '_' + weekOfYear]);
+                                       // self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
+
+                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
+
+                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+                                    }
+
+
+                                }
+
+
+                            var te,avg_hr,kcal,sport;
+
+                            if (rawData.session && rawData.session.total_training_effect && rawData.session.total_calories && rawData.session.avg_heart_rate)
+
+                                for (sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+                                    te = rawData.session.total_training_effect[sessionNr];
+                                    avg_hr = rawData.session.avg_heart_rate[sessionNr];
+                                    kcal = rawData.session.total_calories[sessionNr];
+                                    sport = rawData.session.sport[sessionNr];
+                                    if (typeof te !== "undefined" && typeof avg_hr !== "undefined" && typeof kcal !== "undefined" && typeof sport !== "undefined")
+                                        switch (sport) {
+                                            case FITSport.running:
+                                                self.masterVM.activityVM.kcalVSHRVSTE_run.push([kcal, avg_hr, te]);
+                                                break;
+                                            case FITSport.cycling:
+                                                self.masterVM.activityVM.kcalVSHRVSTE_bike.push([kcal, avg_hr, te]);
+                                                break;
+                                            default:
+                                                self.masterVM.activityVM.kcalVSHRVSTE_other.push([kcal, avg_hr, te]);
+                                                break;
+                                        }
+                                }
+
+
+
                             // If not previous activity has been selected process this one...
                             if (self.masterVM.activityVM.selectedActivity() === undefined) {
                                 self.masterVM.activityVM.selectedActivity(self.masterVM.activityVM.activity().length - 1);
@@ -4131,6 +4509,7 @@
                             }
 
 
+<<<<<<< HEAD
 
 
                             // http://api.highcharts.com/highstock#Series.addPoint()
@@ -4181,6 +4560,8 @@
 
                                 }
 
+=======
+>>>>>>> origin/master
                             break;
 
                             // Sport settings (HR zones)

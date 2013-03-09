@@ -118,7 +118,11 @@ display  : flex;
     /*visibility : hidden;*/
     /*-webkit-flex : 5 1;*/
     /*float: left;*/
+<<<<<<< HEAD
     width: 100%;
+=======
+    /*width: 100%;*/
+>>>>>>> origin/master
     height: inherit;
 }
 
