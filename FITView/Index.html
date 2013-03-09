@@ -24,11 +24,17 @@
     <script src="Scripts/3party/modernizr-2.6.2.js"></script>
 
     <!-- <script src="Scripts/3party/highcharts.src.js"></script>-->
+<<<<<<< HEAD
 
     <script src="Scripts/3party/highcharts30beta.src.js"></script>
    <!-- <script src="Scripts/3party/highchart-more.src.js"></script>-->
     <script src="Scripts/3party/moment.js"></script>
 
+=======
+    <script src="Scripts/3party/highcharts30beta.src.js"></script>
+   <!-- <script src="Scripts/3party/highchart-more.src.js"></script>-->
+    <script src="Scripts/3party/moment.js"></script>
+>>>>>>> origin/master
 
     <script src="Scripts/FITCRCTimestampUtility.js"></script>
     <script src="Scripts/Messages/FITActivityFile.js"></script>
@@ -435,7 +441,10 @@
                             </a>
                             </li>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
                              <li><a href="#">
  	 	
                                 <div>
@@ -448,7 +457,10 @@
  	 	
                             </a>
  		
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
                             </li>
 
                         </ul>
@@ -1001,7 +1013,7 @@
                 <!-- ko with: activityVM -->
                 <div id="importedActivities">
 
-                    <div style="position: relative; top: 10px; left: 10px; font-weight:bold" data-bind="visible: activity().length === 0">Please import activities to explore</div>
+                    <div style="position: relative; top: 10px; left: 3px; font-weight:bold" data-bind="visible: activity().length === 0">Please import activities to explore</div>
 
                     <ul id="activityList" data-bind=" foreach: activity">
 
@@ -1009,7 +1021,16 @@
                         <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data)}">
                            <!-- http://stackoverflow.com/questions/9261296/any-good-techniques-to-debug-template-binding-faults-for-knockout-js -->
                            <!-- <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>-->
+<<<<<<< HEAD
                                 <div style="float: left; width: 200px;">
+=======
+                               
+                                    <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
+                                    <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" />
+                                    <!-- /ko -->
+                              
+                          
+>>>>>>> origin/master
                                     <a href="#" data-bind="click: $parent.showActivity.bind($index())">
                                         <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
                                         <span style="display: inline" data-bind="text : (new Date(record.timestamp[0])).toLocaleString(), attr: { title: 'Filename: '+ _headerInfo_.fitFile.name + ' Size: '+_headerInfo_.fitFile.size+ ' bytes'}"></span>
@@ -1061,6 +1082,7 @@
                                                     <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()]/1000).toFixed(1)+' km'"></span>
                                                     <!-- /ko -->
                                                     <!-- /ko -->
+<<<<<<< HEAD
 
                                                     <!-- ko if: typeof (avg_heart_rate) !== "undefined" || typeof (max_heart_rate) !== "undefined" -->
                                                     <img class="inlineIcon" alt="Heart rate" title="bpm" src="Images/heart.png" />
@@ -1069,6 +1091,16 @@
                                                     <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate[$index()]"></span>
                                                     <!-- /ko -->
 
+=======
+
+                                                    <!-- ko if: typeof (avg_heart_rate) !== "undefined" || typeof (max_heart_rate) !== "undefined" -->
+                                                    <img class="inlineIcon" alt="Heart rate" title="bpm" src="Images/heart.png" />
+
+                                                    <!-- ko if:  avg_heart_rate[$index()]  >= 0 -->
+                                                    <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate[$index()]"></span>
+                                                    <!-- /ko -->
+
+>>>>>>> origin/master
                                                     <!-- ko if: max_heart_rate[$index()] >= 0 -->
                                                     <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate[$index()]"></span>
                                                     <!-- /ko -->
@@ -1102,6 +1134,7 @@
 
                                         <!-- /ko -->
                                     </a>
+<<<<<<< HEAD
                                 </div>
 
                                 <div style="float: right; width: 100px">
@@ -1109,6 +1142,8 @@
                                     <img data-bind="attr: { src :  _staticGoogleMapSrc }" />
                                     <!-- /ko -->
                                 </div>
+=======
+>>>>>>> origin/master
                            
 
                         </li>
