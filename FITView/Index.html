@@ -977,7 +977,7 @@
                 <!-- ko with: activityVM -->
                 <div id="importedActivities">
 
-                    <div style="position: relative; top: 10px; left: 10px; font-weight:bold" data-bind="visible: activity().length === 0">Please import activities to explore</div>
+                    <div style="position: relative; top: 10px; left: 3px; font-weight:bold" data-bind="visible: activity().length === 0">Please import activities to explore</div>
 
                     <ul id="activityList" data-bind=" foreach: activity">
 
@@ -985,7 +985,12 @@
                         <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data)}">
                            <!-- http://stackoverflow.com/questions/9261296/any-good-techniques-to-debug-template-binding-faults-for-knockout-js -->
                            <!-- <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>-->
-                                <div style="float: left; width: 200px;">
+                               
+                                    <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
+                                    <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" />
+                                    <!-- /ko -->
+                              
+                          
                                     <a href="#" data-bind="click: $parent.showActivity.bind($index())">
                                         <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
                                         <span style="display: inline" data-bind="text : (new Date(record.timestamp[0])).toLocaleString(), attr: { title: 'Filename: '+ _headerInfo_.fitFile.name + ' Size: '+_headerInfo_.fitFile.size+ ' bytes'}"></span>
@@ -1078,13 +1083,6 @@
 
                                         <!-- /ko -->
                                     </a>
-                                </div>
-
-                                <div style="float: right; width: 100px">
-                                    <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
-                                    <img data-bind="attr: { src :  _staticGoogleMapSrc }" />
-                                    <!-- /ko -->
-                                </div>
                            
 
                         </li>

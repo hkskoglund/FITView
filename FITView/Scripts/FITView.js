@@ -3901,7 +3901,7 @@
 
                                 // Can use javascript escape(string) to make transferable URL
                                 rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString +
-                                    '&zoom=8&size=100x100&maptype=roadmap&sensor=false&scale=1' + '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
+                                    '&zoom=10&size=150x150&maptype=roadmap&sensor=false&scale=1' + '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
 
                                 //rawData._staticGoogleMapSrc = ko.observable('http://localhost:24021/Images/kcalorie.png');
                             }

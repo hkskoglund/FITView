@@ -26,12 +26,7 @@ white-space: nowrap;
     min-height: 270px;
 }
 
-#importedActivities {
-    overflow-y: scroll;
-    width: 30%;
-    height: 270px;
-    float: right;
-}
+
 
 #activityList {
     list-style-type: none;
@@ -40,9 +35,9 @@ white-space: nowrap;
 }
 
 .newActivity {
-    clear: both;
+    /*clear: both;*/
     /*border-bottom: 1px solid black;*/
-    height: 100px;
+    /*height: 100px;*/
     margin-bottom: 2px;
 }
 
@@ -54,14 +49,22 @@ white-space: nowrap;
     list-style-type: none;
     padding-left: 0px;
     -webkit-padding-start: 0px;
+    margin-bottom:15px;
+}
+
+#importedActivities {
+    overflow-y: scroll;
+    width: 20%;
+    height: 270px;
+    float: right;
 }
 
 #activityMap {
-    width: 49%;
+    width: 59%;
     height: 270px;
     /*height : 270px;*/
     /*background-color : white;*/
-    float: right;
+    float: left;
     /*display : none; */
 }
 
