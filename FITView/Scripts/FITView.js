@@ -6,16 +6,10 @@
 
     var self;
 
-<<<<<<< HEAD
+
     var ge; // Google earth plugin
 
-    var lapxAxisID = 'lapxAxis',
-        rawdataxAxis = 'rawdataxAxis',
-        combinedxAxisID = "combinedxAxis", // For speed vs HR
-        hrvxAxisID = "hrvxAxis",
-        TExAxisID = "TExAxis",
-        HRZonesxAxisID = "HRZonesxAxis";
-=======
+   
     var xAxisID = {
         lap: 'lapxAxis',
         rawdata: 'rawdataxAxis',
@@ -50,7 +44,7 @@
         kcalVSHRVSTE_other:'kcalHRTE_otherSeries',
     }
     
->>>>>>> origin/master
+
 
     // Based on info. in profile.xls from FIT SDK
     var FITSport = {
@@ -705,10 +699,7 @@
                 logging: ko.observable(false),
                 distanceOnXAxis: ko.observable(true),
                 TEIntensityPlotbands: ko.observable(false)
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -862,15 +853,11 @@
 
                     return;
 
-<<<<<<< HEAD
-                var yaxis = self.multiChart.get('TEYAxis');
 
-                var series = self.multiChart.get('TE');
-=======
                 var yaxis = self.multiChart.get(yAxisID.TE);
 
                 var series = self.multiChart.get(seriesID.TE);
->>>>>>> origin/master
+
 
                 if (TEIntensityPlotbands && series.visible) {
 
@@ -1350,13 +1337,9 @@
                         title: {
                             text: 'Heart rate'
                         },
-<<<<<<< HEAD
 
                         showEmpty : false
 
-=======
-                        showEmpty : false
->>>>>>> origin/master
 
                     });
 
@@ -1390,11 +1373,9 @@
 
                     seriesData[seriesID.speed] = speedSeriesData;
                     speedYAxisNr = yAxisNr;
-<<<<<<< HEAD
-                    speedSeries = { name: 'Speed', id: id, yAxis: yAxisNr++, data: seriesData[id], type: 'line', zIndex: 99, showEmpty : false };
-=======
+
                     speedSeries = { name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'line', zIndex: 99 };
->>>>>>> origin/master
+
                     seriesSetup.push(speedSeries);
 
                     yAxisOptions.push({
@@ -1404,10 +1385,7 @@
                         },
                         opposite: true,
                         showEmpty : false,
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/master
 
                     });
                 }
@@ -1440,11 +1418,9 @@
                     }
                     seriesData[seriesID.speedAvg] = speedAvgSeriesData;
                     //speedYAxisNr = yAxisNr;
-<<<<<<< HEAD
-                    speedAvgSeries = { name: 'SpeedAvg', id: id, yAxis: speedYAxisNr, data: seriesData[id], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99, showEmpty : false };
-=======
+
                     speedAvgSeries = { name: 'SpeedAvg', id: seriesID.speedAvg, yAxis: speedYAxisNr, data: seriesData[seriesID.speedAvg], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99 };
->>>>>>> origin/master
+
                     seriesSetup.push(speedAvgSeries);
                     //yAxisOptions.push({
                     //    gridLineWidth: 0,
@@ -1487,13 +1463,9 @@
                         title: {
                             text: 'Cadence'
                         },
-<<<<<<< HEAD
 
                         showEmpty : false,
 
-=======
-                        showEmpty : false,
->>>>>>> origin/master
 
                     });
 
@@ -1514,13 +1486,9 @@
                         title: {
                             text: 'Altitude'
                         },
-<<<<<<< HEAD
 
                         showEmpty : false
 
-=======
-                        showEmpty : false
->>>>>>> origin/master
 
                     });
                 }
@@ -1537,30 +1505,19 @@
                         title: {
                             text: 'Temperature'
                         },
-<<<<<<< HEAD
-
 
                         showEmpty : false
 
                     });
                 }
 
-                var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
-                if (speedVSHR) {
-                    id = 'speedVSHR';
-                    seriesData[id] = speedVSHR;
-                    seriesSetup.push({ name: 'Speed vs HR', id: id, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[id], type: 'scatter', visible: false, zIndex: 94});
-=======
-                        showEmpty : false
-                    });
-                }
-
+             
                 var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
                 if (speedVSHR) {
                     
                     seriesData[seriesID.speedVSHR] = speedVSHR;
                     seriesSetup.push({ name: 'Speed vs HR', id: seriesID.speedVSHR, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[seriesID.speedVSHR], type: 'scatter', visible: false, zIndex: 94 });
->>>>>>> origin/master
+
                 }
             }
            
@@ -1704,12 +1661,7 @@
             // TE history
             var TEyAxisNr = yAxisNr;
 
-<<<<<<< HEAD
-            seriesSetup.push({
 
-                name: 'TE', id: 'TE', xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
-
-=======
             function comparator (a,b) {
                     if (a[0] < b[0])
                         return -1;
@@ -1723,32 +1675,14 @@
             
             seriesSetup.push({
                 name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
->>>>>>> origin/master
+
                 events: {
                     // http://jsfiddle.net/jlbriggs/kqHzr/
                     // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
 
                     legendItemClick: function () {
                         
-<<<<<<< HEAD
-                        var yaxis = self.multiChart.get('TEYAxis');
-                        var TEseries = self.multiChart.get('TE');
 
-                        if (this.name === 'TE') {
-                            if (this.visible === false) { // Transition to visible series
-                                //yaxis.setExtremes(1, 5, true, false);
-
-                                //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort( function (a, b)
-                                {
-                                    if (a[0] < b[0])
-                                    return -1;
-                                    if (a[0] > b[0])
-                                    return 1;
-                                    // a must be equal to b
-                                    return 0;
-                                }, true));
-=======
                         var yaxis = this.chart.get(yAxisID.TE);
                         var TEseries = this.chart.get(seriesID.TE);
                         if (this.name === 'TE') {
@@ -1756,7 +1690,7 @@
                                 //yaxis.setExtremes(1, 5, true, false);
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
                                 TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true));
->>>>>>> origin/master
+
                                 
 
                                 if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
@@ -1803,66 +1737,16 @@
                 },
 
                 // Both min/max specified -> will force axis labels ON, even when showEmpty is false?? bug?
-<<<<<<< HEAD
 
                 // https://github.com/highslide-software/highcharts.com/issues/705
 
-=======
-                // https://github.com/highslide-software/highcharts.com/issues/705
->>>>>>> origin/master
                 //min: 1.0,
                 //max: 5.0,
                 min : 1.0,
 
                 showEmpty: false,
 
-<<<<<<< HEAD
-                id : 'TEYAxis'
-                
-            });
 
-
-
-
-//            var hrSeriesOptions = self.getHRZonesSeriesOptions(rawData, startTimestamp, endTimestamp);
-
-//            var HRlen = hrSeriesOptions.length
-//            var HRoption;
-//            for (var optionNr = 0; optionNr < HRlen; optionNr++) {
-//                HRoption = hrSeriesOptions[optionNr];
-//                HRoption.xAxis = 5;
-//                HRoption.yAxis = yAxisNr;
-//                HRoption.visible = false;
-//                seriesSetup.push(HRoption);
-//            }
-
-//            yAxisNr++;
-
-//            yAxisOptions.push({
-
-//                gridLineWidth: 0,
-
-//                opposite: true,
-
-//                title: {
-//                    text: 'Minutes'
-//                },
-
-//                showEmpty: false,
-
-//                id: 'HRZonesYAxis',
-//                min: 0,
-                
-//                stackLabels: {
-//                    enabled: false,
-//                    //style: {
-//                    //    fontWeight: 'bold',
-//                    //    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-//                    //}
-//                }
-
-//            });
-=======
                 id : yAxisID.TE
                 
             });
@@ -1972,7 +1856,7 @@
                 
             //});
            
->>>>>>> origin/master
+
 
             var chartOptions = {
                 animation: false,
@@ -2103,11 +1987,9 @@
 
             
 
-<<<<<<< HEAD
-            this.multiChart = new Highcharts.Chart({
-=======
+
             self.multiChart = new Highcharts.Chart({
->>>>>>> origin/master
+
                 chart: chartOptions,
                 //height : 700,
 
@@ -2116,12 +1998,10 @@
                 },
 
                 xAxis: [{
-<<<<<<< HEAD
-                    id: rawdataxAxis,
-=======
+
                     
                     id: xAxisID.rawdata,
->>>>>>> origin/master
+
                     type: 'datetime', // datetime
                     events: {
                         afterSetExtremes: function (event) {
@@ -2186,15 +2066,7 @@
                     id: xAxisID.lap,
                     categories: lap.categories // for each lap avg/max speed/HR
                 },
-<<<<<<< HEAD
 
-                { id: hrvxAxisID },
-                { id: TExAxisID, type: 'datetime' },
-                {
-                    id: HRZonesxAxisID,
-                    categories: ['HR Zones']
-                }],
-=======
                 {
                     id: xAxisID.speedVSHR
                 },
@@ -2215,7 +2087,7 @@
                     id: xAxisID.caloriesVSHRVSTE
                 }
                 ],
->>>>>>> origin/master
+
 
                 yAxis: yAxisOptions,
 
@@ -2363,13 +2235,9 @@
 
                         }
 
-<<<<<<< HEAD
 
                     },
 
-=======
-                    },
->>>>>>> origin/master
                     
                 },
 
@@ -2821,20 +2689,15 @@
                 var ev_group = rawdata.event.event_group[eventNr];
                 var ev_data = rawdata.event.data[eventNr];
 
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
+
 
                 srcImgEvent = "Images/event/unknown.png";
                
                 if (ev)
                     titleEvent = "Event: " + ev.toString();
                 else
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
                     titleEvent = "Event: undefined";
 
                 if (ev_type)
@@ -2842,10 +2705,7 @@
                 else
                     titleEvent += " type: undefined";
 
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
                 if (ev_group)
                     titleEvent += " group: " + ev_group.toString();
                 else
@@ -3030,7 +2890,7 @@
                     case event.off_course:
                         srcImgEvent = "Images/event/point--exclamation.png";
                         titleEvent = "Off course";
-<<<<<<< HEAD
+
                         break;
 
                     case event.hr_high_alert:
@@ -3092,8 +2952,8 @@
                     case event.off_course:
                         srcImgEvent = "Images/event/point--exclamation.png";
                         titleEvent = "Off course";
-=======
->>>>>>> origin/master
+
+
                         break;
 
                     case event.course_point:
@@ -4509,7 +4369,7 @@
                             }
 
 
-<<<<<<< HEAD
+
 
 
                             // http://api.highcharts.com/highstock#Series.addPoint()
@@ -4560,8 +4420,7 @@
 
                                 }
 
-=======
->>>>>>> origin/master
+
                             break;
 
                             // Sport settings (HR zones)
