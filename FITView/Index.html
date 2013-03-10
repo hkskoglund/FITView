@@ -985,15 +985,14 @@
                         <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data)}">
                            <!-- http://stackoverflow.com/questions/9261296/any-good-techniques-to-debug-template-binding-faults-for-knockout-js -->
                            <!-- <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>-->
-                               
+                                <a href="#" data-bind="click: $parent.showActivity.bind($index())">
+
                                     <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
                                     <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" />
                                     <!-- /ko -->
-                              
-                          
-                                    <a href="#" data-bind="click: $parent.showActivity.bind($index())">
+                                   
                                         <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
-                                        <span style="display: inline" data-bind="text : (new Date(record.timestamp[0])).toLocaleString(), attr: { title: 'Filename: '+ _headerInfo_.fitFile.name + ' Size: '+_headerInfo_.fitFile.size+ ' bytes'}"></span>
+                                        <span  data-bind="text : (new Date(record.timestamp[0])).toLocaleString(), attr: { title: 'Filename: '+ _headerInfo_.fitFile.name + ' Size: '+_headerInfo_.fitFile.size+ ' bytes'}"></span>
                                         <!-- /ko -->
 
                                         <!-- ko if: typeof (record) === "undefined" -->
@@ -1070,8 +1069,8 @@
 
 
                                                     <!-- ko if: typeof (total_training_effect) !== "undefined" &&  total_training_effect[$index()] >= 1 -->
-                                                    TE
-                                                         <span data-bind="text: total_training_effect[$index()]"></span>
+                                                    <span title="Training Effect">TE</span>
+                                                         <span data-bind="text: total_training_effect[$index()]" title="Training Effect"></span>
 
                                                     <!-- meter tag ignored in  IE 10, but works in Chrome -->
                                                     <meter title="Training effect" style="padding-left: 5px; padding-bottom: 6px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect[$index()]"></meter>

@@ -1900,17 +1900,17 @@
                         //    console.log("setExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                         //}
                     },
-                    //tickPositions: self.masterVM.tickPositions,
-                    tickPositioner: function () {
-               
-                        // Copy array of tickpositions -> due to Highchart library for some reason deletes labels when zooming out again...
-                        var tickPositions = [];
-                        var len = self.masterVM.tickPositions.length;
-                        for (var posNr=0; posNr < len; posNr++)
-                            tickPositions.push(self.masterVM.tickPositions[posNr]);
+                    tickPositions: self.masterVM.tickPositions,
+                    //tickPositioner: function () {
+                    // // https://github.com/highslide-software/highcharts.com/issues/1565
+                    //    // Copy array of tickpositions -> due to Highchart library for some reason deletes labels when zooming out again...
+                    //    var tickPositions = [];
+                    //    var len = self.masterVM.tickPositions.length;
+                    //    for (var posNr=0; posNr < len; posNr++)
+                    //        tickPositions.push(self.masterVM.tickPositions[posNr]);
 
-                        return tickPositions;
-                    },
+                    //    return tickPositions;
+                    //},
                     //dateTimeLabelFormats: {
                     //    day: '%e of %b'
                     //},
