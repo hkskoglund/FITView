@@ -11,7 +11,7 @@
     <script src="Scripts/3party/modernizr-2.6.2.js"></script>
     <!-- <script src="Scripts/3party/highcharts.src.js"></script>-->
     <script src="Scripts/3party/highcharts30beta.src.js"></script>
-   <!-- <script src="Scripts/3party/highchart-more.src.js"></script>-->
+  <!--  <script src="Scripts/3party/highchart-more.src.js"></script>-->
     <script src="Scripts/3party/moment.js"></script>
 
     <script src="Scripts/FITCRCTimestampUtility.js"></script>
@@ -365,14 +365,14 @@
                             </a>
                             </li>
 
-                            <!--<li><a href="#">
+                            <li><a href="#">
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showHeaderInfo" />
                                     FIT header info.
                                 </div>
                             </a>
-                            </li>-->
+                            </li>
 
                             <li><a href="#">
 
@@ -487,8 +487,10 @@
 
             <!-- <div data-bind="text: ko.toJSON($root.activityVM)"></div>-->
 
-            <!-- ko with: headerInfoVM -->
+            
 
+            <!-- ko with: headerInfoVM -->
+            
             <!-- <div id="divHeartRateZones" style="width: 30%">
                 <h1 style="font-size: larger; text-align: center">Heart rate zones</h1>
                 <ul style="list-style : none">
@@ -509,8 +511,8 @@
 
             <div id="divHeaderInfo" data-bind="visible: $parent.settingsVM.showHeaderInfo">
                 Header info: 
-                <span title="File name" data-bind="text: fileName"></span>
-                <span title="File size" data-bind="text: fileSize"></span>
+              <!--  <span title="File name" data-bind="text: fileName"></span>
+                <span title="File size" data-bind="text: fileSize"></span> -->
                 <span title="Data type" data-bind="text: dataType"></span>
                 <span title="Header size" data-bind="text: headerSize"></span>
                 <span title="Data size" data-bind="text: dataSize"></span>

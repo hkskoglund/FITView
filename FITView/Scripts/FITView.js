@@ -193,7 +193,7 @@
 
                             while (nextTimestamp - timestamp <= avgSampleTime && nextTimestamp <= endTimestamp && nr < len) {
 
-                                 val = values[nr];
+                                val = values[nr];
 
                                 if (val !== undefined) {
                                     localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(timestamp);
@@ -819,7 +819,7 @@
                 if (typeof window.navigator.msSaveBlob !== "undefined") {
                     window.navigator.msSaveBlob(self.masterVM.exportVM.csv.blob, "export.csv");
                 } else
-                  return true;
+                    return true;
             };
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
@@ -962,7 +962,7 @@
                         strokeWeight: 1
                     }, "session");
 
-               self.showHRZones(VM.rawData, start_time, timestamp);
+                self.showHRZones(VM.rawData, start_time, timestamp);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
@@ -977,6 +977,7 @@
                 var index = this;
                 var VM = self.masterVM.activityVM;
                 var rawData = VM.activity()[index];  // Takes the index element of an observable array which is an observable with value an array -> tracks elements in array not properties
+                
                 VM.selectedActivity(index);
                 self.processActivityFile(rawData);
             };
@@ -1576,12 +1577,12 @@
             var TEyAxisNr = yAxisNr;
 
             function comparator (a,b) {
-                    if (a[0] < b[0])
-                        return -1;
-                    if (a[0] > b[0])
-                        return 1;
-                    // a must be equal to b
-                    return 0;
+                if (a[0] < b[0])
+                    return -1;
+                if (a[0] > b[0])
+                    return 1;
+                // a must be equal to b
+                return 0;
              
             }
             
@@ -2332,10 +2333,10 @@
                             titleDeviceInfo = "FR110";
                             break;
 
-                        //case garmin_product.fr210:
-                        //    srcImgDeviceInfo = "Images/deviceinfo/garmin/fr210.jpg";
-                        //    titleDeviceInfo = "FR210";
-                        //    break;
+                            //case garmin_product.fr210:
+                            //    srcImgDeviceInfo = "Images/deviceinfo/garmin/fr210.jpg";
+                            //    titleDeviceInfo = "FR210";
+                            //    break;
 
                         case garmin_product.fr70:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/fr70.jpg";
@@ -2369,10 +2370,10 @@
                             titleDeviceInfo = "EDGE 200";
                             break;
 
-                         default:
-                             srcImgDeviceInfo = "Images/deviceinfo/unknown.jpg";
-                             titleDeviceInfo = "Product :" + product.toString();
-                             break;
+                        default:
+                            srcImgDeviceInfo = "Images/deviceinfo/unknown.jpg";
+                            titleDeviceInfo = "Product :" + product.toString();
+                            break;
                     }
                 }
 
@@ -2699,18 +2700,18 @@
                         if (self.masterVM.settingsVM.forceSpeedKMprH())
                             ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
                         else
-                        switch (self.masterVM.speedMode()) {
-                            case FITSport.running: // Running
-                                ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
-                                break;
-                            case FITSport.cycling: // Cycling
-                                ev_data_str =  FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
-                                break;
+                            switch (self.masterVM.speedMode()) {
+                                case FITSport.running: // Running
+                                    ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
+                                    break;
+                                case FITSport.cycling: // Cycling
+                                    ev_data_str =  FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                    break;
 
-                            default:
-                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
-                                break;
-                        }
+                                default:
+                                    ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                    break;
+                            }
                         titleEvent = "Speed high" + ' (' + ev_data_str + ')';
                         break;
 
@@ -2721,18 +2722,18 @@
                         if (self.masterVM.settingsVM.forceSpeedKMprH())
                             ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
                         else
-                        switch (self.masterVM.speedMode()) {
-                            case FITSport.running: // Running
-                                ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
-                                break;
-                            case FITSport.cycling: // Cycling
-                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
-                                break;
+                            switch (self.masterVM.speedMode()) {
+                                case FITSport.running: // Running
+                                    ev_data_str = FITViewUIConverter.formatToMMSS(FITViewUIConverter.convertSpeedToMinPrKM(ev_data));
+                                    break;
+                                case FITSport.cycling: // Cycling
+                                    ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                    break;
 
-                            default:
-                                ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
-                                break;
-                        }
+                                default:
+                                    ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
+                                    break;
+                            }
                         titleEvent = "Speed low" + ' (' + ev_data_str + ')';
                         break;
 
@@ -3082,7 +3083,7 @@
                     }
 
                     if (timeInZoneMillisec > maxTimeDifference) {
-                       self.loggMessage("warn","Greater than ", maxTimeDifference, "ms difference between timestamps, skipped (not calculated in HR zones)");
+                        self.loggMessage("warn","Greater than ", maxTimeDifference, "ms difference between timestamps, skipped (not calculated in HR zones)");
                         continue;
                     }
 
@@ -3529,6 +3530,9 @@
 
         // Handles a sport setting file - info about heart rate/speed/power zones
         processSportSettingFile: function (rawData) {
+
+            self.copyHeaderInfoToViewModel(rawData);
+
             // From profile.xls
             var hr_zone_calc = {
                 custom: 0,
@@ -3591,7 +3595,7 @@
             var type = self.masterVM.exportVM.csv.selectedType();
             var header = self.masterVM.exportVM.csv.header();
             var scale = self.masterVM.exportVM.csv.scale();
-           // var headerTitle = self.masterVM.exportVM.headerTitle();
+            // var headerTitle = self.masterVM.exportVM.headerTitle();
 
 
             var headerStr ;
@@ -3657,6 +3661,8 @@
             self.resetLapSessionViewModel();
             self.resetTimestampIndexCache(); // Tries to speed up lookup of timestamps
 
+            self.copyHeaderInfoToViewModel(rawData);
+
             var counter = rawData._msgCounter_;
 
             self.intepretMessageCounters(counter, FITFileType.activityfile);
@@ -3700,7 +3706,7 @@
             };
 
             if (rawData.session === undefined)
-               rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
+                rawData.session = FITUtil.restoreSession(rawData); // Maybe do more work on this, but not prioritized
 
             self.masterVM.sessionVM.setRawdata(self, rawData);
 
@@ -3833,6 +3839,24 @@
             };
 
         },
+
+        copyHeaderInfoToViewModel: function (rawdata)
+        {
+                var headerInfo = rawdata._headerInfo_;
+
+                // Copy to view model
+                self.masterVM.headerInfoVM.fileName(headerInfo.fitFile.name);
+                self.masterVM.headerInfoVM.fileSize(headerInfo.fitFile.size);
+                self.masterVM.headerInfoVM.protocolVersion(headerInfo.protocolVersionMajor + "." + headerInfo.protocolVersionMinor);
+
+                self.masterVM.headerInfoVM.profileVersion(headerInfo.profileVersionMajor + "." + headerInfo.profileVersionMinor);
+                self.masterVM.headerInfoVM.dataType(headerInfo.dataType);
+                self.masterVM.headerInfoVM.headerCRC(headerInfo.headerCRC);
+                self.masterVM.headerInfoVM.verifyHeaderCRC(headerInfo.verifyHeaderCRC);
+                self.masterVM.headerInfoVM.headerSize(headerInfo.headerSize);
+                self.masterVM.headerInfoVM.dataSize(headerInfo.dataSize);
+                self.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
+},
 
         // Communication with import file worker thread
         onFITManagerMsg: function (e) {
