@@ -53,7 +53,7 @@ white-space: nowrap;
 }
 
 #importedActivities {
-    overflow-y: scroll;
+    overflow-y:scroll; /* Gives us a scroll bar at right for vertical scrolling*/
     width: 20%;
     height: 270px;
     float: right;
