@@ -362,3 +362,7 @@ ul#sessionList {
     display: none;
     /*float : right;*/
 }
+
+.HeaderLabel {
+  margin-right:5px;
+}

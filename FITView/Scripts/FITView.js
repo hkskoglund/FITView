@@ -3785,11 +3785,13 @@
         {
             // In case recording is started before GPS signal is aquired, no start_position is written in rawdata
 
-            function restoreStartPos(root,property,value) {
-                if (root) {  
-                    root[property] = [];
-                    root[property].push(value);
-                }
+            function restoreStartPos(root,sublevel,property,value) {
+                if (typeof root[sublevel] === "undefined")
+                    root[sublevel] = {};
+
+                root[sublevel][property] = [];
+                root[sublevel][property].push(value);
+              
             }
 
             // Steps; first check session, then lap, then record head
@@ -3803,17 +3805,18 @@
                 long = rawdata.session.start_position_long[0];
 
             // Lap
-            if (typeof (lat) === "undefined" && rawdata.lap && rawdata.lap.start_position_lat && rawdata.session.start_position_lat.length >= 1) {
+            if (typeof (lat) === "undefined" && rawdata.lap && rawdata.lap.start_position_lat ) {
 
                 lat = rawdata.lap.start_position_lat[0];
-                restoreStartPos(rawdata.session, "start_position_lat", lat);
+                
+               // restoreStartPos(rawdata,"session", "start_position_lat", lat);
                 
             }
 
-            if (typeof (long) === "undefined" && rawdata.lap && rawdata.lap.start_position_long && rawdata.session.start_position_long.length >= 1) {
+            if (typeof (long) === "undefined" && rawdata.lap && rawdata.lap.start_position_long) {
 
                 long = rawdata.lap.start_position_long[0];
-                restoreStartPos(rawdata.session, "start_position_long", long);
+                //restoreStartPos(rawdata,"session", "start_position_long", long);
             }
 
             // Record
@@ -3827,10 +3830,10 @@
                         break;
                 }
 
-                restoreStartPos(rawdata.session, "start_position_lat", lat);
-                restoreStartPos(rawdata.session, "start_position_long", long);
-                restoreStartPos(rawdata.lap, "start_position_lat", lat);
-                restoreStartPos(rawdata.lap, "start_position_long", long);
+                //restoreStartPos(rawdata,"session", "start_position_lat", lat);
+                //restoreStartPos(rawdata,"session", "start_position_long", long);
+                //restoreStartPos(rawdata,"lap", "start_position_lat", lat);
+                //restoreStartPos(rawdata,"lap", "start_position_long", long);
             }
 
             return {
