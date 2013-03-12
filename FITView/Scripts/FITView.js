@@ -37,7 +37,12 @@
         weeklyCalories: 'weeklyCaloriesSeries',
         kcalVSHRVSTE_run: 'kcalHRTE_runSeries',
         kcalVSHRVSTE_bike: 'kcalHRTE_bikeSeries',
-        kcalVSHRVSTE_other:'kcalHRTE_otherSeries',
+        kcalVSHRVSTE_other: 'kcalHRTE_otherSeries',
+        LAP_avg_speed: 'LAP_avg_speed',
+        LAP_max_speed: 'LAP_max_speed',
+        LAP_avg_heart_rate: 'LAP_avg_heart_rate',
+        LAP_max_heart_rate: 'LAP_max_heart_rate',
+
     }
     
 
@@ -1069,6 +1074,7 @@
             var rawData = self.masterVM.sessionVM.rawData;
             var timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
             var startTimestamp, endTimestamp;
+            var xAxis;
 
             var updatePoint = function (data, property, converter) {
                 for (var pointNr = 0; pointNr < data.length; pointNr++)
@@ -1077,12 +1083,13 @@
             };
 
             if (self.multiChart) {
-                speedSeries = self.multiChart.get('speedseries');
-                speedAvgSeries = self.multiChart.get('speedavgseries');
-                lapAvgSpeedSeries = self.multiChart.get('LAP_avg_speed');
-                lapMaxSpeedSeries = self.multiChart.get('LAP_max_speed');
-                startTimestamp = self.multiChart.xAxis[0].min - timezoneDiff;
-                endTimestamp = self.multiChart.xAxis[0].max - timezoneDiff;
+                speedSeries = self.multiChart.get(seriesID.speed);
+                speedAvgSeries = self.multiChart.get(seriesID.speedAvg);
+                lapAvgSpeedSeries = self.multiChart.get(seriesID.LAP_avg_speed);
+                lapMaxSpeedSeries = self.multiChart.get(seriesID.LAP_max_speed);
+                xAxis = self.multiChart.get(xAxisID.rawdata);
+                startTimestamp = xAxis.min - timezoneDiff;
+                endTimestamp = xAxis.max - timezoneDiff;
 
             }
 
@@ -1606,7 +1613,7 @@
                         if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
                             self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
                         else
-                            self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr]);
+                            self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
 
                         self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
                     }
@@ -1633,12 +1640,14 @@
                                         case event_type.stop_disable_all:
 
                                             eventIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.event.timestamp[eventNr]);
-                                            if (eventIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[eventIndexTimestamp] >=0)
+                                            if (eventIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[eventIndexTimestamp] >= 10) { // Will not show labels for distance < 10m -> will in most cases skip timer event START timestamp
                                                 self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr])] = rawData.record.distance[eventIndexTimestamp];
+                                                self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]));
+                                            }
                                             else
-                                                self.loggMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr]);
+                                                self.loggMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.event.timestamp[eventNr]));
 
-                                            self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]));
+                                            
 
                                             break;
 
@@ -1680,16 +1689,16 @@
                 }
 
                 if (lap.avg_speed && lap.avg_speed.length > 0) 
-                    seriesSetup.push({ name: "Avg. speed", id: 'LAP_avg_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: false, zIndex: 1 });
+                    seriesSetup.push({ name: "Avg. speed", id: seriesID.LAP_avg_speed, xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: false, zIndex: 1 });
 
                 if (lap.max_speed && lap.max_speed.length > 0)
-                    seriesSetup.push({ name: "Max. speed", id: 'LAP_max_speed', xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
+                    seriesSetup.push({ name: "Max. speed", id: seriesID.LAP_max_speed, xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
 
                 if (lap.avg_heart_rate && lap.avg_heart_rate.length > 0)
-                    seriesSetup.push({ name: "Avg. HR", id: 'LAP_avg_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
+                    seriesSetup.push({ name: "Avg. HR", id: seriesID.LAP_avg_heart_rate, xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
 
                 if (lap.max_heart_rate && lap.max_heart_rate.length > 0)
-                    seriesSetup.push({ name: "Max. HR", id: 'LAP max_heart_rate', xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
+                    seriesSetup.push({ name: "Max. HR", id: seriesID.LAP_max_heart_rate, xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
             }
             else
                 self.loggMessage("warn","No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
@@ -1724,7 +1733,6 @@
                 return 0;
              
             }
-            
             
             seriesSetup.push({
                 name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
@@ -2078,7 +2086,10 @@
                             if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value] >= 0 && elapsedTime >= 0) {
                                 distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
                                 if (distanceKm < 1)
-                                    return self.masterVM.distanceAtTick[this.value] + ' m' + '<br/>' + toHHMMSS;
+                                    if (distanceKm === 0) // i.e indoor cycling without cadence/speed sensor speed and distance is 0
+                                        return toHHMMSS;
+                                     else
+                                        return self.masterVM.distanceAtTick[this.value] + ' m' + '<br/>' + toHHMMSS;
                                 else {
                                     var label = distanceKm.toFixed(2);
 
@@ -2089,7 +2100,7 @@
                                 }
                             }
                             else
-                                return Highcharts.dateFormat('%H:%M:%S', this.value);
+                                return Highcharts.dateFormat('%H:%M:%S', this.value) + '<br/>' + toHHMMSS;
                         }
                     },
                     //plotLines: lapLinesConfig
