@@ -70,6 +70,51 @@
         session_end: 7
     };
 
+    var event = {
+        timer: 0, // Group 0. Start / stop_all
+        workout: 3, //  start / stop
+        workout_step: 4, //  Start at beginning of workout. Stop at end of each step.
+        power_down: 5, // stop_all group 0
+        power_up: 6, //  stop_all group 0
+        off_course: 7, // start / stop group 0
+        session: 8, // Stop at end of each session.
+        lap: 9, //  Stop at end of each lap.
+        course_point: 10, // marker.
+        battery: 11, // marker.
+        virtual_partner_pace: 12, //  Group 1. Start at beginning of activity if VP enabled, when VP pace is changed during activity or VP enabled mid activity. stop_disable when VP disabled.
+        hr_high_alert: 13, // Group 0. Start / stop when in alert condition.
+        hr_low_alert: 14, //  Group 0. Start / stop when in alert condition.
+        speed_high_alert: 15, // Group 0. Start / stop when in alert condition.
+        speed_low_alert: 16, //  Group 0. Start / stop when in alert condition.
+        cad_high_alert: 17, //    Group 0. Start / stop when in alert condition.
+        cad_low_alert: 18, //   Group 0. Start / stop when in alert condition.
+        power_high_alert: 19, //  Group 0. Start / stop when in alert condition.
+        power_low_alert: 20, //   Group 0. Start / stop when in alert condition.
+        recovery_hr: 21, //  marker.
+        battery_low: 22, // marker.
+        time_duration_alert: 23, //    Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+        distance_duration_alert: 24, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+        calorie_duration_alert: 25, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+        activity: 26, // Group 1.. Stop at end of activity.
+        fitness_equipment: 27, // marker.
+        length: 28 // Stop at end of each length.
+    };
+
+    var event_type = {
+        start: 0,
+        stop: 1,
+        consecutive_depreciated: 2,
+        marker: 3,
+        stop_all: 4,
+        begin_depreciated: 5,
+        end_depreciated: 6,
+        end_all_depreciated: 7,
+        stop_disable: 8,
+        stop_disable_all: 9
+    };
+
+
+
     var FITFileType = {
 
         sportsettingfile : 3,
@@ -1123,6 +1168,32 @@
             var lapNr;
             var len;
 
+            function getPlotLineConfiguration(dashStyleArg,lapLabelArg,value) {
+                return {
+                    id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
+
+                    dashStyle: dashStyleArg,
+                    //color: '#960000',
+                    color: 'lightgray',
+                    width: 1,
+                    label: {
+
+                        rotation: 0,
+                        text: lapLabelArg,
+                        textAlign: 'right',
+                        verticalAlign: 'top',
+                        x: -5,
+                        y: 15,
+                        style: {
+                            fontSize: '9px',
+                            fontWeight: 'bold'
+                        }
+
+                    },
+                    value: value
+                }
+            };
+
             if (rawData.lap) {
                 len = rawData.lap.timestamp.length;
                 for (lapNr = 0 ; lapNr < len; lapNr++) {
@@ -1164,29 +1235,7 @@
                     } else
                         self.loggMessage("warn","No timestamps for lap in rawdata to lay out lap lines");
 
-                    lapLinesConfig[lapNr] = {
-                        id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
-
-                        dashStyle: 'Dash',
-                        //color: '#960000',
-                        color: 'lightgray',
-                        width: 1,
-                        label: {
-
-                            rotation: 0,
-                            text: lapLabel,
-                            textAlign: 'right',
-                            verticalAlign: 'top',
-                            x: -5,
-                            y: 15,
-                            style: {
-                                fontSize: '9px',
-                                fontWeight: 'bold'
-                            }
-
-                        },
-                        value: FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])
-                    };
+                    lapLinesConfig[lapNr] = getPlotLineConfiguration('Dash',lapLabel,FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
                 }
             }
 
@@ -1194,6 +1243,46 @@
                 axis.addPlotLine(lapLinesConfig[lapNr]);
             }
 
+            // Last lap seems to get registered when user press RESET, we also want to show the time when session ended at STOP event
+            // Where should we pick the time value for pressing STOP -> one possible strategy would be to read the event time,
+            // another option is to use the last registered speed time registered in rawdata. The last option would be to take the
+            // session timestamp (end of session time)
+
+            //if (rawData.session) {
+            //    var lenSession = rawData.session.timestamp.length;
+            //    lapLabel = "TEST";
+            //    for (var sessionNr = 0 ; sessionNr < lenSession; sessionNr++)
+            //        if (rawData.session.timestamp && rawData.session.timestamp[sessionNr])
+            //            axis.addPlotLine(getPlotLineConfiguration(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.session.timestamp[sessionNr])));
+            //}
+
+            if (rawData.event) {
+                var ev, ev_type;
+                var lenEvent = rawData.event.timestamp.length;
+                for (var eventNr = 0; eventNr < lenEvent; eventNr++) {
+                    ev = rawData.event.event[eventNr];
+                    ev_type = rawData.event.event_type[eventNr];
+                    if ((rawData.event.timestamp && rawData.event.timestamp[eventNr]))
+                        switch (ev) {
+
+                            case event.timer:
+
+                                switch (ev_type) {
+
+                                    case event_type.start: // Should we plot the first START or not?
+                                    case event_type.stop:
+                                    case event_type.stop_all:
+                                    case event_type.stop_disable:
+                                    case event_type.stop_disable_all:
+                                        axis.addPlotLine(getPlotLineConfiguration('Solid',null,FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr])));
+                                        break;
+
+                                }
+
+                                break;
+                        }
+                }
+            }
         },
 
         // Handles display of measurements in several graphs with multiple axis
@@ -1449,6 +1538,15 @@
             self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
             var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
 
+            function comparator(a, b) {
+                if (a < b)
+                    return -1;
+                if (a > b)
+                    return 1;
+                // a must be equal to b
+                return 0;
+
+            };
             
             // Setup lap categories
             if (rawData.lap) {
@@ -1505,7 +1603,7 @@
                         }
 
                         lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
-                        if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp])
+                        if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
                             self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
                         else
                             self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr]);
@@ -1513,6 +1611,47 @@
                         self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
                     }
                 }
+
+
+                if (rawData.event) {
+                    var ev, ev_type, eventIndexTimestamp;
+                    var lenEvent = rawData.event.timestamp.length;
+                    for (var eventNr = 0; eventNr < lenEvent; eventNr++) {
+                        ev = rawData.event.event[eventNr];
+                        ev_type = rawData.event.event_type[eventNr];
+                        if ((rawData.event.timestamp && rawData.event.timestamp[eventNr]))
+                            switch (ev) {
+
+                                case event.timer:
+
+                                    switch (ev_type) {
+
+                                        case event_type.start: 
+                                        case event_type.stop:
+                                        case event_type.stop_all:
+                                        case event_type.stop_disable:
+                                        case event_type.stop_disable_all:
+
+                                            eventIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.event.timestamp[eventNr]);
+                                            if (eventIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[eventIndexTimestamp] >=0)
+                                                self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr])] = rawData.record.distance[eventIndexTimestamp];
+                                            else
+                                                self.loggMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr]);
+
+                                            self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]));
+
+                                            break;
+
+                                    }
+
+                                    break;
+                            }
+                    }
+                }
+
+                // Sort tickpositions
+
+                self.masterVM.tickPositions.sort(comparator);
 
                 // in case of empty rawdata, but lap data available
                 if (typeof (heartRateYAxisNr) === "undefined" && ((lap.avg_heart_rate && lap.avg_heart_rate.length > 0) || (lap.max_heart_rate && lap.max_heart_rate.length > 0))) {
@@ -1771,6 +1910,16 @@
 
                 // Allow zooming
                 zoomType: 'xy',
+                resetZoomButton: {
+                    position: {
+                        // align: 'right', // by default
+                        //verticalAlign: 'bottom', 
+                        x: 50,
+                        y: 50
+                        //relativeTo: 'chart'
+                    }
+                },
+            
                 events: {
                     redraw: function () {
 
@@ -1882,6 +2031,8 @@
                 xAxis: [{
                     
                     id: xAxisID.rawdata,
+                    minPadding: 0.015,  // Allow some space at end of axis to avoid some potential cluttering 
+                    maxPadding: 0.05,
                     type: 'datetime', // datetime
                     events: {
                         afterSetExtremes: function (event) {
@@ -1919,10 +2070,12 @@
                         formatter: function () {
                             // return Highcharts.dateFormat('%H:%M:%S', this.value);
                             var distanceKm;
-                            var elapsedTime = (this.value - FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)) / 1000;
+                            var localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp);
+                            var elapsedTime = (this.value - localTimestamp) / 1000;
+                            
                             var toHHMMSS = FITViewUIConverter.formatToHHMMSS(elapsedTime);
 
-                            if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value]) {
+                            if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value] >= 0 && elapsedTime >= 0) {
                                 distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
                                 if (distanceKm < 1)
                                     return self.masterVM.distanceAtTick[this.value] + ' m' + '<br/>' + toHHMMSS;
@@ -2441,53 +2594,7 @@
         },
 
         showEvents: function (rawdata) {
-            var event_type = {
-                start: 0,
-                stop: 1,
-                consecutive_depreciated: 2,
-                marker: 3,
-                stop_all: 4,
-                begin_depreciated: 5,
-                end_depreciated: 6,
-                end_all_depreciated: 7,
-                stop_disable: 8,
-                stop_disable_all: 9
-            };
-
-
-            var event = {
-                timer: 0, // Group 0. Start / stop_all
-                workout: 3, //  start / stop
-                workout_step: 4, //  Start at beginning of workout. Stop at end of each step.
-                power_down: 5, // stop_all group 0
-                power_up: 6, //  stop_all group 0
-                off_course: 7, // start / stop group 0
-                session: 8, // Stop at end of each session.
-                lap: 9, //  Stop at end of each lap.
-                course_point: 10, // marker.
-                battery: 11, // marker.
-                virtual_partner_pace: 12, //  Group 1. Start at beginning of activity if VP enabled, when VP pace is changed during activity or VP enabled mid activity. stop_disable when VP disabled.
-                hr_high_alert: 13, // Group 0. Start / stop when in alert condition.
-                hr_low_alert: 14, //  Group 0. Start / stop when in alert condition.
-                speed_high_alert: 15, // Group 0. Start / stop when in alert condition.
-                speed_low_alert: 16, //  Group 0. Start / stop when in alert condition.
-                cad_high_alert: 17, //    Group 0. Start / stop when in alert condition.
-                cad_low_alert: 18, //   Group 0. Start / stop when in alert condition.
-                power_high_alert: 19, //  Group 0. Start / stop when in alert condition.
-                power_low_alert: 20, //   Group 0. Start / stop when in alert condition.
-                recovery_hr: 21, //  marker.
-                battery_low: 22, // marker.
-                time_duration_alert: 23, //    Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
-                distance_duration_alert: 24, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
-                calorie_duration_alert: 25, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
-                activity: 26, // Group 1.. Stop at end of activity.
-                fitness_equipment: 27, // marker.
-                length: 28 // Stop at end of each length.
-            };
-
-
-
-
+            
             if (FITUtil.isUndefined(rawdata)) {
                 self.loggMessage("error","No rawdata available");
                 return;
