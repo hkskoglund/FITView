@@ -3016,7 +3016,7 @@
                 else
                     this.masterVM.freeYPOS[timestamp] = 0;
 
-                if (rawdata.lap.lap_triger) {
+                if (rawdata.lap.lap_trigger) {
                     switch (rawdata.lap.lap_trigger[lapNr]) {
                         case lap_trigger.manual:
                             srcImg = "Images/laptrigger/manual.png";
