@@ -16,7 +16,7 @@ Supports
   - multisport files (swimming not tested much...may lack functionality)
   - lap triggers (i.e auto lap at distance)
   - events (i.e start, stop)
-  - device info (device, firmware version)
+  - device info (device/sensors, serial numbers, firmware version)
   - export HRV data as CSV
   - TE history (if importing multiple files)
   - weekly calories (if importing multiple files)
