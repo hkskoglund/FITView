@@ -2085,9 +2085,9 @@
                             var linebreaks = '';
                             var label;
                             // return Highcharts.dateFormat('%H:%M:%S', this.value);
-                            if (this.isLast)
-                                // linebreaks = '<p><br/><br/></p>'; // To avoid cluttering of event STOP and last lap timestamp...hopefully
-                                return '';
+                            if (this.isLast)  // Would like to use "space" to make it invisible, but its seems to get stripped off by Highcharts...
+                                linebreaks = '<p><br/>.<br/></p>'; // To avoid cluttering of event STOP and last lap timestamp...hopefully
+                             
 
                             var distanceKm;
                             var localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp);
