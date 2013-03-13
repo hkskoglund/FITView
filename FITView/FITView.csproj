@@ -92,6 +92,7 @@
     <Content Include="Images\kcalorie.txt" />
     <Content Include="Images\laptrigger\session_end.png" />
     <Content Include="Images\power.png" />
+    <Content Include="Images\Screenshot\FITView.png" />
     <Content Include="Images\sessiontrigger\activity_end.png" />
     <Content Include="Images\sessiontrigger\auto_multi_sport.png" />
     <Content Include="Images\sessiontrigger\fitness_equipment.png" />
