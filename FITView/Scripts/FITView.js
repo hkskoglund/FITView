@@ -1545,7 +1545,7 @@
             self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
             var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
 
-            function comparator(a, b) {
+            function comparatorSimple(a, b) {
                 if (a < b)
                     return -1;
                 if (a > b)
@@ -1665,7 +1665,7 @@
 
                 // Sort tickpositions
 
-                self.masterVM.tickPositions.sort(comparator);
+                self.masterVM.tickPositions.sort(comparatorSimple);
 
                 // in case of empty rawdata, but lap data available
                 if (typeof (heartRateYAxisNr) === "undefined" && ((lap.avg_heart_rate && lap.avg_heart_rate.length > 0) || (lap.max_heart_rate && lap.max_heart_rate.length > 0))) {
@@ -2080,8 +2080,15 @@
                     //    day: '%e of %b'
                     //},
                     labels: {
+                        // http://api.highcharts.com/highcharts#xAxis.labels.formatter
                         formatter: function () {
+                            var linebreaks = '';
+                            var label;
                             // return Highcharts.dateFormat('%H:%M:%S', this.value);
+                            if (this.isLast)
+                                // linebreaks = '<p><br/><br/></p>'; // To avoid cluttering of event STOP and last lap timestamp...hopefully
+                                return '';
+
                             var distanceKm;
                             var localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp);
                             var elapsedTime = (this.value - localTimestamp) / 1000; // In seconds
@@ -2092,20 +2099,22 @@
                                 distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
                                 if (distanceKm < 1)
                                     if (distanceKm === 0) // i.e indoor cycling without cadence/speed sensor speed and distance is 0
-                                        return toHHMMSS;
+                                        label = linebreaks+toHHMMSS;
                                      else
-                                        return self.masterVM.distanceAtTick[this.value] + ' m' + '<br/>' + toHHMMSS;
+                                        label = linebreaks+self.masterVM.distanceAtTick[this.value] + ' m' + '<br/>' + toHHMMSS;
                                 else {
-                                    var label = distanceKm.toFixed(2);
+                                    label = distanceKm.toFixed(2);
 
                                     if (label.lastIndexOf(".00") !== -1)
-                                        return label.slice(0, -3) + '<br/>' + toHHMMSS; // Remove .00
+                                        label = linebreaks+label.slice(0, -3) + '<br/>' + toHHMMSS; // Remove .00
                                     else
-                                        return label + '<br/>' + toHHMMSS;
+                                        label = linebreaks+label + '<br/>' + toHHMMSS;
                                 }
                             }
                             else
-                                return Highcharts.dateFormat('%H:%M:%S', this.value) + '<br/>' + toHHMMSS;
+                                label = linebreaks + Highcharts.dateFormat('%H:%M:%S', this.value) + '<br/>' + toHHMMSS;
+
+                            return label;
                         }
                     },
                     //plotLines: lapLinesConfig
