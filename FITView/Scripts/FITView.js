@@ -2032,7 +2032,6 @@
                 };
 
             
-
             self.multiChart = new Highcharts.Chart({
                 chart: chartOptions,
                 //height : 700,
@@ -2085,8 +2084,8 @@
                             var linebreaks = '';
                             var label;
                             // return Highcharts.dateFormat('%H:%M:%S', this.value);
-                            if (this.isLast)  // Would like to use "space" to make it invisible, but its seems to get stripped off by Highcharts...
-                                linebreaks = '<p><br/>.<br/></p>'; // To avoid cluttering of event STOP and last lap timestamp...hopefully
+                            if (this.isLast)  
+                                linebreaks = '<br/><span style="color: transparent">.</span><br/>'; // To avoid cluttering of event STOP and last lap timestamp (reset) which can be quite close to each other
                              
 
                             var distanceKm;
@@ -2097,6 +2096,7 @@
 
                             if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value] >= 0 && elapsedTime >= 0) {
                                 distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
+
                                 if (distanceKm < 1)
                                     if (distanceKm === 0) // i.e indoor cycling without cadence/speed sensor speed and distance is 0
                                         label = linebreaks+toHHMMSS;
@@ -3060,7 +3060,7 @@
                             break;
                         case lap_trigger.session_end:
                             srcImg = "Images/laptrigger/session_end.png";
-                            title = "Session end";
+                            title = "Session end (RESET)";
                             break;
                         default:
                             srcImg = undefined;
