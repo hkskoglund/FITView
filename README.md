@@ -32,7 +32,6 @@ External libraries
   - modernizr
   - jquery
 
-Screenshot
 ----------
 
 ![Alt text](/FITView/Images/Screenshot/FITView.png "FITView")
