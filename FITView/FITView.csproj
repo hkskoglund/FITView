@@ -64,6 +64,7 @@
     <Content Include="Images\deviceinfo\garmin\edge200.jpg" />
     <Content Include="Images\deviceinfo\garmin\edge500.jpg" />
     <Content Include="Images\deviceinfo\garmin\edge800.jpg" />
+    <Content Include="Images\deviceinfo\garmin\fenix.jpg" />
     <Content Include="Images\deviceinfo\garmin\footpod.jpg" />
     <Content Include="Images\deviceinfo\garmin\fr110.png" />
     <Content Include="Images\deviceinfo\garmin\fr210.jpg" />
@@ -82,6 +83,7 @@
     <Content Include="Images\event\power_down.png" />
     <Content Include="Images\event\power_up.png" />
     <Content Include="Images\event\unknown.png" />
+    <Content Include="Images\laptrigger\unknown.png" />
     <Content Include="Images\event_type\stop_disable_all9.png" />
     <Content Include="Images\event_type\stop_all_4.png" />
     <Content Include="Images\event_type\start_0.png" />

@@ -1204,7 +1204,7 @@
             if (rawData.lap) {
                 len = rawData.lap.timestamp.length;
                 for (lapNr = 0 ; lapNr < len; lapNr++) {
-                    if (rawData.lap.timestamp && rawData.lap.timestamp[lapNr]) {
+                    if (rawData.lap.timestamp && rawData.lap.timestamp[lapNr] && rawData.lap.lap_trigger) {
                         switch (rawData.lap.lap_trigger[lapNr]) {
                             case lap_trigger.manual:  // LAP pressed
                             case lap_trigger.distance: // Distance
@@ -1511,7 +1511,7 @@
                 if (rawData.record.temperature) {
                    
                     temperatureSeriesData = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.temperature);
-                    seriesData[id] = temperatureSeriesData;
+                    seriesData[seriesID.temperature] = temperatureSeriesData;
                     temperatureSeries = { name: 'Temperature', id: seriesID.temperature, yAxis: yAxisNr++, data: seriesData[seriesID.temperature], visible: false, type: 'line', zIndex: 95 };
                     seriesSetup.push(temperatureSeries);
                     yAxisOptions.push({
@@ -1580,44 +1580,48 @@
                     }
                 };
 
-                for (lapNr = 0; lapNr < len; lapNr++) {
+                if (typeof rawData.lap.start_time !== "undefined" && typeof rawData.lap.timestamp !== "undefined") {
+                    for (lapNr = 0; lapNr < len; lapNr++) {
 
-                    if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
-                        lap.categories.push((lapNr + 1).toString());
 
-                        switch (sport) {
+                        if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
+                            lap.categories.push((lapNr + 1).toString());
 
-                            case FITSport.running: // Running
-                                pushData("avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
-                                pushData("max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
-                                pushData("avg_heart_rate");
-                                pushData("max_heart_rate");
-                                break;
+                            switch (sport) {
 
-                            case FITSport.cycling: // Cycling
-                                pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                pushData("avg_heart_rate");
-                                pushData("max_heart_rate");
-                                break;
+                                case FITSport.running: // Running
+                                    pushData("avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
+                                    pushData("max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
+                                    pushData("avg_heart_rate");
+                                    pushData("max_heart_rate");
+                                    break;
 
-                            default:
-                                pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                pushData("avg_heart_rate");
-                                pushData("max_heart_rate");
-                                break;
+                                case FITSport.cycling: // Cycling
+                                    pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                    pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                    pushData("avg_heart_rate");
+                                    pushData("max_heart_rate");
+                                    break;
+
+                                default:
+                                    pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                    pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                    pushData("avg_heart_rate");
+                                    pushData("max_heart_rate");
+                                    break;
+                            }
+
+                            lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
+                            if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
+                                self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
+                            else
+                                self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
+
+                            self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
                         }
-
-                        lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
-                        if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
-                            self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
-                        else
-                            self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
-
-                        self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
                     }
-                }
+                } else
+                    self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
 
 
                 if (rawData.event) {
@@ -1633,7 +1637,7 @@
 
                                     switch (ev_type) {
 
-                                        case event_type.start: 
+                                        case event_type.start:
                                         case event_type.stop:
                                         case event_type.stop_all:
                                         case event_type.stop_disable:
@@ -1647,7 +1651,7 @@
                                             else
                                                 self.loggMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.event.timestamp[eventNr]));
 
-                                            
+
 
                                             break;
 
@@ -1656,7 +1660,8 @@
                                     break;
                             }
                     }
-                }
+                } else
+                    self.loggMessage("warn", "Event is undefined, no event information can be gathered");
 
                 // Sort tickpositions
 
@@ -1922,8 +1927,8 @@
                     position: {
                         // align: 'right', // by default
                         //verticalAlign: 'bottom', 
-                        x: 50,
-                        y: 50
+                        x: 40,
+                        y: 20
                         //relativeTo: 'chart'
                     }
                 },
@@ -2079,7 +2084,7 @@
                             // return Highcharts.dateFormat('%H:%M:%S', this.value);
                             var distanceKm;
                             var localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp);
-                            var elapsedTime = (this.value - localTimestamp) / 1000;
+                            var elapsedTime = (this.value - localTimestamp) / 1000; // In seconds
                             
                             var toHHMMSS = FITViewUIConverter.formatToHHMMSS(elapsedTime);
 
@@ -2359,6 +2364,7 @@
                 fr70: 1436,
                 fr310xt_4t: 1446,
                 amx: 1461,
+                fenix : 1551, // Maybe -> taken from a damaged FIT file
                 sdm4: 10007, // SDM4 footpod
                 training_center: 20119,
                 connect: 65534 // Garmin Connect website
@@ -2469,7 +2475,14 @@
 
                 if (type === device_type.antfs && manufact === manufacturer.garmin) {
                     switch (product) {
+
+                        case garmin_product.fenix:
+                            srcImgDeviceInfo = "Images/deviceinfo/garmin/fenix.jpg";
+                            titleDeviceInfo = "Fenix";
+                            break;
                         // Running/multisport
+
+
 
                         case garmin_product.fr910xt:
                             srcImgDeviceInfo = "Images/deviceinfo/garmin/910xt.png";
@@ -2977,6 +2990,7 @@
             var maxTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.record.timestamp[recLen - 1]);
 
             for (var lapNr = 0; lapNr < lapLen; lapNr++) {
+
                 var timestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawdata.lap.timestamp[lapNr]);
 
                 if (timestamp < min)
@@ -3002,46 +3016,51 @@
                 else
                     this.masterVM.freeYPOS[timestamp] = 0;
 
+                if (rawdata.lap.lap_triger) {
+                    switch (rawdata.lap.lap_trigger[lapNr]) {
+                        case lap_trigger.manual:
+                            srcImg = "Images/laptrigger/manual.png";
+                            title = "LAP";
+                            break;
+                        case lap_trigger.time:
+                            srcImg = "Images/laptrigger/time.png";
+                            title = "Time";
+                            break;
+                        case lap_trigger.distance:
+                            srcImg = "Images/laptrigger/distance.png";
+                            title = "Distance";
+                            if (rawdata.lap.total_distance[lapNr])
+                                title += " " + rawdata.lap.total_distance[lapNr].toString() + " m";
 
-                switch (rawdata.lap.lap_trigger[lapNr]) {
-                    case lap_trigger.manual:
-                        srcImg = "Images/laptrigger/manual.png";
-                        title = "LAP";
-                        break;
-                    case lap_trigger.time:
-                        srcImg = "Images/laptrigger/time.png";
-                        title = "Time";
-                        break;
-                    case lap_trigger.distance:
-                        srcImg = "Images/laptrigger/distance.png";
-                        title = "Distance";
-                        if (rawdata.lap.total_distance[lapNr])
-                            title += " "+rawdata.lap.total_distance[lapNr].toString()+" m";
-                        
-                        break;
-                    case lap_trigger.position_start:
-                        srcImg = "Images/laptrigger/position_start.png";
-                        title = "Position start";
-                        break;
-                    case lap_trigger.position_lap:
-                        srcImg = "Images/laptrigger/position_lap.png";
-                        title = "Position lap";
-                        break;
-                    case lap_trigger.position_waypoint:
-                        srcImg = "Images/laptrigger/position_waypoint.png";
-                        title = "Position waypoint";
-                        break;
-                    case lap_trigger.position_marked:
-                        srcImg = "Images/laptrigger/position_marked.png";
-                        title = "Position marked";
-                        break;
-                    case lap_trigger.session_end:
-                        srcImg = "Images/laptrigger/session_end.png";
-                        title = "Session end";
-                        break;
-                    default:
-                        srcImg = undefined;
-                        title = undefined;
+                            break;
+                        case lap_trigger.position_start:
+                            srcImg = "Images/laptrigger/position_start.png";
+                            title = "Position start";
+                            break;
+                        case lap_trigger.position_lap:
+                            srcImg = "Images/laptrigger/position_lap.png";
+                            title = "Position lap";
+                            break;
+                        case lap_trigger.position_waypoint:
+                            srcImg = "Images/laptrigger/position_waypoint.png";
+                            title = "Position waypoint";
+                            break;
+                        case lap_trigger.position_marked:
+                            srcImg = "Images/laptrigger/position_marked.png";
+                            title = "Position marked";
+                            break;
+                        case lap_trigger.session_end:
+                            srcImg = "Images/laptrigger/session_end.png";
+                            title = "Session end";
+                            break;
+                        default:
+                            srcImg = undefined;
+                            title = undefined;
+                    }
+                } else {
+                    srcImg = "Images/laptrigger/unknown.png";
+                    title = "No lap trigger found";
+                    self.loggMessage("warn", "Lap has no lap_trigger data, cannot decide what triggered lap");
                 }
 
                 title += " @ " + Highcharts.dateFormat('%H:%M:%S', timestamp);
