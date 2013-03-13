@@ -3,9 +3,14 @@ FITView
 
 A single page web app for reading .FIT files (from GARMIN) and to visualize data like heart rate, heart rate zones and heart rate variability.
 
-Support for:
-  - pure javascript import using web worker
+Technical
+---------
+  - pure javascript import using web worker and File API
   - UI based on knockoutjs data-binding and mapping
+
+Supports
+--------
+ 
   - reads/imports multiple .FIT activity files
   - track viewing
   - multisport files (swimming not tested much...may lack functionality)
@@ -17,7 +22,8 @@ Support for:
   - weekly calories (if importing multiple files)
   - some support for allowing non-conformat FIT (i.e missing session info)
 
-External libraries used:
+External libraries
+------------------
 
   - highcharts
   - knockoutjs
