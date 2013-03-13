@@ -27,5 +27,9 @@ External libraries
 
   - highcharts
   - knockoutjs
+  - google Maps API
+  - momentjs
+  - modernizr
+  - jquery
 
 ![Alt text](/FITView/Images/Screenshot/FITView.png "FITView")
