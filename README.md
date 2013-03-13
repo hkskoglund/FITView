@@ -14,4 +14,4 @@ Support for:
   - weekly calories (if importing multiple files)
 
 
-https://docs.google.com/file/d/0B45ATdu5qGEbRzdNa1VfRW5IUkU/edit?usp=sharing
+![Alt text](/FITView/Images/Screenshot/FITView.png "FITView")
