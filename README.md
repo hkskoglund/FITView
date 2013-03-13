@@ -12,3 +12,6 @@ Support for:
   - export HRV data as CSV
   - TE history (if importing multiple files)
   - weekly calories (if importing multiple files)
+
+
+https://docs.google.com/file/d/0B45ATdu5qGEbRzdNa1VfRW5IUkU/edit?usp=sharing
