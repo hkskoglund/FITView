@@ -1868,7 +1868,7 @@
                         setWeeklyCategories(weeklyCaloriesxAxis);
 
                         if (this.visible === false) {
-                            weeklyCalorieSeries.setData(data, false);
+                            weeklyCalorieSeries.setData(seriesData[seriesID.weeklyCalories], false);
                             seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories],10);
                             weeklyCalorieErrorSeries.setData(seriesData[seriesID.weeklyCaloriesError]);
                         }
