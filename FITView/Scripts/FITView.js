@@ -1742,7 +1742,9 @@
             }
             
             seriesSetup.push({
-                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory, visible: false, type: 'column', pointWidth: 5,
+                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory.map(function (item, index, arr) {
+                    return [item[0], item[1].TE];
+                }), visible: false, type: 'column', pointWidth: 5,
                 events: {
                     // http://jsfiddle.net/jlbriggs/kqHzr/
                     // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
@@ -1755,7 +1757,9 @@
                             if (this.visible === false) { // Transition to visible series
                                 //yaxis.setExtremes(1, 5, true, false);
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true));
+                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(function (item, index, arr) {
+                                    return [item[0],item[1].TE]; // Only need the .TE part
+                                }));
                                 
 
                                 if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
@@ -1787,7 +1791,23 @@
                     }
                 },
                 dataLabels: {
-                    enabled: true
+                    enabled: true,
+                    align: 'left',
+                    formatter: function () {
+                        var len = self.masterVM.TEVM.TEhistory.length;
+                        var item;
+                        var total_elapsed_time, total_calories;
+
+                        // Search for total_elasped_time
+                        for (item = 0; item < len; item++) {
+                            if (this.x === self.masterVM.TEVM.TEhistory[item][0]) {
+                                total_elapsed_time = self.masterVM.TEVM.TEhistory[item][1].total_elapsed_time;
+                                total_calories = self.masterVM.TEVM.TEhistory[item][1].total_calories;
+                                break;
+                            }
+                        }
+                            return '<b>'+this.y+'</b><br/>'+ FITViewUIConverter.formatToHHMMSS(total_elapsed_time)+'<br/>'+total_calories;
+                    }
                 }
             });
 
@@ -1869,16 +1889,20 @@
 
                         if (this.visible === false) {
                             weeklyCalorieSeries.setData(seriesData[seriesID.weeklyCalories], false);
-                            seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories],10);
+                            seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories], 10);
                             weeklyCalorieErrorSeries.setData(seriesData[seriesID.weeklyCaloriesError]);
                         }
 
                     }
                 },
                 dataLabels: {
-                    enabled: true
+
+                    enabled: true,
+
+                    
                 }
-            });
+            }
+            );
 
             yAxisOptions.push({
 
@@ -2327,6 +2351,8 @@
                     },
                     
                 },
+
+               
 
                 series: seriesSetup
 
@@ -4143,11 +4169,14 @@
                                     }
 
 
-                                    if (rawData.session.total_training_effect[sessionNr]) {
+                                    if (rawData.session.total_training_effect[sessionNr] && rawData.session.total_elapsed_time[sessionNr] >= 0 && rawData.session.total_calories[sessionNr] >= 0) {
 
                                         // TEseries.addPoint([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]], false, false, false);
 
-                                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
+                                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), {TE: rawData.session.total_training_effect[sessionNr],
+                                            total_elapsed_time: rawData.session.total_elapsed_time[sessionNr],
+                                            total_calories : rawData.session.total_calories[sessionNr]
+                                        }]);
 
                                         //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
 
