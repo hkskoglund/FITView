@@ -35,6 +35,7 @@
         speedVSHR: 'speedVSHRSeries',
         hrv: 'HRVSeries',
         weeklyCalories: 'weeklyCaloriesSeries',
+        weeklyCaloriesError: 'weeklyCaloresErrorSeries',
         kcalVSHRVSTE_run: 'kcalHRTE_runSeries',
         kcalVSHRVSTE_bike: 'kcalHRTE_bikeSeries',
         kcalVSHRVSTE_other: 'kcalHRTE_otherSeries',
@@ -1832,25 +1833,43 @@
             }
 
             function getWeeklyCaloriesData() {
-                var data =
-                 getWeeklySortedCalories().map(function (item, index, arr) {
+                var data = getWeeklySortedCalories().map(function (item, index, arr) {
                      return item[1]; // Total calorie
-                 });
+                });
+
                 return data;
             }
 
+            var weeklyCaloriesData = getWeeklyCaloriesData();
+
+            // Calorie computation using Firstbeat library on the Forerunner has MAE - mean average error of 7-10 %
+            function getWeeklyCaloriesErrorMarginData(weeklyCaloriesDataArg,percent) {
+                var data = weeklyCaloriesDataArg.map(function (item, index, arr) {
+                    return [item - item * percent / 100, item + item * percent / 100];
+                });
+
+                return data;
+            }
+            
+            var weeklyCaloriesYAxisNr = yAxisNr;
+
             seriesSetup.push({
                 name: 'Calories', id: seriesID.weeklyCalories, xAxis: 5, yAxis: yAxisNr++,
-                data: getWeeklyCaloriesData(), visible: false, type: 'column',
+                data: weeklyCaloriesData, visible: false, type: 'column',
                 //pointWidth: 15,
                 events: {
                     legendItemClick: function () {
                         var weeklyCaloriesxAxis = this.chart.get(xAxisID.weeklyCalories);
                         //var yaxis = self.multiChart.get('weeklyCaloriesYAxis');
                         var weeklyCalorieSeries = this.chart.get(seriesID.weeklyCalories);
+                        var weeklyCalorieErrorSeries = this.chart.get(seriesID.weeklyCaloriesError);
+                        var data = getWeeklyCaloriesData();
                         setWeeklyCategories(weeklyCaloriesxAxis);
-                        if (this.visible === false)
-                            weeklyCalorieSeries.setData(getWeeklyCaloriesData());
+
+                        if (this.visible === false) {
+                            weeklyCalorieSeries.setData(data, false);
+                            weeklyCalorieErrorSeries.setData(getWeeklyCaloriesErrorMarginData(data, 10));
+                        }
 
                     }
                 },
@@ -1874,6 +1893,16 @@
                 id: yAxisID.weeklyCalories
 
             });
+
+            // Testing of errorbar Highcharts beta 3.0 http://jsfiddle.net/highcharts/fmVUV/
+
+            seriesSetup.push({
+                name: 'Calories error', id: seriesID.weeklyCaloriesError, xAxis: 5, yAxis: weeklyCaloriesYAxisNr,
+                data: getWeeklyCaloriesErrorMarginData(weeklyCaloriesData,10), visible: false, type: 'errorbar'
+                
+            });
+           
+            
 
             // NB! from highcharts-more.js -  have some trouble integrating it with the other series -> tooltip missing, self.multiChart reference missing
             // Another issue: will not resize chart if there is data in the bubble series

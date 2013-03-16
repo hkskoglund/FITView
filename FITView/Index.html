@@ -11,7 +11,7 @@
     <script src="Scripts/3party/modernizr-2.6.2.js"></script>
     <!-- <script src="Scripts/3party/highcharts.src.js"></script>-->
     <script src="Scripts/3party/highcharts30beta.src.js"></script>
-  <!--  <script src="Scripts/3party/highchart-more.src.js"></script>-->
+    <script src="Scripts/3party/highchart-more.src.js"></script>
     <script src="Scripts/3party/moment.js"></script>
 
     <script src="Scripts/FITCRCTimestampUtility.js"></script>
@@ -660,6 +660,14 @@
 
                 <!-- ko if: total_distance().length > 0 -->
                 <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
+                <!-- /ko -->
+
+                 <!-- ko if: total_distance().length > 0 -->
+                <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
+                <!-- /ko -->
+
+                <!-- ko if: typeof num_laps !== "undefined" && num_laps().length > 0 && num_laps()[selectedSession()] >= 0 -->
+                (<span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>)
                 <!-- /ko -->
 
                 <!-- SPEED -->
