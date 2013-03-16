@@ -35,7 +35,7 @@
         speedVSHR: 'speedVSHRSeries',
         hrv: 'HRVSeries',
         weeklyCalories: 'weeklyCaloriesSeries',
-        weeklyCaloriesError: 'weeklyCaloresErrorSeries',
+        weeklyCaloriesError: 'weeklyCaloriesErrorSeries',
         kcalVSHRVSTE_run: 'kcalHRTE_runSeries',
         kcalVSHRVSTE_bike: 'kcalHRTE_bikeSeries',
         kcalVSHRVSTE_other: 'kcalHRTE_otherSeries',
@@ -1409,6 +1409,7 @@
                         },
                         opposite: true,
                         showEmpty : false,
+                        reversed : this.masterVM.speedMode() === 1 // for min/km let y axis be inverted/reversed
 
 
                     });
@@ -1840,7 +1841,7 @@
                 return data;
             }
 
-            var weeklyCaloriesData = getWeeklyCaloriesData();
+            seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
 
             // Calorie computation using Firstbeat library on the Forerunner has MAE - mean average error of 7-10 %
             function getWeeklyCaloriesErrorMarginData(weeklyCaloriesDataArg,percent) {
@@ -1855,7 +1856,7 @@
 
             seriesSetup.push({
                 name: 'Calories', id: seriesID.weeklyCalories, xAxis: 5, yAxis: yAxisNr++,
-                data: weeklyCaloriesData, visible: false, type: 'column',
+                data: seriesData[seriesID.weeklyCalories], visible: false, type: 'column',
                 //pointWidth: 15,
                 events: {
                     legendItemClick: function () {
@@ -1863,12 +1864,13 @@
                         //var yaxis = self.multiChart.get('weeklyCaloriesYAxis');
                         var weeklyCalorieSeries = this.chart.get(seriesID.weeklyCalories);
                         var weeklyCalorieErrorSeries = this.chart.get(seriesID.weeklyCaloriesError);
-                        var data = getWeeklyCaloriesData();
+                        seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
                         setWeeklyCategories(weeklyCaloriesxAxis);
 
                         if (this.visible === false) {
                             weeklyCalorieSeries.setData(data, false);
-                            weeklyCalorieErrorSeries.setData(getWeeklyCaloriesErrorMarginData(data, 10));
+                            seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories],10);
+                            weeklyCalorieErrorSeries.setData(seriesData[seriesID.weeklyCaloriesError]);
                         }
 
                     }
@@ -1896,9 +1898,11 @@
 
             // Testing of errorbar Highcharts beta 3.0 http://jsfiddle.net/highcharts/fmVUV/
 
+            seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories], 10);
+
             seriesSetup.push({
                 name: 'Calories error', id: seriesID.weeklyCaloriesError, xAxis: 5, yAxis: weeklyCaloriesYAxisNr,
-                data: getWeeklyCaloriesErrorMarginData(weeklyCaloriesData,10), visible: false, type: 'errorbar'
+                data: seriesData[seriesID.weeklyCaloriesError], visible: false, type: 'errorbar'
                 
             });
            
