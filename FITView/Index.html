@@ -1202,7 +1202,7 @@
 
                                                 <!-- ko with: $parents[2] -->
                                                 <!-- ko if: typeof (hrv) !== "undefined" && typeof (hrv.time) !== "undefined" && hrv.time.length > 0 -->
-                                                <span data-bind="attr: { title: 'Contains ' + hrv.time.length + ' heart rate variability measurements' }">HRV</span>
+                                                HRV (<span data-bind="text: hrv.time.length,attr: { title: 'Contains ' + hrv.time.length + ' heart rate variability measurements' } "></span>)
                                                 <!-- /ko -->
                                                 <!-- /ko -->
 
