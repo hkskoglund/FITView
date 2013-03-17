@@ -911,7 +911,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          var unit = globalMsg[fieldDefNr].unit;
                          var scale = globalMsg[fieldDefNr].scale;
                          var offset = globalMsg[fieldDefNr].offset;
-                         var val = rec.content[field].value; // Can be an array in case of HRV data - invalid values are skipped in getRecordContent (raw)
+                         var val = rec.content[field].value; // Can be an array in case of HRV data - invalid values are skipped in getRecord (raw)
 
                          if (typeof val.length !== "undefined") // Probably array
                          {
@@ -1423,11 +1423,13 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
 
                      // var logging = "";
-                     var currentField, bType, bSize;
+                     var currentField, bType, bSize, numBytesRead;
+
                      for (fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
                          currentField = "field" + fieldNr.toString();
                          bType = localMsgDefinition.content[currentField].baseType;
                          bSize = localMsgDefinition.content[currentField].size;
+                         numBytesRead = 0;
 
                          recContent[currentField] = { fieldDefinitionNumber: localMsgDefinition.content[currentField].fieldDefinitionNumber };
 
@@ -1444,15 +1446,23 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              break;
                          }
 
-
+                         // Read data from typed buffer
                          switch (bType) {
                              case 0x00:
                              case 0x0A:
-                                 recContent[currentField].value = dviewFit.getUint8(index); break;
+                                 recContent[currentField].value = dviewFit.getUint8(index);
+                                 numBytesRead = 1;
+                                 break;
 
-                             case 0x01: recContent[currentField].value = dviewFit.getInt8(index); break;
-                             case 0x02: recContent[currentField].value = dviewFit.getUint8(index); break;
-                             case 0x83: recContent[currentField].value = dviewFit.getInt16(index, littleEndian); break;
+                             case 0x01: recContent[currentField].value = dviewFit.getInt8(index);
+                                 numBytesRead = 1;
+                                 break;
+                             case 0x02: recContent[currentField].value = dviewFit.getUint8(index);
+                                 numBytesRead = 1;
+                                 break;
+                             case 0x83: recContent[currentField].value = dviewFit.getInt16(index, littleEndian);
+                                 numBytesRead = 2;
+                                 break;
                                  // HRV 0x84 = 132 dec, reports size 10 bytes, we only read 2 bytes here...probably bug -> consequence : can miss 4 hrv time values here...
                                  // Symptom: truncated hrv data in time
                                  // JSON stringify
@@ -1468,24 +1478,34 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  //loggMessage({ response: "info", data: "Type 0x84/132 = uint16, numbers to read is:"+uint16ToRead.toString() });
                                  for (uintNr = 0; uintNr < uint16ToRead; uintNr++) {
                                      uint16 = dviewFit.getUint16(tempIndex, littleEndian);
+                                     numBytesRead += 2;
                                      if (fitBaseTypesInvalidValues[bType].invalidValue !== uint16)  // Just skip invalid values
                                        uint16Arr.push(uint16);
                                      tempIndex += 2;
                                  }
-                                 if (uint16Arr.length === 1)
+                                 if (uint16Arr.length === 1) {
+                                   
                                      recContent[currentField].value = uint16Arr[0];
-                                 else
-                                     recContent[currentField].value = uint16Arr; 
-
+                                 }
+                                 else {
+                                   
+                                     recContent[currentField].value = uint16Arr;
+                                 }
                                  break;
 
                              case 0x8B:
-                                 recContent[currentField].value = dviewFit.getUint16(index, littleEndian); break;
+                                 recContent[currentField].value = dviewFit.getUint16(index, littleEndian);
+                                 numBytesRead = 2;
+                                 break;
 
-                             case 0x85: recContent[currentField].value = dviewFit.getInt32(index, littleEndian); break;
+                             case 0x85: recContent[currentField].value = dviewFit.getInt32(index, littleEndian);
+                                 numBytesRead = 4;
+                                 break;
                              case 0x86:
                              case 0x8C:
-                                 recContent[currentField].value = dviewFit.getUint32(index, littleEndian); break;
+                                 recContent[currentField].value = dviewFit.getUint32(index, littleEndian);
+                                 numBytesRead = 4;
+                                 break;
 
                              // String
                              case 0x07:
@@ -1497,15 +1517,21 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          break;
                                      str += String.fromCharCode(char);
                                  }
+                                 
 
 
                                  recContent[currentField].value = str;
+                                 numBytesRead = str.length;
                                  break;
 
 
 
-                             case 0x88: recContent[currentField].value = dviewFit.getFloat32(index, littleEndian); break;
-                             case 0x89: recContent[currentField].value = dviewFit.getFloat64(index, littleEndian); break;
+                             case 0x88: recContent[currentField].value = dviewFit.getFloat32(index, littleEndian);
+                                 numBytesRead = 4;
+                                 break;
+                             case 0x89: recContent[currentField].value = dviewFit.getFloat64(index, littleEndian);
+                                 numBytesRead = 8;
+                                 break;
 
                              // Byte array
                              case 0x0D:
@@ -1515,7 +1541,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      bytes.push(dviewFit.getUint8(bytesStartIndex++));
 
                                  recContent[currentField].value = bytes;
-
+                                 numBytesRead = bytes.length;
                                  break;
                              default:
                                  loggMessage({ response: "error", data: "Base type " + bType.toString() + " not found in lookup switch" });
@@ -1529,6 +1555,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              recContent[currentField].invalid = true;
                          else
                              recContent[currentField].invalid = false;
+
+                         if (numBytesRead !== bSize)
+                             loggMessage({ response: "error", data: "Field "+currentField+" is "+bSize.toString()+" bytes, only read "+numBytesRead.toString()+" bytes. Base type is : "+bType.toString()});
 
                          // Advance to next field value position
                          index = index + bSize;

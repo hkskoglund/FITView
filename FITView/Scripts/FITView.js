@@ -4344,14 +4344,18 @@
 
         },
 
-        loggMessage: function (type,msg)
+        loggMessage: function (type, msg, extraargs)
+        // Weakness: doesnt get linenumber of error...maybe fix...
         {
             if (self.masterVM.settingsVM.logging())
-                console[type](msg);
+                if (typeof extraargs !== "undefined")
+                    console[type](msg, extraargs);
+                else
+                    console[type](msg);
         },
 
         onFITManagerError: function (e) {
-            self.loggMessageg("error","Error in worker, event: ", e);
+            self.loggMessage("error","Error in worker, event: ", e);
         },
 
         // Handles file selection for import
