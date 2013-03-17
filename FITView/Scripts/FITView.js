@@ -868,7 +868,7 @@
                 //http://knockoutjs.com/documentation/click-binding.html Note 3 - return true to let event let event navigate to href
                 //http://msdn.microsoft.com/en-us/library/ie/hh779016(v=vs.85).aspx Saving files locally using Blob and msSaveBlob
                 if (typeof window.navigator.msSaveBlob !== "undefined") {
-                    window.navigator.msSaveBlob(self.masterVM.exportVM.csv.blob, "export.csv");
+                    window.navigator.msSaveBlob(self.masterVM.exportVM.csv.blob, "HRV-" + self.masterVM.sessionVM.rawData._headerInfo_.fitFile.name.slice(0, -4) + ".CSV");
                 } else
                     return true;
             };
@@ -3854,7 +3854,7 @@
             // Chrome
             var aHRVExport = document.getElementById('aExportHRV_CSV');
             aHRVExport.href = self.masterVM.exportVM.csv.url();
-            aHRVExport.download = "export.csv";
+            aHRVExport.download = "HRV-" + rawdata._headerInfo_.fitFile.name.slice(0, -4) + ".CSV";
 
 
         },
