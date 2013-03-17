@@ -462,34 +462,7 @@
                     </li>
                     <!-- /ko -->
 
-                     <!-- ko with: exportVM -->
-                    <li>
-                        <a href="#">Export</a>
-                        <ul>
-                            
-                             <li>
-                                <div>
-                                    <input type="checkbox" title="Include header in CSV (top row)" data-bind="checked: csv.header"/>
-                                    <label style="color: white">Header</label>
-                                   <!-- <input type="text"  title="Name of CSV data column" data-bind="value: headerTitle" /> -->
-                                    <select data-bind="options: csv.type, value: csv.selectedType" title="Type of CSV export"></select>
-                                    <label style="color: white">Scale</label>
-                                    <input type="text"  title="1 = seconds, 1000 = ms." data-bind="value: csv.scale" /> 
-                                </div>
-                             <a href="#"></a>
-                            </li>
-
-                            <li >
-                                <a id="aExportHRV_CSV" title="Export HRV as CSV" data-bind="click: csv.tryMSBlobSave">
-                                    Export HRV as CSV 
-                            </a>
-                            </li>
-                            
-                            
-                        </ul>
-
-                    </li>
-                    <!-- /ko -->
+                    
 
                     
                     <!-- ko with: headerInfoVM -->
@@ -597,6 +570,46 @@
                             
                         </ul>
                     </li>
+
+                    <li>
+                        <a href="#">About</a>
+                        <ul>
+
+                            <li>
+                                <a href="https://github.com/hkskoglund">Created by Henning Knut Skoglund</a>
+                            </li>
+
+                         </ul>
+                    </li>
+
+                     <!-- ko with: exportVM -->
+                    <li>
+                        <a href="#">Export</a>
+                        <ul>
+                            
+                             <li>
+                                <div>
+                                    <input type="checkbox" title="Include header in CSV (top row)" data-bind="checked: csv.header"/>
+                                    <label style="color: white">Header</label>
+                                   <!-- <input type="text"  title="Name of CSV data column" data-bind="value: headerTitle" /> -->
+                                    <select data-bind="options: csv.type, value: csv.selectedType" title="Type of CSV export"></select>
+                                    <label style="color: white">Scale</label>
+                                    <input type="text"  title="1 = seconds, 1000 = ms." data-bind="value: csv.scale" /> 
+                                </div>
+                             <a href="#"></a>
+                            </li>
+
+                            <li >
+                                <a id="aExportHRV_CSV" title="Export HRV as CSV" data-bind="click: csv.tryMSBlobSave">
+                                    Export HRV as CSV 
+                            </a>
+                            </li>
+                            
+                            
+                        </ul>
+
+                    </li>
+                    <!-- /ko -->
                     
                     <li>
                         <div id="zonesChart"></div>
