@@ -762,33 +762,56 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                                  // Make sure we insert property at the right position
                                                  rawdata[datarec.message][prop][counter.lapCounter - 1] = val;
                                                  break;
+
                                              case "session":
                                                  rawdata[datarec.message][prop][counter.sessionCounter - 1] = val;
                                                  break;
+
                                              case "file_id":
                                                  rawdata[datarec.message][prop][counter.fileIdCounter - 1] = val;
                                                  break;
+
                                              case "file_creator":
                                                  rawdata[datarec.message][prop][counter.fileCreatorCounter - 1] = val;
                                                  break;
+
                                              case "length":
                                                  rawdata[datarec.message][prop][counter.lengthCounter - 1] = val;
                                                  break;
+
                                              case "device_info":
                                                  rawdata[datarec.message][prop][counter.deviceInfoCounter - 1] = val;
                                                  break;
+
                                              case "activity":
                                                  rawdata[datarec.message][prop][counter.activityCounter - 1] = val;
                                                  break;
+
+
                                              case "event":
                                                  rawdata[datarec.message][prop][counter.eventCounter - 1] = val;
                                                  break;
+
                                              case "record":
                                                  rawdata[datarec.message][prop][counter.recordCounter - 1] = val;
                                                  break;
+
                                              case "hrv":
-                                                 rawdata[datarec.message][prop][counter.hrvCounter - 1] = val;
+
+                                                 if (typeof val.length !== "undefined") // Array 
+                                                 {
+                                                     var itemNr;
+                                                     var len = val.length;
+                                                     for (itemNr = 0; itemNr < len; itemNr++) {
+                                                         rawdata[datarec.message][prop][counter.hrvCounter - 1] = val[itemNr];
+                                                         if (itemNr < len - 1)  // Don't advance at end
+                                                             counter.hrvCounter++;
+                                                     }
+                                                 }
+                                                 else
+                                                     rawdata[datarec.message][prop][counter.hrvCounter - 1] = val;
                                                  break;
+
                                              default:
                                                  rawdata[datarec.message][prop].push(val);
                                                  break;
@@ -888,14 +911,26 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          var unit = globalMsg[fieldDefNr].unit;
                          var scale = globalMsg[fieldDefNr].scale;
                          var offset = globalMsg[fieldDefNr].offset;
-                         var val = rec.content[field].value;
+                         var val = rec.content[field].value; // Can be an array in case of HRV data - invalid values are skipped in getRecordContent (raw)
 
-                         if (scale !== undefined)
-                             val = val / scale;
+                         if (typeof val.length !== "undefined") // Probably array
+                         {
+                             var itemNr;
+                             var len = val.length;
+                             for (itemNr = 0; itemNr < len; itemNr++) {
+                                 if (scale !== undefined)
+                                     val[itemNr] = val[itemNr] / scale;
 
-                         if (offset !== undefined)
-                             val = val - offset;
+                                 if (offset !== undefined)
+                                     val[itemNr] = val[itemNr] - offset;
+                             }
+                         } else {
+                             if (scale !== undefined)
+                                 val = val / scale;
 
+                             if (offset !== undefined)
+                                 val = val - offset;
+                         }
                          rec.content[field].value = val;
 
                          // Duplication of code, maybe later do some value conversions here for specific messages
@@ -1418,7 +1453,32 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              case 0x01: recContent[currentField].value = dviewFit.getInt8(index); break;
                              case 0x02: recContent[currentField].value = dviewFit.getUint8(index); break;
                              case 0x83: recContent[currentField].value = dviewFit.getInt16(index, littleEndian); break;
-                             case 0x84:
+                                 // HRV 0x84 = 132 dec, reports size 10 bytes, we only read 2 bytes here...probably bug -> consequence : can miss 4 hrv time values here...
+                                 // Symptom: truncated hrv data in time
+                                 // JSON stringify
+                                 //"{"header":{"byte":71,"headerType":0,"messageType":1,"localMessageType":7},
+                                 //"content":{"reserved":0,"littleEndian":true,"globalMsgNr":78,"fieldNumbers":1,"field0":{"fieldDefinitionNumber":0,"size":10,"baseType":132}}}"
+                                 // Conclusion : it seems like max 5 hrv time values are stored in 10 bytes
+                             case 0x84: // Dec. 132 - type uint16 = 2 bytes
+                                 var uint16Arr = [];
+                                 var uint16;
+                                 var uint16ToRead = bSize / 2;
+                                 var uintNr;
+                                 var tempIndex = index;
+                                 //loggMessage({ response: "info", data: "Type 0x84/132 = uint16, numbers to read is:"+uint16ToRead.toString() });
+                                 for (uintNr = 0; uintNr < uint16ToRead; uintNr++) {
+                                     uint16 = dviewFit.getUint16(tempIndex, littleEndian);
+                                     if (fitBaseTypesInvalidValues[bType].invalidValue !== uint16)  // Just skip invalid values
+                                       uint16Arr.push(uint16);
+                                     tempIndex += 2;
+                                 }
+                                 if (uint16Arr.length === 1)
+                                     recContent[currentField].value = uint16Arr[0];
+                                 else
+                                     recContent[currentField].value = uint16Arr; 
+
+                                 break;
+
                              case 0x8B:
                                  recContent[currentField].value = dviewFit.getUint16(index, littleEndian); break;
 
@@ -1427,6 +1487,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              case 0x8C:
                                  recContent[currentField].value = dviewFit.getUint32(index, littleEndian); break;
 
+                             // String
                              case 0x07:
                                  var stringStartIndex = index;
                                  var str = "";
@@ -1445,6 +1506,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                              case 0x88: recContent[currentField].value = dviewFit.getFloat32(index, littleEndian); break;
                              case 0x89: recContent[currentField].value = dviewFit.getFloat64(index, littleEndian); break;
+
+                             // Byte array
                              case 0x0D:
                                  var bytesStartIndex = index;
                                  var bytes = [];
