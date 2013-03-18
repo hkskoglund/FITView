@@ -15,7 +15,8 @@
         //HRZonesxAxisID = "HRZonesxAxis",
         weeklyCalories: "weeklyxAxis",
         caloriesVSHRVSTE : "kcalVSHRVSTExAxis",
-        HRVXAxisPoincare : "HRVXAxisPoincare"
+        HRVXAxisPoincare: "HRVXAxisPoincare",
+        RMSSDXAxis: "RMSSDXAxis",
     };
 
     var yAxisID = {
@@ -44,7 +45,8 @@
         LAP_max_speed: 'LAP_max_speed',
         LAP_avg_heart_rate: 'LAP_avg_heart_rate',
         LAP_max_heart_rate: 'LAP_max_heart_rate',
-        RRiRRi1: 'RRiRRi1'
+        RRiRRi1: 'RRiRRi1',
+        RMSSD: 'RMSSD'
 
     }
     
@@ -1306,6 +1308,7 @@
             var intMin,intMax;
 
             seriesData[seriesID.RRiRRi1] = [];
+            seriesData[seriesID.RMSSD] = [];
 
             intMin = parseInt(min.toString(), 10);
             intMax = parseInt(max.toString(), 10);
@@ -1331,6 +1334,13 @@
                 },
 
                 events: {
+                    selection: function(event) {
+                        //if (event.xAxis) {
+                        //    $report.html('min: '+ event.xAxis[0].min +', max: '+ event.xAxis[0].max);
+                        //} else {
+                        //    $report.html ('Selection reset');
+                        //},
+                    },
                     redraw: function () {
                     }
                 },
@@ -1351,14 +1361,37 @@
                 return;
             }
 
-            for (pointNr = intMin; pointNr < intMax - 1; pointNr++)
-                seriesData[seriesID.RRiRRi1].push([rawData.hrv.time[pointNr], rawData.hrv.time[pointNr + 1]]);
+            var RRi, RRi1, sum = 0, n= 1, RMSSD;
+
+            for (pointNr = intMin; pointNr < intMax - 1; pointNr++,n++) {
+                RRi = rawData.hrv.time[pointNr];
+                RRi1 = rawData.hrv.time[pointNr + 1];
+
+                sum += Math.pow(RRi1-RRi, 2);
+
+                seriesData[seriesID.RRiRRi1].push([RRi*1000, RRi1*1000]);
+            }
+
+            // Using formula from http://www.biopac.com/researchApplications.asp?Aid=32&AF=450&Level=3
+            if (n - 1 > 0)
+                RMSSD = Math.sqrt(sum/(n-1))*1000; // In ms.
+            else
+                self.loggMessage("error", "Cannot calculate RMSSD n = 1 ");
+
+            seriesData[seriesID.RMSSD].push(RMSSD);
 
             seriesSetup.push({
                 name: 'RRi vs RRi+1', id: seriesID.RRiRRi1, xAxis: 0, yAxis: 0,
-                data: seriesData[seriesID.RRiRRi1], visible: true, type: 'scatter'
+                data: seriesData[seriesID.RRiRRi1], visible: true, type: 'scatter', zIndex: 1
 
             });
+
+            seriesSetup.push({
+                name: 'RMSSD', id: seriesID.RMSSD, xAxis: 1, yAxis: 1,
+                data: seriesData[seriesID.RMSSD], visible: false, type: 'column', zIndex: 0
+
+            });
+            
 
 
             self.poincareChart = new Highcharts.Chart({
@@ -1370,7 +1403,7 @@
                 },
 
                 legend: {
-                    enabled: false
+                    //enabled: false
                 },
 
                 credits: {
@@ -1379,15 +1412,25 @@
 
                 xAxis: [{
                     id: xAxisID.HRVXAxisPoincare,
-                    title: {
-                        text: 'RRi'
-                    }
+                    //title: {
+                    //    text: 'RRi'
+                    //}
+                },
+                {
+                    id: xAxisID.RMSSDXaXis,
+                    categories: ['RMSSD']
                 }],
 
                 yAxis: [{
                     title: {
-                        text: 'RRi+1'
+                        text: 'RRi+1 (ms)'
                     }
+                },
+                {
+                    title: {
+                        text: 'RMSSD (ms)'
+                    },
+                    showEmpty : false,
                 }],
 
                 series: seriesSetup
@@ -2096,6 +2139,18 @@
                 },
             
                 events: {
+                    selection: function (event) {
+                        //if (event.xAxis) {
+                        //    $report.html('min: '+ event.xAxis[0].min +', max: '+ event.xAxis[0].max);
+                        //} else {
+                        //    $report.html ('Selection reset');
+                        //},
+
+                        if (typeof event.xAxis === "undefined") // Reset
+                        {
+
+                        }
+                    },
                     redraw: function () {
 
                         // Use events instead?? -> send event "redraw" to these
