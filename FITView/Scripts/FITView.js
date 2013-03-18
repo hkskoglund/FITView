@@ -14,7 +14,8 @@
         TE: "TExAxis",
         //HRZonesxAxisID = "HRZonesxAxis",
         weeklyCalories: "weeklyxAxis",
-        caloriesVSHRVSTE : "kcalVSHRVSTExAxis"
+        caloriesVSHRVSTE : "kcalVSHRVSTExAxis",
+        HRVXAxisPoincare : "HRVXAxisPoincare"
     };
 
     var yAxisID = {
@@ -43,6 +44,7 @@
         LAP_max_speed: 'LAP_max_speed',
         LAP_avg_heart_rate: 'LAP_avg_heart_rate',
         LAP_max_heart_rate: 'LAP_max_heart_rate',
+        RRiRRi1: 'RRiRRi1'
 
     }
     
@@ -1293,6 +1295,109 @@
             }
         },
 
+        showPoincareChart: function (rawData, min, max)
+        {
+            var chartId = "divPoincareChart";
+            var divChart = document.getElementById(chartId);
+
+            var seriesSetup = [];
+            var seriesData = {};
+            var pointNr;
+            var intMin,intMax;
+
+            seriesData[seriesID.RRiRRi1] = [];
+
+            intMin = parseInt(min.toString(), 10);
+            intMax = parseInt(max.toString(), 10);
+
+            if (this.poincareChart)
+                this.poincareChart.destroy();
+
+
+            var chartOptions = {
+                //animation: false,
+                renderTo: chartId,
+
+                // Allow zooming
+                zoomType: 'xy',
+                resetZoomButton: {
+                    position: {
+                        // align: 'right', // by default
+                        //verticalAlign: 'bottom', 
+                        //x: 40,
+                        //y: 20
+                        //relativeTo: 'chart'
+                    }
+                },
+
+                events: {
+                    redraw: function () {
+                    }
+                },
+
+                
+                //marginBottom: 120,
+                //marginTop:50
+
+            };
+
+            if (typeof rawData.hrv === "undefined" || typeof rawData.hrv.time === "undefined" || rawData.hrv.time.length === 0) {
+                self.loggMessage("warn", "No HRV data to plot poincare chart");
+                return;
+            }
+
+            if (rawData.hrv.time.length < 2) {
+                self.loggMessage("warn", "Cannot plot HRV poincare chart, requires at least 2 measurements");
+                return;
+            }
+
+            for (pointNr = intMin; pointNr < intMax - 1; pointNr++)
+                seriesData[seriesID.RRiRRi1].push([rawData.hrv.time[pointNr], rawData.hrv.time[pointNr + 1]]);
+
+            seriesSetup.push({
+                name: 'RRi vs RRi+1', id: seriesID.RRiRRi1, xAxis: 0, yAxis: 0,
+                data: seriesData[seriesID.RRiRRi1], visible: true, type: 'scatter'
+
+            });
+
+
+            self.poincareChart = new Highcharts.Chart({
+                chart: chartOptions,
+                //height : 700,
+
+                title: {
+                    text: 'Poincare'
+                },
+
+                legend: {
+                    enabled: false
+                },
+
+                credits: {
+                    enabled: false
+                },
+
+                xAxis: [{
+                    id: xAxisID.HRVXAxisPoincare,
+                    title: {
+                        text: 'RRi'
+                    }
+                }],
+
+                yAxis: [{
+                    title: {
+                        text: 'RRi+1'
+                    }
+                }],
+
+                series: seriesSetup
+            });
+                    
+
+
+
+        },
+
         // Handles display of measurements in several graphs with multiple axis
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
@@ -2185,7 +2290,27 @@
                     id: xAxisID.speedVSHR
                 },
 
-                { id: xAxisID.hrv },
+                {
+                    id: xAxisID.hrv,
+
+                    events: {
+                        afterSetExtremes: function (event) {
+                            var min = event.min;
+                            var max = event.max;
+                            if (min < event.dataMin)
+                                min = event.dataMin;
+                            if (max > event.dataMax)
+                                max = event.dataMax;
+
+                            self.showPoincareChart(rawData, min, max);
+                        },
+
+                        setExtremes: function (event) {
+                            //   console.log("setExtremes xAxis in multiChart min, max =  ", event.min, event.max);
+                        }
+                    }
+
+                },
                 {
                     id: xAxisID.TE,
                     type: 'datetime'

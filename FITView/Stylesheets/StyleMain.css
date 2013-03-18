@@ -366,3 +366,8 @@ ul#sessionList {
 .HeaderLabel {
   margin-right:5px;
 }
+
+#divPoincareChart {
+    width:  350px;
+    height : 350px;
+}
