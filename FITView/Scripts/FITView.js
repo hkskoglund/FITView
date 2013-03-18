@@ -2354,6 +2354,7 @@
             var renderer = this.multiChart.renderer;
             var xaxis = this.multiChart.get(xAxisID.rawdata);
 
+
             var width = xaxis.width;
             //var extremes = this.multiChart.xAxis[0].getExtremes();
             var max = xaxis.max;
