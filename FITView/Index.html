@@ -213,16 +213,23 @@
                                     <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[$index()]"></span>
                                     <!-- /ko -->
 
+                                    <!-- Calories -->
 
-                                    <!-- ko if: total_calories()[$index()] > 0 -->
-                                    <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+                                    <!-- ko if: total_calories()[$index()] > 0 || total_fat_calories()[$index] > 0-->
+                                        <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
-                                    <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
+                                        <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
+                                        <!-- ko if: total_fat_calories()[$index()] > 0 -->
+                                            <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[$index()]"></span>
+                                        <!-- /ko -->
                                     <!-- /ko -->
+
+                                   
+                                   
 
                                     <!-- POWER -->
 
-                                    <!-- ko if: avg_power()[$index()] >= 0  ||  max_power()[$index()] >= 0  -->
+                                    <!-- ko if: avg_power()[$index()] > 0  ||  max_power()[$index()] > 0  -->
 
                                     <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
 
@@ -664,48 +671,48 @@
                 <!-- ko if: selectedSession() !== undefined -->
 
 
-                <!-- ko if: sport()[selectedSession()] === 1 -->
-                <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
-                <!-- /ko -->
+                    <!-- ko if: sport()[selectedSession()] === 1 -->
+                    <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
+                    <!-- /ko -->
 
-                <!-- ko if: sport()[selectedSession()] === 2 -->
-                <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
-                <!-- /ko -->
+                    <!-- ko if: sport()[selectedSession()] === 2 -->
+                    <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
+                    <!-- /ko -->
 
-                <!-- ko if: sport()[selectedSession()] === 5 -->
-                <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
-                <!-- /ko -->
+                    <!-- ko if: sport()[selectedSession()] === 5 -->
+                    <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
+                    <!-- /ko -->
 
-                <!-- ko if : start_time()[selectedSession()] -->
+                    <!-- ko if : start_time()[selectedSession()] -->
 
-                <span data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedSession()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
-                <!-- /ko -->
-
-
-                <!-- ko if: total_elapsed_time().length > 0  -->
-                <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
-                <!-- /ko -->
+                    <span data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedSession()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
+                    <!-- /ko -->
 
 
-                <!-- ko if: total_timer_time().length > 0  && total_timer_time()[selectedSession()].toHHMMSS() !== total_elapsed_time()[selectedSession()].toHHMMSS() -->
-
-                <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
-                <!-- /ko -->
-
-                <!-- ko if: total_distance().length > 0 -->
-                <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
-                <!-- /ko -->
+                    <!-- ko if: total_elapsed_time().length > 0  -->
+                    <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
+                    <!-- /ko -->
 
 
-                <!-- ko if: typeof num_laps !== "undefined" && num_laps().length > 0 && num_laps()[selectedSession()] >= 0 -->
-                (<span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>)
-                <!-- /ko -->
+                    <!-- ko if: total_timer_time().length > 0  && total_timer_time()[selectedSession()].toHHMMSS() !== total_elapsed_time()[selectedSession()].toHHMMSS() -->
 
-                <!-- SPEED -->
+                    <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
+                    <!-- /ko -->
 
-                <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
-                <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
-                <!-- /ko -->
+                    <!-- ko if: total_distance().length > 0 -->
+                    <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
+                    <!-- /ko -->
+
+
+                    <!-- ko if: typeof num_laps !== "undefined" && num_laps().length > 0 && num_laps()[selectedSession()] >= 0 -->
+                    (<span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>)
+                    <!-- /ko -->
+
+                    <!-- SPEED -->
+
+                    <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
+                    <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
+                    <!-- /ko -->
 
 
                 <!-- BIKING/GENERIC -->
@@ -772,18 +779,22 @@
                 <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
                 <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
                 <!-- /ko -->
+                
 
-
-                <!-- ko if: total_calories()[selectedSession()] > 0 -->
+                <!-- ko if: total_calories()[selectedSession()] > 0 || total_fat_calories()[selectedSession()] > 0-->
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
                 <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedSession()]"></span>
+                <!-- ko if: total_fat_calories()[selectedSession()] > 0 -->
+                <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedSession()]"></span>
+                <!-- /ko -->
+
                 <!-- /ko -->
 
 
                 <!-- POWER -->
 
-                <!-- ko if: avg_power()[selectedSession()] >= 0  ||  max_power()[selectedSession()] >= 0  -->
+                <!-- ko if: avg_power()[selectedSession()] > 0   ||  max_power()[selectedSession()] > 0  -->
 
                 <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
 
@@ -986,16 +997,19 @@
                 <!-- /ko -->
 
 
-                <!-- ko if: total_calories()[selectedLap()] > 0 -->
+                <!-- ko if: total_calories()[selectedLap()] > 0 || total_fat_calories()[selectedLap()] > 0-->
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
                 <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedLap()]"></span>
+                <!-- ko if: total_fat_calories()[$index()] > 0 -->
+                <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedLap()]"></span>
+                <!-- /ko -->
                 <!-- /ko -->
 
 
                 <!-- POWER -->
 
-                <!-- ko if: avg_power()[selectedLap()] >= 0  ||  max_power()[selectedLap()] >= 0  -->
+                <!-- ko if: avg_power()[selectedLap()] > 0  ||  max_power()[selectedLap()] > 0  -->
 
                 <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
 
@@ -1206,10 +1220,14 @@
                                                 <!-- /ko -->
                                                 <!-- /ko -->
 
-                                                <!-- ko if: typeof (total_calories) !== "undefined" && total_calories.length > 0 && total_calories[$index()] > 0 -->
+                                                <!-- ko if: (typeof (total_calories) !== "undefined" && total_calories.length > 0 && total_calories[$index()] > 0) ||
+                                                    (typeof (total_fat_calories) !== "undefined" && total_fat_calories.length > 0 && total_fat_calories[$index()] > 0) -->
                                                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
                                                 <span title="Total calories (kcal)" data-bind="text: total_calories[$index()]"></span>
+                                                <!-- ko if: (typeof (total_fat_calories) !== "undefined" && total_fat_calories.length > 0 && total_fat_calories[$index()] > 0) -->
+                                                <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories[$index()]"></span>
+                                                <!-- /ko -->
                                                 <!-- /ko -->
 
 

@@ -1441,6 +1441,28 @@
 
         },
 
+        getStartTime: function (rawData)
+        {
+            if (rawData.session && rawData.session.start_time && rawData.session.start_time.length > 0)
+                return rawData.session.start_time[0];
+
+            if (rawData.lap && rawData.lap.start_time && rawData.lap.start_time.length > 0)
+                return rawData.lap.start_time[0];
+
+            if (rawData.record && rawData.record.timestamp && rawData.record.timestamp.length > 0)
+            {
+                var tstamp, len = rawData.record.timestamp.length;
+                for (tstamp = 0; tstamp < len; tstamp++)
+                {
+                    if (rawData.record.timestamp[tstamp] !== undefined && rawData.record.timestamp[tstamp] !== null)
+                        return rawData.record.timestamp[tstamp];
+                }
+            }
+
+            return 0; 
+
+        },
+
         // Handles display of measurements in several graphs with multiple axis
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
@@ -1860,11 +1882,89 @@
 
             // HRV
 
-            if (rawData.hrv !== undefined) {
-                if (rawData.hrv.time !== undefined) {
+            function avg_hrv(lookBack, startMeasurementNr, lookForward) {
+                var len = rawData.hrv.time.length;
+                var timeNr;
+                var sum,n;
 
-                    seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible: false, type: 'scatter' });
-                    yAxisOptions.push({
+                var max = startMeasurementNr+lookForward+1;
+                if (max > len)
+                    max = len;
+
+                var min = startMeasurementNr - lookBack;
+                if (min < 0)
+                    min = 0;
+
+                sum = 0;
+                n = 0;
+                for (timeNr=min;timeNr<max;timeNr++)
+                    if (timeNr !== startMeasurementNr) {
+                        sum += rawData.hrv.time[timeNr] * 1000;
+                        n++;
+                    }
+                return sum / n;
+            }
+
+            if (self.hasHRVdata(rawData)) {
+               
+                // Find timestamps for heart beats
+
+                var hrv_combined_timestamp_arr = [], hrv_combined_timestamp_arr_raw = [];;
+                var hrv_start_time, hrv_timestamp, hrv_timestamp_raw;
+                var hrv_time_length;
+                var measurementNr;
+                var  hrv_time_next, hrv_time_last;
+
+                hrv_start_time = self.getStartTime(rawData);
+                if (hrv_start_time === 0) 
+                    self.loggMessage("warn","Could not find start_time in session,lap and record head, trying relative time starting at 0");
+
+                hrv_time_length = rawData.hrv.time.length;
+                //if (hrv_time_length > 500)
+                //    hrv_time_length = 500;
+
+                hrv_timestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(hrv_start_time);
+                hrv_timestamp_raw = hrv_timestamp;
+               
+                var avg, upperLimit,lowerLimit;
+
+                // Setup raw HRV data
+                for (measurementNr = 0; measurementNr < hrv_time_length; measurementNr++) {
+                    hrv_time_next = rawData.hrv.time[measurementNr] * 1000; // In ms.
+                    hrv_timestamp_raw += hrv_time_next;
+                    hrv_combined_timestamp_arr_raw.push([hrv_timestamp_raw, hrv_time_next]);
+
+                }
+
+                // Run filter
+
+                //for (measurementNr = 0; measurementNr < hrv_time_length; measurementNr++) {
+                //    hrv_time_next = rawData.hrv.time[measurementNr] * 1000; // In ms.
+                //    if (hrv_time_last !== undefined && Math.abs(hrv_time_next - hrv_time_last) >= 100)
+                //        hrv_time_next = hrv_time_last;
+                //    //avg = avg_hrv(2, measurementNr, 2);
+                //    //lowerLimit = avg*(1-0.05);
+                //    //upperLimit = avg*(1+0.05);
+                //    //if (hrv_time_next < lowerLimit || hrv_time_next > upperLimit) {
+                //    //    self.loggMessage("info", "Setting measurement nr. " + measurementNr.toString() + " with hrv time (RR) " + hrv_time_next.toString() + " to average (possible outlier), lowerLimit/avg./upperLimit " + lowerLimit.toFixed(1) + '/' + avg.toFixed(1) + '/' + upperLimit.toFixed(1));
+                //    //    hrv_timestamp += avg;
+                //    //    hrv_combined_timestamp_arr.push([hrv_timestamp, avg]);
+                //    //} else {
+                //    //    hrv_timestamp += hrv_time_next;
+                //    //    hrv_combined_timestamp_arr.push([hrv_timestamp, hrv_time_next]);
+                //    //}
+                //    hrv_timestamp += hrv_time_next;
+                //    hrv_time_last = hrv_time_next;
+                //    hrv_combined_timestamp_arr.push([hrv_timestamp, hrv_time_next]);
+                   
+                //}
+
+
+                   // seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible: false, type: 'scatter' });
+                seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 0, yAxis: yAxisNr++, data: hrv_combined_timestamp_arr_raw, visible: false, type: 'scatter' });
+               // seriesSetup.push({ name: 'HRV raw', id: seriesID.hrv+'raw', xAxis: 0, yAxis: yAxisNr-1, data: hrv_combined_timestamp_arr_raw, visible: false, type: 'scatter' });
+
+                yAxisOptions.push({
                         gridLineWidth: 0,
                         opposite: true,
                         title: {
@@ -1872,8 +1972,6 @@
                         },
                         showEmpty : false
                     });
-                }
-
             }
 
             // TE history
@@ -2350,14 +2448,17 @@
 
                     events: {
                         afterSetExtremes: function (event) {
+
                             var min = event.min;
                             var max = event.max;
+
                             if (min < event.dataMin)
                                 min = event.dataMin;
+
                             if (max > event.dataMax)
                                 max = event.dataMax;
 
-                            self.showPoincareChart(rawData, min, max);
+                            //self.showPoincareChart(rawData, min, max);
                         },
 
                         setExtremes: function (event) {
@@ -2404,12 +2505,13 @@
 
                             var onLapxAxis;
                             var onSpeedVSHRxAxis;
-                            var onHrvxAxis, onWeeklyxAxis, onkcalxAxis;
+                            var onHrvxAxis, onWeeklyxAxis, onkcalxAxis, isHRVSeries;
 
                             // With highchart-more.js cannot find self.multiChart in closure anymore....? this.series.chart used instead
                             onLapxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.lap));
                             onSpeedVSHRxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.speedVSHR));
-                            onHrvxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.hrv));
+                            //onHrvxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.hrv));
+                            isHRVSeries = (this.series === this.series.chart.get(seriesID.hrv));
                             onWeeklyxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.weeklyCalories));
                             onkcalxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.caloriesVSHRVSTE));
 
@@ -2424,8 +2526,8 @@
                             else if (onSpeedVSHRxAxis) {
                                 s = "<b>Heart rate:</b>" + this.y;
                             }
-                            else if (onHrvxAxis) {
-                                s = '<b>RR time :</b>' + Highcharts.numberFormat(this.y, 3) + " s"; // Hrv time in seconds 0.xxx
+                            else if (isHRVSeries) {
+                                s = '<b>Time: </b>' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/><b>RR: </b>' + Highcharts.numberFormat(this.y, 0) + " ms";
                             }
                             else if (onWeeklyxAxis)
                                 s = '<b>Week:</b> ' + this.x
