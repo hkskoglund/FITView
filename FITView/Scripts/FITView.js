@@ -747,7 +747,8 @@
                 averageSampleTime: ko.observable(5000),
                 logging: ko.observable(false),
                 distanceOnXAxis: ko.observable(true),
-                TEIntensityPlotbands: ko.observable(false)
+                TEIntensityPlotbands: ko.observable(false),
+                hideLAPtriggerTime : ko.observable(true),
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1645,13 +1646,14 @@
                     cadenceSeriesData = FITUtil.combine(rawData, rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.cadence);
                     seriesData[seriesID.cadence] = cadenceSeriesData;
 
-                    cadenceSeries = { name: 'Cadence', id: seriesID.cadence, yAxis: yAxisNr++, data: seriesData[seriesID.cadence], type: 'line', visible: false, zIndex: 97 };
+                    var cadenceName = (sport === FITSport.running) ? 'Strides' : 'Cadence';
+                    cadenceSeries = { name: cadenceName, id: seriesID.cadence, yAxis: yAxisNr++, data: seriesData[seriesID.cadence], type: 'line', visible: false, zIndex: 97 };
 
                     seriesSetup.push(cadenceSeries);
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
-                            text: 'Cadence'
+                            text: cadenceName
                         },
                         showEmpty : false,
 
@@ -1783,6 +1785,7 @@
                                     break;
                             }
 
+                          if (!(rawData.lap.lap_trigger[lapNr] === lap_trigger.time && self.masterVM.settingsVM.hideLAPtriggerTime())) {
                             lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
                             if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
                                 self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
@@ -1790,6 +1793,7 @@
                                 self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
 
                             self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
+                            }
                         }
                     }
                 } else
@@ -4091,8 +4095,11 @@
             var len = rawdata.hrv.time.length;
 
             function setCSVString() {
-                CSVtimeStr = "";
+               
+               // headerStr = "Exported by FITView, start time "+Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', self.getStartTime(rawdata))+CRLF;
                 headerStr = "";
+                CSVtimeStr = headerStr;
+
                 if (header) {
                     if (type === "scatter")
                         headerStr = 'point,';
