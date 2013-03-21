@@ -1965,7 +1965,7 @@
 
 
                    // seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible: false, type: 'scatter' });
-                seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 0, yAxis: yAxisNr++, data: hrv_combined_timestamp_arr_raw, visible: false, type: 'scatter' });
+                seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 0, yAxis: yAxisNr++, data: hrv_combined_timestamp_arr_raw, visible: false, type: 'spline' });
                // seriesSetup.push({ name: 'HRV raw', id: seriesID.hrv+'raw', xAxis: 0, yAxis: yAxisNr-1, data: hrv_combined_timestamp_arr_raw, visible: false, type: 'scatter' });
 
                 yAxisOptions.push({
