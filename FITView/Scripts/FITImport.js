@@ -1479,18 +1479,23 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  for (uintNr = 0; uintNr < uint16ToRead; uintNr++) {
                                      uint16 = dviewFit.getUint16(tempIndex, littleEndian);
                                      numBytesRead += 2;
-                                     if (fitBaseTypesInvalidValues[bType].invalidValue !== uint16)  // Just skip invalid values
+                                     if (fitBaseTypesInvalidValues[bType].invalidValue !== uint16)  // Just skip invalid values (used for HRV array of uint16)
                                        uint16Arr.push(uint16);
                                      tempIndex += 2;
                                  }
+
+                                 
                                  if (uint16Arr.length === 1) {
                                    
                                      recContent[currentField].value = uint16Arr[0];
                                  }
-                                 else {
+                                 else if (uint16Arr.length > 1) {
                                    
                                      recContent[currentField].value = uint16Arr;
+                                 } else if (uint16Arr.length === 0) { // In case a uint16 field of size 2 bytes with invalid value -> field is marked with .invalid = true (see later)
+                                     recContent[currentField].value = uint16;
                                  }
+                                 
                                  break;
 
                              case 0x8B:
