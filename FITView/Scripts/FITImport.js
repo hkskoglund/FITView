@@ -432,16 +432,18 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  
                  rawData._headerInfo_ = headerInfo;
 
-                 if (self.webkitPostMessage)
-                     self.webkitpostMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file : fitFile });
-                 else
-                     self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file : fitFile });
+             }
 
-                 return rawData;
+             self.postMessage({ response: "importFinished", data: 100 });
 
-             } else
+             // Will send undefined if not .FIT datatype
 
-                 return undefined;
+             if (self.webkitPostMessage)
+                 self.webkitpostMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file: fitFile });
+             else
+                 self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file: fitFile });
+
+             return rawData;
 
          }
 
@@ -830,7 +832,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              clearInterval(progressHandle);
 
-             self.postMessage({ response: "importFinished", data: 100 });
+             //self.postMessage({ response: "importFinished", data: 100 });
             // self.postMessage({ response: "messageCounter", counter: counter });
              rawdata._msgCounter_ = counter;
              // Persist file_id msg.
