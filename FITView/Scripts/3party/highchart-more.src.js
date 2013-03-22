@@ -2,7 +2,7 @@
 // @compilation_level SIMPLE_OPTIMIZATIONS
 
 /**
- * @license Highcharts JS v3.0Beta (2013-02-21)
+ * @license Highcharts JS v3.0.0 (2013-03-22)
  *
  * (c) 2009-2013 Torstein Hønsi
  *
@@ -848,11 +848,13 @@
 
             });
         },
+        trackerGroups: ['group', 'dataLabels'],
         drawGraph: noop,
         pointAttrToOptions: colProto.pointAttrToOptions,
         drawPoints: colProto.drawPoints,
         drawTracker: colProto.drawTracker,
-        animate: colProto.animate
+        animate: colProto.animate,
+        getColumnMetrics: colProto.getColumnMetrics
     });/* 
  * The GaugeSeries class
  */
@@ -920,17 +922,8 @@
         // chart.angular will be set to true when a gauge series is present, and this will
         // be used on the axes
         angular: true,
-
-        /* *
-         * Extend the bindAxes method by adding radial features to the axes
-         * /
-        _bindAxes: function () {
-            Series.prototype.bindAxes.call(this);
-            
-            extend(this.xAxis, gaugeXAxisMixin);
-            extend(this.yAxis, radialAxisMixin);
-            this.yAxis.onBind();
-        },*/
+        drawGraph: noop,
+        trackerGroups: ['group', 'dataLabels'],
 
         /**
          * Calculate paths etc
@@ -954,7 +947,7 @@
                     topWidth = dialOptions.topWidth || 1,
                     rotation = yAxis.startAngleRad + yAxis.translate(point.y, null, null, null, true);
 
-                // Handle the wrap option // docs
+                // Handle the wrap option
                 if (options.wrap === false) {
                     rotation = Math.max(yAxis.startAngleRad, Math.min(yAxis.endAngleRad, rotation));
                 }
@@ -1039,27 +1032,29 @@
         /**
          * Animate the arrow up from startAngle
          */
-        animate: function () {
+        animate: function (init) {
             var series = this;
 
-            each(series.points, function (point) {
-                var graphic = point.graphic;
+            if (!init) {
+                each(series.points, function (point) {
+                    var graphic = point.graphic;
 
-                if (graphic) {
-                    // start value
-                    graphic.attr({
-                        rotation: series.yAxis.startAngleRad * 180 / Math.PI
-                    });
+                    if (graphic) {
+                        // start value
+                        graphic.attr({
+                            rotation: series.yAxis.startAngleRad * 180 / Math.PI
+                        });
 
-                    // animate
-                    graphic.animate({
-                        rotation: point.shapeArgs.rotation
-                    }, series.options.animation);
-                }
-            });
+                        // animate
+                        graphic.animate({
+                            rotation: point.shapeArgs.rotation
+                        }, series.options.animation);
+                    }
+                });
 
-            // delete this function to allow it only once
-            series.animate = null;
+                // delete this function to allow it only once
+                series.animate = null;
+            }
         },
 
         render: function () {
@@ -1354,7 +1349,7 @@
     // 1 - set default options
     defaultPlotOptions.errorbar = merge(defaultPlotOptions.boxplot, {
         color: '#000000',
-        grouping: false, // exclude from docs
+        grouping: false,
         linkedTo: ':previous',
         tooltip: {
             pointFormat: defaultPlotOptions.arearange.tooltip.pointFormat
@@ -1516,7 +1511,6 @@
         translate: function () {
             var series = this,
                 options = series.options,
-                stacking = options.stacking,
                 axis = series.yAxis,
                 len,
                 i,
@@ -1524,10 +1518,10 @@
                 points,
                 point,
                 shapeArgs,
-                sum = 0,
-                sumStart = 0,
-                subSum = 0,
-                subSumStart = 0,
+                sum,
+                sumStart,
+                subSum,
+                subSumStart,
                 edges,
                 cumulative,
                 prevStack,
@@ -1543,18 +1537,17 @@
 
             points = this.points;
             subSumStart = sumStart = points[0];
+            sum = subSum = points[0].y;
 
             for (i = 1, len = points.length; i < len; i++) {
                 // cache current point object
                 point = points[i];
                 shapeArgs = point.shapeArgs;
 
-                if (stacking) {
-                    // get current and previous stack
-                    stack = series.getStack(i);
-                    prevStack = series.getStack(i - 1);
-                    prevY = series.getStackY(prevStack);
-                }
+                // get current and previous stack
+                stack = series.getStack(i);
+                prevStack = series.getStack(i - 1);
+                prevY = series.getStackY(prevStack);
 
                 // set new intermediate sum values after reset
                 if (subSumStart === null) {
@@ -1585,23 +1578,16 @@
 
                     // calculate other (up or down) points based on y value
                 } else if (point.y < 0) {
-
-                    if (stacking) {
-                        // use "_cum" instead of already calculated "cum" to avoid reverse ordering negative columns
-                        cumulative = stack._cum === null ? prevStack.total : stack._cum;
-                        stack._cum = cumulative + point.y;
-                        y = mathCeil(axis.translate(cumulative, 0, 1)) - crispCorr;
-                        h = axis.translate(stack._cum, 0, 1);
-                    }
+                    // use "_cum" instead of already calculated "cum" to avoid reverse ordering negative columns
+                    cumulative = stack._cum === null ? prevStack.total : stack._cum;
+                    stack._cum = cumulative + point.y;
+                    y = mathCeil(axis.translate(cumulative, 0, 1)) - crispCorr;
+                    h = axis.translate(stack._cum, 0, 1);
 
                     shapeArgs.y = y;
                     shapeArgs.height = mathCeil(h - y);
                 } else {
-                    if (!stacking) {
-                        shapeArgs.y -= points[i - 1].shapeArgs.height;
-                    } else if (shapeArgs.y + shapeArgs.height > prevY) {
-                        shapeArgs.height = mathFloor(prevY - shapeArgs.y);
-                    }
+                    shapeArgs.height = mathFloor(prevY - shapeArgs.y);
                 }
             }
         },
@@ -1979,7 +1965,7 @@
             activeSeries = [];
 
         // Handle padding on the second pass, or on redraw
-        if (pick(this.options.min, this.userMin) === UNDEFINED && this.tickPositions) {
+        if (this.tickPositions) {
             each(this.series, function (series) {
 
                 var seriesOptions = series.options,
@@ -2038,7 +2024,7 @@
                 }
             });
 
-            if (range > 0) {
+            if (range > 0 && pick(this.options.min, this.userMin) === UNDEFINED) {
                 pxMax -= axisLength;
                 transA *= (axisLength + pxMin - pxMax) / axisLength;
                 this.min += pxMin / transA;

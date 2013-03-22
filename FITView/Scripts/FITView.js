@@ -1909,24 +1909,24 @@
                 return sum / n;
             }
 
-            function calc_rmssd(intMin, size) {
+            function calc_rmssd(hrvData,intMin, size) {
 
                 var RRi, RRi1, sum = 0, n = 0, RMSSD, len, pointNr;
 
                 len = intMin + size;
-                if (len > rawData.hrv.time.length)
-                    len = rawData.hrv.time;
+                if (len > hrvData.length)
+                    len = hrvData.length;
 
                 for (pointNr = intMin; pointNr < len; pointNr++) {
-                    RRi = rawData.hrv.time[pointNr];
-                    RRi1 = rawData.hrv.time[pointNr + 1];
+                    RRi = hrvData[pointNr];
+                    RRi1 = hrvData[pointNr + 1];
                     sum += Math.pow(RRi1 - RRi, 2);
                     n++;
                 }
 
                 // Using formula from http://www.biopac.com/researchApplications.asp?Aid=32&AF=450&Level=3
                 if (n > 0)
-                    RMSSD = Math.sqrt(sum /n) * 1000; // In ms.
+                    RMSSD = Math.sqrt(sum /n) ; 
                 else
                     self.loggMessage("error", "Cannot calculate RMSSD n = 0 ");
 
@@ -1964,19 +1964,17 @@
                     hrv_combined_timestamp_arr_raw.push([hrv_timestamp_raw, hrv_time_next]);
                     
 
-                    rmssd = calc_rmssd(measurementNr, 10); //i.e 350 ms RR (HR = 171.4)-> gives a sampling over 3.5 seconds
-                    if (typeof rmssd !== "undefined" && !isNaN(rmssd))
-                      rmssd_arr.push([hrv_timestamp_raw, rmssd]);
 
                 }
 
                 // Run filter
 
+                //var hrv_filtered = [];
                 //for (measurementNr = 0; measurementNr < hrv_time_length; measurementNr++) {
                 //    hrv_time_next = rawData.hrv.time[measurementNr] * 1000; // In ms.
                 //    if (hrv_time_last !== undefined) {
                 //        diff = Math.abs(hrv_time_next - hrv_time_last);
-                //        if (diff >=  hrv_time_last * 0.2)
+                //        if (diff >=  hrv_time_last * 0.05)
                 //            hrv_time_next = hrv_time_last;
                 //    }
                 //    //avg = avg_hrv(2, measurementNr, 2);
@@ -1993,13 +1991,23 @@
                 //    hrv_timestamp += hrv_time_next;
                 //    hrv_time_last = hrv_time_next;
                 //    hrv_combined_timestamp_arr.push([hrv_timestamp, hrv_time_next]);
+                //    hrv_filtered.push(hrv_time_next);
                    
                 //}
 
+                //hrv_timestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(hrv_start_time); // Reset start time
+                //// Calculate RMSSD
+                //for (measurementNr = 0; measurementNr < hrv_filtered.length; measurementNr++) {
+                //    hrv_time_next = hrv_filtered[measurementNr]; // In ms.
+                //    hrv_timestamp += hrv_time_next;
+                //    rmssd = calc_rmssd(hrv_filtered, measurementNr, 10); //i.e 350 ms RR (HR = 171.4)-> gives a sampling over 3.5 seconds
+                //    if (typeof rmssd !== "undefined" && !isNaN(rmssd))
+                //        rmssd_arr.push([hrv_timestamp, rmssd]);
+                //}
 
                    // seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 3, yAxis: yAxisNr++, data: rawData.hrv.time, visible: false, type: 'scatter' });
                 seriesSetup.push({ name: 'HRV', id: seriesID.hrv, xAxis: 0, yAxis: yAxisNr++, data: hrv_combined_timestamp_arr_raw, visible: false, type: 'spline' });
-              //  seriesSetup.push({ name: 'HRV filter', id: seriesID.hrv+'filt', xAxis: 0, yAxis: yAxisNr-1, data: hrv_combined_timestamp_arr, visible: false, type: 'spline' });
+                //seriesSetup.push({ name: 'HRV filter', id: seriesID.hrv+'filt', xAxis: 0, yAxis: yAxisNr-1, data: hrv_combined_timestamp_arr, visible: false, type: 'spline' });
              
 
                 yAxisOptions.push({
@@ -2011,16 +2019,16 @@
                         showEmpty : false
                 });
 
-                seriesSetup.push({ name: 'RMSSD', id: seriesID.hrv + 'rmssd', xAxis: 0, yAxis: yAxisNr++, data: rmssd_arr, visible: false, type: 'spline' });
+                //seriesSetup.push({ name: 'RMSSD', id: seriesID.hrv + 'rmssd', xAxis: 0, yAxis: yAxisNr++, data: rmssd_arr, visible: false, type: 'spline' });
 
-                yAxisOptions.push({
-                    gridLineWidth: 0,
-                    opposite: true,
-                    title: {
-                        text: 'RMSSD'
-                    },
-                    showEmpty : false
-                });
+                //yAxisOptions.push({
+                //    gridLineWidth: 0,
+                //    opposite: true,
+                //    title: {
+                //        text: 'RMSSD'
+                //    },
+                //    showEmpty : false
+                //});
             }
 
             // TE history
