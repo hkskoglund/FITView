@@ -415,7 +415,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
 
          function getRawdata(fileBuffer,fitFile) {
-             var rawData;
+             var rawData, type;
 
              var headerInfo = getFITHeader(fileBuffer, fitFile);
 
@@ -426,12 +426,18 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  var metaStore = getObjectStore(META_OBJECTSTORE_NAME, "readwrite");
                  addRawdata(metaStore, headerInfo);
 
-                 rawData = getFITDataRecords(fileBuffer,headerInfo);
-                 if (typeof (rawData) === "undefined") 
+                 rawData = getFITDataRecords(fileBuffer, headerInfo);
+                 if (typeof (rawData) === "undefined")
                      rawData = {}; // Allow for hooking up headerinfo on rawdata object
-                 
+
                  rawData._headerInfo_ = headerInfo;
 
+             }
+             else {
+                 type = fitFile.type;
+                 if (typeof type === "undefined")
+                     type = "Undefined";
+                 loggMessage({ response: "error", data: "File " + fitFile.name + " of type " + fitFile.type + ", does not have a .FIT datatype in header, cannot process this file." });
              }
 
              self.postMessage({ response: "importFinished", data: 100 });
