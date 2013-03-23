@@ -1,5 +1,5 @@
 // JSHint options
-/* global ko:true, Highcharts:true, Modernizr:true, google:true, indexedDB:true, FIT:true */
+/* global ko:true, Highcharts:true, Modernizr:true, google:true, indexedDB:true, FIT:true, moment:true, $:true, alert: true, console: true */
 
 (function () {
     "use strict";
@@ -16,7 +16,7 @@
         weeklyCalories: "weeklyxAxis",
         caloriesVSHRVSTE : "kcalVSHRVSTExAxis",
         HRVXAxisPoincare: "HRVXAxisPoincare",
-        RMSSDXAxis: "RMSSDXAxis",
+        RMSSDXAxis: "RMSSDXAxis"
     };
 
     var yAxisID = {
@@ -48,7 +48,7 @@
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD'
 
-    }
+    };
     
 
     // Based on info. in profile.xls from FIT SDK
@@ -664,7 +664,7 @@
             this.fullDate = ko.computed(function () {
                 return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec);
             }, this);
-        },
+        }
 
     };
 
@@ -748,7 +748,7 @@
                 logging: ko.observable(false),
                 distanceOnXAxis: ko.observable(true),
                 TEIntensityPlotbands: ko.observable(false),
-                hideLAPtriggerTime : ko.observable(true),
+                hideLAPtriggerTime : ko.observable(true)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1204,8 +1204,8 @@
 
                     },
                     value: value
-                }
-            };
+                };
+            }
 
             if (rawData.lap) {
                 len = rawData.lap.timestamp.length;
@@ -1344,7 +1344,7 @@
                     },
                     redraw: function () {
                     }
-                },
+                }
 
                 
                 //marginBottom: 120,
@@ -1412,7 +1412,7 @@
                 },
 
                 xAxis: [{
-                    id: xAxisID.HRVXAxisPoincare,
+                    id: xAxisID.HRVXAxisPoincare
                     //title: {
                     //    text: 'RRi'
                     //}
@@ -1431,7 +1431,7 @@
                     title: {
                         text: 'RMSSD (ms)'
                     },
-                    showEmpty : false,
+                    showEmpty : false
                 }],
 
                 series: seriesSetup
@@ -1475,23 +1475,14 @@
             var chartId = "multiChart";
             var divChart = document.getElementById(chartId);
             divChart.style.visibility = "visible";
+
             var seriesSetup = []; // Options name,id
             var seriesData = []; // Actual data in chart
-            var heartRateSeriesOptions;
-            var heartRateSeriesData;
-            var altitudeSeries;
-            var altitudeSeriesData;
-            var speedSeries;
+           
+          
             var speedSeriesData;
             var speedAvgSeries;
             var speedAvgSeriesData;
-
-            var cadenceSeries;
-            var cadenceSeriesData;
-            var powerSeries;
-            var powerSeriesData;
-            var temperatureSeries;
-            var temperatureSeriesData;
 
             var prevMarker = null; // Holds previous marker for tracking position during mouse move/over
 
@@ -1504,7 +1495,6 @@
             var speedYAxisNr;
             var heartRateYAxisNr;
 
-            var id;
 
             var timezoneDiff;
 
@@ -1518,21 +1508,18 @@
 
                 if (rawData.record.heart_rate) {
                     
-                    heartRateSeriesData = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.HR);
-                    seriesData[seriesID.HR] = heartRateSeriesData;
+                    seriesData[seriesID.HR] = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.HR);
                     heartRateYAxisNr = yAxisNr;
 
-                    heartRateSeriesOptions = {
+                    seriesSetup.push({
                         
                         id: seriesID.HR,
                         name: 'Heart rate',
                         yAxis: yAxisNr++,
                         type: 'line',
                         data: seriesData[seriesID.HR],
-                        zIndex: 100,
-                    };
-
-                    seriesSetup.push(heartRateSeriesOptions);
+                        zIndex: 100
+                    });
 
                     yAxisOptions.push({
                         gridLineWidth: 1,
@@ -1570,8 +1557,8 @@
 
                     seriesData[seriesID.speed] = speedSeriesData;
                     speedYAxisNr = yAxisNr;
-                    speedSeries = { name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'spline', visible : !FITUtil.hasGPSData(rawData), zIndex: 99 };
-                    seriesSetup.push(speedSeries);
+                 
+                    seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'spline', visible : !FITUtil.hasGPSData(rawData), zIndex: 99 });
 
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -1625,12 +1612,11 @@
                 }
 
                 if (rawData.record.power) {
-                    
-                    powerSeriesData = FITUtil.combine(rawData, rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.power);
-                    seriesData[seriesID.power] = powerSeriesData;
+                  
+                    seriesData[seriesID.power] = FITUtil.combine(rawData, rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.power);
 
-                    powerSeries = { name: 'Power', id: seriesID.power, yAxis: yAxisNr++, data: seriesData[seriesID.power], type: 'line', zIndex: 98, visible: false };
-                    seriesSetup.push(powerSeries);
+                    seriesSetup.push({ name: 'Power', id: seriesID.power, yAxis: yAxisNr++, data: seriesData[seriesID.power], type: 'line', zIndex: 98, visible: false });
+
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
@@ -1643,19 +1629,17 @@
 
                 if (rawData.record.cadence) {
                    
-                    cadenceSeriesData = FITUtil.combine(rawData, rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.cadence);
-                    seriesData[seriesID.cadence] = cadenceSeriesData;
+                    seriesData[seriesID.cadence] = FITUtil.combine(rawData, rawData.record.cadence, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.cadence);
 
                     var cadenceName = (sport === FITSport.running) ? 'Strides' : 'Cadence';
-                    cadenceSeries = { name: cadenceName, id: seriesID.cadence, yAxis: yAxisNr++, data: seriesData[seriesID.cadence], type: 'line', visible: false, zIndex: 97 };
-
-                    seriesSetup.push(cadenceSeries);
+                  
+                    seriesSetup.push({ name: cadenceName, id: seriesID.cadence, yAxis: yAxisNr++, data: seriesData[seriesID.cadence], type: 'line', visible: false, zIndex: 97 });
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
                             text: cadenceName
                         },
-                        showEmpty : false,
+                        showEmpty : false
 
                     });
 
@@ -1663,14 +1647,13 @@
 
                 if (rawData.record.altitude) {
                    
-                    altitudeSeriesData = FITUtil.combine(rawData, rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.altitude);
-                    seriesData[seriesID.altitude] = altitudeSeriesData;
-                    var hasGPSdata = FITUtil.hasGPSData(rawData);
-                    altitudeSeries = {
-                        name: 'Altitude', id: seriesID.altitude, yAxis: yAxisNr++, data: seriesData[seriesID.altitude], visible: false, type: 'line', zIndex: 96
-                    };
+                
+                    seriesData[seriesID.altitude] = FITUtil.combine(rawData, rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.altitude);
 
-                    seriesSetup.push(altitudeSeries);
+                    seriesSetup.push({
+                        name: 'Altitude', id: seriesID.altitude, yAxis: yAxisNr++, data: seriesData[seriesID.altitude], visible: false, type: 'line', zIndex: 96
+                    });
+
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
@@ -1684,10 +1667,10 @@
 
                 if (rawData.record.temperature) {
                    
-                    temperatureSeriesData = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.temperature);
-                    seriesData[seriesID.temperature] = temperatureSeriesData;
-                    temperatureSeries = { name: 'Temperature', id: seriesID.temperature, yAxis: yAxisNr++, data: seriesData[seriesID.temperature], visible: false, type: 'line', zIndex: 95 };
-                    seriesSetup.push(temperatureSeries);
+                    seriesData[seriesID.temperature] = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.temperature);
+                
+                    seriesSetup.push({ name: 'Temperature', id: seriesID.temperature, yAxis: yAxisNr++, data: seriesData[seriesID.temperature], visible: false, type: 'line', zIndex: 95 });
+
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         opposite: true,
@@ -1698,7 +1681,7 @@
                     });
                 }
 
-                var speedVSHR = FITUtil.combineTwo(speedSeriesData, heartRateSeriesData);
+                var speedVSHR = FITUtil.combineTwo(speedSeriesData, seriesData[seriesID.HR]);
                 if (speedVSHR) {
                     
                     seriesData[seriesID.speedVSHR] = speedVSHR;
@@ -1727,7 +1710,7 @@
                 // a must be equal to b
                 return 0;
 
-            };
+            }
             
             // Setup lap categories
             if (rawData.lap) {
@@ -2200,7 +2183,7 @@
                 },
                 dataLabels: {
 
-                    enabled: true,
+                    enabled: true
 
                     
                 }
@@ -2352,14 +2335,14 @@
                         //if (this.series.xAxis === lapxAxis)
                         //    return;
 
-                        var lat, long;
+                        var lat, longPos;
 
                         function setMarker() {
                             if (FITUtil.isUndefined(google)) // Allows working without map
                                 return;
 
                             prevMarker = new google.maps.Marker({
-                                position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long)),
+                                position: new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(longPos)),
                                 icon: {
                                     path: google.maps.SymbolPath.CIRCLE,
                                     scale: 3
@@ -2384,11 +2367,11 @@
                                 lat = rawData.record.position_lat[index];
 
                             if (rawData.record.position_long !== undefined)
-                                long = rawData.record.position_long[index];
+                                longPos = rawData.record.position_long[index];
 
                             //console.log("Lat, long ", lat, long);
 
-                            if (lat && long) {
+                            if (lat && longPos) {
                                 if (prevMarker === null) {
                                     setMarker();
                                 } else {
@@ -2488,7 +2471,7 @@
 
                             return label;
                         }
-                    },
+                    }
                     //plotLines: lapLinesConfig
                     //reversed : true
                 },
@@ -2587,7 +2570,7 @@
                                 s = '<b>Time: </b>' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/><b>RR: </b>' + Highcharts.numberFormat(this.y, 0) + " ms";
                             }
                             else if (onWeeklyxAxis)
-                                s = '<b>Week:</b> ' + this.x
+                                s = '<b>Week:</b> ' + this.x;
                             else if (onkcalxAxis)
                                 s = '<b>Kcal:</b>' + this.x + '<br/>' +
                                     '<b>Avg.HR:</b>' + this.y + '<br/>' +
@@ -2687,7 +2670,7 @@
 
                         }
 
-                    },
+                    }
                     
                 },
 
@@ -3026,6 +3009,8 @@
 
         showEvents: function (rawdata) {
             
+            var ev_data_str;
+
             if (FITUtil.isUndefined(rawdata)) {
                 self.loggMessage("error","No rawdata available");
                 return;
@@ -3234,7 +3219,7 @@
 
                         srcImgEvent = "Images/speed.png";
                         ev_data = ev_data / 1000;
-                        var ev_data_str;
+                       
                         if (self.masterVM.settingsVM.forceSpeedKMprH())
                             ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
                         else
@@ -3256,7 +3241,7 @@
                     case event.speed_low_alert:
                         srcImgEvent = "Images/speed.png";
                         ev_data = ev_data / 1000;
-                        var ev_data_str;
+                       
                         if (self.masterVM.settingsVM.forceSpeedKMprH())
                             ev_data_str = FITViewUIConverter.convertSpeedToKMprH(ev_data).toFixed(1);
                         else
@@ -3546,7 +3531,7 @@
                         text: null
                     },
                     stackLabels: {
-                        enabled: false,
+                        enabled: false
                         //style: {
                         //    fontWeight: 'bold',
                         //    color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
@@ -3573,7 +3558,7 @@
                 tooltip: {
                     formatter: function () {
                         return this.series.name + ': ' + FITViewUIConverter.formatToHHMMSS(this.y*60);
-                    },
+                    }
                     //positioner: function () {
                     //    return { x: 50, y: 0 };
                     //}
@@ -3581,7 +3566,7 @@
                 plotOptions: {
                     bar: {
                         pointWidth: 7,
-                        stacking: 'normal',
+                        stacking: 'normal'
                         //dataLabels: {
                         //    enabled: false,
                         //    color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
@@ -3685,8 +3670,8 @@
 
             var session = rawdata.session;
 
-            var setMapCenter = function (sport, lat, long) {
-                var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(long));
+            var setMapCenter = function (sport, lat, longPos) {
+                var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(longPos));
                 self.loggMessage("info","Setting map center for sport ", sport, " at ", latlong);
                 map.setCenter(latlong);
 
@@ -3757,13 +3742,13 @@
                 session.start_position_lat.forEach(function (element, index, array) {
 
                     var lat = element;
-                    var long = session.start_position_long[index];
+                    var longPos = session.start_position_long[index];
 
-                    if (lat && long) {
+                    if (lat && longPos) {
 
                         sessionStartPosFound = true;
 
-                        setMapCenter(session.sport[index], lat, long);
+                        setMapCenter(session.sport[index], lat, longPos);
 
                         mapCenterSet = true;
 
@@ -3783,11 +3768,11 @@
                     rawdata.record.position_lat.unshift(lat);
                 }
 
-                var long;
+                var longPos;
 
                 if (rawdata.record.position_long && rawdata.record.position_long.length > 0) {
-                    long = rawdata.record.position_long.shift();
-                    rawdata.record.position_long.unshift(long);
+                    longPos = rawdata.record.position_long.shift();
+                    rawdata.record.position_long.unshift(longPos);
                 }
 
                 var sport;
@@ -3797,9 +3782,9 @@
                 if (sport === undefined)
                     sport = 0; // Default to generic
 
-                if (lat && long) {
-                    self.loggMessage("info","No start position was found in session data, got a position at start of record messages.", lat, long);
-                    setMapCenter(sport, lat, long);
+                if (lat && longPos) {
+                    self.loggMessage("info","No start position was found in session data, got a position at start of record messages.", lat, longPos);
+                    setMapCenter(sport, lat, longPos);
                     mapCenterSet = true;
                 } else
                     self.loggMessage("info","Got no start position from head/index 0 of position_lat/long");
@@ -4342,14 +4327,14 @@
             }
 
             // Steps; first check session, then lap, then record head
-            var lat, long;
+            var lat, longPos;
 
             // Session
             if (rawdata.session && rawdata.session.start_position_lat && rawdata.session.start_position_lat.length >= 1)
                 lat = rawdata.session.start_position_lat[0];
 
             if (rawdata.session && rawdata.session.start_position_long && rawdata.session.start_position_long.length >= 1)
-                long = rawdata.session.start_position_long[0];
+                longPos = rawdata.session.start_position_long[0];
 
             // Lap
             if (typeof (lat) === "undefined" && rawdata.lap && rawdata.lap.start_position_lat ) {
@@ -4360,20 +4345,20 @@
                 
             }
 
-            if (typeof (long) === "undefined" && rawdata.lap && rawdata.lap.start_position_long) {
+            if (typeof (longPos) === "undefined" && rawdata.lap && rawdata.lap.start_position_long) {
 
-                long = rawdata.lap.start_position_long[0];
+                longPos = rawdata.lap.start_position_long[0];
                 //restoreStartPos(rawdata,"session", "start_position_long", long);
             }
 
             // Record
 
-            if (typeof (lat) === "undefined" && typeof (long) === "undefined" && rawdata.record && rawdata.record.position_lat && rawdata.record.position_long) {
+            if (typeof (lat) === "undefined" && typeof (longPos) === "undefined" && rawdata.record && rawdata.record.position_lat && rawdata.record.position_long) {
                 var len = rawdata.record.position_lat.length;
                 for (var posNr = 0; posNr < len; posNr++) {
                     lat = rawdata.record.position_lat[posNr];
-                    long = rawdata.record.position_long[posNr];
-                    if (lat !== undefined && long !== undefined)
+                    longPos = rawdata.record.position_long[posNr];
+                    if (lat !== undefined && longPos !== undefined)
                         break;
                 }
 
@@ -4385,7 +4370,7 @@
 
             return {
                 lat: lat,
-                long: long
+                long: longPos
             };
 
         },
@@ -4490,11 +4475,11 @@
                             
 
                             var sessionStartTime;
-
+                            var sessionNr;
 
                             if (rawData.session && rawData.session.total_training_effect)
 
-                                for (var sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+                                for (sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
 
                                     if (rawData.session.start_time && rawData.session.start_time[sessionNr])
 
