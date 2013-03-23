@@ -1570,7 +1570,7 @@
 
                     seriesData[seriesID.speed] = speedSeriesData;
                     speedYAxisNr = yAxisNr;
-                    speedSeries = { name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'line', zIndex: 99 };
+                    speedSeries = { name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'spline', visible : !FITUtil.hasGPSData(rawData), zIndex: 99 };
                     seriesSetup.push(speedSeries);
 
                     yAxisOptions.push({
