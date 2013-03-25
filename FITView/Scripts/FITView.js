@@ -762,6 +762,8 @@
 
             self = this;
 
+            self.masterVM.demoTimeoutID = self.initDemoMode(60000);
+
             // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
             // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
             // virtual elements and something with "changed" value notification. Introducing empty observables on unused properties gives a performance penalty.
@@ -1069,6 +1071,14 @@
             // Initialize map
             if (this.map === undefined)
                 this.map = this.initMap();
+        },
+
+        hasWebNotification : function ()
+        {
+            if (typeof window.Notification === "function" && typeof window.Notification.requestPermission === "function")
+                return true;
+            else
+                return false;
         },
 
         adjustSpeed: function (forceSpeedKMprH) {
@@ -4417,7 +4427,29 @@
                 self.masterVM.headerInfoVM.headerSize(headerInfo.headerSize);
                 self.masterVM.headerInfoVM.dataSize(headerInfo.dataSize);
                 self.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
-},
+        },
+
+        showTemporaryNotification: function (title, options) {
+
+            var notificationCallback = function () {
+                var nw = new window.Notification("Test", { body: 'test' });
+                //nw.addEventListener("show", function () {
+                //    setTimeout(nw.close, 5000);
+                //}, false);
+                return nw;
+            }
+
+            // http://www.thecssninja.com/javascript/web-notifications
+            // https://dvcs.w3.org/hg/notifications/raw-file/tip/Overview.html#dom-notification
+            if (self.hasWebNotification()) {
+                window.Notification.requestPermission(function (permission) {
+                    if (permission === "granted") {
+                        notificationCallback();
+                    } else
+                        console.log("Permission:", permission);
+                });
+            }
+        },
 
         // Communication with import file worker thread
         onFITManagerMsg: function (e) {
@@ -4440,7 +4472,10 @@
                     //window.URL = window.URL || window.webkitURL;
 
                     //window.URL.revokeObjectURL(eventdata.file);
-
+                    if (typeof self.masterVM.demoTimeoutID !== "undefined") {
+                        clearTimeout(self.masterVM.demoTimeoutID);
+                        self.masterVM.demoTimeoutID = undefined;
+                    }
                      rawData = eventdata.rawdata;
                  
                     // TO DO: push rawdata in an viewmodel for imported rawdata files....
@@ -4466,7 +4501,7 @@
                         // Normally FIT files contains exactly ONE file_id message at the start
 
                         if (rawData.session || rawData.lap || rawData.record) {
-                            self.loggMessage("log","No file_id message in FIT file, but assume its an acivity file - found session or lap or record");
+                            self.loggMessage("log","No file_id message in FIT file, but assume its an activity file - found session or lap or record");
                             fileIdType = FITFileType.activityfile;
                         }
                     }
@@ -4474,6 +4509,8 @@
                     switch (fileIdType) {
                         // Activity file
                         case FITFileType.activityfile:
+
+                           
 
                             self.loggMessage("info","Processing an activity file");
                             var latLongString;
@@ -4711,6 +4748,50 @@
             self.loggMessage("error","Error in worker, event: ", e);
         },
 
+        terminateAndInitWebWorker : function ()
+        {
+            // Make sure we terminate previous worker
+            if (self.fitFileManager) {
+                self.fitFileManager.removeEventListener('error', self.onFITManagerError, false);
+                self.fitFileManager.removeEventListener('message', self.onFITManagerMsg, false);
+                self.fitFileManager.terminate();
+            }
+
+            self.fitFileManager = new Worker("Scripts/FITImport.js");
+            self.fitFileManager.addEventListener('message', self.onFITManagerMsg, false);
+            self.fitFileManager.addEventListener('error', self.onFITManagerError, false);
+        },
+
+        getFITfiles : function (msg)
+        {
+            $("#progressFITimport").show();
+
+            self.fitFileManager.postMessage(msg); // Let's import FIT file in the background...
+        },
+
+        initDemoMode : function (timeout)
+        {
+            var msg = {
+                request: 'importFitFile',
+                store: false,
+                //fitfiles : [],
+                logging: self.masterVM.settingsVM.logging(),
+                demoMode : true
+            }
+            
+            self.loggMessage("info", "Setting timeout for loading of demo .FIT to " + timeout.toString() + " ms");
+
+            var timeoutID = setTimeout(function () {
+                self.loggMessage("info", "Starting automatic load of demo .FIT file");
+                self.terminateAndInitWebWorker();
+                self.getFITfiles(msg)
+            }, timeout);
+
+            return timeoutID;
+
+        },
+
+
         // Handles file selection for import
         onFitFileSelected: function (e) {
 
@@ -4736,17 +4817,7 @@
                 firefox_compatible_files.push(files[fileNr]);
             }
             
-
-            // Make sure we terminate previous worker
-            if (self.fitFileManager) {
-                self.fitFileManager.removeEventListener('error', self.onFITManagerError, false);
-                self.fitFileManager.removeEventListener('message', self.onFITManagerMsg, false);
-                self.fitFileManager.terminate();
-            }
-
-            self.fitFileManager = new Worker("Scripts/FITImport.js");
-            self.fitFileManager.addEventListener('message', self.onFITManagerMsg, false);
-            self.fitFileManager.addEventListener('error', self.onFITManagerError, false);
+            self.terminateAndInitWebWorker();
 
             // Firefox bug : cannot pass FileList -> dataclone error
             var msg = {
@@ -4754,13 +4825,12 @@
                 fitfiles : firefox_compatible_files,
                 fitfile: undefined,
                 store: self.masterVM.settingsVM.storeInIndexedDB(),
-                logging : self.masterVM.settingsVM.logging()
+                logging: self.masterVM.settingsVM.logging()
+              
                 //, "query": query
             };
 
-            $("#progressFITimport").show();
-
-            self.fitFileManager.postMessage(msg); // Let's import FIT file in the background...
+            self.getFITfiles(msg);
 
         },
 

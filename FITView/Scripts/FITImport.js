@@ -38,7 +38,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      fitfiles: data.fitfiles,
                      fitfile: data.fitfile,
                      store: data.store,
-                     logging : data.logging
+                     logging: data.logging,
+                     demoMode : data.demoMode
                      //,query: data.query,
 
                  };
@@ -512,6 +513,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var speedDistanceRecs = []; // Records of swim speed/distance record without timestamp --> try adding as property to session
 
              // while (this.index < this.headerInfo.headerSize + this.headerInfo.dataSize) {
+            
              var maxReadToByte = headerInfo.fitFile.size - 2;
 
              //var tx = db.transaction([RECORD_OBJECTSTORE_NAME,LAP_OBJECTSTORE_NAME, SESSION_OBJECTSTORE_NAME,HRV_OBJECTSTORE_NAME], "readwrite");
@@ -1594,24 +1596,53 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          openDb(function () {
              var callbackThis = this;
              var fileNr, len;
-             len = options.fitfiles.length;
+             if (typeof options.fitfiles !== "undefined")
+               len = options.fitfiles.length;
              var fileBuffers = [];
              var fitFileReader;
              var rawData;
-             fitFileReader = new FileReaderSync();
-             for (fileNr = 0; fileNr < len; fileNr++) {
-                 //fitFileReader = new FileReaderSync(); // For web worker, hopefully used readers are released from memory by GC, have not tried shared single reader
-                 try {
-                     fileBuffers.push(fitFileReader.readAsArrayBuffer(options.fitfiles[fileNr]));
-                    
-                     rawData = getRawdata(fileBuffers[fileNr], options.fitfiles[fileNr]); // Implicitly sends data to requesting process via postMessage 
-                 } catch (e) {
-                     loggMessage({ response: "error", data: "Could not initialize fit file reader with bytes", event: e });
+             var status_OK = 200;
+
+             if (typeof options.demoMode !== "undefined" && options.demoMode) {
+                 // http://www.html5rocks.com/en/tutorials/file/xhr2/
+                 // Had some initial problems with reading .FIT file -> it was not configured for IIS 8 mime type -> added .bin type instead for handling of binary file
+                 var xhr = new XMLHttpRequest();
+                 var demoFITName = '/Demo/20130311-171014-1-1328-ANTFS-4-0-FIT.bin';
+                 xhr.open('GET', demoFITName , true);
+                 xhr.responseType = 'arraybuffer';
+
+                 xhr.onload = function (e) {
+
+                     if (this.status == status_OK) {
+                         rawData = getRawdata(this.response, { name: 'demoFIT', size: this.response.byteLength }); // Implicitly sends data to requesting process via postMessage 
+                     } else
+                         loggMessage({ response: "error", data: "Tried to fetch " + demoFITName + ", but status is: " + this.status + " " + this.statusText });
+
+                     if (storeInIndexedDB && db)
+                         db.close();
+                 };
+
+                 xhr.send();
+                
+             } else {
+                 fitFileReader = new FileReaderSync();
+                 for (fileNr = 0; fileNr < len; fileNr++) {
+                     //fitFileReader = new FileReaderSync(); // For web worker, hopefully used readers are released from memory by GC, have not tried shared single reader
+                     try {
+                         fileBuffers.push(fitFileReader.readAsArrayBuffer(options.fitfiles[fileNr]));
+
+                         rawData = getRawdata(fileBuffers[fileNr], options.fitfiles[fileNr]); // Implicitly sends data to requesting process via postMessage 
+                     } catch (e) {
+                         loggMessage({ response: "error", data: "Could not initialize fit file reader with bytes", event: e });
+                     }
                  }
+                 if (storeInIndexedDB && db)
+                     db.close();
+                 
              }
 
-             if (storeInIndexedDB && db)
-              db.close();
+            
+            
          });
 
      }
