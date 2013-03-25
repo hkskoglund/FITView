@@ -125,7 +125,7 @@
     <Content Include="Scripts\Messages\FITSportSetting.js" />
     <Content Include="Scripts\FITView.js" />
     <Content Include="packages.config" />
-    <None Include="Demo\20130311-171014-1-1328-ANTFS-4-0-FIT.bin" />
+    <Content Include="Demo\20130311-171014-1-1328-ANTFS-4-0-FIT.png" />
     <None Include="Properties\PublishProfiles\fitview - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
     <Content Include="Scripts\3party\highcharts.src.js" />

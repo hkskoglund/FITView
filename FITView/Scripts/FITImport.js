@@ -1606,8 +1606,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              if (typeof options.demoMode !== "undefined" && options.demoMode) {
                  // http://www.html5rocks.com/en/tutorials/file/xhr2/
                  // Had some initial problems with reading .FIT file -> it was not configured for IIS 8 mime type -> added .bin type instead for handling of binary file
+                 // Windows azure will not transfer .bin files by default -> trying .png/faking an image
                  var xhr = new XMLHttpRequest();
-                 var demoFITName = '/Demo/20130311-171014-1-1328-ANTFS-4-0-FIT.bin';
+                 var demoFITName = '/Demo/20130311-171014-1-1328-ANTFS-4-0-FIT.png';
                  xhr.open('GET', demoFITName , true);
                  xhr.responseType = 'arraybuffer';
 
