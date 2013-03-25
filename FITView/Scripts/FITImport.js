@@ -441,7 +441,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  loggMessage({ response: "error", data: "File " + fitFile.name + " of type " + fitFile.type + ", does not have a .FIT datatype in header, cannot process this file." });
              }
 
-             self.postMessage({ response: "importFinished", data: 100 });
+            
 
              // Will send undefined if not .FIT datatype
 
@@ -1621,6 +1621,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                      if (storeInIndexedDB && db)
                          db.close();
+
+                     self.postMessage({ response: "importFinished", data: 100 });
                  };
 
                  xhr.send();
@@ -1639,8 +1641,13 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  }
                  if (storeInIndexedDB && db)
                      db.close();
+
+                 self.postMessage({ response: "importFinished", data: 100 });
+                
                  
              }
+
+            
 
             
             

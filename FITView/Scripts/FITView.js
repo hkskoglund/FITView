@@ -762,7 +762,7 @@
 
             self = this;
 
-            self.masterVM.demoTimeoutID = self.initDemoMode(60000);
+            self.masterVM.demoTimeoutID = self.initDemoMode(120000); // Alllow 2 minutes of inactivity before a default demo .FIT file is loaded
 
             // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
             // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
@@ -4722,6 +4722,7 @@
                     //FITUI.masterVM.progressVM.progress(100);
                     $("#progressFITimport").hide();
                     self.masterVM.progressVM.progress(0);
+                    self.terminateWebWorker(); // Stop background web worker...
 
                     break;
 
@@ -4748,7 +4749,7 @@
             self.loggMessage("error","Error in worker, event: ", e);
         },
 
-        terminateAndInitWebWorker : function ()
+        terminateWebWorker : function ()
         {
             // Make sure we terminate previous worker
             if (self.fitFileManager) {
@@ -4756,7 +4757,10 @@
                 self.fitFileManager.removeEventListener('message', self.onFITManagerMsg, false);
                 self.fitFileManager.terminate();
             }
+        },
 
+       initWebWorker : function ()
+        {
             self.fitFileManager = new Worker("Scripts/FITImport.js");
             self.fitFileManager.addEventListener('message', self.onFITManagerMsg, false);
             self.fitFileManager.addEventListener('error', self.onFITManagerError, false);
@@ -4783,7 +4787,7 @@
 
             var timeoutID = setTimeout(function () {
                 self.loggMessage("info", "Starting automatic load of demo .FIT file");
-                self.terminateAndInitWebWorker();
+                self.initWebWorker();
                 self.getFITfiles(msg)
             }, timeout);
 
@@ -4813,11 +4817,11 @@
             var firefox_compatible_files = [];
 
             var len = self.selectedFiles.length;
-            for (var fileNr = 0; fileNr < len; fileNr++) {
+            for (var fileNr = 0; fileNr < len; fileNr++) {  // Firefox has trouble with serializing FileList, so create an array with file objects instead to circumwent it
                 firefox_compatible_files.push(files[fileNr]);
             }
             
-            self.terminateAndInitWebWorker();
+            self.initWebWorker();
 
             // Firefox bug : cannot pass FileList -> dataclone error
             var msg = {
