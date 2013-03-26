@@ -1,5 +1,4 @@
-﻿//use strict
-// JSHint options
+﻿// JSHint options
 /* global indexedDB:true, FITCRCTimestampUtility:true, importScripts:true, FIT:true, FileReaderSync:true, self:true */
 // NB!  self = dedicatedWorkerContext automatically set in the global namespace
 importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITActivityFile.js', '/Scripts/Messages/FITSportSetting.js', 'FITCRCTimestampUtility.js');
@@ -1603,6 +1602,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var rawData;
              var status_OK = 200;
 
+            
+
              if (typeof options.demoMode !== "undefined" && options.demoMode) {
                  // http://www.html5rocks.com/en/tutorials/file/xhr2/
                  // Had some initial problems with reading .FIT file -> it was not configured for IIS 8 mime type -> added .bin type instead for handling of binary file
@@ -1617,13 +1618,18 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      if (this.status == status_OK) {
                          rawData = getRawdata(this.response, { name: 'demoFIT', size: this.response.byteLength }); // Implicitly sends data to requesting process via postMessage 
                      } else
-                         loggMessage({ response: "error", data: "Tried to fetch " + demoFITName + ", but status is: " + this.status + " " + this.statusText });
+                         loggMessage({ response: "error", data: "Tried to load " + demoFITName + ", but status is: " + this.status + " " + this.statusText });
 
-                     if (storeInIndexedDB && db)
-                         db.close();
+                     // Should'nt store demo storeInIndexedDB should be false
+                     //if (storeInIndexedDB && db)
+                     //    db.close();
 
                      self.postMessage({ response: "importFinished", data: 100 });
                  };
+
+                 xhr.onerror = function (e) {
+                     loggMessage({ response: "error", data: "Error when accessing " + demoFITName + ", status is: " + this.status + " " + this.statusText });
+                 }
 
                  xhr.send();
                 

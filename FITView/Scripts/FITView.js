@@ -757,12 +757,32 @@
             },
         },
 
+        loginGarminConnect : function ()
+        {
+            // http://www.html5rocks.com/en/tutorials/file/xhr2/#toc-send-formdata
+            // GC - has not enabled CORS...
+
+            //var formData = new FormData();
+            //formData.append('login:loginUsernameField', '');
+            //formData.append('login:password', '');
+
+            //var xhr = new XMLHttpRequest();
+            //xhr.open('POST', 'https://connect.garmin.com/signin', true);
+            //xhr.onload = function (e) {
+            //    var response = this.response;
+            //};
+
+            //xhr.send(formData);
+        },
+
         // Initialization of view models and some checks for desired functinality of the browser environment/user agent
         init: function () {
 
             self = this;
 
-            self.masterVM.demoTimeoutID = self.initDemoMode(120000); // Alllow 2 minutes of inactivity before a default demo .FIT file is loaded
+            //self.loginGarminConnect();
+
+            self.masterVM.demoTimeoutID = self.initDemoMode(120000); // Allow 2 minutes of inactivity before a default demo .FIT file is loaded
 
             // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
             // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
@@ -1896,6 +1916,7 @@
                 prepareSpeedAvgSeries();
                 preparePowerSeries();
                 prepareAltitudeSeries();
+                prepareCadenceSeries();
                 prepareTemperatureSeries();
                 prepareSpeedVSHR();
             }
