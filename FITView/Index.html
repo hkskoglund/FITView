@@ -1181,14 +1181,14 @@
 
 
 
-                                        <!-- ko if: typeof (garminConnect.activity) !== "undefined" -->
+                                        <!-- ko if: typeof garminConnect !== "undefined" && typeof (garminConnect.activity) !== "undefined" -->
                                           <!-- ko if: typeof (garminConnect.activity.activityName) !== "undefined" -->
                                               <span style="display: block" data-bind="text: garminConnect.activity.activityName, attr: { title: garminConnect.activity.activityDescription }"></span>
                                           <!-- /ko -->
                                         
                                         <!-- /ko -->
 
-                                        <!-- ko if: typeof (record) === "undefined" && typeof (garminConnect.activity) === "undefined"-->
+                                        <!-- ko if: typeof (record) === "undefined" && typeof garminConnect !== "undefined" && typeof (garminConnect.activity) === "undefined"-->
                                         <span style="display: inline">No data.</span>
                                         <!-- /ko -->
 
