@@ -913,13 +913,99 @@
 
         },
 
+        parseGCActivityMetrics : function (rawdata,response)
+        {
+
+            var activityDetails = response["com.garmin.activity.details.json.ActivityDetails"];
+            var metricNr;
+            var metricLen = activityDetails.metrics.length; // Also available on .metricCount
+            var measurementsLength = activityDetails.measurements.length;
+
+            function getMetricsIndex(key) {
+                var measurementNr;
+
+                for (measurementNr = 0; measurementNr < measurementsLength; measurementNr++) {
+                    if (activityDetails.measurements[measurementNr].key == key)
+                        return activityDetails.measurements[measurementNr].metricsIndex;
+                }
+
+                return -1; // Not found
+            }
+
+            var timestampIndex = getMetricsIndex("directTimestamp");
+            var altitudeIndex = getMetricsIndex("directElevation");
+            var heartRateIndex = getMetricsIndex("directHeartRate");
+            var cadenceIndex = getMetricsIndex("directBikeCadence");
+            
+            rawdata.garminConnect.activityDetails = activityDetails;
+
+            if (!activityDetails.isDetailsAvailable) {
+                self.loggMessage("warn", "No activity details found for garmin connect activity");
+                return;
+            }
+
+            rawdata.record = {};
+           
+            if (timestampIndex !== -1)
+                rawdata.record.timestamp = [];
+            if (altitudeIndex !== -1)
+              rawdata.record.altitude = [];
+            if (cadenceIndex !== -1)
+              rawdata.record.cadence = [];
+            if (heartRateIndex !== -1)
+              rawdata.record.heart_rate = [];
+
+            for (metricNr = 0; metricNr < metricLen; metricNr++) {
+
+                if (timestampIndex !== -1)
+                  rawdata.record.timestamp.push(activityDetails.metrics[metricNr].metrics[timestampIndex]);
+
+                if (altitudeIndex !== -1)
+                    rawdata.record.altitude.push(activityDetails.metrics[metricNr].metrics[altitudeIndex]);
+
+                if (heartRateIndex !== -1)
+                    rawdata.record.heart_rate.push(activityDetails.metrics[metricNr].metrics[heartRateIndex]);
+
+                if (cadenceIndex !== -1)
+                    rawdata.record.cadence.push(activityDetails.metrics[metricNr].metrics[cadenceIndex]);
+            }
+
+
+
+
+        },
+
+
+        readActivityDetails : function (rawdata,callback)
+        {
+            var activityId = rawdata.garminConnect.activity.activityId;
+
+            var xhr = new XMLHttpRequest();
+            var url = 'http://' + window.location.hostname + '/activities/'+activityId;
+            var async = true;
+
+            xhr.open('GET', url, async);
+
+            xhr.onload = function (e) {
+                var response = JSON.parse(this.response);
+                self.parseGCActivityMetrics(rawdata,response);
+                callback();
+            };
+
+            xhr.onerror = function (e) {
+                self.loggMessage('error', 'Could not retrive data from ' + url);
+            };
+
+            xhr.send();
+        },
+
         testReadActivitiesViaNodejs : function ()
         {
             // http://www.html5rocks.com/en/tutorials/file/xhr2/#toc-send-formdata
             // GC - has not enabled CORS...
 
             var xhr = new XMLHttpRequest();
-            var url = 'http://localhost/activities/page/0';
+            var url = 'http://'+window.location.hostname+'/activities/page/0';
             var async = true;
 
             xhr.open('GET', url, async);
@@ -1220,7 +1306,12 @@
                 var rawData = VM.activity()[index];  // Takes the index element of an observable array which is an observable with value an array -> tracks elements in array not properties
                 
                 VM.selectedActivity(index);
-                self.processActivityFile(rawData);
+                if (typeof rawData.garminConnect !== "undefined")
+                    self.readActivityDetails(rawData, function () {  // Fetch activity details from Garmin Connect and then process it
+                        self.processActivityFile(rawData);
+                    });
+                else 
+                  self.processActivityFile(rawData);
             };
 
             //this.masterVM.activityVM.selectedActivity.subscribe(function (selectedActivity) {
@@ -4600,7 +4691,12 @@
 
         copyHeaderInfoToViewModel: function (rawdata)
         {
-                var headerInfo = rawdata._headerInfo_;
+            var headerInfo = rawdata._headerInfo_;
+
+            if (typeof headerInfo === "undefined") {
+                self.loggMessage("warn", "No header information available, cannot copy information to headerInfo view model");
+                return;
+            }
 
                 // Copy to view model
                 self.masterVM.headerInfoVM.fileName(headerInfo.fitFile.name);
