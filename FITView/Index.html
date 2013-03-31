@@ -1179,7 +1179,16 @@
                                         <span  data-bind="text : (new Date(record.timestamp[0])).toLocaleString(), attr: { title: 'Filename: '+ _headerInfo_.fitFile.name + ' Size: '+_headerInfo_.fitFile.size+ ' bytes'}"></span>
                                         <!-- /ko -->
 
-                                        <!-- ko if: typeof (record) === "undefined" -->
+
+
+                                        <!-- ko if: typeof (garminConnect.activity) !== "undefined" -->
+                                          <!-- ko if: typeof (garminConnect.activity.activityName) !== "undefined" -->
+                                              <span style="display: block" data-bind="text: garminConnect.activity.activityName, attr: { title: garminConnect.activity.activityDescription }"></span>
+                                          <!-- /ko -->
+                                        
+                                        <!-- /ko -->
+
+                                        <!-- ko if: typeof (record) === "undefined" && typeof (garminConnect.activity) === "undefined"-->
                                         <span style="display: inline">No data.</span>
                                         <!-- /ko -->
 

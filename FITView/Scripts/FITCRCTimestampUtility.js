@@ -98,5 +98,9 @@ FIT.CRCTimestampUtility = function () {
         return semicircles * 180 / 2147483648;  // 2 147 483 648 = 2^31
     }
 
+    expose.degreesToSemiCircles = function (degrees) {
+        return Math.round(degrees * 2147483648 / 180);
+    }
+
     return expose;
 }

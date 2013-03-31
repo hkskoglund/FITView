@@ -610,6 +610,13 @@
                 return speed * 3.6; // 3.6 = 3600 s/h / 1000 m/km
         },
 
+        convertKMprHToMprS : function (speed) {
+            if (speed === 0)
+                return 0;
+            else
+                return speed*1000/3600;
+        },
+
         convertSecsToHHMMSSModel: function (totalSec) {
             // Callback on "create" from knockout
             //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
@@ -775,12 +782,168 @@
             //xhr.send(formData);
         },
 
+        parseGCLinkActivitySummary : function(response)
+        {
+            var rawdata,
+                activityNr,
+             activity,
+             activitySummary,
+             activityType;
+
+            function getEmpty(msg) {
+
+                var ViewModel = {};
+
+                for (var fieldDefNr in msg)
+                    ViewModel[msg[fieldDefNr].property] = [];
+
+                return ViewModel;
+
+            }
+           
+            var len = response.results.activities.length;
+
+            for (activityNr = 0; activityNr < len; activityNr++) {
+
+                rawdata = {};
+                activity = response.results.activities[activityNr].activity;
+                activitySummary = activity.activitySummary;
+                activityType = activity.activityType;
+
+                // Session
+                rawdata.session = getEmpty(fitActivity.session());
+
+                // Start time
+
+                if (activitySummary.BeginTimestamp)
+                    rawdata.session.start_time.push(Date.parse(activitySummary.BeginTimestamp.value));
+
+                if (activitySummary.EndTimestamp)
+                    rawdata.session.timestamp.push(Date.parse(activitySummary.EndTimestamp.value));
+
+                // Sport
+
+                switch (activityType.parent.key) {
+                    case "cycling":
+                        rawdata.session.sport.push(FITSport.cycling);
+                        break;
+                    case "running":
+                        rawdata.session.sport.push(FITSport.running);
+                        break;
+                    default:
+                        rawdata.session.sport.push(FITSport.generic);
+                        break;
+                }
+
+                // Speed
+                if (activitySummary.MaxSpeed)
+                    rawdata.session.max_speed.push(converter.convertKMprHToMprS(parseInt(activitySummary.MaxSpeed.value, 10)));
+
+                if (activitySummary.WeightedMeanSpeed)
+                    rawdata.session.avg_speed.push(converter.convertKMprHToMprS(parseInt(activitySummary.WeightedMeanSpeed.value, 10)));
+
+
+                // Heart rate
+                if (activitySummary.MaxHeartRate)
+                    rawdata.session.max_heart_rate.push(parseInt(activitySummary.MaxHeartRate.value, 10));
+
+                if (activitySummary.WeightedMeanHeartRate)
+                    rawdata.session.avg_heart_rate.push(parseInt(activitySummary.WeightedMeanHeartRate.value, 10));
+
+                // Calories
+
+                if (activitySummary.SumEnergy)
+                    rawdata.session.total_calories.push(parseInt(activitySummary.SumEnergy.value, 10));
+
+                // TE
+
+                // http://stackoverflow.com/questions/7342957/how-do-you-round-to-1-decimal-place-in-javascript
+                if (activitySummary.SumTrainingEffect)
+                    rawdata.session.total_training_effect.push(Math.round(parseFloat(activitySummary.SumTrainingEffect.value*10))/10);
+
+                // Start position lat/long
+
+                if (activitySummary.BeginLatitude)
+                    rawdata.session.start_position_lat.push(FITUtil.timestampUtil.degreesToSemiCircles(parseFloat(activitySummary.BeginLatitude.value)));
+
+                if (activitySummary.BeginLongitude)
+                    rawdata.session.start_position_long.push(FITUtil.timestampUtil.degreesToSemiCircles(parseFloat(activitySummary.BeginLongitude.value)));
+
+
+                // Elevation
+
+                if (activitySummary.GainElevation)
+                    rawdata.session.total_ascent.push(parseInt(activitySummary.GainElevation.value, 10));
+
+                if (activitySummary.LossElevation)
+                    rawdata.session.total_ascent.push(parseInt(activitySummary.LossElevation.value, 10));
+
+                // Time
+
+                if (activitySummary.SumElapsedDuration)
+                    rawdata.session.total_elapsed_time.push(parseInt(activitySummary.SumElapsedDuration.value));
+
+                if (activitySummary.SumDuration)
+                    rawdata.session.total_timer_time.push(parseInt(activitySummary.SumDuration.value));
+
+                // Distance
+
+                if (activitySummary.SumDistance)
+                    rawdata.session.total_distance.push(parseInt(activitySummary.SumDistance.value) * 1000);
+
+                // Cadence
+
+                if (activitySummary.MaxBikeCadence)
+                    rawdata.session.max_cadence.push(parseInt(activitySummary.MaxBikeCadence.value));
+
+                if (activitySummary.WeightedMeanBikeCadence)
+                    rawdata.session.max_cadence.push(parseInt(activitySummary.WeightedMeanBikeCadence.value));
+
+
+                rawdata.garminConnect = {};
+                rawdata.garminConnect.activity = activity; // Add details to rawdata
+
+                self.setMapImage(rawdata);
+                self.masterVM.activityVM.activity.push(rawdata); // Update UI
+            }
+
+           
+
+
+
+        },
+
+        testReadActivitiesViaNodejs : function ()
+        {
+            // http://www.html5rocks.com/en/tutorials/file/xhr2/#toc-send-formdata
+            // GC - has not enabled CORS...
+
+            var xhr = new XMLHttpRequest();
+            var url = 'http://localhost/activities/page/0';
+            var async = true;
+
+            xhr.open('GET', url, async);
+
+            xhr.onload = function (e) {
+                var response = JSON.parse(this.response);
+                self.parseGCLinkActivitySummary(response);
+            };
+
+            xhr.onerror = function (e) {
+                self.loggMessage('error', 'Could not retrive data from ' + url);
+            };
+
+            xhr.send();
+        },
+
         // Initialization of view models and some checks for desired functinality of the browser environment/user agent
         init: function () {
 
             self = this;
 
             //self.loginGarminConnect();
+
+          
 
             self.masterVM.demoTimeoutID = self.initDemoMode(120000); // Allow 2 minutes of inactivity before a default demo .FIT file is loaded
 
@@ -1091,6 +1254,9 @@
             // Initialize map
             if (this.map === undefined)
                 this.map = this.initMap();
+
+
+            //self.testReadActivitiesViaNodejs();
         },
 
         hasWebNotification : function ()
@@ -2083,16 +2249,18 @@
                 return 0;
              
             }
+
+            function getTimestampAndTE(item, index, arr) {
+                return [item[0], item[1].TE];
+            }
             
             seriesSetup.push({
-                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory.map(function (item, index, arr) {
-                    return [item[0], item[1].TE];
-                }), visible: false, type: 'column', pointWidth: 5,
+                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory.map(getTimestampAndTE), visible: false, type: 'column', pointWidth: 5,
                 events: {
                     // http://jsfiddle.net/jlbriggs/kqHzr/
                     // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
 
-                    legendItemClick: function () {
+                    legendItemClick: function  () {
                         
                         var yaxis = this.chart.get(yAxisID.TE);
                         var TEseries = this.chart.get(seriesID.TE);
@@ -2100,9 +2268,7 @@
                             if (this.visible === false) { // Transition to visible series
                                 //yaxis.setExtremes(1, 5, true, false);
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(function (item, index, arr) {
-                                    return [item[0],item[1].TE]; // Only need the .TE part
-                                }));
+                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(getTimestampAndTE));
                                 
 
                                 if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
@@ -4472,6 +4638,25 @@
             }
         },
 
+        setMapImage : function(rawData)
+        {
+            var latLongString;
+            var startPosition = self.getStartPosition(rawData);
+
+            if (startPosition.lat && startPosition.long) {
+                latLongString = (new FIT.CRCTimestampUtility()).getLatLongStringForUrl(startPosition.lat, startPosition.long);
+
+                // https://developers.google.com/maps/documentation/staticmaps/index
+
+                // Can use javascript escape(string) to make transferable URL
+                rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString +
+                    '&zoom=10&size=150x150&maptype=roadmap&sensor=false&scale=1' + '&markers=size:tiny%7Ccolor:red%7C' + latLongString + '&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
+
+                //rawData._staticGoogleMapSrc = ko.observable('http://localhost:24021/Images/kcalorie.png');
+            }
+        },
+
+
         // Communication with import file worker thread
         onFITManagerMsg: function (e) {
             // NB Callback, this reference....
@@ -4533,21 +4718,10 @@
 
                            
 
-                            self.loggMessage("info","Processing an activity file");
-                            var latLongString;
-                            var startPosition = self.getStartPosition(rawData);
+                            self.loggMessage("info", "Processing an activity file");
+
+                            self.setMapImage(rawData);
                             
-                            if (startPosition.lat && startPosition.long) {
-                                latLongString = (new FIT.CRCTimestampUtility()).getLatLongStringForUrl(startPosition.lat, startPosition.long);
-
-                                // https://developers.google.com/maps/documentation/staticmaps/index
-
-                                // Can use javascript escape(string) to make transferable URL
-                                rawData._staticGoogleMapSrc = ko.observable('http://maps.googleapis.com/maps/api/staticmap?center=' + latLongString +
-                                    '&zoom=10&size=150x150&maptype=roadmap&sensor=false&scale=1' + '&markers=size:tiny%7Ccolor:red%7C'+latLongString+'&key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg');
-
-                                //rawData._staticGoogleMapSrc = ko.observable('http://localhost:24021/Images/kcalorie.png');
-                            }
 
                             self.masterVM.activityVM.activity.push(rawData); // Let knockoujs track new activities - calls knockouts push function on array
 
