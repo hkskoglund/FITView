@@ -837,10 +837,10 @@
 
                 // Speed
                 if (activitySummary.MaxSpeed)
-                    rawdata.session.max_speed.push(converter.convertKMprHToMprS(parseInt(activitySummary.MaxSpeed.value, 10)));
+                    rawdata.session.max_speed.push(converter.convertKMprHToMprS(parseFloat(activitySummary.MaxSpeed.value)));
 
                 if (activitySummary.WeightedMeanSpeed)
-                    rawdata.session.avg_speed.push(converter.convertKMprHToMprS(parseInt(activitySummary.WeightedMeanSpeed.value, 10)));
+                    rawdata.session.avg_speed.push(converter.convertKMprHToMprS(parseFloat(activitySummary.WeightedMeanSpeed.value)));
 
 
                 // Heart rate
@@ -876,7 +876,7 @@
                     rawdata.session.total_ascent.push(parseInt(activitySummary.GainElevation.value, 10));
 
                 if (activitySummary.LossElevation)
-                    rawdata.session.total_ascent.push(parseInt(activitySummary.LossElevation.value, 10));
+                    rawdata.session.total_descent.push(parseInt(activitySummary.LossElevation.value, 10));
 
                 // Time
 
@@ -936,6 +936,17 @@
             var altitudeIndex = getMetricsIndex("directElevation");
             var heartRateIndex = getMetricsIndex("directHeartRate");
             var cadenceIndex = getMetricsIndex("directBikeCadence");
+            var speedIndex = getMetricsIndex("directSpeed");
+            var temperatureIndex = getMetricsIndex("directTemperature"); // Not verified
+            var powerIndex = getMetricsIndex("directBikePower"); // Not verified
+
+            var position_lat_Index = getMetricsIndex("directLatitude");
+            var position_lat;
+
+            var position_long_Index = getMetricsIndex("directLongitude");
+            var position_long;
+
+            var distanceIndex = getMetricsIndex("sumDistance");
             
             rawdata.garminConnect.activityDetails = activityDetails;
 
@@ -953,7 +964,27 @@
             if (cadenceIndex !== -1)
               rawdata.record.cadence = [];
             if (heartRateIndex !== -1)
-              rawdata.record.heart_rate = [];
+                rawdata.record.heart_rate = [];
+
+            if (position_lat_Index !== -1)
+                rawdata.record.position_lat = [];
+
+            if (position_long_Index !== -1)
+                rawdata.record.position_long = [];
+
+            if (distanceIndex !== -1)
+                rawdata.record.distance = [];
+
+            if (speedIndex !== -1)
+                rawdata.record.speed = [];
+
+            if (temperatureIndex !== -1)
+                rawdata.record.temperature = [];
+
+            if (powerIndex !== -1)
+                rawdata.record.power = [];
+
+
 
             for (metricNr = 0; metricNr < metricLen; metricNr++) {
 
@@ -968,6 +999,35 @@
 
                 if (cadenceIndex !== -1)
                     rawdata.record.cadence.push(activityDetails.metrics[metricNr].metrics[cadenceIndex]);
+
+                if (position_lat_Index !== -1) {
+                    position_lat = FITUtil.timestampUtil.degreesToSemiCircles(parseFloat(activityDetails.metrics[metricNr].metrics[position_lat_Index]));
+                    if (position_lat !== 0) // Got some 0 data
+                        rawdata.record.position_lat[metricNr] = position_lat;
+                    else
+                        self.loggMessage("error","Got 0 in position_lat during import from garmin connect");
+                }
+
+                if (position_long_Index !== -1) {
+                    position_long = FITUtil.timestampUtil.degreesToSemiCircles(parseFloat(activityDetails.metrics[metricNr].metrics[position_long_Index]));
+                    if (position_long !== 0)
+                        rawdata.record.position_long[metricNr] = position_long;
+                    else
+                        self.loggMessage("error", "Got 0 in position_long during import from garmin connect");
+                }
+
+                if (distanceIndex !== -1)
+                    rawdata.record.distance.push(activityDetails.metrics[metricNr].metrics[distanceIndex] * 1000);
+
+                if (speedIndex !== -1)
+                    rawdata.record.speed.push(converter.convertKMprHToMprS(activityDetails.metrics[metricNr].metrics[speedIndex]));
+
+                if (temperatureIndex !== -1)
+                    rawdata.record.temperature.push(activityDetails.metrics[metricNr].metrics[temperatureIndex]);
+
+                if (powerIndex !== -1)
+                    rawdata.record.power.push(activityDetails.metrics[metricNr].metrics[powerIndex]);
+
             }
 
 
@@ -979,9 +1039,11 @@
         readActivityDetails : function (rawdata,callback)
         {
             var activityId = rawdata.garminConnect.activity.activityId;
-
+            //var nodeServer = 'nodejsgc.hkskoglund.c9.io';
+            var nodeServer = window.location.hostname;
             var xhr = new XMLHttpRequest();
-            var url = 'http://' + window.location.hostname + '/activities/'+activityId;
+            var url = 'http://' + nodeServer + '/activities/' + activityId;
+          
             var async = true;
 
             xhr.open('GET', url, async);
@@ -1004,8 +1066,11 @@
             // http://www.html5rocks.com/en/tutorials/file/xhr2/#toc-send-formdata
             // GC - has not enabled CORS...
 
+            //var nodeServer = 'nodejsgc.hkskoglund.c9.io';
+             var nodeServer = window.location.hostname;
             var xhr = new XMLHttpRequest();
-            var url = 'http://'+window.location.hostname+'/activities/page/0';
+            var url = 'http://' + nodeServer + '/activities/page/0';
+
             var async = true;
 
             xhr.open('GET', url, async);
@@ -1307,7 +1372,7 @@
                 
                 VM.selectedActivity(index);
                 if (typeof rawData.garminConnect !== "undefined")
-                    self.readActivityDetails(rawData, function () {  // Fetch activity details from Garmin Connect and then process it
+                    self.readActivityDetails(rawData, function () {  // Fetch activity details from Garmin Connect and then process it (in the callback)
                         self.processActivityFile(rawData);
                     });
                 else 
@@ -1347,7 +1412,7 @@
                 this.map = this.initMap();
 
 
-            //self.testReadActivitiesViaNodejs();
+           //self.testReadActivitiesViaNodejs();
         },
 
         hasWebNotification : function ()
