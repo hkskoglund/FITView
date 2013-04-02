@@ -897,7 +897,7 @@
                     rawdata.session.max_cadence.push(parseInt(activitySummary.MaxBikeCadence.value));
 
                 if (activitySummary.WeightedMeanBikeCadence)
-                    rawdata.session.max_cadence.push(parseInt(activitySummary.WeightedMeanBikeCadence.value));
+                    rawdata.session.avg_cadence.push(parseInt(activitySummary.WeightedMeanBikeCadence.value));
 
 
                 rawdata.garminConnect = {};
@@ -1061,8 +1061,42 @@
             xhr.send();
         },
 
+        sendGCsessionCredentials : function (callback)
+        {
+            var nodeServer = window.location.hostname;
+           // nodeServer = 'nodejsgc.hkskoglund.c9.io';
+            var xhr = new XMLHttpRequest();
+            var url = 'http://' + nodeServer + '/credentials';
+            var jsessionID = '7AD3DC5E4E1EE221040C193019AC51A2'; 
+            var BIGipServer = '739420352.20480.0000'; // Node at GC
+                             
+            var async = true;
+
+            xhr.open('POST', url, async);
+
+            xhr.onload = function (e) {
+               // var response = JSON.parse(this.response);
+               // self.parseGCLinkActivitySummary(response);
+                if (this.status !== 200)
+                    self.loggMessage("error", this.status.toString() + " " + this.responseText);
+                else
+                    if (typeof callback !== "undefined")
+                        callback();
+            };
+
+            xhr.onerror = function (e) {
+                self.loggMessage('error', 'Could not retrive data from ' + url);
+            };
+
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer }));
+
+        },
+
         testReadActivitiesViaNodejs : function ()
         {
+            
+
             // http://www.html5rocks.com/en/tutorials/file/xhr2/#toc-send-formdata
             // GC - has not enabled CORS...
 
@@ -1412,7 +1446,7 @@
                 this.map = this.initMap();
 
 
-           //self.testReadActivitiesViaNodejs();
+           //self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
         },
 
         hasWebNotification : function ()
