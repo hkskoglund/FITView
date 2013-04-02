@@ -756,7 +756,9 @@
                 distanceOnXAxis: ko.observable(true),
                 TEIntensityPlotbands: ko.observable(false),
                 hideLAPtriggerTime: ko.observable(true),
-                appHostname : ko.observable(window.location.hostname)
+                appHostname: ko.observable(window.location.hostname),
+                GCJSESSIONID: ko.observable(localStorage["GCJSESSIONID"]),
+                GCBIGipServer : ko.observable(localStorage["GCBIGipServer"])
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1068,8 +1070,8 @@
             //nodeServer = 'nodejsgc.hkskoglund.c9.io';
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/credentials';
-            var jsessionID = '7AD3DC5E4E1EE221040C193019AC51A2'; 
-            var BIGipServer = '739420352.20480.0000'; // Node at GC
+            var jsessionID = localStorage["GCJSESSIONID"]; 
+            var BIGipServer = localStorage["GCBIGipServer"]; // Node at GC
                              
             var async = true;
 
@@ -1231,6 +1233,7 @@
 
             //this.masterVM.lapVM.speedMode = ko.observable();
 
+
             // Make sure we always is ready to export CSV data when user changes parameters
             this.masterVM.exportVM.csv.header.subscribe(function (header) {
                 self.setupHRVexport(self.masterVM.sessionVM.rawData);
@@ -1253,6 +1256,16 @@
                 } else
                     return true;
             };
+
+            this.masterVM.settingsVM.GCJSESSIONID.subscribe(function (jsessionId)
+            {
+               localStorage["GCJSESSIONID"] = jsessionId;
+            });
+
+            this.masterVM.settingsVM.GCBIGipServer.subscribe(function (BIGipServer)
+            {
+               localStorage["GCBIGipServer"] = BIGipServer;
+            });
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
             this.masterVM.settingsVM.showLapLines.subscribe(function (showLapLines) {
@@ -1452,7 +1465,7 @@
                 this.map = this.initMap();
 
 
-           //self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
+           self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
         },
 
         hasWebNotification : function ()
