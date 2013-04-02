@@ -496,7 +496,7 @@
                                 <div>
                                     <img class="inlineIcon" src="Images/cookie-chocolate.png" />
                                     <label title="Session identifier">JSESSIONID</label>
-                                    <input data-bind="value: GCJSESSIONID, valueUpdate: 'afterkeydown'" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Its by issued by web server after login and vailable in the browser under connect.garmin.com in cookie privacy settings. Doesnt require username/password for accessing activities." />
+                                    <input size="32" maxlength="32" data-bind="value: GCJSESSIONID, valueUpdate: 'afterkeydown'" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Its by issued by web server after login and vailable in the browser under connect.garmin.com in cookie privacy settings. Doesnt require username/password for accessing activities. Stored in local storage in web browser." />
                                 </div>
 
                             </a>
@@ -507,7 +507,7 @@
                                 <div>
                                     <img class="inlineIcon" src="Images/cookie-chocolate.png" />
                                     <label title="Node behind load balancer">BIGipServer</label>
-                                    <input data-bind="value: GCBIGipServer, valueUpdate: 'afterkeydown'" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Session cookie for node behind load balancer, its available in the browser under connect.garmin.com in cookie privacy settings.  Doesnt require username/password for accessing activities." />
+                                    <input data-bind="value: GCBIGipServer, valueUpdate: 'afterkeydown'" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Session cookie for node behind load balancer, its available in the browser under connect.garmin.com in cookie privacy settings.  Doesnt require username/password for accessing activities. Stored in local storage in web browser." />
                                 </div>
 
                             </a>

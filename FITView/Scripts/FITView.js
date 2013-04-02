@@ -892,7 +892,7 @@
                 // Distance
 
                 if (activitySummary.SumDistance)
-                    rawdata.session.total_distance.push(parseInt(activitySummary.SumDistance.value) * 1000);
+                    rawdata.session.total_distance.push(parseFloat(activitySummary.SumDistance.value) * 1000);
 
                 // Cadence
 
@@ -1465,7 +1465,7 @@
                 this.map = this.initMap();
 
 
-           self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
+           //self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
         },
 
         hasWebNotification : function ()
