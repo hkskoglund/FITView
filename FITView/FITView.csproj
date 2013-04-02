@@ -60,6 +60,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
+    <Content Include="Images\cookie-chocolate.png" />
     <Content Include="Images\deviceinfo\env_sensor_legacy.png" />
     <Content Include="Images\deviceinfo\garmin\910xt.png" />
     <Content Include="Images\deviceinfo\garmin\edge200.jpg" />
@@ -94,6 +95,7 @@
     <Content Include="Images\laptrigger\session_end.png" />
     <Content Include="Images\power.png" />
     <Content Include="Images\Screenshot\FITView.png" />
+    <Content Include="Images\server.png" />
     <Content Include="Images\sessiontrigger\activity_end.png" />
     <Content Include="Images\sessiontrigger\auto_multi_sport.png" />
     <Content Include="Images\sessiontrigger\fitness_equipment.png" />

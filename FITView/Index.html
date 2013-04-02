@@ -483,10 +483,31 @@
                             </li>
 
                             <li><a href="#">
+                                <div>
+                                    <img class="inlineIcon" title="Hostname where application was loaded" src="Images/server.png" />
+                                    <span style="margin-left:2px" title="Hostname where application was loaded" data-bind="text: appHostname" />
+                                </div>
+
+                            </a>
+                            </li>
+
+                             <li><a href="#">
 
                                 <div>
-                                    App. runs on 
-                                    <span style="margin-left:5px"  data-bind="text: appHostname" />
+                                    <img class="inlineIcon" src="Images/cookie-chocolate.png" />
+                                    <label title="Session identifier">JSESSIONID</label>
+                                    <input type="text" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Its by issued by web server after login and vailable in the browser under connect.garmin.com in cookie privacy settings. Doesnt require username/password for accessing activities." />
+                                </div>
+
+                            </a>
+                            </li>
+
+                            <li><a href="#">
+
+                                <div>
+                                    <img class="inlineIcon" src="Images/cookie-chocolate.png" />
+                                    <label title="Node behind load balancer">BIGipServer</label>
+                                    <input type="text" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Session cookie for node behind load balancer, its available in the browser under connect.garmin.com in cookie privacy settings.  Doesnt require username/password for accessing activities." />
                                 </div>
 
                             </a>
