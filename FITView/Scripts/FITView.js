@@ -756,7 +756,7 @@
                 distanceOnXAxis: ko.observable(true),
                 TEIntensityPlotbands: ko.observable(false),
                 hideLAPtriggerTime: ko.observable(true),
-                appHostnameself.test : ko.observable(window.location.hostname)
+                appHostname : ko.observable(window.location.hostname)
                 //requestHideAltitude : ko.observable(true)
             },
 
