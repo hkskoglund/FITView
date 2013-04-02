@@ -755,7 +755,8 @@
                 logging: ko.observable(false),
                 distanceOnXAxis: ko.observable(true),
                 TEIntensityPlotbands: ko.observable(false),
-                hideLAPtriggerTime : ko.observable(true)
+                hideLAPtriggerTime: ko.observable(true),
+                appHostnameself.test : ko.observable(window.location.hostname)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1064,7 +1065,7 @@
         sendGCsessionCredentials : function (callback)
         {
             var nodeServer = window.location.hostname;
-           // nodeServer = 'nodejsgc.hkskoglund.c9.io';
+            //nodeServer = 'nodejsgc.hkskoglund.c9.io';
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/credentials';
             var jsessionID = '7AD3DC5E4E1EE221040C193019AC51A2'; 
@@ -1098,10 +1099,11 @@
             
 
             // http://www.html5rocks.com/en/tutorials/file/xhr2/#toc-send-formdata
-            // GC - has not enabled CORS...
+            // GC - has not enabled CORS...-> must enable Accept* headers via proxy (nodejs+expressjs)
 
-            //var nodeServer = 'nodejsgc.hkskoglund.c9.io';
-             var nodeServer = window.location.hostname;
+            
+            var nodeServer = window.location.hostname;
+            //nodeServer = 'nodejsgc.hkskoglund.c9.io';
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/activities/page/0';
 
@@ -1110,8 +1112,12 @@
             xhr.open('GET', url, async);
 
             xhr.onload = function (e) {
-                var response = JSON.parse(this.response);
-                self.parseGCLinkActivitySummary(response);
+                if (this.status === 200) {
+                    self.disableDemoTimeout();
+                    var response = JSON.parse(this.response);
+                    self.parseGCLinkActivitySummary(response);
+                } else
+                    self.loggMessage("error", this.status.toString() + " " + this.responseText);
             };
 
             xhr.onerror = function (e) {
@@ -4851,6 +4857,13 @@
             }
         },
 
+        disableDemoTimeout : function ()
+        {
+            if (typeof self.masterVM.demoTimeoutID !== "undefined") {
+                clearTimeout(self.masterVM.demoTimeoutID);
+                self.masterVM.demoTimeoutID = undefined;
+            }
+        },
 
         // Communication with import file worker thread
         onFITManagerMsg: function (e) {
@@ -4873,10 +4886,9 @@
                     //window.URL = window.URL || window.webkitURL;
 
                     //window.URL.revokeObjectURL(eventdata.file);
-                    if (typeof self.masterVM.demoTimeoutID !== "undefined") {
-                        clearTimeout(self.masterVM.demoTimeoutID);
-                        self.masterVM.demoTimeoutID = undefined;
-                    }
+                  
+                    self.disableDemoTimeout();
+
                      rawData = eventdata.rawdata;
                  
                     // TO DO: push rawdata in an viewmodel for imported rawdata files....
