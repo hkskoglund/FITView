@@ -492,31 +492,31 @@
                             </li>
 
                             <li>
+                                <a href="#">
 
-                                
-                                    <form>
+                                    <div>
                                         <img class="inlineIcon" src="Images/cookie-chocolate.png" />
                                         <label title="Session identifier">JSESSIONID</label>
+                                        <!-- Pattern regex. only used when input as part of form validation checked when submitted, not used here -->
                                         <input size="32" pattern="^[0-9A-F]{32}$" maxlength="32" data-bind="value: GCJSESSIONID, valueUpdate: 'afterkeydown'" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Its by issued by web server after login and available in the browser under connect.garmin.com in cookie privacy settings. Doesnt require username/password for accessing activities. Stored in local storage in web browser. Format: 32 hex digits." />
-                                        <img class="inlineIcon" src="Images/cookie-chocolate.png" />
-                                        <label title="Node behind load balancer">BIGipServer</label>
-                                        <input data-bind="value: GCBIGipServer, valueUpdate: 'afterkeydown'" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Session cookie for node behind load balancer, its available in the browser under connect.garmin.com in cookie privacy settings.  Doesnt require username/password for accessing activities. Stored in local storage in web browser." />
-                                        <button type="submit">Save</button>
-                                    </form>
+                                    </div>
+                                </a>
 
-                                
 
-                            
+
                             </li>
 
-                           <!-- <li><a href="#">
+                            <li><a href="#">
 
                                 <div>
-                                   
+                                    <img class="inlineIcon" src="Images/cookie-chocolate.png" />
+                                    <label title="Node behind load balancer">BIGipServer</label>
+                                    <input data-bind="value: GCBIGipServer, valueUpdate: 'afterkeydown'" title="ONLY USE IF YOU AGREE TO FETCH DATA ON GARMIN CONNECT VIA PROXY. Will be sent to a nodejs proxy service for garmin connect. Session cookie for node behind load balancer, its available in the browser under connect.garmin.com in cookie privacy settings.  Doesnt require username/password for accessing activities. Stored in local storage in web browser." />
+
                                 </div>
 
                             </a>
-                            </li>-->
+                            </li>
 
                         </ul>
                     </li>
