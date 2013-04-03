@@ -787,6 +787,9 @@
 
         parseGCLinkActivitySummary : function(response)
         {
+            // Info: http://connect.garmin.com/proxy/activity-service-1.2/rest.create.html
+            // Licence : http://connect.garmin.com/proxy/activity-service-1.2/LICENSE.txt
+
             var rawdata,
                 activityNr,
              activity,
@@ -901,6 +904,28 @@
 
                 if (activitySummary.WeightedMeanBikeCadence)
                     rawdata.session.avg_cadence.push(parseInt(activitySummary.WeightedMeanBikeCadence.value));
+
+                if (activitySummary.MaxRunCadence)
+                    rawdata.session.max_cadence.push(parseInt(activitySummary.MaxRunCadence.value));
+
+                if (activitySummary.WeightedMeanRunCadence)
+                    rawdata.session.avg_cadence.push(parseInt(activitySummary.WeightedMeanRunCadence.value));
+
+                // Temperature
+
+                if (activitySummary.MaxAirTemperature)
+                    rawdata.session.max_temperature.push(parseFloat(activitySummary.MaxAirTemperature.value));
+
+                if (activitySummary.WeightedMeanAirTemperature)
+                    rawdata.session.avg_temperature.push(parseFloat(activitySummary.WeightedMeanAirTemperature.value));
+
+                // Power
+                
+                if (activitySummary.MaxPower)
+                    rawdata.session.max_power.push(parseInt(activitySummary.MaxPower.value));
+
+                if (activitySummary.WeightedMeanPower)
+                    rawdata.session.avg_power.push(parseInt(activitySummary.WeightedMeanPower.value));
 
 
                 rawdata.garminConnect = {};
