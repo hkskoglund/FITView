@@ -1038,12 +1038,26 @@
 
         },
 
+        chooseNodeServer : function ()
+        {
+            var nodeServer = window.location.hostname;
+            if (nodeServer !== 'localhost') {
+                self.loggMessage("info", "Setting node server to gclink.azurewebsites.net");
+                nodeServer = 'gclink.azurewebsites.net';
+            }
+
+            else
+                self.loggMessage("info", "Setting node server to localhost");
+            
+            return nodeServer;
+        },
+
 
         readActivityDetails : function (rawdata,callback)
         {
             var activityId = rawdata.garminConnect.activity.activityId;
             //var nodeServer = 'nodejsgc.hkskoglund.c9.io';
-            var nodeServer = window.location.hostname;
+            var nodeServer = self.chooseNodeServer();
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/activities/' + activityId;
           
@@ -1066,8 +1080,7 @@
 
         sendGCsessionCredentials : function (callback)
         {
-            var nodeServer = window.location.hostname;
-            //nodeServer = 'nodejsgc.hkskoglund.c9.io';
+            var nodeServer = self.chooseNodeServer();
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/credentials';
             var jsessionID = localStorage["GCJSESSIONID"]; 
@@ -1104,8 +1117,8 @@
             // GC - has not enabled CORS...-> must enable Accept* headers via proxy (nodejs+expressjs)
 
             
-            var nodeServer = window.location.hostname;
-            //nodeServer = 'nodejsgc.hkskoglund.c9.io';
+            var nodeServer = self.chooseNodeServer();
+
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/activities/page/0';
 
@@ -1129,6 +1142,10 @@
             xhr.send();
         },
 
+        storeGCSessionCookies : function ()
+            {
+            },
+            
         // Initialization of view models and some checks for desired functinality of the browser environment/user agent
         init: function () {
 
@@ -1266,6 +1283,8 @@
             {
                localStorage["GCBIGipServer"] = BIGipServer;
             });
+
+            
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
             this.masterVM.settingsVM.showLapLines.subscribe(function (showLapLines) {
@@ -1465,7 +1484,7 @@
                 this.map = this.initMap();
 
 
-           //self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
+           self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
         },
 
         hasWebNotification : function ()
