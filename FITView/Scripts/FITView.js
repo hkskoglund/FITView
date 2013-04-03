@@ -1113,7 +1113,7 @@
 
         },
 
-        testReadActivitiesViaNodejs : function ()
+        testReadActivitiesViaNodejs : function (successCallback)
         {
             
 
@@ -1138,6 +1138,7 @@
                     self.disableDemoTimeout();
                     var response = JSON.parse(this.response);
                     self.parseGCLinkActivitySummary(response);
+                    sucessCallback();
                 } else
                     self.loggMessage("error", this.status.toString() + " " + this.responseText);
             };
@@ -1259,6 +1260,11 @@
 
             //this.masterVM.lapVM.speedMode = ko.observable();
 
+
+            this.masterVM.getLatestActivitiesFromGC = function (data, event) {
+                self.testReadActivitiesViaNodejs(function displayActivity() {
+                });
+            }
 
             // Make sure we always is ready to export CSV data when user changes parameters
             this.masterVM.exportVM.csv.header.subscribe(function (header) {
@@ -1492,8 +1498,6 @@
             if (this.map === undefined)
                 this.map = this.initMap();
 
-
-           self.testReadActivitiesViaNodejs();
         },
 
         hasWebNotification : function ()

@@ -61,6 +61,7 @@
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
     <Content Include="Images\cookie-chocolate.png" />
+    <Content Include="Images\database-import.png" />
     <Content Include="Images\deviceinfo\env_sensor_legacy.png" />
     <Content Include="Images\deviceinfo\garmin\910xt.png" />
     <Content Include="Images\deviceinfo\garmin\edge200.jpg" />
