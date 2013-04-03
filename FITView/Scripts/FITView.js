@@ -1055,6 +1055,9 @@
 
         readActivityDetails : function (rawdata,callback)
         {
+            var jsessionID = localStorage["GCJSESSIONID"];
+            var BIGipServer = localStorage["GCBIGipServer"]; // Node at GC
+
             var activityId = rawdata.garminConnect.activity.activityId;
             //var nodeServer = 'nodejsgc.hkskoglund.c9.io';
             var nodeServer = self.chooseNodeServer();
@@ -1063,7 +1066,7 @@
           
             var async = true;
 
-            xhr.open('GET', url, async);
+            xhr.open('POST', url, async);
 
             xhr.onload = function (e) {
                 var response = JSON.parse(this.response);
@@ -1075,7 +1078,8 @@
                 self.loggMessage('error', 'Could not retrive data from ' + url);
             };
 
-            xhr.send();
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer }));
         },
 
         sendGCsessionCredentials : function (callback)
@@ -1118,13 +1122,16 @@
 
             
             var nodeServer = self.chooseNodeServer();
+            var jsessionID = localStorage["GCJSESSIONID"];
+            var BIGipServer = localStorage["GCBIGipServer"]; // Node at GC
+
 
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/activities/page/0';
 
             var async = true;
 
-            xhr.open('GET', url, async);
+            xhr.open('POST', url, async);
 
             xhr.onload = function (e) {
                 if (this.status === 200) {
@@ -1139,7 +1146,9 @@
                 self.loggMessage('error', 'Could not retrive data from ' + url);
             };
 
-            xhr.send();
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer }));
+           
         },
 
         storeGCSessionCookies : function ()
@@ -1484,7 +1493,7 @@
                 this.map = this.initMap();
 
 
-           self.sendGCsessionCredentials(self.testReadActivitiesViaNodejs());
+           self.testReadActivitiesViaNodejs();
         },
 
         hasWebNotification : function ()
