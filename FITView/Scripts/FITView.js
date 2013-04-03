@@ -1235,9 +1235,9 @@
                 alert("This application will not work due to lack of webworker functionality");
             }
 
-            if (!Modernizr.indexeddb) {
-                alert("This application will not work due to lack of indexedDB");
-            }
+            //if (!Modernizr.indexeddb) {
+            //    alert("This application will not work due to lack of indexedDB");
+            //}
 
             if (!Modernizr.geolocation) {
                 alert("This application will not work due to lack of geolocation");
