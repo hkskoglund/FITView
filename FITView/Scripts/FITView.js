@@ -719,6 +719,11 @@
 
             speedMode: ko.observable(),
 
+            // Experiment : contains history of watt (J/s) pr. session
+            IntensityVM : {
+                history : []
+            },
+
             TEVM : {
                 TEhistory : []
             },
@@ -933,7 +938,15 @@
 
                 self.setMapImage(rawdata);
                 self.masterVM.activityVM.activity.push(rawdata); // Update UI
+
+                self.updateTEHistory(rawdata);
+                self.updateWeeklyCalories(rawdata);
+                self.updateKcalVsHRVsTe(rawdata);
+                self.updateIntensityHistory(rawdata);
+                
             }
+
+           
 
            
 
@@ -1163,7 +1176,8 @@
                     self.disableDemoTimeout();
                     var response = JSON.parse(this.response);
                     self.parseGCLinkActivitySummary(response);
-                    sucessCallback();
+                    if (typeof successCallback !== "undefined")
+                        successCallback();
                 } else
                     self.loggMessage("error", this.status.toString() + " " + this.responseText);
             };
@@ -1177,9 +1191,6 @@
            
         },
 
-        storeGCSessionCookies : function ()
-            {
-            },
             
         // Initialization of view models and some checks for desired functinality of the browser environment/user agent
         init: function () {
@@ -1288,6 +1299,7 @@
 
             this.masterVM.getLatestActivitiesFromGC = function (data, event) {
                 self.testReadActivitiesViaNodejs(function displayActivity() {
+                    self.showIntensityChart();
                 });
             }
 
@@ -3955,6 +3967,127 @@
             }
         },
 
+        showIntensityChart : function ()
+        {
+            var divChartId = 'intensityChart';
+            var divChart = document.getElementById(divChartId);
+
+            if (FITUtil.isUndefined(self.masterVM.IntensityVM.history)) {
+                self.loggMessage("warn", "Cannot show intensity chart with undefined history");
+                return -1;
+            }
+
+            if (self.masterVM.IntensityVM.history.length === 0) {
+                self.loggMessage("warn", "No intensity history available");
+                return;
+            }
+
+
+            if (self.intensityChart)
+                self.intensityChart.destroy();
+
+            var options = {
+                chart: {
+                    renderTo: divChartId,
+                    type: 'column',
+                    zoomType: 'xy',
+                    backgroundColor: 'transparent',
+                    spacingLeft: 0,
+                    spacingBottom: 0,
+                    spacingTop: 0
+                },
+                title: {
+                    text: ''
+                },
+                xAxis: {
+                    type: 'datetime',
+                    labels:
+                            {
+                                enabled: true
+                            },
+                },
+
+                yAxis: {
+                    gridLineWidth: 0,
+                    labels:
+                            {
+                                enabled: false
+                            },
+                    min: 0,
+                    title: {
+                        text: 'Watt'
+                    },
+                  
+                },
+                legend: {
+                    enabled: false // Turn off please
+                },
+               
+                credits: {
+                    enabled: false
+                },
+                tooltip: {
+                    formatter: function () {
+                        return Highcharts.dateFormat('%a %Y-%m-%d %H:%M:%S', this.x) + '<br/><b>' + this.series.name + '</b>: ' + this.y.toFixed(1);
+                    }
+                    //positioner: function () {
+                    //    return { x: 50, y: 0 };
+                    //}
+                },
+                plotOptions: {
+                    column: {
+                        pointWidth: 10,
+                       // stacking: 'normal'
+                        //dataLabels: {
+                        //    enabled: false,
+                        //    color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+                        //}
+                    }
+                }
+                //,
+                //series: [{
+                //    name: 'John',
+                //    data: [5, 3, 4, 7, 2]
+                //}, {
+                //    name: 'Jane',
+                //    data: [2, 2, 3, 2, 1]
+                //}, {
+                //    name: 'Joe',
+                //    data: [3, 4, 4, 2, 5]
+                //}]
+            };
+
+            function getMax() {
+                var elementNr;
+                var max = 0; // Intensity is > 0
+                var INTENSITY = 1;
+                for (elementNr = 0; elementNr < self.masterVM.IntensityVM.history.length; elementNr++)
+                    if (max < self.masterVM.IntensityVM.history[elementNr][INTENSITY])
+                        max = self.masterVM.IntensityVM.history[elementNr][INTENSITY];
+
+                return max;
+            }
+
+            function getPow10Transform() {
+                var elementNr;
+                var max = getMax();
+                var INTENSITY = 1, TIMESTAMP = 0;
+                var pow10Arr = [];
+                for (elementNr = 0; elementNr < self.masterVM.IntensityVM.history.length; elementNr++)
+                    pow10Arr.push([self.masterVM.IntensityVM.history[elementNr][TIMESTAMP], Math.pow(10, self.masterVM.IntensityVM.history[elementNr][INTENSITY] / max)]);
+
+                return pow10Arr;
+            }
+
+            options.series = [{
+                name: 'Watt',
+                data: self.masterVM.IntensityVM.history
+            }];
+
+            self.intensityChart = new Highcharts.Chart(options);
+
+        },
+
         showHRZones: function (rawdata, startTimestamp, endTimestamp) {
 
             //if (typeof (destroy) !== "undefined") {
@@ -4797,7 +4930,9 @@
 
             var destroy = true;
             self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
-            self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0],destroy);
+            self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0], destroy);
+
+           
 
             //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
         },
@@ -4935,6 +5070,182 @@
             }
         },
 
+        updateIntensityHistory : function (rawData)
+        {
+            var sessionStartTime;
+            var sessionNr;
+            var watt;
+
+            if (typeof rawData.session === "undefined")
+            {
+                self.loggMessage("warn","No session information available, cannot update intensity Watt (J/s) history");
+                return;
+            }
+
+            if (typeof rawData.session.total_calories === "undefined" || rawData.session.total_calories.length === 0)
+            {
+                self.loggMessage("error","Cannot estimate watt due to no available total_calories data for session");
+                return;
+            }
+
+            if (typeof rawData.session.total_timer_time === "undefined" || rawData.session.total_timer_time.length === 0)
+            {
+                self.loggMessage("error","Cannot estimate watt due to no available total_timer_time data for session");
+                return;
+            }
+
+
+            for (sessionNr = 0; sessionNr < rawData.session.total_calories.length; sessionNr++) {
+
+                if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+
+                    sessionStartTime = rawData.session.start_time[sessionNr];
+
+
+
+                if (typeof sessionStartTime === "undefined") {
+
+                    self.loggMessage("error", "Could not find start_time for session nr., will not be available in chart (removed from data series) : ", sessionNr);
+
+                    continue;
+
+                }
+
+
+                if (rawData.session.total_timer_time[sessionNr] >= 0 && rawData.session.total_calories[sessionNr] >= 0) {
+
+
+                    watt = rawData.session.total_calories[sessionNr] * 1000 * 4.1868 / rawData.session.total_timer_time[sessionNr];
+
+                    self.masterVM.IntensityVM.history.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), watt]);
+
+                    // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+                }
+            }
+        },
+
+        updateTEHistory : function (rawData)
+        {
+            var sessionStartTime;
+            var sessionNr;
+
+            if (rawData.session && rawData.session.total_training_effect)
+
+                for (sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+
+                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+
+                        sessionStartTime = rawData.session.start_time[sessionNr];
+
+
+
+                    if (typeof sessionStartTime === "undefined") {
+
+                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+
+                        continue;
+
+                    }
+
+
+                    if (rawData.session.total_training_effect[sessionNr] && rawData.session.total_elapsed_time[sessionNr] >= 0 && rawData.session.total_calories[sessionNr] >= 0) {
+
+                        // TEseries.addPoint([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]], false, false, false);
+
+                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), {
+                            TE: rawData.session.total_training_effect[sessionNr],
+                            total_elapsed_time: rawData.session.total_elapsed_time[sessionNr],
+                            total_calories: rawData.session.total_calories[sessionNr]
+                        }]);
+
+                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
+
+                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+
+
+                    }
+
+
+
+                }
+        },
+
+        updateWeeklyCalories : function (rawData)
+        {
+            var weekOfYear, year, startMoment, weekMoment;
+            var sessionNr, sessionStartTime;
+
+            if (rawData.session && rawData.session.total_calories)
+
+                for (sessionNr = 0; sessionNr < rawData.session.total_calories.length; sessionNr++) {
+
+                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+
+                        sessionStartTime = rawData.session.start_time[sessionNr];
+
+
+
+                    if (typeof sessionStartTime === "undefined") {
+
+                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+
+                        continue;
+
+                    }
+
+                    if (rawData.session.total_calories[sessionNr]) {
+
+                        //http://momentjs.com/docs/#/get-set/week/
+                        startMoment = moment.utc(sessionStartTime);
+                        year = startMoment.year();
+                        weekOfYear = startMoment.week();
+                        weekMoment = moment.utc().year(year).week(weekOfYear).day(1).hours(0).minutes(0).seconds(0).millisecond(0); // Week start on monday ...
+                        if (typeof self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] !== "undefined")
+                            self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] += rawData.session.total_calories[sessionNr];
+                        else
+                            self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] = rawData.session.total_calories[sessionNr];
+                        // self.loggMesage("info", "Weekly calories week: ", weekOfYear, " year:", year, " calories: ", weeklyCalories[year + '_' + weekOfYear]);
+                        // self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
+
+                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
+
+                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+                    }
+
+
+                }
+        },
+
+        updateKcalVsHRVsTe : function (rawData)
+        {
+            var te, avg_hr, kcal, sport;
+            var sessionNr;
+
+            if (rawData.session && rawData.session.total_training_effect && rawData.session.total_calories && rawData.session.avg_heart_rate)
+
+                for (sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+                    te = rawData.session.total_training_effect[sessionNr];
+                    avg_hr = rawData.session.avg_heart_rate[sessionNr];
+                    kcal = rawData.session.total_calories[sessionNr];
+                    sport = rawData.session.sport[sessionNr];
+                    if (typeof te !== "undefined" && typeof avg_hr !== "undefined" && typeof kcal !== "undefined" && typeof sport !== "undefined")
+                        switch (sport) {
+                            case FITSport.running:
+                                self.masterVM.activityVM.kcalVSHRVSTE_run.push([kcal, avg_hr, te]);
+                                break;
+                            case FITSport.cycling:
+                                self.masterVM.activityVM.kcalVSHRVSTE_bike.push([kcal, avg_hr, te]);
+                                break;
+                            default:
+                                self.masterVM.activityVM.kcalVSHRVSTE_other.push([kcal, avg_hr, te]);
+                                break;
+                        }
+                }
+        },
+
         // Communication with import file worker thread
         onFITManagerMsg: function (e) {
             // NB Callback, this reference....
@@ -5009,117 +5320,15 @@
                                                   // addPoint (Object options, [Boolean redraw], [Boolean shift], [Mixed animation])
                             
 
-                            var sessionStartTime;
-                            var sessionNr;
+                            self.updateTEHistory(rawData);
 
-                            if (rawData.session && rawData.session.total_training_effect)
+                            self.updateWeeklyCalories(rawData);
 
-                                for (sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
+                            self.updateIntensityHistory(rawData);
 
-                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
+                            self.updateKcalVsHRVsTe(rawData);
 
-                                        sessionStartTime = rawData.session.start_time[sessionNr];
-
-
-
-                                    if (typeof sessionStartTime === "undefined") {
-
-                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
-
-                                        continue;
-
-                                    }
-
-
-                                    if (rawData.session.total_training_effect[sessionNr] && rawData.session.total_elapsed_time[sessionNr] >= 0 && rawData.session.total_calories[sessionNr] >= 0) {
-
-                                        // TEseries.addPoint([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]], false, false, false);
-
-                                        self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), {TE: rawData.session.total_training_effect[sessionNr],
-                                            total_elapsed_time: rawData.session.total_elapsed_time[sessionNr],
-                                            total_calories : rawData.session.total_calories[sessionNr]
-                                        }]);
-
-                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
-
-                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-
-
-
-                                    }
-
-
-                                    
-                                }
-
-                            var weekOfYear, year, startMoment, weekMoment;
-
-                            if (rawData.session && rawData.session.total_calories)
-
-                                for ( sessionNr = 0; sessionNr < rawData.session.total_calories.length; sessionNr++) {
-
-                                    if (rawData.session.start_time && rawData.session.start_time[sessionNr])
-
-                                        sessionStartTime = rawData.session.start_time[sessionNr];
-
-
-
-                                    if (typeof sessionStartTime === "undefined") {
-
-                                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
-
-                                        continue;
-
-                                    }
-
-                                    if (rawData.session.total_calories[sessionNr]) {
-
-                                        //http://momentjs.com/docs/#/get-set/week/
-                                        startMoment = moment.utc(sessionStartTime);
-                                        year = startMoment.year();
-                                        weekOfYear = startMoment.week();
-                                        weekMoment = moment.utc().year(year).week(weekOfYear).day(1).hours(0).minutes(0).seconds(0).millisecond(0); // Week start on monday ...
-                                        if (typeof self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] !== "undefined")
-                                          self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] += rawData.session.total_calories[sessionNr];
-                                        else
-                                            self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] = rawData.session.total_calories[sessionNr];
-                                        // self.loggMesage("info", "Weekly calories week: ", weekOfYear, " year:", year, " calories: ", weeklyCalories[year + '_' + weekOfYear]);
-                                       // self.masterVM.TEVM.TEhistory.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), rawData.session.total_training_effect[sessionNr]]);
-
-                                        //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
-
-                                        // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-
-                                    }
-
-
-                                }
-
-
-                            var te,avg_hr,kcal,sport;
-
-                            if (rawData.session && rawData.session.total_training_effect && rawData.session.total_calories && rawData.session.avg_heart_rate)
-
-                                for (sessionNr = 0; sessionNr < rawData.session.total_training_effect.length; sessionNr++) {
-                                    te = rawData.session.total_training_effect[sessionNr];
-                                    avg_hr = rawData.session.avg_heart_rate[sessionNr];
-                                    kcal = rawData.session.total_calories[sessionNr];
-                                    sport = rawData.session.sport[sessionNr];
-                                    if (typeof te !== "undefined" && typeof avg_hr !== "undefined" && typeof kcal !== "undefined" && typeof sport !== "undefined")
-                                        switch (sport) {
-                                            case FITSport.running:
-                                                self.masterVM.activityVM.kcalVSHRVSTE_run.push([kcal, avg_hr, te]);
-                                                break;
-                                            case FITSport.cycling:
-                                                self.masterVM.activityVM.kcalVSHRVSTE_bike.push([kcal, avg_hr, te]);
-                                                break;
-                                            default:
-                                                self.masterVM.activityVM.kcalVSHRVSTE_other.push([kcal, avg_hr, te]);
-                                                break;
-                                        }
-                                }
-
-
+                            self.showIntensityChart();
 
                             // If not previous activity has been selected process this one...
                             if (self.masterVM.activityVM.selectedActivity() === undefined) {

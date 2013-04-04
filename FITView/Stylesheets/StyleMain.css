@@ -129,6 +129,23 @@ display  : flex;
     /*height: inherit;*/
 }
 
+#intensityChart {
+    /*display : none;*/
+    /*visibility : hidden;*/
+    /*z-index : 1;*/
+    /*-webkit-flex : 1  1;*/
+    /*height: 200px;*/
+    /*float : left;*/
+    /*float: right;*/
+    margin:0px;
+    padding:0px;
+    width: 100%;
+    height: 65px;
+   
+    /*height: inherit;*/
+}
+
+
 
 #divHRZones {
     visibility: hidden;
