@@ -1938,6 +1938,10 @@
 
         },
 
+         getTimestampAndTE : function(item, index, arr) {
+                return [item[0], item[1].TE];
+            },
+
         // Handles display of measurements in several graphs with multiple axis
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
@@ -2518,7 +2522,7 @@
             // TE history
             var TEyAxisNr = yAxisNr;
 
-            function comparator (a,b) {
+            function comparator(a,b) {
                 if (a[0] < b[0])
                     return -1;
                 if (a[0] > b[0])
@@ -2528,12 +2532,12 @@
              
             }
 
-            function getTimestampAndTE(item, index, arr) {
-                return [item[0], item[1].TE];
-            }
+            //function getTimestampAndTE(item, index, arr) {
+            //    return [item[0], item[1].TE];
+            //}
             
             seriesSetup.push({
-                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory.map(getTimestampAndTE), visible: false, type: 'column', pointWidth: 5,
+                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory.map(self.getTimestampAndTE), visible: false, type: 'column', pointWidth: 5,
                 events: {
                     // http://jsfiddle.net/jlbriggs/kqHzr/
                     // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
@@ -2546,7 +2550,7 @@
                             if (this.visible === false) { // Transition to visible series
                                 //yaxis.setExtremes(1, 5, true, false);
                                 //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(getTimestampAndTE));
+                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(self.getTimestampAndTE));
                                 
 
                                 if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
@@ -3989,7 +3993,7 @@
             var options = {
                 chart: {
                     renderTo: divChartId,
-                    type: 'column',
+                   
                     zoomType: 'xy',
                     backgroundColor: 'transparent',
                     spacingLeft: 0,
@@ -4007,7 +4011,7 @@
                             },
                 },
 
-                yAxis: {
+                yAxis: [{
                     gridLineWidth: 0,
                     labels:
                             {
@@ -4016,11 +4020,26 @@
                     min: 0,
                     title: {
                         text: 'Watt'
+                    }
+                },{
+                    gridLineWidth: 0,
+                    labels:
+                            {
+                                enabled: false
+                            },
+                    min: 0,
+                    title: {
+                        text: 'TE'
                     },
+                    opposite: true,
                   
-                },
+                }]
+                ,
                 legend: {
-                    enabled: false // Turn off please
+                    enabled: true,
+                    //align: 'left',
+                    verticalAlign: 'top',
+                    floating : true
                 },
                
                 credits: {
@@ -4079,10 +4098,31 @@
                 return pow10Arr;
             }
 
+            function comparator(a, b) {
+                if (a[0] < b[0])
+                    return -1;
+                if (a[0] > b[0])
+                    return 1;
+                // a must be equal to b
+                return 0;
+
+            }
+
             options.series = [{
                 name: 'Watt',
+              //  zIndex: 5,
+                type : 'column',
                 data: self.masterVM.IntensityVM.history
             }];
+
+            options.series.push({
+                name: 'TE',
+                yAxis: 1,
+               // zIndex: 10,
+                type : 'spline',
+                visible: true,
+                data: self.masterVM.TEVM.TEhistory.sort(comparator,true).map(self.getTimestampAndTE)
+            });
 
             self.intensityChart = new Highcharts.Chart(options);
 
