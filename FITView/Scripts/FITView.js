@@ -4028,7 +4028,7 @@
                 },
                 tooltip: {
                     formatter: function () {
-                        return Highcharts.dateFormat('%a %Y-%m-%d %H:%M:%S', this.x) + '<br/><b>' + this.series.name + '</b>: ' + this.y.toFixed(1);
+                        return Highcharts.dateFormat('%a %Y-%m-%d %H:%M:%S', this.x) + '<br/><b>' + this.series.name + '</b>: ' + this.y.toFixed(1) ;
                     }
                     //positioner: function () {
                     //    return { x: 50, y: 0 };
