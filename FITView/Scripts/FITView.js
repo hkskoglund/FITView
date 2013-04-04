@@ -4018,6 +4018,7 @@
                                 enabled: false
                             },
                     min: 0,
+                    
                    // max : getMax()+10,
                     title: {
                         text: 'Watt'
@@ -4028,7 +4029,8 @@
                             {
                                 enabled: false
                             },
-                    min: 0,
+                    min: 1,
+                    max : 5,
                     title: {
                         text: 'TE'
                     },
@@ -4037,7 +4039,7 @@
                 }]
                 ,
                 legend: {
-                    enabled: true,
+                    enabled: self.masterVM.TEVM.TEhistory.length > 0 ? true : false,
                     //align: 'left',
                     verticalAlign: 'top',
                     floating : true
@@ -4116,14 +4118,16 @@
                 data: self.masterVM.IntensityVM.history.sort(comparator,true)
             }];
 
-            options.series.push({
-                name: 'TE',
-                yAxis: 1,
-               // zIndex: 10,
-                type : 'spline',
-                visible: true,
-                data: self.masterVM.TEVM.TEhistory.sort(comparator,true).map(self.getTimestampAndTE)
-            });
+            if (self.masterVM.TEVM.TEhistory.length > 0) {
+                options.series.push({
+                    name: 'TE',
+                    yAxis: 1,
+                    // zIndex: 10,
+                    type: 'spline',
+                    visible: true,
+                    data: self.masterVM.TEVM.TEhistory.sort(comparator, true).map(self.getTimestampAndTE)
+                });
+            }
 
             self.intensityChart = new Highcharts.Chart(options);
 
