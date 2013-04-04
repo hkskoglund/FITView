@@ -4018,6 +4018,7 @@
                                 enabled: false
                             },
                     min: 0,
+                   // max : getMax()+10,
                     title: {
                         text: 'Watt'
                     }
@@ -4112,7 +4113,7 @@
                 name: 'Watt',
               //  zIndex: 5,
                 type : 'column',
-                data: self.masterVM.IntensityVM.history
+                data: self.masterVM.IntensityVM.history.sort(comparator,true)
             }];
 
             options.series.push({
