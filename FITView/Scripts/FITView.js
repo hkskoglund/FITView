@@ -763,7 +763,8 @@
                 hideLAPtriggerTime: ko.observable(true),
                 appHostname: ko.observable(window.location.hostname),
                 GCJSESSIONID: ko.observable(localStorage["GCJSESSIONID"]),
-                GCBIGipServer : ko.observable(localStorage["GCBIGipServer"])
+                GCBIGipServer: ko.observable(localStorage["GCBIGipServer"]),
+                liveImage : ko.observable(undefined)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1199,6 +1200,8 @@
 
             //self.loginGarminConnect();
 
+
+
           
 
             self.masterVM.demoTimeoutID = self.initDemoMode(120000); // Allow 2 minutes of inactivity before a default demo .FIT file is loaded
@@ -1280,6 +1283,11 @@
                 alert("This application will not work due to lack of geolocation");
             }
 
+           
+            if (navigator.userAgent.indexOf("Chrome/") > 0)
+                self.masterVM.settingsVM.liveImage("http://195.18.181.101/mjpg/video.mjpg"); // IE 10, Firefox 20 has problems
+            else
+                self.masterVM.settingsVM.liveImage("http://dynamic.polarismedia.no/webcams/tromsoski_bigsize.jpg");
           
 
             this.inpFITFile = document.getElementById('inpFITFile');

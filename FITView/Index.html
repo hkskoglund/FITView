@@ -1203,7 +1203,7 @@
 
             <div id="divMapWrapper">
                 <div>
-                    <img id="liveImage" src="http://195.18.181.101/mjpg/video.mjpg" />
+                    <img id="liveImage" data-bind="attr: { src: settingsVM.liveImage}" />
                 </div>
                 <!-- ko with: activityVM -->
                 <div id="importedActivities">
