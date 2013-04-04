@@ -4023,19 +4023,6 @@
                     title: {
                         text: 'Watt'
                     }
-                },{
-                    gridLineWidth: 0,
-                    labels:
-                            {
-                                enabled: false
-                            },
-                    min: 1,
-                    max : 5,
-                    title: {
-                        text: 'TE'
-                    },
-                    opposite: true,
-                  
                 }]
                 ,
                 legend: {
@@ -4119,6 +4106,22 @@
             }];
 
             if (self.masterVM.TEVM.TEhistory.length > 0) {
+
+                options.yAixis.push({
+                    gridLineWidth: 0,
+                    labels:
+                            {
+                                enabled: false
+                            },
+                    min: 1,
+                    max : 5,
+                    title: {
+                        text: 'TE'
+                    },
+                    opposite: true,
+                  
+                });
+
                 options.series.push({
                     name: 'TE',
                     yAxis: 1,
