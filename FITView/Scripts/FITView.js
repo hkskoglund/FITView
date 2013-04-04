@@ -4021,7 +4021,7 @@
                     
                    // max : getMax()+10,
                     title: {
-                        text: 'Watt'
+                        text: null
                     }
                 }]
                 ,
@@ -4107,16 +4107,16 @@
 
             if (self.masterVM.TEVM.TEhistory.length > 0) {
 
-                options.yAixis.push({
+                options.yAxis.push({
                     gridLineWidth: 0,
                     labels:
                             {
                                 enabled: false
                             },
                     min: 1,
-                    max : 5,
+                    //max : 5,
                     title: {
-                        text: 'TE'
+                        text: null
                     },
                     opposite: true,
                   
