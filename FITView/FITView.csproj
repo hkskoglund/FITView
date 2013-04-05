@@ -61,6 +61,7 @@
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
     <Content Include="Images\cookie-chocolate.png" />
+    <Content Include="Images\error.png" />
     <Content Include="Images\database-import.png" />
     <Content Include="Images\deviceinfo\env_sensor_legacy.png" />
     <Content Include="Images\deviceinfo\garmin\910xt.png" />
@@ -81,6 +82,7 @@
     <Content Include="Images\deviceinfo\garmin\gsc-10.jpg" />
     <Content Include="Images\deviceinfo\HRM.jpg" />
     <Content Include="Images\deviceinfo\unknown.png" />
+    <Content Include="Images\document-import.png" />
     <Content Include="Images\event\battery-low.png" />
     <Content Include="Images\event\battery_marker.png" />
     <Content Include="Images\event\power_down.png" />

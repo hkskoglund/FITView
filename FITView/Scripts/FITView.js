@@ -1121,12 +1121,26 @@
             xhr.open('POST', url, async);
 
             xhr.onload = function (e) {
-                var response = JSON.parse(this.response);
-                self.parseGCActivityMetrics(rawdata,response);
-                callback();
+                if (this.status === 200) {
+                    var response = JSON.parse(this.response);
+                    self.parseGCActivityMetrics(rawdata, response);
+                    if (typeof callback !== "undefined")
+                       callback();
+                } else {
+                    self.showTemporaryNotification({
+                        title: 'Could not retrieve data',
+                        icon: '/Images/error.png',
+                        body: 'URL: ' + url+ " "+this.statusText
+                    });
+                }
             };
 
             xhr.onerror = function (e) {
+                self.showTemporaryNotification({
+                    title: 'Could not retrieve data',
+                    icon: '/Images/error.png',
+                    body: 'URL: '+url+ " "+this.statusText
+                });
                 self.loggMessage('error', 'Could not retrive data from ' + url);
             };
 
@@ -1192,11 +1206,22 @@
                     self.parseGCLinkActivitySummary(response);
                     if (typeof successCallback !== "undefined")
                         successCallback();
-                } else
-                    self.loggMessage("error", this.status.toString() + " " + this.responseText);
+                } else {
+                    self.showTemporaryNotification({
+                        title: 'Could not retrieve data',
+                        icon: '/Images/error.png',
+                        body: 'URL: ' + url + " " + this.statusText
+                    });
+                    self.loggMessage("error", this.status.toString() + " " + this.statusText);
+                }
             };
 
             xhr.onerror = function (e) {
+                self.showTemporaryNotification({
+                    title: 'Could not retrieve data',
+                    icon: '/Images/error.png',
+                    body: 'URL: ' + url
+                });
                 self.loggMessage('error', 'Could not retrive data from ' + url);
             };
 
@@ -5108,7 +5133,9 @@
             }
 
             if (self.hasWebNotification()) {
-                nw = new window.Notification(options.title, { body: options.body });
+                nw = new window.Notification(options.title, {
+                    body: options.body,
+                icon : options.icon});
                 nw.addEventListener("show",onShowCallback, false);
             }
 
@@ -5376,10 +5403,11 @@
                         case FITFileType.activityfile:
 
                            
-                            self.showTemporaryNotification({
-                                title: 'Imported activity file',
-                                body: rawData._headerInfo_.fitFile.name
-                            });
+                            //self.showTemporaryNotification({
+                            //    title: 'Imported activity file',
+                            //    icon : '/Images/document-import.png',
+                            //    body: rawData._headerInfo_.fitFile.name
+                            //});
 
                             self.loggMessage("info", "Processing an activity file");
 
@@ -5393,7 +5421,6 @@
                             // http://api.highcharts.com/highstock#Series.addPoint()
                          
                                                   // addPoint (Object options, [Boolean redraw], [Boolean shift], [Mixed animation])
-                            
 
                             self.updateTEHistory(rawData);
 
@@ -5417,11 +5444,22 @@
                             // Sport settings (HR zones)
 
                         case FITFileType.sportsettingfile:
+
+                            //self.showTemporaryNotification({
+                            //    title: 'Imported sport settings file',
+                            //    icon: '/Images/document-import.png',
+                            //    body: rawData._headerInfo_.fitFile.name
+                            //});
                             self.loggMessage("info","Processing a sport settings file");
                             self.processSportSettingFile(rawData);
                             break;
 
                         default:
+                            self.showTemporaryNotification({
+                                title: 'Cannot process file id with type',
+                                icon: '/Images/error.png',
+                                body: fileIdType.toString()
+                            });
                             self.loggMessage("info","Cannot process file id with type : ", fileIdType);
                             break;
                     }
