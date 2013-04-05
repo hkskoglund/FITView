@@ -4040,6 +4040,14 @@
             if (self.intensityChart)
                 self.intensityChart.destroy();
 
+            if (self.masterVM.IntensityVM.history.length <= 1) {
+                self.loggMessage("warn", "Less than two measurements available in intensity (watt) history, no need to show entire chart");
+                $('#intensityChart').hide();
+                return;
+            }
+            else
+                $('#intensityChart').show();
+
             var options = {
                 chart: {
                     renderTo: divChartId,
