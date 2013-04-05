@@ -764,7 +764,19 @@
                 appHostname: ko.observable(window.location.hostname),
                 GCJSESSIONID: ko.observable(localStorage["GCJSESSIONID"]),
                 GCBIGipServer: ko.observable(localStorage["GCBIGipServer"]),
-                liveImage : ko.observable(localStorage["liveImage"])
+                liveImage: ko.observable(localStorage["liveImage"]),
+                notificationPermission: function () {
+                    // http://www.thecssninja.com/javascript/web-notifications
+                    // https://dvcs.w3.org/hg/notifications/raw-file/tip/Overview.html#dom-notification
+                    if (self.hasWebNotification()) {
+                        window.Notification.requestPermission(function (permission) {
+                            //if (permission === "granted") {
+                            //    localStorage["notificationPermission"] = true;
+                            ////} else
+                            //    console.log("Permission:", permission);
+                        });
+                    }
+                }
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1548,6 +1560,8 @@
                 this.map = this.initMap();
 
         },
+
+        
 
         hasWebNotification : function ()
         {
@@ -5082,26 +5096,24 @@
                 self.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
         },
 
-        showTemporaryNotification: function (title, options) {
+        showTemporaryNotification: function (options) {
+            var nw;
 
-            var notificationCallback = function () {
-                var nw = new window.Notification("Test", { body: 'test' });
-                //nw.addEventListener("show", function () {
-                //    setTimeout(nw.close, 5000);
-                //}, false);
-                return nw;
+            function onShowCallback() {
+
+                function timeoutCallback() {
+                    nw.close();
+                }
+
+                setTimeout(timeoutCallback, 10000);
             }
 
-            // http://www.thecssninja.com/javascript/web-notifications
-            // https://dvcs.w3.org/hg/notifications/raw-file/tip/Overview.html#dom-notification
             if (self.hasWebNotification()) {
-                window.Notification.requestPermission(function (permission) {
-                    if (permission === "granted") {
-                        notificationCallback();
-                    } else
-                        console.log("Permission:", permission);
-                });
+                nw = new window.Notification(options.title, { body: options.body });
+                nw.addEventListener("show",onShowCallback, false);
             }
+
+            
         },
 
         setMapImage : function(rawData)
@@ -5365,6 +5377,10 @@
                         case FITFileType.activityfile:
 
                            
+                            self.showTemporaryNotification({
+                                title: 'Imported activity file',
+                                body: rawData._headerInfo_.fitFile.name
+                            });
 
                             self.loggMessage("info", "Processing an activity file");
 
