@@ -86,6 +86,7 @@
     <Content Include="Images\event\power_down.png" />
     <Content Include="Images\event\power_up.png" />
     <Content Include="Images\event\unknown.png" />
+    <Content Include="Images\image.png" />
     <Content Include="Images\laptrigger\unknown.png" />
     <Content Include="Images\event_type\stop_disable_all9.png" />
     <Content Include="Images\event_type\stop_all_4.png" />

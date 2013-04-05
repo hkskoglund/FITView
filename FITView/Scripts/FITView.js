@@ -764,7 +764,7 @@
                 appHostname: ko.observable(window.location.hostname),
                 GCJSESSIONID: ko.observable(localStorage["GCJSESSIONID"]),
                 GCBIGipServer: ko.observable(localStorage["GCBIGipServer"]),
-                liveImage : ko.observable(undefined)
+                liveImage : ko.observable(localStorage["liveImage"])
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1284,12 +1284,11 @@
             }
 
            
-            if (navigator.userAgent.indexOf("Chrome/") > 0)
-                self.masterVM.settingsVM.liveImage("http://195.18.181.101/mjpg/video.mjpg"); // IE 10, Firefox 20 has problems
-            else
-                self.masterVM.settingsVM.liveImage("http://dynamic.polarismedia.no/webcams/tromsoski_bigsize.jpg");
+            //if (navigator.userAgent.indexOf("Chrome/") > 0)
+            //    self.masterVM.settingsVM.liveImage("http://195.18.181.101/mjpg/video.mjpg"); // IE 10, Firefox 20 has problems
+            //else
+            //    self.masterVM.settingsVM.liveImage("http://dynamic.polarismedia.no/webcams/tromsoski_bigsize.jpg");
           
-
             this.inpFITFile = document.getElementById('inpFITFile');
             this.inpFITFile.addEventListener('change', this.onFitFileSelected, false);
 
@@ -1310,6 +1309,11 @@
                     self.showIntensityChart();
                 });
             }
+
+            this.masterVM.settingsVM.liveImage.subscribe(function (liveImage) {
+                localStorage["liveImage"] = liveImage;
+            }
+            );
 
             // Make sure we always is ready to export CSV data when user changes parameters
             this.masterVM.exportVM.csv.header.subscribe(function (header) {
