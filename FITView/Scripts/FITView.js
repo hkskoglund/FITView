@@ -765,6 +765,7 @@
                 GCJSESSIONID: ko.observable(localStorage["GCJSESSIONID"]),
                 GCBIGipServer: ko.observable(localStorage["GCBIGipServer"]),
                 liveImage: ko.observable(localStorage["liveImage"]),
+                hasWebNotification : ko.observable(undefined),
                 notificationPermission: function () {
                     // http://www.thecssninja.com/javascript/web-notifications
                     // https://dvcs.w3.org/hg/notifications/raw-file/tip/Overview.html#dom-notification
@@ -1210,13 +1211,11 @@
 
             self = this;
 
+            self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
+
             //self.loginGarminConnect();
 
-
-
-          
-
-            self.masterVM.demoTimeoutID = self.initDemoMode(120000); // Allow 2 minutes of inactivity before a default demo .FIT file is loaded
+            //self.masterVM.demoTimeoutID = self.initDemoMode(120000); // Allow 2 minutes of inactivity before a default demo .FIT file is loaded
 
             // Had to introduce this due to some issues with databinding, if new properties was introduced in rawdata,
             // databinding would not kick in even when data is mapped ok. Probably is due to some issues with <!-- ko: if -->
