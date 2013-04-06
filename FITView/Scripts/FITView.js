@@ -762,9 +762,9 @@
                 TEIntensityPlotbands: ko.observable(false),
                 hideLAPtriggerTime: ko.observable(true),
                 appHostname: ko.observable(window.location.hostname),
-                GCJSESSIONID: ko.observable(localStorage["GCJSESSIONID"]),
-                GCBIGipServer: ko.observable(localStorage["GCBIGipServer"]),
-                liveImage: ko.observable(localStorage["liveImage"]),
+                GCJSESSIONID: ko.observable(localStorage.GCJSESSIONID),
+                GCBIGipServer: ko.observable(localStorage.GCBIGipServer),
+                liveImage: ko.observable(localStorage.liveImage),
                 hasWebNotification : ko.observable(undefined),
                 notificationPermission: function () {
                     // http://www.thecssninja.com/javascript/web-notifications
@@ -783,7 +783,7 @@
 
             progressVM: {
                 progress: ko.observable(0) // For reporting progress from import worker thread
-            },
+            }
         },
 
         loginGarminConnect : function ()
@@ -906,10 +906,10 @@
                 // Time
 
                 if (activitySummary.SumElapsedDuration)
-                    rawdata.session.total_elapsed_time.push(parseInt(activitySummary.SumElapsedDuration.value));
+                    rawdata.session.total_elapsed_time.push(parseInt(activitySummary.SumElapsedDuration.value,10));
 
                 if (activitySummary.SumDuration)
-                    rawdata.session.total_timer_time.push(parseInt(activitySummary.SumDuration.value));
+                    rawdata.session.total_timer_time.push(parseInt(activitySummary.SumDuration.value,10));
 
                 // Distance
 
@@ -919,16 +919,16 @@
                 // Cadence
 
                 if (activitySummary.MaxBikeCadence)
-                    rawdata.session.max_cadence.push(parseInt(activitySummary.MaxBikeCadence.value));
+                    rawdata.session.max_cadence.push(parseInt(activitySummary.MaxBikeCadence.value,10));
 
                 if (activitySummary.WeightedMeanBikeCadence)
-                    rawdata.session.avg_cadence.push(parseInt(activitySummary.WeightedMeanBikeCadence.value));
+                    rawdata.session.avg_cadence.push(parseInt(activitySummary.WeightedMeanBikeCadence.value,10));
 
                 if (activitySummary.MaxRunCadence)
-                    rawdata.session.max_cadence.push(parseInt(activitySummary.MaxRunCadence.value));
+                    rawdata.session.max_cadence.push(parseInt(activitySummary.MaxRunCadence.value,10));
 
                 if (activitySummary.WeightedMeanRunCadence)
-                    rawdata.session.avg_cadence.push(parseInt(activitySummary.WeightedMeanRunCadence.value));
+                    rawdata.session.avg_cadence.push(parseInt(activitySummary.WeightedMeanRunCadence.value,10));
 
                 // Temperature
 
@@ -941,10 +941,10 @@
                 // Power
                 
                 if (activitySummary.MaxPower)
-                    rawdata.session.max_power.push(parseInt(activitySummary.MaxPower.value));
+                    rawdata.session.max_power.push(parseInt(activitySummary.MaxPower.value,10));
 
                 if (activitySummary.WeightedMeanPower)
-                    rawdata.session.avg_power.push(parseInt(activitySummary.WeightedMeanPower.value));
+                    rawdata.session.avg_power.push(parseInt(activitySummary.WeightedMeanPower.value,10));
 
 
                 rawdata.garminConnect = {};
@@ -980,7 +980,7 @@
                 var measurementNr;
 
                 for (measurementNr = 0; measurementNr < measurementsLength; measurementNr++) {
-                    if (activityDetails.measurements[measurementNr].key == key)
+                    if (activityDetails.measurements[measurementNr].key === key)
                         return activityDetails.measurements[measurementNr].metricsIndex;
                 }
 
@@ -1107,8 +1107,8 @@
 
         readActivityDetails : function (rawdata,callback)
         {
-            var jsessionID = localStorage["GCJSESSIONID"];
-            var BIGipServer = localStorage["GCBIGipServer"]; // Node at GC
+            var jsessionID = localStorage.GCJSESSIONID;
+            var BIGipServer = localStorage.GCBIGipServer; // Node at GC
 
             var activityId = rawdata.garminConnect.activity.activityId;
             //var nodeServer = 'nodejsgc.hkskoglund.c9.io';
@@ -1153,8 +1153,8 @@
             var nodeServer = self.chooseNodeServer();
             var xhr = new XMLHttpRequest();
             var url = 'http://' + nodeServer + '/credentials';
-            var jsessionID = localStorage["GCJSESSIONID"]; 
-            var BIGipServer = localStorage["GCBIGipServer"]; // Node at GC
+            var jsessionID = localStorage.GCJSESSIONID; 
+            var BIGipServer = localStorage.GCBIGipServer; // Node at GC
                              
             var async = true;
 
@@ -1188,8 +1188,8 @@
 
             
             var nodeServer = self.chooseNodeServer();
-            var jsessionID = localStorage["GCJSESSIONID"];
-            var BIGipServer = localStorage["GCBIGipServer"]; // Node at GC
+            var jsessionID = localStorage.GCJSESSIONID;
+            var BIGipServer = localStorage.GCBIGipServer; // Node at GC
 
 
             var xhr = new XMLHttpRequest();
@@ -1344,10 +1344,10 @@
                 self.testReadActivitiesViaNodejs(function displayActivity() {
                     self.showIntensityChart();
                 });
-            }
+            };
 
             this.masterVM.settingsVM.liveImage.subscribe(function (liveImage) {
-                localStorage["liveImage"] = liveImage;
+                localStorage.liveImage = liveImage;
             }
             );
 
@@ -1376,12 +1376,12 @@
 
             this.masterVM.settingsVM.GCJSESSIONID.subscribe(function (jsessionId)
             {
-               localStorage["GCJSESSIONID"] = jsessionId;
+               localStorage.GCJSESSIONID = jsessionId;
             });
 
             this.masterVM.settingsVM.GCBIGipServer.subscribe(function (BIGipServer)
             {
-               localStorage["GCBIGipServer"] = BIGipServer;
+               localStorage.GCBIGipServer = BIGipServer;
             });
 
             
@@ -2839,10 +2839,10 @@
                         //    $report.html ('Selection reset');
                         //},
 
-                        if (typeof event.xAxis === "undefined") // Reset
-                        {
+                        //if (typeof event.xAxis === "undefined") // Reset
+                        //{
 
-                        }
+                        //}
                     },
                     redraw: function () {
 
@@ -4066,7 +4066,7 @@
                     labels:
                             {
                                 enabled: true
-                            },
+                            }
                 },
 
                 yAxis: [{
@@ -4080,9 +4080,8 @@
                    // max : getMax()+10,
                     title: {
                         text: null
-                    }
-                }]
-                ,
+                    }}],
+
                 legend: {
                     enabled: self.masterVM.TEVM.TEhistory.length > 0 ? true : false,
                     //align: 'left',
@@ -4103,7 +4102,7 @@
                 },
                 plotOptions: {
                     column: {
-                        pointWidth: 10,
+                        pointWidth: 10
                        // stacking: 'normal'
                         //dataLabels: {
                         //    enabled: false,
@@ -5582,15 +5581,15 @@
                 store: false,
                 //fitfiles : [],
                 logging: self.masterVM.settingsVM.logging(),
-                demoMode : true
-            }
+                demoMode: true
+            };
             
             self.loggMessage("info", "Setting timeout for loading of demo .FIT to " + timeout.toString() + " ms");
 
             var timeoutID = setTimeout(function () {
                 self.loggMessage("info", "Starting automatic load of demo .FIT file");
                 self.initWebWorker();
-                self.getFITfiles(msg)
+                self.getFITfiles(msg);
             }, timeout);
 
             return timeoutID;
