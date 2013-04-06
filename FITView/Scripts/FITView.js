@@ -4062,12 +4062,12 @@
                    
                     zoomType: 'xy',
                     backgroundColor: 'transparent',
-                    spacingLeft: 0,
-                    spacingBottom: 0,
-                    spacingTop: 0
+                    //spacingLeft: 0,
+                    //spacingBottom: 0,
+                    //spacingTop: 0
                 },
                 title: {
-                    text: ''
+                    text: 'Training history'
                 },
                 xAxis: {
                     type: 'datetime',
@@ -4081,20 +4081,20 @@
                     gridLineWidth: 0,
                     labels:
                             {
-                                enabled: false
+                                enabled: true
                             },
                     min: 0,
                     
                    // max : getMax()+10,
                     title: {
-                        text: null
+                        text: 'Watt (J/s)'
                     }}],
 
                 legend: {
                     enabled: self.masterVM.TEVM.TEhistory.length > 0 ? true : false,
                     //align: 'left',
-                    verticalAlign: 'top',
-                    floating : true
+                    verticalAlign: 'bottom'
+                    //floating : true
                 },
                
                 credits: {
@@ -4176,14 +4176,15 @@
                     gridLineWidth: 0,
                     labels:
                             {
-                                enabled: false
+                                enabled: true
                             },
-                    min: 1,
-                    //max : 5,
+                    //min: 1,
+                    max : 5,
                     title: {
-                        text: null
+                        text: 'TE'
                     },
-                    opposite: true
+                    opposite: true,
+                    showEmpty : false
                   
                 });
 
