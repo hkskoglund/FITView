@@ -97,6 +97,8 @@
     <Content Include="Images\heart.png" />
     <Content Include="Images\kcalorie.txt" />
     <Content Include="Images\laptrigger\session_end.png" />
+    <Content Include="Images\network-status-offline.png" />
+    <Content Include="Images\network-status.png" />
     <Content Include="Images\power.png" />
     <Content Include="Images\Screenshot\FITView.png" />
     <Content Include="Images\server.png" />

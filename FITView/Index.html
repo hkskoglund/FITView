@@ -541,6 +541,20 @@
                             </a>
                             </li>
 
+                            
+                            <li>
+                               
+                                <a>
+                                     <!-- ko if: networkStatus -->
+                                <img class="inlineIcon" src="Images/network-status.png" title="ONLINE" alt="ONLINE" />
+                                <!-- /ko -->
+                                <!-- ko ifnot: networkStatus -->
+                                <img class="inlineIcon" src="Images/network-status-offline.png" title="OFFLINE" alt="OFFLINE" />
+                                <!-- /ko -->
+                                    <span style="margin-left: 2px">Network status</span>
+                                </a>
+                            </li>
+
                         </ul>
                     </li>
                     <!-- /ko -->

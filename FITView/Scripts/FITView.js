@@ -776,7 +776,8 @@
                             //    console.log("Permission:", permission);
                         });
                     }
-                }
+                },
+                networkStatus : ko.observable(navigator.onLine)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1237,6 +1238,12 @@
             self = this;
 
             self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
+
+            // Keep track of network connection each minute
+            setTimeout(function () {
+                self.masterVM.settingsVM.networkStatus(navigator.Online);
+            }, 60000);
+
 
             //self.loginGarminConnect();
 
