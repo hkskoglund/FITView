@@ -4,9 +4,9 @@
 (function () {
     "use strict";
 
-    var self;
+    var self,
 
-    var xAxisID = {
+       xAxisID = {
         lap: 'lapxAxis',
         rawdata: 'rawdataxAxis',
         speedVSHR: "combinedxAxis", // For speed vs HR
@@ -17,15 +17,15 @@
         caloriesVSHRVSTE : "kcalVSHRVSTExAxis",
         HRVXAxisPoincare: "HRVXAxisPoincare",
         RMSSDXAxis: "RMSSDXAxis"
-    };
+    },
 
-    var yAxisID = {
+     yAxisID = {
         TE: 'TEyAxis',
         weeklyCalories : 'weeklyCaloriesyAxis'
         
-    };
+    },
 
-    var seriesID = {
+     seriesID = {
         TE: 'TESeries',
         HR: 'heartrateSeries',
         speed: 'speedSeries',
@@ -48,11 +48,11 @@
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD'
 
-    };
+    },
     
 
     // Based on info. in profile.xls from FIT SDK
-    var FITSport = {
+     FITSport = {
 
         generic: 0,
         running: 1,
@@ -66,9 +66,9 @@
         american_fotball: 9,
         training: 10,
         all: 254 // All is for goals only to include all sports.
-    };
+    },
 
-    var lap_trigger = {
+    lap_trigger = {
 
         manual: 0,
         time: 1,
@@ -78,9 +78,9 @@
         position_waypoint: 5,
         position_marked: 6,
         session_end: 7
-    };
+    },
 
-    var event = {
+     event = {
         timer: 0, // Group 0. Start / stop_all
         workout: 3, //  start / stop
         workout_step: 4, //  Start at beginning of workout. Stop at end of each step.
@@ -108,9 +108,9 @@
         activity: 26, // Group 1.. Stop at end of activity.
         fitness_equipment: 27, // marker.
         length: 28 // Stop at end of each length.
-    };
+    },
 
-    var event_type = {
+     event_type = {
         start: 0,
         stop: 1,
         consecutive_depreciated: 2,
@@ -121,17 +121,16 @@
         end_all_depreciated: 7,
         stop_disable: 8,
         stop_disable_all: 9
-    };
+    },
 
 
-
-    var FITFileType = {
+     FITFileType = {
 
         sportsettingfile : 3,
         activityfile : 4
-    };
+    },
 
-    var FITUtil =
+     FITUtil =
         {
             getTimestampString: function(timestamp)
             {
@@ -553,11 +552,11 @@
             },
 
             timestampUtil: FIT.CRCTimestampUtility() // Returns exposable functions that can be called in an object literal
-        };
+        },
 
-    var fitActivity = FIT.ActivityFile();
+     fitActivity = FIT.ActivityFile(),
 
-    var converter = {
+     converter = {
 
         formatToMMSS: function (speed) {
             if (speed === 0)
@@ -673,12 +672,12 @@
             }, this);
         }
 
-    };
+    },
 
-    var FITViewUIConverter = converter;
+     FITViewUIConverter = converter,
 
     //View models
-    var FITViewUI = {
+     FITViewUI = {
         
         masterVM: {
 
@@ -820,7 +819,8 @@
                 var ViewModel = {};
 
                 for (var fieldDefNr in msg)
-                    ViewModel[msg[fieldDefNr].property] = [];
+                    if (msg.hasOwnProperty(fieldDefNr))
+                      ViewModel[msg[fieldDefNr].property] = [];
 
                 return ViewModel;
 
@@ -1250,7 +1250,8 @@
                 var ViewModel = {};
 
                 for (var fieldDefNr in msg)
-                    ViewModel[msg[fieldDefNr].property] = ko.observableArray([]);
+                    if (msg.hasOwnProperty(fieldDefNr))
+                      ViewModel[msg[fieldDefNr].property] = ko.observableArray([]);
 
                 return ViewModel;
 
@@ -4175,7 +4176,7 @@
                     title: {
                         text: null
                     },
-                    opposite: true,
+                    opposite: true
                   
                 });
 
