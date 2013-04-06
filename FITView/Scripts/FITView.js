@@ -1241,7 +1241,7 @@
 
             // Keep track of network connection each minute
             setTimeout(function () {
-                self.masterVM.settingsVM.networkStatus(navigator.Online);
+                self.masterVM.settingsVM.networkStatus(navigator.onLine);
             }, 60000);
 
 
