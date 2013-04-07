@@ -2091,7 +2091,12 @@
 
              }
 
-             self.masterVM.tickPositions.sort(comparatorSimple);
+             if (self.masterVM.tickPositions && self.masterVM.tickPositions.length > 0)
+                 self.masterVM.tickPositions.sort(comparatorSimple);
+             else {
+                 self.loggMessage("warn", "No tickpositions found from lap or events");
+                 // TO DO : Maybe plot ticks at each 1km
+             }
 
          },
 
