@@ -2265,7 +2265,7 @@
                              showEmpty: false
                          });
 
-                         YAxis["HR"] = yAxisNr;
+                         YAxis["HR"] = yAxisNr++;
 
                      }
 
@@ -2280,9 +2280,6 @@
                              showEmpty : false
                          });
 
-                         if (yAxisNr > 0)
-                             YAxis["speed"] = ++yAxisNr;
-                         else
                              YAxis["speed"] = yAxisNr++;
                      }
 
@@ -2297,9 +2294,7 @@
                              showEmpty : false
                          });
 
-                         if (yAxisNr > 0)
-                             YAxis["calories"] = ++yAxisNr;
-                         else
+                         
                              YAxis["calories"] = yAxisNr++;
                      }
 
@@ -2318,9 +2313,7 @@
                                  showEmpty: false
                              });
 
-                             if (yAxisNr > 0)
-                                 YAxis["total_fat_calories"] = ++yAxisNr;
-                             else
+                             
                                  YAxis["total_fat_calories"] = yAxisNr++;
                          }
                      }
@@ -2336,9 +2329,7 @@
                              showEmpty: false
                          });
 
-                         if (yAxisNr > 0)
-                             YAxis["intensity"] = ++yAxisNr;
-                         else
+                      
                              YAxis["intensity"] = yAxisNr++;
 
                      }
@@ -2354,9 +2345,7 @@
                              showEmpty: false
                          });
 
-                         if (yAxisNr > 0)
-                             YAxis["elevation"] = ++yAxisNr;
-                         else
+                        
                              YAxis["elevation"] = yAxisNr++;
                      }
 
@@ -2372,9 +2361,7 @@
                          //});
 
                          if (typeof YAxis.elevation === "undefined")
-                             if (yAxisNr > 0)
-                                 YAxis["elevation"] = ++yAxisNr;
-                             else
+                            
                                  YAxis["elevation"] = yAxisNr++;
                      }
 
