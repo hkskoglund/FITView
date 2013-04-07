@@ -2210,7 +2210,8 @@
                              gridLineWidth: 1,
                              title: {
                                  text: 'Heart rate'
-                             }
+                             },
+                             showEmpty: false
                          });
 
                          YAxis["HR"] = yAxisNr;
@@ -2224,7 +2225,8 @@
                              title: {
                                  text: 'Speed'
                              },
-                             opposite : true
+                             opposite: true,
+                             showEmpty : false
                          });
 
                          YAxis["speed"] = ++yAxisNr;
@@ -2237,7 +2239,8 @@
                              title: {
                                  text: 'Calories'
                              },
-                             opposite: true
+                             opposite: true,
+                             showEmpty : false
                          });
 
                          YAxis["calories"] = ++yAxisNr;
