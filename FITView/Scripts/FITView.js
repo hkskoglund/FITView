@@ -1240,11 +1240,11 @@
 
             self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
 
-            // Keep track of network connection each minute
-            setTimeout(function () {
+            function checkOnlineStatus() {
                 self.masterVM.settingsVM.networkStatus(navigator.onLine);
-            }, 60000);
-
+            }
+            // Keep track of network connection each minute
+            setInterval(checkOnlineStatus,60000);
 
             //self.loginGarminConnect();
 
