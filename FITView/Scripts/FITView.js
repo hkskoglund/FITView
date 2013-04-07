@@ -2104,6 +2104,16 @@
          showLapChart: function (rawData, startTimestamp, endTimestamp, sport)
          {
 
+             if (typeof rawData.lap === "undefined") {
+                 self.loggMessage("warn", "No lap data available");
+                 return;
+             };
+
+             if (rawData.lap.start_time.length === 0) {
+                 self.loggMessage("warn", "No lap start times found");
+                 return;
+             };
+
              var 
              
              chartId = "lapChart",
