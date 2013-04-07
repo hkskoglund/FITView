@@ -2283,7 +2283,7 @@
                          if (yAxisNr > 0)
                              YAxis["speed"] = ++yAxisNr;
                          else
-                             yAxis["speed"] = 0;
+                             YAxis["speed"] = 0;
                      }
 
                      if ((lap.total_calories && lap.total_calories.length > 0)) {
