@@ -2283,7 +2283,7 @@
                          if (yAxisNr > 0)
                              YAxis["speed"] = ++yAxisNr;
                          else
-                             YAxis["speed"] = 0;
+                             YAxis["speed"] = yAxisNr++;
                      }
 
                      if ((lap.total_calories && lap.total_calories.length > 0)) {
@@ -2300,7 +2300,7 @@
                          if (yAxisNr > 0)
                              YAxis["calories"] = ++yAxisNr;
                          else
-                             YAxis["calories"] = 0;
+                             YAxis["calories"] = yAxisNr++;
                      }
 
                      
@@ -2321,7 +2321,7 @@
                              if (yAxisNr > 0)
                                  YAxis["total_fat_calories"] = ++yAxisNr;
                              else
-                                 YAxis["total_fat_calories"] = 0;
+                                 YAxis["total_fat_calories"] = yAxisNr++;
                          }
                      }
 
@@ -2339,7 +2339,7 @@
                          if (yAxisNr > 0)
                              YAxis["intensity"] = ++yAxisNr;
                          else
-                             YAxis["intensity"] = 0;
+                             YAxis["intensity"] = yAxisNr++;
 
                      }
 
@@ -2357,7 +2357,7 @@
                          if (yAxisNr > 0)
                              YAxis["elevation"] = ++yAxisNr;
                          else
-                             YAxis["elevation"] = 0;
+                             YAxis["elevation"] = yAxisNr++;
                      }
 
                      if ((lap.total_descent && lap.total_descent.length > 0)) {
@@ -2375,7 +2375,7 @@
                              if (yAxisNr > 0)
                                  YAxis["elevation"] = ++yAxisNr;
                              else
-                                 YAxis["elevation"] = 0;
+                                 YAxis["elevation"] = yAxisNr++;
                      }
 
 
