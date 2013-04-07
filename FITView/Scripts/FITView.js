@@ -3418,7 +3418,7 @@
                             
                             var toHHMMSS = FITViewUIConverter.formatToHHMMSS(elapsedTime);
 
-                            if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick[this.value] >= 0 && elapsedTime >= 0) {
+                            if (self.masterVM.settingsVM.distanceOnXAxis() && self.masterVM.distanceAtTick.length > 0 && self.masterVM.distanceAtTick[this.value] >= 0 && elapsedTime >= 0) {
                                 distanceKm = self.masterVM.distanceAtTick[this.value] / 1000;
 
                                 if (distanceKm < 1)
