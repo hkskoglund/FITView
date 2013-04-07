@@ -45,6 +45,7 @@
         LAP_max_speed: 'LAP_max_speed',
         LAP_avg_heart_rate: 'LAP_avg_heart_rate',
         LAP_max_heart_rate: 'LAP_max_heart_rate',
+        LAP_total_calories :'LAP_total_calories',
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD'
 
@@ -1998,7 +1999,443 @@
 
          getTimestampAndTE : function(item, index, arr) {
                 return [item[0], item[1].TE];
-            },
+         },
+
+         setTickPositionsForLapsAndEvents : function (rawData, startTimestamp, endTimestamp, sport)
+         {
+             var lapNr,
+              len;
+             
+             if (rawData.lap) {
+                 len = rawData.lap.timestamp.length;;
+
+                 self.masterVM.tickPositions = [];  // Tick at end of each lap
+                 self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
+
+                 var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
+
+                 if (typeof rawData.lap.start_time !== "undefined" && typeof rawData.lap.timestamp !== "undefined") {
+                     for (lapNr = 0; lapNr < len; lapNr++) {
+
+
+                         if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
+
+
+                             if (!(rawData.lap.lap_trigger[lapNr] === lap_trigger.time && self.masterVM.settingsVM.hideLAPtriggerTime())) {
+                                 lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
+                                 if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
+                                     self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
+                                 else
+                                     self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
+
+                                 self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
+                             }
+                         }
+                     }
+                 } else
+                     self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
+             } else
+                 self.loggMessage("warn", "No lap data available to get tickpositions from");
+
+             if (rawData.event) {
+                 var ev, ev_type, eventIndexTimestamp;
+                 var lenEvent = rawData.event.timestamp.length;
+                 for (var eventNr = 0; eventNr < lenEvent; eventNr++) {
+                     ev = rawData.event.event[eventNr];
+                     ev_type = rawData.event.event_type[eventNr];
+                     if ((rawData.event.timestamp && rawData.event.timestamp[eventNr]))
+                         switch (ev) {
+
+                             case event.timer:
+
+                                 switch (ev_type) {
+
+                                     case event_type.start:
+                                     case event_type.stop:
+                                     case event_type.stop_all:
+                                     case event_type.stop_disable:
+                                     case event_type.stop_disable_all:
+
+                                         eventIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.event.timestamp[eventNr]);
+                                         if (eventIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[eventIndexTimestamp] >= 10) { // Will not show labels for distance < 10m -> will in most cases skip timer event START timestamp
+                                             self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr])] = rawData.record.distance[eventIndexTimestamp];
+                                             self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]));
+                                         }
+                                         else
+                                             self.loggMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.event.timestamp[eventNr]));
+
+
+
+                                         break;
+
+                                 }
+
+                                 break;
+                         }
+                 }
+             } else
+                 self.loggMessage("warn", "Event is undefined, no event information can be gathered");
+
+             // Sort tickpositions
+             function comparatorSimple(a, b) {
+                 if (a < b)
+                     return -1;
+                 if (a > b)
+                     return 1;
+                 // a must be equal to b
+                 return 0;
+
+             }
+
+             self.masterVM.tickPositions.sort(comparatorSimple);
+
+         },
+
+         // Refactored from showMultiChart
+         showLapChart: function (rawData, startTimestamp, endTimestamp, sport)
+         {
+
+             var 
+             
+             chartId = "lapChart",
+             divChart = document.getElementById(chartId),
+             yAxisOptions = [],
+             yAxisNr = 0, // Give each series a new y-axis
+             YAxis = {},
+             
+                 chartOptions = {
+                     // animation: false,
+                     renderTo: chartId,
+                     type: 'column',
+                     // Allow zooming
+                     zoomType: 'xy',
+                    
+                 };
+                
+             // Clean up previous chart
+             // http://api.highcharts.com/highcharts#Chart.destroy()
+             if (this.lapChart)
+                 this.lapChart.destroy();
+
+            
+             divChart.style.visibility = "visible";
+
+             var seriesSetup = []; // Options name,id
+             var seriesData = []; // Actual data in chart
+
+
+             function initLapCategories() {
+                 var lap = {
+                     categories: [],
+                     avg_speed: [],
+                     max_speed: [],
+                     avg_heart_rate: [],
+                     max_heart_rate: [],
+                     total_calories: []
+                 };
+
+     
+
+                 
+
+                 // Setup lap categories
+                 if (rawData.lap) {
+                     var len = rawData.lap.timestamp.length;
+
+
+                     var lapNr;
+
+                     var pushData = function (property, converter) {
+
+                         if (rawData.lap[property] && rawData.lap[property][lapNr]) {
+
+                             if (converter)
+                                 lap[property].push(converter(rawData.lap[property][lapNr]));
+                             else
+                                 lap[property].push(rawData.lap[property][lapNr]);
+
+                             return lap[property];
+                         }
+                         else {
+
+                             self.loggMessage("warn", "Found no lap." + property + " in rawdata");
+                             return undefined;
+                         }
+                     };
+
+                     if (typeof rawData.lap.start_time !== "undefined" && typeof rawData.lap.timestamp !== "undefined") {
+
+                         for (lapNr = 0; lapNr < len; lapNr++) {
+
+
+                             if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
+                                 lap.categories.push((lapNr + 1).toString());
+
+                                 switch (sport) {
+
+                                     case FITSport.running: // Running
+                                         pushData("avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
+                                         pushData("max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
+                                         pushData("avg_heart_rate");
+                                         pushData("max_heart_rate");
+                                         pushData("total_calories");
+                                         break;
+
+                                     case FITSport.cycling: // Cycling
+                                         pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                         pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                         pushData("avg_heart_rate");
+                                         pushData("max_heart_rate");
+                                         pushData("total_calories");
+                                         break;
+
+                                     default:
+                                         pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                         pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
+                                         pushData("avg_heart_rate");
+                                         pushData("max_heart_rate");
+                                         pushData("total_calories");
+                                         break;
+                                 }
+                             }
+                         }
+                     } else
+                         self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
+
+                    
+                    
+                     if (((lap.avg_heart_rate && lap.avg_heart_rate.length > 0) || (lap.max_heart_rate && lap.max_heart_rate.length > 0))) {
+
+                         yAxisOptions.push({
+                             gridLineWidth: 1,
+                             title: {
+                                 text: 'Heart rate'
+                             }
+                         });
+
+                         YAxis["HR"] = yAxisNr;
+
+                     }
+
+                     if (((lap.avg_speed && lap.avg_speed.length > 0) || (lap.max_speed && lap.max_speed.length > 0))) {
+
+                         yAxisOptions.push({
+                             //gridLineWidth: 1,
+                             title: {
+                                 text: 'Speed'
+                             },
+                             opposite : true
+                         });
+
+                         YAxis["speed"] = ++yAxisNr;
+                     }
+
+                     if ((lap.total_calories && lap.total_calories.length > 0)) {
+
+                         yAxisOptions.push({
+                             //gridLineWidth: 1,
+                             title: {
+                                 text: 'Calories'
+                             },
+                             opposite: true
+                         });
+
+                         YAxis["calories"] = ++yAxisNr;
+                     }
+
+                     if (lap.avg_speed && lap.avg_speed.length > 0)
+                         seriesSetup.push({
+                             name: "Avg. speed", id: seriesID.LAP_avg_speed, xAxis: 0, yAxis: YAxis.speed, data: lap.avg_speed, type: 'column', visible: true, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true,
+                                 formatter: function () {
+                                     var s = "", speed;
+
+                                     speed = this.y;
+
+                                     switch (self.masterVM.speedMode()) {
+                                         case FITSport.running: // Running
+                                             s += FITViewUIConverter.formatToMMSS(speed);
+                                             break;
+                                         case FITSport.cycling: // Cycling
+                                             s += Highcharts.numberFormat(speed, 1);
+                                             break;
+                                         default:
+                                             s += Highcharts.numberFormat(speed, 1);
+                                             break;
+                                     }
+
+                                     return s;
+                                 }
+                             }
+                         });
+
+                     if (lap.max_speed && lap.max_speed.length > 0)
+                         seriesSetup.push({
+                             name: "Max. speed", id: seriesID.LAP_max_speed, xAxis: 0, yAxis: YAxis.speed, data: lap.max_speed, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true,
+                                 formatter: function () {
+                                     var s = "", speed;
+
+                                     speed = this.y;
+
+                                     switch (self.masterVM.speedMode()) {
+                                         case FITSport.running: // Running
+                                             s += FITViewUIConverter.formatToMMSS(speed);
+                                             break;
+                                         case FITSport.cycling: // Cycling
+                                             s += Highcharts.numberFormat(speed, 1);
+                                             break;
+                                         default:
+                                             s += Highcharts.numberFormat(speed, 1);
+                                             break;
+                                     }
+
+                                     return s;
+                                 }
+                             }
+                         });
+
+                     if (lap.avg_heart_rate && lap.avg_heart_rate.length > 0)
+                         seriesSetup.push({
+                             name: "Avg. HR", id: seriesID.LAP_avg_heart_rate, xAxis: 0, yAxis: YAxis.HR, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.max_heart_rate && lap.max_heart_rate.length > 0)
+                         seriesSetup.push({
+                             name: "Max. HR", id: seriesID.LAP_max_heart_rate, xAxis: 0, yAxis: YAxis.HR, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.total_calories && lap.total_calories.length > 0)
+                         seriesSetup.push({
+                             name: "Calories", id: seriesID.LAP_total_calories, xAxis: 0, yAxis: YAxis.calories, data: lap.total_calories, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+                 }
+                 else
+                     self.loggMessage("warn", "No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
+
+                 return lap;
+             }
+
+             var lap = initLapCategories();
+
+             self.lapChart = new Highcharts.Chart({
+                 chart: chartOptions,
+                 credits: {
+                     enabled: false
+                 },
+                 //height : 700,
+
+                 title: {
+                     text: 'Lap details'
+                 },
+
+                 xAxis: [{
+                     id: xAxisID.lap,
+                     categories: lap.categories // for each lap avg/max speed/HR
+                 }],
+
+                 tooltip: {
+                     animation: false,
+                     //xDateFormat: '%Y-%m-%d',
+                     formatter:
+
+                         function () {
+
+                             //http://stackoverflow.com/questions/3885817/how-to-check-if-a-number-is-float-or-integer
+                             function isInt(n) {
+                                 return n % 1 === 0;
+                             }
+
+                             var speed, s;
+
+                             var onLapxAxis;
+                             var onSpeedVSHRxAxis;
+                             var onHrvxAxis, onWeeklyxAxis, onkcalxAxis, isHRVSeries;
+
+                             onLapxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.lap));
+                             //onSpeedVSHRxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.speedVSHR));
+                             //onHrvxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.hrv));
+                             //isHRVSeries = (this.series === this.series.chart.get(seriesID.hrv));
+                             //onWeeklyxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.weeklyCalories));
+                             //onkcalxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.caloriesVSHRVSTE));
+
+                             // Check to see if its a tooltip for lap axis
+                             if (onLapxAxis) {
+                                 var lapNr = this.x;
+                                 s = "Lap " + lapNr.toString();
+                                 if (rawData.lap.total_distance)
+                                     s += '<br/>' + '<b>Distance:</b> ' + Highcharts.numberFormat(rawData.lap.total_distance[lapNr - 1], 0) + ' m';
+                             }
+
+                             //else if (onSpeedVSHRxAxis) {
+                             //    s = "<b>Heart rate:</b>" + this.y;
+                             //}
+                             //else if (isHRVSeries) {
+                             //    s = '<b>Time: </b>' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/><b>RR: </b>' + Highcharts.numberFormat(this.y, 0) + " ms";
+                             //}
+                             //else if (onWeeklyxAxis)
+                             //    s = '<b>Week:</b> ' + this.x;
+                             //else if (onkcalxAxis)
+                             //    s = '<b>Kcal:</b>' + this.x + '<br/>' +
+                             //        '<b>Avg.HR:</b>' + this.y + '<br/>' +
+                             //        '<b>TE:</b>' + this.point.z;
+                             else
+                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
+
+                             // Special treatment for speed
+                             if (self.masterVM.speedMode() && this.series.name === "Speed" || this.series.name === "Avg. speed" || this.series.name === "Max. speed" || this.series.name === "SpeedAvg" || this.series.name === "Speed vs HR") {
+                                 if (this.series.name === "Speed vs HR") {
+                                     speed = this.x; // Speed is on the x-axis for this chart....
+                                     s += '<br/><b>Speed</b>: ';
+                                 } else {
+                                     s += '<br/>' + '<b>' + this.series.name + '</b>' + ': ';
+                                     speed = this.y;
+                                 }
+
+                                 switch (self.masterVM.speedMode()) {
+                                     case FITSport.running: // Running
+                                         s += FITViewUIConverter.formatToMMSS(speed) + " min/km";
+                                         break;
+                                     case FITSport.cycling: // Cycling
+                                         s += Highcharts.numberFormat(speed, 1) + " km/h";
+                                         break;
+                                     default:
+                                         s += Highcharts.numberFormat(speed, 1) + " km/h";
+                                         break;
+                                 }
+                             }
+                             else if (this.series.name !== 'HRV' && this.series.name !== 'Run' && this.series.name !== "Bike" && this.series.name !== "Other") {
+                                 s += '<br/><b>' + this.series.name + ':</b> ';
+                                 if (isInt(this.y))
+                                     s += this.y.toString();
+                                 else
+                                     s += Highcharts.numberFormat(this.y, 1);
+                             }
+
+                             return s;
+
+                         },
+
+                     crosshairs: false
+                 },
+
+                 yAxis : yAxisOptions,
+
+                 series: seriesSetup
+                 
+             });
+         },
 
         // Handles display of measurements in several graphs with multiple axis
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
@@ -2235,186 +2672,7 @@
 
             }
 
-            function initLapCategories() {
-                var lap = {
-                    categories: [],
-                    avg_speed: [],
-                    max_speed: [],
-                    avg_heart_rate: [],
-                    max_heart_rate: []
-                };
-
-                self.masterVM.tickPositions = [];  // Tick at end of each lap
-                self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
-                var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
-
-                function comparatorSimple(a, b) {
-                    if (a < b)
-                        return -1;
-                    if (a > b)
-                        return 1;
-                    // a must be equal to b
-                    return 0;
-
-                }
-
-                // Setup lap categories
-                if (rawData.lap) {
-                    var len = rawData.lap.timestamp.length;
-
-
-                    var lapNr;
-
-                    var pushData = function (property, converter) {
-
-                        if (rawData.lap[property] && rawData.lap[property][lapNr]) {
-
-                            if (converter)
-                                lap[property].push(converter(rawData.lap[property][lapNr]));
-                            else
-                                lap[property].push(rawData.lap[property][lapNr]);
-
-                            return lap[property];
-                        }
-                        else {
-
-                            self.loggMessage("warn", "Found no lap." + property + " in rawdata");
-                            return undefined;
-                        }
-                    };
-
-                    if (typeof rawData.lap.start_time !== "undefined" && typeof rawData.lap.timestamp !== "undefined") {
-                        for (lapNr = 0; lapNr < len; lapNr++) {
-
-
-                            if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
-                                lap.categories.push((lapNr + 1).toString());
-
-                                switch (sport) {
-
-                                    case FITSport.running: // Running
-                                        pushData("avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
-                                        pushData("max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
-                                        pushData("avg_heart_rate");
-                                        pushData("max_heart_rate");
-                                        break;
-
-                                    case FITSport.cycling: // Cycling
-                                        pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                        pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                        pushData("avg_heart_rate");
-                                        pushData("max_heart_rate");
-                                        break;
-
-                                    default:
-                                        pushData("avg_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                        pushData("max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                                        pushData("avg_heart_rate");
-                                        pushData("max_heart_rate");
-                                        break;
-                                }
-
-                                if (!(rawData.lap.lap_trigger[lapNr] === lap_trigger.time && self.masterVM.settingsVM.hideLAPtriggerTime())) {
-                                    lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
-                                    if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
-                                        self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
-                                    else
-                                        self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
-
-                                    self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
-                                }
-                            }
-                        }
-                    } else
-                        self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
-
-
-                    if (rawData.event) {
-                        var ev, ev_type, eventIndexTimestamp;
-                        var lenEvent = rawData.event.timestamp.length;
-                        for (var eventNr = 0; eventNr < lenEvent; eventNr++) {
-                            ev = rawData.event.event[eventNr];
-                            ev_type = rawData.event.event_type[eventNr];
-                            if ((rawData.event.timestamp && rawData.event.timestamp[eventNr]))
-                                switch (ev) {
-
-                                    case event.timer:
-
-                                        switch (ev_type) {
-
-                                            case event_type.start:
-                                            case event_type.stop:
-                                            case event_type.stop_all:
-                                            case event_type.stop_disable:
-                                            case event_type.stop_disable_all:
-
-                                                eventIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.event.timestamp[eventNr]);
-                                                if (eventIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[eventIndexTimestamp] >= 10) { // Will not show labels for distance < 10m -> will in most cases skip timer event START timestamp
-                                                    self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr])] = rawData.record.distance[eventIndexTimestamp];
-                                                    self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]));
-                                                }
-                                                else
-                                                    self.loggMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.event.timestamp[eventNr]));
-
-
-
-                                                break;
-
-                                        }
-
-                                        break;
-                                }
-                        }
-                    } else
-                        self.loggMessage("warn", "Event is undefined, no event information can be gathered");
-
-                    // Sort tickpositions
-
-                    self.masterVM.tickPositions.sort(comparatorSimple);
-
-                    // in case of empty rawdata, but lap data available
-                    if (typeof (heartRateYAxisNr) === "undefined" && ((lap.avg_heart_rate && lap.avg_heart_rate.length > 0) || (lap.max_heart_rate && lap.max_heart_rate.length > 0))) {
-
-                        yAxisOptions.push({
-                            gridLineWidth: 1,
-                            title: {
-                                text: 'Heart rate'
-                            }
-                        });
-
-                        heartRateYAxisNr = yAxisNr;
-
-                    }
-
-                    if (typeof (speedYAxisNr) === "undefined" && ((lap.avg_speed && lap.avg_speed.length > 0) || (lap.max_speed && lap.max_speed.length > 0))) {
-
-                        yAxisOptions.push({
-                            gridLineWidth: 1,
-                            title: {
-                                text: 'Speed'
-                            }
-                        });
-
-                        speedYAxisNr = yAxisNr++;
-                    }
-
-                    if (lap.avg_speed && lap.avg_speed.length > 0)
-                        seriesSetup.push({ name: "Avg. speed", id: seriesID.LAP_avg_speed, xAxis: 1, yAxis: speedYAxisNr, data: lap.avg_speed, type: 'column', visible: false, zIndex: 1 });
-
-                    if (lap.max_speed && lap.max_speed.length > 0)
-                        seriesSetup.push({ name: "Max. speed", id: seriesID.LAP_max_speed, xAxis: 1, yAxis: speedYAxisNr, data: lap.max_speed, type: 'column', visible: false, zIndex: 1 });
-
-                    if (lap.avg_heart_rate && lap.avg_heart_rate.length > 0)
-                        seriesSetup.push({ name: "Avg. HR", id: seriesID.LAP_avg_heart_rate, xAxis: 1, yAxis: heartRateYAxisNr, data: lap.avg_heart_rate, type: 'column', visible: false, zIndex: 1 });
-
-                    if (lap.max_heart_rate && lap.max_heart_rate.length > 0)
-                        seriesSetup.push({ name: "Max. HR", id: seriesID.LAP_max_heart_rate, xAxis: 1, yAxis: heartRateYAxisNr, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1 });
-                }
-                else
-                    self.loggMessage("warn", "No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
-
-                return lap;
-            }
+          
 
             if (rawData.record) {
                 prepareHRSeries();
@@ -2427,7 +2685,9 @@
                 prepareSpeedVSHR();
             }
 
-            var lap = initLapCategories();
+            self.setTickPositionsForLapsAndEvents(rawData, startTimestamp, endTimestamp, sport);
+
+            //var lap = initLapCategories();
 
             
             // HRV
@@ -3038,10 +3298,10 @@
                     //plotLines: lapLinesConfig
                     //reversed : true
                 },
-                {
-                    id: xAxisID.lap,
-                    categories: lap.categories // for each lap avg/max speed/HR
-                },
+                //{
+                //    id: xAxisID.lap,
+                //    categories: lap.categories // for each lap avg/max speed/HR
+                //},
                 {
                     id: xAxisID.speedVSHR
                 },
@@ -3237,8 +3497,6 @@
                     
                 },
 
-               
-
                 series: seriesSetup
 
             }
@@ -3268,7 +3526,11 @@
                 self.addLapLines(rawData, self.multiChart, false);
 
             d = new Date();
-            self.loggMessage("log","Finishing multichart setup now " + d);
+            self.loggMessage("log", "Finishing multichart setup now " + d);
+
+            // Details
+            self.showLapChart(rawData, startTimestamp, endTimestamp, sport);
+
         },
 
         // Shows info about devices used during an activty

@@ -145,6 +145,23 @@ display  : flex;
     /*height: inherit;*/
 }
 
+#lapChart {
+    /*display : none;*/
+    /*visibility : hidden;*/
+    /*z-index : 1;*/
+    /*-webkit-flex : 1  1;*/
+    /*height: 200px;*/
+    /*float : left;*/
+    /*float: right;*/
+    margin-top:5px;
+    padding:0px;
+    width: 100%;
+    height: 350px;
+   
+    /*height: inherit;*/
+}
+
+
 
 
 #divHRZones {
