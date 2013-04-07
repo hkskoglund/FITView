@@ -2478,7 +2478,7 @@
 
                      if (lap.total_descent && lap.total_descent.length > 0)
                          seriesSetup.push({
-                             name: "Descent", id: seriesID.LAP_total_descent, xAxis: 0, yAxis: YAxis.elevation, data: lap.totaldescent, type: 'column', visible: false, zIndex: 1,
+                             name: "Descent", id: seriesID.LAP_total_descent, xAxis: 0, yAxis: YAxis.elevation, data: lap.total_descent, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
                                  enabled: true,
                                  formatter: function () {
