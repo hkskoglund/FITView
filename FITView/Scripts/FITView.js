@@ -2106,13 +2106,17 @@
 
              if (typeof rawData.lap === "undefined") {
                  self.loggMessage("warn", "No lap data available");
+                 $('#lapChart').hide();
                  return;
              };
 
              if (rawData.lap.start_time.length === 0) {
                  self.loggMessage("warn", "No lap start times found");
+                 $('#lapChart').hide();
                  return;
              };
+
+             $('#lapChart').show();
 
              var 
              
