@@ -45,7 +45,11 @@
         LAP_max_speed: 'LAP_max_speed',
         LAP_avg_heart_rate: 'LAP_avg_heart_rate',
         LAP_max_heart_rate: 'LAP_max_heart_rate',
-        LAP_total_calories :'LAP_total_calories',
+        LAP_total_calories: 'LAP_total_calories',
+        LAP_total_fat_calories : 'LAP_total_fat_calories',
+        LAP_total_ascent: 'LAP_total_ascent',
+        LAP_total_descent: 'LAP_total_descent',
+        LAP_intensity : 'LAP_intensity',
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD'
 
@@ -2131,10 +2135,27 @@
                      max_speed: [],
                      avg_heart_rate: [],
                      max_heart_rate: [],
-                     total_calories: []
+                     total_calories: [],
+                     total_fat_calories: [],
+                     intensity: [],
+                     total_ascent: [],
+                     total_descent: []
                  };
 
-     
+                 function isZeroFat() {
+                     var len = lap.total_fat_calories;
+                     var sum = 0;
+
+                     for (var item = 0; item < len; item++)
+                         sum += lap.total_fat_calories[item];
+
+                     if (sum === 0)
+                         return true;
+                     else
+                         return false;
+
+                 };
+
 
                  
 
@@ -2147,7 +2168,7 @@
 
                      var pushData = function (property, converter) {
 
-                         if (rawData.lap[property] && rawData.lap[property][lapNr]) {
+                         if (rawData.lap[property] && rawData.lap[property][lapNr] >= 0) {
 
                              if (converter)
                                  lap[property].push(converter(rawData.lap[property][lapNr]));
@@ -2179,6 +2200,10 @@
                                          pushData("avg_heart_rate");
                                          pushData("max_heart_rate");
                                          pushData("total_calories");
+                                         pushData("total_fat_calories");
+                                         pushData("total_ascent");
+                                         pushData("total_descent");
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
                                      case FITSport.cycling: // Cycling
@@ -2187,6 +2212,10 @@
                                          pushData("avg_heart_rate");
                                          pushData("max_heart_rate");
                                          pushData("total_calories");
+                                         pushData("total_fat_calories");
+                                         pushData("total_ascent");
+                                         pushData("total_descent");
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
                                      default:
@@ -2195,6 +2224,9 @@
                                          pushData("avg_heart_rate");
                                          pushData("max_heart_rate");
                                          pushData("total_calories");
+                                         pushData("total_ascent");
+                                         pushData("total_descent");
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
                                  }
                              }
@@ -2245,6 +2277,69 @@
 
                          YAxis["calories"] = ++yAxisNr;
                      }
+
+                     
+                     if ((lap.total_fat_calories && lap.total_fat_calories.length > 0)) {
+
+                         if (!isZeroFat()) {
+                        
+
+                             yAxisOptions.push({
+                                 //gridLineWidth: 1,
+                                 title: {
+                                     text: 'Fat calories'
+                                 },
+                                 opposite: true,
+                                 showEmpty: false
+                             });
+
+                             YAxis["total_fat_calories"] = ++yAxisNr; 
+                         }
+                     }
+
+                     if ((lap.intensity && lap.intensity.length > 0)) {
+
+                         yAxisOptions.push({
+                             //gridLineWidth: 1,
+                             title: {
+                                 text: 'Watt (J/s)'
+                             },
+                             opposite: true,
+                             showEmpty: false
+                         });
+
+                         YAxis["intensity"] = ++yAxisNr;
+                     }
+
+                     if ((lap.total_ascent && lap.total_ascent.length > 0)) {
+
+                         yAxisOptions.push({
+                             //gridLineWidth: 1,
+                             title: {
+                                 text: 'Elevation'
+                             },
+                             opposite: true,
+                             showEmpty: false
+                         });
+
+                         YAxis["elevation"] = ++yAxisNr;
+                     }
+
+                     if ((lap.total_descent && lap.total_descent.length > 0)) {
+
+                         //yAxisOptions.push({
+                         //    //gridLineWidth: 1,
+                         //    title: {
+                         //        text: 'Elevation'
+                         //    },
+                         //    opposite: true,
+                         //    showEmpty: false
+                         //});
+
+                         if (typeof YAxis.elevation === "undefined")
+                           YAxis["elevation"] = ++yAxisNr;
+                     }
+
 
                      if (lap.avg_speed && lap.avg_speed.length > 0)
                          seriesSetup.push({
@@ -2321,6 +2416,49 @@
                              name: "Calories", id: seriesID.LAP_total_calories, xAxis: 0, yAxis: YAxis.calories, data: lap.total_calories, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
                                  enabled: true
+                             }
+                         });
+
+                     if (lap.total_fat_calories && lap.total_fat_calories.length > 0)
+                         if (!isZeroFat()) {
+                             seriesSetup.push({
+                                 name: "Fat calories", id: seriesID.LAP_total_fat_calories, xAxis: 0, yAxis: YAxis.calories, data: lap.total_fat_calories, type: 'column', visible: false, zIndex: 1,
+                                 dataLabels: {
+                                     enabled: true
+                                 }
+                             });
+                         }
+
+                     if (lap.intensity && lap.intensity.length > 0)
+                         seriesSetup.push({
+                             name: "Intensity", id: seriesID.LAP_intensity, xAxis: 0, yAxis: YAxis.intensity, data: lap.intensity, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true,
+                                 formatter: function () {
+                                     return this.y.toFixed(1);
+                                 }
+                             }
+                         });
+
+                     if (lap.total_ascent && lap.total_ascent.length > 0)
+                         seriesSetup.push({
+                             name: "Ascent", id: seriesID.LAP_total_ascent, xAxis: 0, yAxis: YAxis.elevation, data: lap.total_ascent, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true,
+                                 formatter: function () {
+                                     return this.y.toFixed(1);
+                                 }
+                             }
+                         });
+
+                     if (lap.total_descent && lap.total_descent.length > 0)
+                         seriesSetup.push({
+                             name: "Descent", id: seriesID.LAP_total_descent, xAxis: 0, yAxis: YAxis.elevation, data: lap.totaldescent, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true,
+                                 formatter: function () {
+                                     return this.y.toFixed(1);
+                                 }
                              }
                          });
                  }
