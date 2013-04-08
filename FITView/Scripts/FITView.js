@@ -758,7 +758,7 @@
                 storeInIndexedDB: ko.observable(false),
                 showDeviceInfo: ko.observable(false),
                 showHeaderInfo: ko.observable(false),
-                forceSpeedKMprH: ko.observable(false),
+                forceSpeedKMprH: ko.observable(localStorage.forceRunSpeedToKMprH),
                 requestAveragingOnSpeed: ko.observable(true),
                 averageSampleTime: ko.observable(5000),
                 logging: ko.observable(false),
@@ -1625,15 +1625,21 @@
 
             };
 
+            localStorage.forceRunSpeedToKMprH = forceSpeedKMprH;
+
             if (self.multiChart) {
                 speedSeries = self.multiChart.get(seriesID.speed);
                 speedAvgSeries = self.multiChart.get(seriesID.speedAvg);
-                lapAvgSpeedSeries = self.multiChart.get(seriesID.LAP_avg_speed);
-                lapMaxSpeedSeries = self.multiChart.get(seriesID.LAP_max_speed);
+                
                 xAxis = self.multiChart.get(xAxisID.rawdata);
                 startTimestamp = xAxis.min - timezoneDiff;
                 endTimestamp = xAxis.max - timezoneDiff;
 
+            }
+
+            if (self.lapChart) {
+                lapAvgSpeedSeries = self.lapChart.get(seriesID.LAP_avg_speed);
+                lapMaxSpeedSeries = self.lapChart.get(seriesID.LAP_max_speed);
             }
 
             if (speedSeries) {
@@ -1647,7 +1653,8 @@
                     if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
                         updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToKMprH);
                         updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                        self.multiChart.redraw();
+                        if (typeof self.lapChart !== "undefined")
+                            self.lapChart.redraw();
                     }
 
                     if (self.masterVM.settingsVM.requestAveragingOnSpeed())
@@ -1664,7 +1671,8 @@
                         if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
                             updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToMinPrKM);
                             updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToMinPrKM);
-                            self.multiChart.redraw();
+                            if (typeof self.lapChart !== "undefined")
+                                self.lapChart.redraw();
                         }
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
@@ -1676,7 +1684,8 @@
                         if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
                             updatePoint(lapAvgSpeedSeries.data, "avg_speed", FITViewUIConverter.convertSpeedToKMprH);
                             updatePoint(lapMaxSpeedSeries.data, "max_speed", FITViewUIConverter.convertSpeedToKMprH);
-                            self.multiChart.redraw();
+                            if (typeof self.lapChart !== "undefined")
+                                self.lapChart.redraw();
                         }
                     }
                 }
@@ -2377,12 +2386,18 @@
                                      speed = this.y;
 
                                      switch (self.masterVM.speedMode()) {
+
                                          case FITSport.running: // Running
-                                             s += FITViewUIConverter.formatToMMSS(speed);
+                                             if (self.masterVM.settingsVM.forceSpeedKMprH())
+                                                 s += speed.toFixed(1);
+                                             else
+                                                s += FITViewUIConverter.formatToMMSS(speed);
                                              break;
+
                                          case FITSport.cycling: // Cycling
                                              s += Highcharts.numberFormat(speed, 1);
                                              break;
+
                                          default:
                                              s += Highcharts.numberFormat(speed, 1);
                                              break;
@@ -2404,12 +2419,18 @@
                                      speed = this.y;
 
                                      switch (self.masterVM.speedMode()) {
+
                                          case FITSport.running: // Running
-                                             s += FITViewUIConverter.formatToMMSS(speed);
+                                             if (self.masterVM.settingsVM.forceSpeedKMprH())
+                                                 s += speed.toFixed(1);
+                                             else
+                                               s += FITViewUIConverter.formatToMMSS(speed);
                                              break;
+
                                          case FITSport.cycling: // Cycling
                                              s += Highcharts.numberFormat(speed, 1);
                                              break;
+
                                          default:
                                              s += Highcharts.numberFormat(speed, 1);
                                              break;
