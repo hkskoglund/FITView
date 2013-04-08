@@ -1664,6 +1664,7 @@
 
                 } else {
                     self.masterVM.speedMode(self.masterVM.previousSpeedMode);
+
                     if (self.masterVM.previousSpeedMode === FITSport.running) // Running 
                     {
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedseries');
@@ -1677,7 +1678,9 @@
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
                     } else {
+
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
+
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
 
@@ -1704,7 +1707,7 @@
                     self.masterVM.settingsVM.showEvents(true);
                 }
 
-                speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
+                speedSeries.setData(speedSeriesData, true);
                 if (self.masterVM.settingsVM.requestAveragingOnSpeed())
                     speedAvgSeries.setData(speedAvgSeriesData, true);
             }
@@ -2264,6 +2267,9 @@
              self.weeklyCaloriesChart = new Highcharts.Chart({
                  chart: chartOptions,
                  credits: {
+                     enabled: false
+                 },
+                 legend: {
                      enabled: false
                  },
                  //height : 700,
