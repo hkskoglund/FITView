@@ -2109,6 +2109,203 @@
 
          },
 
+         showWeeklyCaloriesChart : function (rawData, startTimestamp, endTimestamp, sport)
+         {
+             var
+
+             chartId = "weeklyCaloriesChart",
+             divChart = document.getElementById(chartId),
+             yAxisOptions = [],
+            // yAxisNr = 0, // Give each series a new y-axis
+             YAxis = {},
+
+                 chartOptions = {
+                     // animation: false,
+                     renderTo: chartId,
+                     type: 'column',
+                     // Allow zooming
+                     zoomType: 'xy',
+
+                 };
+
+             // Clean up previous chart
+             // http://api.highcharts.com/highcharts#Chart.destroy()
+             if (this.weeklyCaloriesChart)
+                 this.weeklyCaloriesChart.destroy();
+
+
+             divChart.style.visibility = "visible";
+
+             var seriesSetup = []; // Options name,id
+             var seriesData = []; // Actual data in chart
+
+             function getWeeklySortedCalories() {
+                 // Calories weekly
+
+                 var weeklyCalories = [];
+                 for (var prop in self.masterVM.activityVM.weeklyCalories)
+                     if (self.masterVM.activityVM.weeklyCalories.hasOwnProperty(prop)) {
+                         weeklyCalories.push([parseInt(prop, 10), self.masterVM.activityVM.weeklyCalories[prop]]);
+                     }
+
+                 return weeklyCalories.sort(comparator);
+             }
+
+             function setWeeklyCategories(xAxis) {
+                 var weekCategories = getWeeklySortedCalories().map(function (item, index, arr) {
+                     var weeklyMoment = moment.utc(item[0]);
+                     // http://momentjs.com/docs/#/plugins/isocalendar/ - Want Monday as start of week
+                    
+                     return weeklymoment().isocalendar()[1].toString()
+                     //weeklyMoment.week() 
+                         + ' ' + weeklyMoment.format('MMM') + ' ' + weeklyMoment.year();
+                 });
+                 xAxis.setCategories(weekCategories);
+             }
+
+             function getWeeklyCaloriesData() {
+                 var data = getWeeklySortedCalories().map(function (item, index, arr) {
+                     return item[1]; // Total calorie
+                 });
+
+                 
+                 return data;
+             }
+
+             function comparator(a, b) {
+                 if (a[0] < b[0])
+                     return -1;
+                 if (a[0] > b[0])
+                     return 1;
+                 // a must be equal to b
+                 return 0;
+
+             }
+
+             seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
+
+             // Calorie computation using Firstbeat library on the Forerunner has MAE - mean average error of 7-10 %
+             function getWeeklyCaloriesErrorMarginData(weeklyCaloriesDataArg, percent) {
+                 var data = weeklyCaloriesDataArg.map(function (item, index, arr) {
+                     return [item - item * percent / 100, item + item * percent / 100];
+                 });
+
+                 return data;
+             }
+
+             var weeklyCaloriesYAxisNr = 0;
+
+             seriesSetup.push({
+                 name: 'Calories', id: seriesID.weeklyCalories, xAxis: 0, yAxis: 0,
+                 data: seriesData[seriesID.weeklyCalories], visible: true, type: 'column',
+                 //pointWidth: 15,
+                 events: {
+                     legendItemClick: function () {
+                         var weeklyCaloriesxAxis = this.chart.get(xAxisID.weeklyCalories);
+                         //var yaxis = self.multiChart.get('weeklyCaloriesYAxis');
+                         var weeklyCalorieSeries = this.chart.get(seriesID.weeklyCalories);
+                         var weeklyCalorieErrorSeries = this.chart.get(seriesID.weeklyCaloriesError);
+                         seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
+                         setWeeklyCategories(weeklyCaloriesxAxis);
+
+                         if (this.visible === false) {
+                             weeklyCalorieSeries.setData(seriesData[seriesID.weeklyCalories], false);
+                             seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories], 10);
+                             weeklyCalorieErrorSeries.setData(seriesData[seriesID.weeklyCaloriesError]);
+                         }
+
+                     }
+                 },
+                 dataLabels: {
+
+                     enabled: true
+
+
+                 }
+             }
+             );
+
+             yAxisOptions.push({
+
+                 gridLineWidth: 0,
+
+                 //opposite: true,
+
+                 title: {
+                     text: 'Kcal'
+                 },
+
+                 showEmpty: false,
+
+                 id: yAxisID.weeklyCalories
+
+             });
+
+             // Testing of errorbar Highcharts beta 3.0 http://jsfiddle.net/highcharts/fmVUV/
+
+             seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories], 10);
+
+             seriesSetup.push({
+                 name: 'Calories error', id: seriesID.weeklyCaloriesError, xAxis: 0, yAxis: 0,
+                 data: seriesData[seriesID.weeklyCaloriesError], visible: true, type: 'errorbar'
+
+             });
+
+             self.weeklyCaloriesChart = new Highcharts.Chart({
+                 chart: chartOptions,
+                 credits: {
+                     enabled: false
+                 },
+                 //height : 700,
+
+                 title: {
+                     text: 'Weekly Calories'
+                 },
+
+                 subtitle: {
+                     text: 'Based on currently imported activities'
+         },
+
+                 xAxis: 
+             {
+                 id: xAxisID.weeklyCalories,
+                 categories: getWeeklySortedCalories().map(function (item) {
+                     var week = moment(item[0]).isocalendar()[1].toString();
+                     //moment(item[0]).week()
+                     return week + "-" + moment(item[0]).year();
+                 })
+             },
+
+                 tooltip: {
+                     animation: false,
+                     //xDateFormat: '%Y-%m-%d',
+                     formatter:
+
+                         function () {
+
+                             //http://stackoverflow.com/questions/3885817/how-to-check-if-a-number-is-float-or-integer
+                             function isInt(n) {
+                                 return n % 1 === 0;
+                             }
+
+                             var speed, s;
+                           
+                                     s = '<b>Week:</b> ' + this.x;
+
+                             return s;
+
+                         },
+
+                     crosshairs: false
+                 },
+
+                 yAxis: yAxisOptions,
+
+                 series: seriesSetup
+
+             });
+         },
+
          // Refactored from showMultiChart
          showLapChart: function (rawData, startTimestamp, endTimestamp, sport)
          {
@@ -3129,102 +3326,7 @@
                 
             });
 
-            function getWeeklySortedCalories() {
-                // Calories weekly
-
-                var weeklyCalories = [];
-                for (var prop in self.masterVM.activityVM.weeklyCalories)
-                    if (self.masterVM.activityVM.weeklyCalories.hasOwnProperty(prop)) {
-                        weeklyCalories.push([parseInt(prop, 10), self.masterVM.activityVM.weeklyCalories[prop]]);
-                    }
-
-                return weeklyCalories.sort(comparator);
-            }
-
-            function setWeeklyCategories(xAxis) {
-                var weekCategories = getWeeklySortedCalories().map(function (item, index, arr) {
-                    var weeklyMoment = moment.utc(item[0]);
-                    return weeklyMoment.week() + ' '+weeklyMoment.format('MMM')+' ' + weeklyMoment.year();
-                });
-                xAxis.setCategories(weekCategories);
-            }
-
-            function getWeeklyCaloriesData() {
-                var data = getWeeklySortedCalories().map(function (item, index, arr) {
-                     return item[1]; // Total calorie
-                });
-
-                return data;
-            }
-
-            seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
-
-            // Calorie computation using Firstbeat library on the Forerunner has MAE - mean average error of 7-10 %
-            function getWeeklyCaloriesErrorMarginData(weeklyCaloriesDataArg,percent) {
-                var data = weeklyCaloriesDataArg.map(function (item, index, arr) {
-                    return [item - item * percent / 100, item + item * percent / 100];
-                });
-
-                return data;
-            }
-            
-            var weeklyCaloriesYAxisNr = yAxisNr;
-
-            seriesSetup.push({
-                name: 'Calories', id: seriesID.weeklyCalories, xAxis: 5, yAxis: yAxisNr++,
-                data: seriesData[seriesID.weeklyCalories], visible: false, type: 'column',
-                //pointWidth: 15,
-                events: {
-                    legendItemClick: function () {
-                        var weeklyCaloriesxAxis = this.chart.get(xAxisID.weeklyCalories);
-                        //var yaxis = self.multiChart.get('weeklyCaloriesYAxis');
-                        var weeklyCalorieSeries = this.chart.get(seriesID.weeklyCalories);
-                        var weeklyCalorieErrorSeries = this.chart.get(seriesID.weeklyCaloriesError);
-                        seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
-                        setWeeklyCategories(weeklyCaloriesxAxis);
-
-                        if (this.visible === false) {
-                            weeklyCalorieSeries.setData(seriesData[seriesID.weeklyCalories], false);
-                            seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories], 10);
-                            weeklyCalorieErrorSeries.setData(seriesData[seriesID.weeklyCaloriesError]);
-                        }
-
-                    }
-                },
-                dataLabels: {
-
-                    enabled: true
-
-                    
-                }
-            }
-            );
-
-            yAxisOptions.push({
-
-                gridLineWidth: 0,
-
-                opposite: true,
-
-                title: {
-                    text: 'Weekly calories'
-                },
-
-                showEmpty: false,
-
-                id: yAxisID.weeklyCalories
-
-            });
-
-            // Testing of errorbar Highcharts beta 3.0 http://jsfiddle.net/highcharts/fmVUV/
-
-            seriesData[seriesID.weeklyCaloriesError] = getWeeklyCaloriesErrorMarginData(seriesData[seriesID.weeklyCalories], 10);
-
-            seriesSetup.push({
-                name: 'Calories error', id: seriesID.weeklyCaloriesError, xAxis: 5, yAxis: weeklyCaloriesYAxisNr,
-                data: seriesData[seriesID.weeklyCaloriesError], visible: false, type: 'errorbar'
-                
-            });
+      
            
             
 
@@ -3521,12 +3623,7 @@
                     id: xAxisID.TE,
                     type: 'datetime'
                 },
-                {
-                    id: xAxisID.weeklyCalories,
-                    categories: getWeeklySortedCalories().map(function (item) {
-                        return moment(item[0]).week() + "-" + moment(item[0]).year();
-                    })
-                },
+                
                 {
                     
                     id: xAxisID.caloriesVSHRVSTE
@@ -3717,6 +3814,8 @@
 
             // Details
             self.showLapChart(rawData, startTimestamp, endTimestamp, sport);
+
+            self.showWeeklyCaloriesChart(rawData, startTimestamp, endTimestamp, sport);
 
         },
 
@@ -5763,7 +5862,8 @@
                         //http://momentjs.com/docs/#/get-set/week/
                         startMoment = moment.utc(sessionStartTime);
                         year = startMoment.year();
-                        weekOfYear = startMoment.week();
+                        //weekOfYear = startMoment.week();
+                        weekOfYear = startMoment.isocalendar()[1];
                         weekMoment = moment.utc().year(year).week(weekOfYear).day(1).hours(0).minutes(0).seconds(0).millisecond(0); // Week start on monday ...
                         if (typeof self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] !== "undefined")
                             self.masterVM.activityVM.weeklyCalories[weekMoment.valueOf()] += rawData.session.total_calories[sessionNr];
@@ -5775,6 +5875,8 @@
                         //TEseries.setData(self.masterVM.TEVM.TEHistory, true);
 
                         // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+
+                        self.showWeeklyCaloriesChart(rawData); // Can potentially get many redraws...
 
                     }
 

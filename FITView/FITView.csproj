@@ -127,6 +127,7 @@
     <Content Include="Scripts\3party\highchart-more.src.js" />
     <Content Include="Scripts\3party\highcharts30.src.js" />
     <Content Include="Scripts\3party\highcharts30beta.src.js" />
+    <Content Include="Scripts\3party\moment.isocalendar.js" />
     <Content Include="Scripts\3party\moment.js" />
     <Content Include="Scripts\Messages\FITCommonMessage.js" />
     <Content Include="Scripts\FITImport.js" />
