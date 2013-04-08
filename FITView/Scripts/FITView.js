@@ -758,7 +758,7 @@
                 storeInIndexedDB: ko.observable(false),
                 showDeviceInfo: ko.observable(false),
                 showHeaderInfo: ko.observable(false),
-                forceSpeedKMprH: ko.observable(localStorage.forceRunSpeedToKMprH),
+                forceSpeedKMprH: ko.observable(localStorage.forceRunSpeedToKMprH === "true" ? true : false),
                 requestAveragingOnSpeed: ko.observable(true),
                 averageSampleTime: ko.observable(5000),
                 logging: ko.observable(false),
