@@ -2111,6 +2111,8 @@
 
          showWeeklyCaloriesChart : function (rawData, startTimestamp, endTimestamp, sport)
          {
+            
+
              var
 
              chartId = "weeklyCaloriesChart",
@@ -2183,6 +2185,14 @@
              }
 
              seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
+
+             if (self.masterVM.activityVM.activity().length <= 1) {
+                 self.loggMessage("warn", "Either no activities or only 1 activity imported, no need to show chart now");
+                 $('#weeklyCaloriesChart').hide();
+                 return;
+             };
+
+             $('#weeklyCaloriesChart').show();
 
              // Calorie computation using Firstbeat library on the Forerunner has MAE - mean average error of 7-10 %
              function getWeeklyCaloriesErrorMarginData(weeklyCaloriesDataArg, percent) {
