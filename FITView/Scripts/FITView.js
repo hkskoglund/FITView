@@ -21,7 +21,8 @@
 
      yAxisID = {
         TE: 'TEyAxis',
-        weeklyCalories : 'weeklyCaloriesyAxis'
+        weeklyCalories: 'weeklyCaloriesyAxis',
+         speed : 'speedYAxis'
         
     },
 
@@ -1632,6 +1633,8 @@
                 speedAvgSeries = self.multiChart.get(seriesID.speedAvg);
                 
                 xAxis = self.multiChart.get(xAxisID.rawdata);
+                var speedYAxis = self.multiChart.get(yAxisID.speed);
+
                 startTimestamp = xAxis.min - timezoneDiff;
                 endTimestamp = xAxis.max - timezoneDiff;
 
@@ -1644,6 +1647,11 @@
 
             if (speedSeries) {
                 if (forceSpeedKMprH) {
+                   
+                    speedYAxis.update({
+                        reversed: false
+                    });
+
                     self.masterVM.previousSpeedMode = self.masterVM.speedMode();
                     self.masterVM.previousSpeedData = speedSeries.data;
                     self.masterVM.previousSpeedAvgData = speedAvgSeries.data;
@@ -1667,6 +1675,10 @@
 
                     if (self.masterVM.previousSpeedMode === FITSport.running) // Running 
                     {
+                        speedYAxis.update({
+                            reversed: true
+                        });
+
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedseries');
 
                         if (lapAvgSpeedSeries && lapMaxSpeedSeries) {
@@ -1678,6 +1690,10 @@
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
                     } else {
+
+                        speedYAxis.update({
+                            reversed: false
+                        });
 
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
 
@@ -2933,6 +2949,7 @@
                     seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'spline', visible: !FITUtil.hasGPSData(rawData), zIndex: 99 });
 
                     yAxisOptions.push({
+                        id : yAxisID.speed,
                         gridLineWidth: 0,
                         title: {
                             text: 'Speed'
