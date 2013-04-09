@@ -3578,6 +3578,7 @@
                     //dateTimeLabelFormats: {
                     //    day: '%e of %b'
                     //},
+                    // http://code.highcharts.com/
                     labels: {
                         // http://api.highcharts.com/highcharts#xAxis.labels.formatter
                         formatter: function () {
