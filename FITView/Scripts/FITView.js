@@ -3681,74 +3681,80 @@
                                 return n % 1 === 0;
                             }
 
-                            var speed, s;
+                            var speed, tip = "";
 
-                            var onLapxAxis;
+                          
                             var onSpeedVSHRxAxis;
-                            var onHrvxAxis, onWeeklyxAxis, onkcalxAxis, isHRVSeries;
+                            var onHrvxAxis, onkcalxAxis, isHRVSeries;
+                          
+
+                            
 
                             // With highchart-more.js cannot find self.multiChart in closure anymore....? this.series.chart used instead
-                            onLapxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.lap));
+                         
+
                             onSpeedVSHRxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.speedVSHR));
                             //onHrvxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.hrv));
                             isHRVSeries = (this.series === this.series.chart.get(seriesID.hrv));
-                            onWeeklyxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.weeklyCalories));
+                          
                             onkcalxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.caloriesVSHRVSTE));
 
-                            // Check to see if its a tooltip for lap axis
-                            if (onLapxAxis) {
-                                var lapNr = this.x;
-                                s = "Lap " + lapNr.toString();
-                                if (rawData.lap.total_distance)
-                                    s += '<br/>' + '<b>Distance:</b> ' + Highcharts.numberFormat(rawData.lap.total_distance[lapNr - 1], 0) + ' m';
-                            }
-
-                            else if (onSpeedVSHRxAxis) {
-                                s = "<b>Heart rate:</b>" + this.y;
+                            if (this.series === this.series.chart.get(seriesID.speedVSHR)) {
+                                tip = "<b>Heart rate:</b> " + this.y+'<br/>';
                             }
                             else if (isHRVSeries) {
-                                s = '<b>Time: </b>' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/><b>RR: </b>' + Highcharts.numberFormat(this.y, 0) + " ms";
+                                tip =
+                                    //'<b>Time:</b> ' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +
+                                    '<b>RR: </b>' + Highcharts.numberFormat(this.y, 0) + " ms";
                             }
-                            else if (onWeeklyxAxis)
-                                s = '<b>Week:</b> ' + this.x;
+                           
                             else if (onkcalxAxis)
-                                s = '<b>Kcal:</b>' + this.x + '<br/>' +
+                                tip = '<b>Kcal:</b>' + this.x + '<br/>' +
                                     '<b>Avg.HR:</b>' + this.y + '<br/>' +
                                     '<b>TE:</b>' + this.point.z;
-                            else
-                                s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
+                            //else
+                            //    tip = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
 
                             // Special treatment for speed
-                            if (self.masterVM.speedMode() && this.series.name === "Speed" || this.series.name === "Avg. speed" || this.series.name === "Max. speed" || this.series.name === "SpeedAvg" || this.series.name === "Speed vs HR") {
+                            if (self.masterVM.speedMode() && this.series.name === "Speed"  || this.series.name === "SpeedAvg" || this.series.name === "Speed vs HR") {
                                 if (this.series.name === "Speed vs HR") {
                                     speed = this.x; // Speed is on the x-axis for this chart....
-                                    s += '<br/><b>Speed</b>: ';
+                                    tip += '<b>Speed</b>: ';
                                 } else {
-                                    s += '<br/>' + '<b>' + this.series.name + '</b>' + ': ';
+                                    tip += '<b>' + this.series.name + '</b>' + ': ';
                                     speed = this.y;
                                 }
 
                                 switch (self.masterVM.speedMode()) {
                                     case FITSport.running: // Running
-                                        s += FITViewUIConverter.formatToMMSS(speed) + " min/km";
+                                        tip += FITViewUIConverter.formatToMMSS(speed) + " min/km";
                                         break;
                                     case FITSport.cycling: // Cycling
-                                        s += Highcharts.numberFormat(speed, 1) + " km/h";
+                                        tip += Highcharts.numberFormat(speed, 1) + " km/h";
                                         break;
                                     default:
-                                        s += Highcharts.numberFormat(speed, 1) + " km/h";
+                                        tip += Highcharts.numberFormat(speed, 1) + " km/h";
                                         break;
                                 }
                             }
                             else if (this.series.name !== 'HRV' && this.series.name !== 'Run' && this.series.name !== "Bike" && this.series.name !== "Other") {
-                                s += '<br/><b>' + this.series.name + ':</b> ';
+                                tip += '<b>' + this.series.name + ':</b> ';
                                 if (isInt(this.y))
-                                    s += this.y.toString();
+                                    tip += this.y.toString();
                                 else
-                                    s += Highcharts.numberFormat(this.y, 1);
+                                    tip += Highcharts.numberFormat(this.y, 1);
                             }
 
-                            return s;
+                            // Add elapsed time since start
+                            if (this.series.xAxis.isDatetimeAxis) {
+                                var elapsedTime = (this.x - FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)) / 1000; // startTimestamp from clousure/actual parameter in UTC
+                                if (elapsedTime < 0)
+                                    self.loggMessage("error", "Strange that current timestamp is before start timestamp");
+                                else
+                                    tip += '<br/><b>Time:</b> ' + FITViewUIConverter.formatToHHMMSS(elapsedTime);
+                            }
+
+                            return tip;
 
                         },
 
