@@ -2966,42 +2966,15 @@
 
                              var speed, s;
 
-                             var onLapxAxis;
-                             var onSpeedVSHRxAxis;
-                             var onHrvxAxis, onWeeklyxAxis, onkcalxAxis, isHRVSeries;
-
-                             onLapxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.lap));
-                             //onSpeedVSHRxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.speedVSHR));
-                             //onHrvxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.hrv));
-                             //isHRVSeries = (this.series === this.series.chart.get(seriesID.hrv));
-                             //onWeeklyxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.weeklyCalories));
-                             //onkcalxAxis = (this.series.xAxis === this.series.chart.get(xAxisID.caloriesVSHRVSTE));
-
-                             // Check to see if its a tooltip for lap axis
-                             if (onLapxAxis) {
+                           
                                  var lapNr = this.x;
                                  s = "Lap " + lapNr.toString();
-                                 if (rawData.lap.total_distance)
-                                     s += '<br/>' + '<b>Distance:</b> ' + Highcharts.numberFormat(rawData.lap.total_distance[lapNr - 1], 0) + ' m';
-                             }
-
-                             //else if (onSpeedVSHRxAxis) {
-                             //    s = "<b>Heart rate:</b>" + this.y;
-                             //}
-                             //else if (isHRVSeries) {
-                             //    s = '<b>Time: </b>' + Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) + '<br/><b>RR: </b>' + Highcharts.numberFormat(this.y, 0) + " ms";
-                             //}
-                             //else if (onWeeklyxAxis)
-                             //    s = '<b>Week:</b> ' + this.x;
-                             //else if (onkcalxAxis)
-                             //    s = '<b>Kcal:</b>' + this.x + '<br/>' +
-                             //        '<b>Avg.HR:</b>' + this.y + '<br/>' +
-                             //        '<b>TE:</b>' + this.point.z;
-                             else
-                                 s = Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x);
+                                 //if (rawData.lap.total_distance)
+                                 //    s += '<br/>' + '<b>Distance:</b> ' + Highcharts.numberFormat(rawData.lap.total_distance[lapNr - 1], 0) + ' m';
+                            
 
                              // Special treatment for speed
-                             if (self.masterVM.speedMode() && this.series.name === "Speed" || this.series.name === "Avg. speed" || this.series.name === "Max. speed" || this.series.name === "SpeedAvg" || this.series.name === "Speed vs HR") {
+                             if (self.masterVM.speedMode() &&  this.series.name === "Avg. speed" || this.series.name === "Max. speed") {
                                  if (this.series.name === "Speed vs HR") {
                                      speed = this.x; // Speed is on the x-axis for this chart....
                                      s += '<br/><b>Speed</b>: ';
@@ -3022,7 +2995,11 @@
                                          break;
                                  }
                              }
-                             else if (this.series.name !== 'HRV' && this.series.name !== 'Run' && this.series.name !== "Bike" && this.series.name !== "Other") {
+                             else if (this.series.name === "Elapsed time" || this.series.name === "Timer time") {
+                                 s += '<br/><b>' + this.series.name + ':</b> ';
+                                 s += FITViewUIConverter.formatToHHMMSS(this.y);
+                             }
+                             else {
                                  s += '<br/><b>' + this.series.name + ':</b> ';
                                  if (isInt(this.y))
                                      s += this.y.toString();
