@@ -3157,7 +3157,7 @@
                     }
                     seriesData[seriesID.speedAvg] = speedAvgSeriesData;
                     //speedYAxisNr = yAxisNr;
-                    speedAvgSeries = { name: 'SpeedAvg', id: seriesID.speedAvg, yAxis: speedYAxisNr, data: seriesData[seriesID.speedAvg], type: 'spline', visible: FITUtil.hasGPSData(rawData), zIndex: 99 };
+                    speedAvgSeries = { name: 'SpeedAvg', id: seriesID.speedAvg, yAxis: speedYAxisNr, data: seriesData[seriesID.speedAvg], type: 'spline', visible: false, zIndex: 99 };
                     seriesSetup.push(speedAvgSeries);
                     //yAxisOptions.push({
                     //    gridLineWidth: 0,
