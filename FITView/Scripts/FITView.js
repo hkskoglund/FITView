@@ -56,7 +56,9 @@
         LAP_total_cycles_strides : 'LAP_total_cycles_strides',
         LAP_avg_power: 'LAP_avg_power',
         LAP_max_power: 'LAP_max_power',
-        LAP_total_distance : 'LAP_total_distance',
+        LAP_total_distance: 'LAP_total_distance',
+        LAP_total_elapsed_time: 'LAP_total_elapsed_time',
+        LAP_total_timer_time: 'LAP_total_timer_time',
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD'
 
@@ -2408,7 +2410,9 @@
                      total_cycles_strides: [],
                      avg_power : [],
                      max_power: [],
-                     total_distance: []
+                     total_distance: [],
+                     total_elapsed_time: [],
+                     total_timer_time:[]
                  };
 
                  function isZeroFat() {
@@ -2478,6 +2482,8 @@
                                          pushData("avg_power");
                                          pushData("max_power");
                                          pushData("total_distance");
+                                         pushData("total_elapsed_time");
+                                         pushData("total_timer_time");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
@@ -2496,6 +2502,8 @@
                                          pushData("avg_power");
                                          pushData("max_power");
                                          pushData("total_distance");
+                                         pushData("total_elapsed_time");
+                                         pushData("total_timer_time");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
@@ -2513,6 +2521,8 @@
                                          pushData("avg_power");
                                          pushData("max_power");
                                          pushData("total_distance");
+                                         pushData("total_elapsed_time");
+                                         pushData("total_timer_time");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
                                  }
@@ -2548,6 +2558,37 @@
                          });
 
                          YAxis["power"] = yAxisNr++;
+
+                     }
+
+                     if (lap.total_elapsed_time && lap.total_elapsed_time.length > 0) {
+
+                         yAxisOptions.push({
+                             gridLineWidth: 1,
+                             title: {
+                                 text: 'Elapsed time'
+                             },
+                             showEmpty: false
+                         });
+
+                         YAxis["time"] = yAxisNr++;
+
+                     }
+
+                     if (lap.total_timer_time && lap.total_timer_time.length > 0) {
+
+                         yAxisOptions.push({
+                             gridLineWidth: 1,
+                             title: {
+                                 text: 'Timer time'
+                             },
+                             labels : {
+                                 enabled : false
+                             },
+                             showEmpty: false
+                         });
+
+                         YAxis["time"] = yAxisNr++;
 
                      }
 
@@ -2754,6 +2795,29 @@
                          seriesSetup.push({
                              name: "Max. HR", id: seriesID.LAP_max_heart_rate, xAxis: 0, yAxis: YAxis.HR, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.total_elapsed_time && lap.total_elapsed_time.length > 0)
+                         seriesSetup.push({
+                             name: "Elapsed time", id: seriesID.LAP_total_elapsed_time, xAxis: 0, yAxis: YAxis.time, data: lap.total_elapsed_time, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 formatter : function ()
+                                 {
+                                     return FITViewUIConverter.formatToHHMMSS(this.y);
+                                 },
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.total_timer_time && lap.total_timer_time.length > 0)
+                         seriesSetup.push({
+                             name: "Timer time", id: seriesID.LAP_total_timer_time, xAxis: 0, yAxis: YAxis.time, data: lap.total_timer_time, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 formatter: function () {
+                                     return FITViewUIConverter.formatToHHMMSS(this.y);
+                                 },
                                  enabled: true
                              }
                          });
