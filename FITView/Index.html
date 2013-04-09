@@ -781,27 +781,27 @@
 
                     <!-- ko if : start_time()[selectedSession()] -->
 
-                    <span data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedSession()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
+                    <span class = "sessionStartTime" data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedSession()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
                     <!-- /ko -->
-
 
                     <!-- ko if: total_elapsed_time().length > 0  -->
-                    <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
+                        <img class="inlineIcon" alt="Total elapsed time" title="Total elapsed time" src="Images/total_elapsed_time.png" />
+                        <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
                     <!-- /ko -->
 
-
                     <!-- ko if: total_timer_time().length > 0  && total_timer_time()[selectedSession()].toHHMMSS() !== total_elapsed_time()[selectedSession()].toHHMMSS() -->
-
-                    <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
+                        <img class="inlineIcon" alt="Total timer time" title="Total timer time" src="Images/total_timer_time.png" />
+                        <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
                     <!-- /ko -->
 
                     <!-- ko if: total_distance().length > 0 -->
-                    <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
+                     <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
+                      <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
                     <!-- /ko -->
 
-
                     <!-- ko if: typeof num_laps !== "undefined" && num_laps().length > 0 && num_laps()[selectedSession()] >= 0 -->
-                    (<span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>)
+                    <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
+                        <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>
                     <!-- /ko -->
 
                     <!-- SPEED -->
@@ -1012,17 +1012,19 @@
 
 
                 <!-- ko if: total_elapsed_time().length > 0  -->
+                  <img class="inlineIcon" alt="Total elapsed time" title="Total elapsed time" src="Images/total_elapsed_time.png" />
                 <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedLap()].toHHMMSS()"></span></time>
                 <!-- /ko -->
 
 
 
                 <!-- ko if: total_timer_time().length > 0 && selectedLap() !== undefined && total_timer_time()[selectedLap()].toHHMMSS() !== total_elapsed_time()[selectedLap()].toHHMMSS() -->
-
+                  <img class="inlineIcon" alt="Total timer time" title="Total timer time" src="Images/total_timer_time.png" />
                 <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedLap()].toHHMMSS()"></span></time>
                 <!-- /ko -->
 
                 <!-- ko if: total_distance().length > 0 -->
+                  <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
                 <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedLap()].toFixed(0)"></span>
                 <!-- /ko -->
 

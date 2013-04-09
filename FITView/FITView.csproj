@@ -58,8 +58,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
+    <Content Include="Images\number_of_laps.png" />
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
+    <Content Include="Images\total_distance.png" />
+    <Content Include="Images\total_timer_time.png" />
+    <Content Include="Images\total_elapsed_time.png" />
     <Content Include="Images\cookie-chocolate.png" />
     <Content Include="Images\error.png" />
     <Content Include="Images\database-import.png" />
