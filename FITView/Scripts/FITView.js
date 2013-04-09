@@ -56,6 +56,7 @@
         LAP_total_cycles_strides : 'LAP_total_cycles_strides',
         LAP_avg_power: 'LAP_avg_power',
         LAP_max_power: 'LAP_max_power',
+        LAP_total_distance : 'LAP_total_distance',
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD'
 
@@ -2406,7 +2407,8 @@
                      max_cadence: [],
                      total_cycles_strides: [],
                      avg_power : [],
-                     max_power : []
+                     max_power: [],
+                     total_distance: []
                  };
 
                  function isZeroFat() {
@@ -2475,6 +2477,7 @@
                                          pushData("total_cycles_strides");
                                          pushData("avg_power");
                                          pushData("max_power");
+                                         pushData("total_distance");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
@@ -2492,6 +2495,7 @@
                                          pushData("total_cycles_strides");
                                          pushData("avg_power");
                                          pushData("max_power");
+                                         pushData("total_distance");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
@@ -2508,6 +2512,7 @@
                                          pushData("total_cycles_strides");
                                          pushData("avg_power");
                                          pushData("max_power");
+                                         pushData("total_distance");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
                                  }
@@ -2543,6 +2548,20 @@
                          });
 
                          YAxis["power"] = yAxisNr++;
+
+                     }
+
+                     if (lap.total_distance && lap.total_distance.length > 0) {
+
+                         yAxisOptions.push({
+                             gridLineWidth: 1,
+                             title: {
+                                 text: 'Distance'
+                             },
+                             showEmpty: false
+                         });
+
+                         YAxis["total_distance"] = yAxisNr++;
 
                      }
 
@@ -2776,6 +2795,20 @@
                          seriesSetup.push({
                              name: "Max. Cadence", id: seriesID.LAP_max_cadence, xAxis: 0, yAxis: YAxis.Cadence, data: lap.max_cadence, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.total_distance && lap.total_distance.length > 0)
+                         seriesSetup.push({
+                             name: "Distance", id: seriesID.LAP_total_distance, xAxis: 0, yAxis: YAxis.total_distance, data: lap.total_distance, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 formatter: function () {
+                                     if (this.y < 1000)
+                                         return this.y.toFixed(0)
+                                     else
+                                        return (this.y/1000).toFixed(2)+ ' km';
+                                 },
                                  enabled: true
                              }
                          });
