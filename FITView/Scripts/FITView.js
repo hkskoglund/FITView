@@ -50,7 +50,12 @@
         LAP_total_fat_calories : 'LAP_total_fat_calories',
         LAP_total_ascent: 'LAP_total_ascent',
         LAP_total_descent: 'LAP_total_descent',
-        LAP_intensity : 'LAP_intensity',
+        LAP_intensity: 'LAP_intensity',
+        LAP_avg_cadence: 'LAP_avg_cadence',
+        LAP_max_cadence: 'LAP_max_cadence',
+        LAP_total_cycles_strides : 'LAP_total_cycles_strides',
+        LAP_avg_power: 'LAP_avg_power',
+        LAP_max_power: 'LAP_max_power',
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD'
 
@@ -2396,7 +2401,12 @@
                      total_fat_calories: [],
                      intensity: [],
                      total_ascent: [],
-                     total_descent: []
+                     total_descent: [],
+                     avg_cadence: [],
+                     max_cadence: [],
+                     total_cycles_strides: [],
+                     avg_power : [],
+                     max_power : []
                  };
 
                  function isZeroFat() {
@@ -2460,6 +2470,11 @@
                                          pushData("total_fat_calories");
                                          pushData("total_ascent");
                                          pushData("total_descent");
+                                         pushData("avg_cadence");
+                                         pushData("max_cadence");
+                                         pushData("total_cycles_strides");
+                                         pushData("avg_power");
+                                         pushData("max_power");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
@@ -2472,6 +2487,11 @@
                                          pushData("total_fat_calories");
                                          pushData("total_ascent");
                                          pushData("total_descent");
+                                         pushData("avg_cadence");
+                                         pushData("max_cadence");
+                                         pushData("total_cycles_strides");
+                                         pushData("avg_power");
+                                         pushData("max_power");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
@@ -2483,6 +2503,11 @@
                                          pushData("total_calories");
                                          pushData("total_ascent");
                                          pushData("total_descent");
+                                         pushData("avg_cadence");
+                                         pushData("max_cadence");
+                                         pushData("total_cycles_strides");
+                                         pushData("avg_power");
+                                         pushData("max_power");
                                          lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
                                  }
@@ -2504,6 +2529,34 @@
                          });
 
                          YAxis["HR"] = yAxisNr++;
+
+                     }
+
+                     if (((lap.avg_power && lap.avg_power.length > 0) || (lap.max_power && lap.max_power.length > 0))) {
+
+                         yAxisOptions.push({
+                             gridLineWidth: 1,
+                             title: {
+                                 text: 'Power'
+                             },
+                             showEmpty: false
+                         });
+
+                         YAxis["power"] = yAxisNr++;
+
+                     }
+
+                     if (((lap.avg_cadence && lap.avg_cadence.length > 0) || (lap.max_cadence && lap.max_cadence.length > 0) || (lap.total_cycles_strides && lap.total_cycles_strides.length > 0))) {
+
+                         yAxisOptions.push({
+                             gridLineWidth: 1,
+                             title: {
+                                 text: 'Cadence'
+                             },
+                             showEmpty: false
+                         });
+
+                         YAxis["Cadence"] = yAxisNr++;
 
                      }
 
@@ -2681,6 +2734,47 @@
                      if (lap.max_heart_rate && lap.max_heart_rate.length > 0)
                          seriesSetup.push({
                              name: "Max. HR", id: seriesID.LAP_max_heart_rate, xAxis: 0, yAxis: YAxis.HR, data: lap.max_heart_rate, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.avg_power && lap.avg_power.length > 0)
+                         seriesSetup.push({
+                             name: "Avg. Power", id: seriesID.LAP_avg_power, xAxis: 0, yAxis: YAxis.power, data: lap.avg_power, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.max_power && lap.max_power.length > 0)
+                         seriesSetup.push({
+                             name: "Max. Power", id: seriesID.LAP_max_power, xAxis: 0, yAxis: YAxis.power, data: lap.max_power, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.avg_cadence && lap.avg_cadence.length > 0)
+                         seriesSetup.push({
+                             name: "Avg. Cadence", id: seriesID.LAP_avg_cadence, xAxis: 0, yAxis: YAxis.Cadence, data: lap.avg_cadence, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.total_cycles_strides && lap.total_cycles_strides.length > 0) 
+                         
+                         seriesSetup.push({
+                             name: "Strides/Cycles", id: seriesID.LAP_total_cycles_strides, xAxis: 0, yAxis: YAxis.Cadence, data: lap.total_cycles_strides, type: 'column', visible: false, zIndex: 1,
+                             dataLabels: {
+                                 enabled: true
+                             }
+                         });
+
+                     if (lap.max_cadence && lap.max_cadence.length > 0)
+                         seriesSetup.push({
+                             name: "Max. Cadence", id: seriesID.LAP_max_cadence, xAxis: 0, yAxis: YAxis.Cadence, data: lap.max_cadence, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
                                  enabled: true
                              }
