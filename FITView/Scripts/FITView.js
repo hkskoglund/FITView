@@ -205,11 +205,23 @@
                 var combined = [];
                 var timestamp = 0;
                 var value = 1;
+                var minLength = Math.min(lenSeries1, lenSeries2);
+                var misMatchCount = 0;
 
-                for (elementNr = 0; elementNr < lenSeries1 && elementNr < lenSeries2; elementNr++) {
-                    if (series1[elementNr][timestamp] === series2[elementNr][timestamp]) // If equal timestamps
-                        combined.push([series1[elementNr][value], series2[elementNr][value]]);
+                for (elementNr = 0; elementNr < minLength; elementNr++) {
+                    if (series1[elementNr] !== undefined && series2[elementNr] !== undefined) {
+                        if (series1[elementNr][timestamp] === series2[elementNr][timestamp]) // If equal timestamps
+                            combined.push([series1[elementNr][value], series2[elementNr][value]]);
+                        else {
+                            misMatchCount++;
+                        }  // self.loggMessage("error", "Timestamp of combined arrays doesnt match at element nr." + elementNr + " " + series1[elementNr][timestamp] + "/" + series2[elementNr][timestamp]);
+                    }
+                      else
+                            self.loggMessage("warn", "Got undefined value at elementNr " + elementNr);
                 }
+
+                if (misMatchCount > 0)
+                    self.loggMessage("warn", "Mismatched timestamp during combination is " + misMatchCount);
 
                 return combined;
             },
@@ -302,11 +314,13 @@
                             if (val !== undefined) {
                                 localTimestamp = FITUtil.timestampUtil.addTimezoneOffsetToUTC(timestamp);
 
+                               
                                 if (converter)
-                                    combined.push([localTimestamp, converter(val)]);
+                                    combined[nr] = [localTimestamp, converter(val)]; 
                                 else
-                                    combined.push([localTimestamp, val]);
+                                    combined[nr] = [localTimestamp, val];
                             } else
+                                // Problem with using push in this exceptional case is that combined get unsynchronized between i.e speed vs HR
                                 self.loggMessage("log","Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
 
                         }
@@ -3061,6 +3075,21 @@
                 if (FITUtil.isEmpty(rawData.record))
                     self.loggMessage("warn","Empty rawdata on rawdata.record, nothing to render in chart");
 
+            function stripOffUndefinedValues(series) {
+                var elementNr;
+                var len = series.length;
+                var mapped = [];
+
+                for (elementNr = 0; elementNr < len; elementNr++) {
+                    if (series[elementNr] !== undefined)
+                        mapped.push(series[elementNr]);
+                    else
+                        self.loggMessage("warn", "Filter out elementNr " + elementNr + " from series, its undefined");
+                }
+
+               return mapped;
+            }
+
             function prepareHRSeries() {
                 if (rawData.record.heart_rate) {
                     seriesData[seriesID.HR] = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.HR);
@@ -3072,7 +3101,7 @@
                         name: 'Heart rate',
                         yAxis: yAxisNr++,
                         type: 'line',
-                        data: seriesData[seriesID.HR],
+                        data: stripOffUndefinedValues(seriesData[seriesID.HR]),
                         zIndex: 100
                     });
 
@@ -3099,22 +3128,22 @@
                     switch (sport) {
                         case FITSport.running: // Running
                             self.masterVM.speedMode(1); // min/km
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, seriesID.speed, false);
+                            seriesData[seriesID.speed] = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, seriesID.speed, false);
                             break;
                         case FITSport.cycling: // Cycling
                             self.masterVM.speedMode(2); // km/h
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speed, false);
+                            seriesData[seriesID.speed] = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speed, false);
                             break;
                         default:
                             self.masterVM.speedMode(2);
-                            speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speed, false);
+                            seriesData[seriesID.speed] = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, seriesID.speed, false);
                             break;
                     }
 
-                    seriesData[seriesID.speed] = speedSeriesData;
+                   
                     speedYAxisNr = yAxisNr;
 
-                    seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: seriesData[seriesID.speed], type: 'spline', visible: !FITUtil.hasGPSData(rawData), zIndex: 99 });
+                    seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.speed]), type: 'spline', visible: !FITUtil.hasGPSData(rawData), zIndex: 99 });
 
                     yAxisOptions.push({
                         id : yAxisID.speed,
@@ -3125,7 +3154,6 @@
                         opposite: true,
                         showEmpty: false,
                         reversed: self.masterVM.speedMode() === 1 // for min/km let y axis be inverted/reversed
-
 
                     });
                 }
@@ -3157,7 +3185,7 @@
                     }
                     seriesData[seriesID.speedAvg] = speedAvgSeriesData;
                     //speedYAxisNr = yAxisNr;
-                    speedAvgSeries = { name: 'SpeedAvg', id: seriesID.speedAvg, yAxis: speedYAxisNr, data: seriesData[seriesID.speedAvg], type: 'spline', visible: false, zIndex: 99 };
+                    speedAvgSeries = { name: 'SpeedAvg', id: seriesID.speedAvg, yAxis: speedYAxisNr, data: stripOffUndefinedValues(seriesData[seriesID.speedAvg]), type: 'spline', visible: false, zIndex: 99 };
                     seriesSetup.push(speedAvgSeries);
                     //yAxisOptions.push({
                     //    gridLineWidth: 0,
@@ -3176,7 +3204,7 @@
 
                     seriesData[seriesID.power] = FITUtil.combine(rawData, rawData.record.power, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.power);
 
-                    seriesSetup.push({ name: 'Power', id: seriesID.power, yAxis: yAxisNr++, data: seriesData[seriesID.power], type: 'line', zIndex: 98, visible: false });
+                    seriesSetup.push({ name: 'Power', id: seriesID.power, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.power]), type: 'line', zIndex: 98, visible: false });
 
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -3196,7 +3224,7 @@
 
                     var cadenceName = (sport === FITSport.running) ? 'Strides' : 'Cadence';
 
-                    seriesSetup.push({ name: cadenceName, id: seriesID.cadence, yAxis: yAxisNr++, data: seriesData[seriesID.cadence], type: 'line', visible: false, zIndex: 97 });
+                    seriesSetup.push({ name: cadenceName, id: seriesID.cadence, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.cadence]), type: 'line', visible: false, zIndex: 97 });
                     yAxisOptions.push({
                         gridLineWidth: 0,
                         title: {
@@ -3216,7 +3244,7 @@
                     seriesData[seriesID.altitude] = FITUtil.combine(rawData, rawData.record.altitude, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.altitude);
 
                     seriesSetup.push({
-                        name: 'Altitude', id: seriesID.altitude, yAxis: yAxisNr++, data: seriesData[seriesID.altitude], visible: false, type: 'line', zIndex: 96
+                        name: 'Altitude', id: seriesID.altitude, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.altitude]), visible: false, type: 'line', zIndex: 96
                     });
 
                     yAxisOptions.push({
@@ -3236,7 +3264,7 @@
 
                     seriesData[seriesID.temperature] = FITUtil.combine(rawData, rawData.record.temperature, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.temperature);
 
-                    seriesSetup.push({ name: 'Temperature', id: seriesID.temperature, yAxis: yAxisNr++, data: seriesData[seriesID.temperature], visible: false, type: 'line', zIndex: 95 });
+                    seriesSetup.push({ name: 'Temperature', id: seriesID.temperature, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.temperature]), visible: false, type: 'line', zIndex: 95 });
 
                     yAxisOptions.push({
                         gridLineWidth: 0,
@@ -3251,13 +3279,11 @@
 
             function prepareSpeedVSHR()
             {
-                seriesData[seriesID.speedVSHR] = FITUtil.combineTwo(speedSeriesData, seriesData[seriesID.HR]);
+                seriesData[seriesID.speedVSHR] = FITUtil.combineTwo(seriesData[seriesID.speed], seriesData[seriesID.HR]);
                 if (seriesData[seriesID.speedVSHR])
                     seriesSetup.push({ name: 'Speed vs HR', id: seriesID.speedVSHR, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[seriesID.speedVSHR], type: 'scatter', visible: false, zIndex: 94 });
 
             }
-
-          
 
             if (rawData.record) {
                 prepareHRSeries();
