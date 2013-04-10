@@ -795,19 +795,28 @@
                     <!-- /ko -->
 
                     <!-- ko if: total_distance().length > 0 -->
-                     <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
-                      <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedSession()].toFixed(0)"></span>
+                         
+                        <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
+
+                        <!-- ko if:  total_distance()[selectedSession()] < 1000 -->
+                            <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[selectedSession()].toFixed(0)+' m'"></span>
+                        <!-- /ko -->
+
+                         <!-- ko if:  total_distance()[selectedSession()] >= 1000 -->
+                            <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance()[selectedSession()]/1000).toFixed(2)+' km'"></span>
+                         <!-- /ko -->
+
                     <!-- /ko -->
 
                     <!-- ko if: typeof num_laps !== "undefined" && num_laps().length > 0 && num_laps()[selectedSession()] >= 0 -->
-                    <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
+                        <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
                         <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>
                     <!-- /ko -->
 
                     <!-- SPEED -->
 
                     <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
-                    <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
+                        <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
                     <!-- /ko -->
 
 
@@ -1323,7 +1332,7 @@
                                                 <!-- /ko -->
 
                                                 <!-- ko if: total_distance[$index()] > 0 && total_distance[$index()] > 1000 -->
-                                                <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()] / 1000).toFixed(1) + ' km'"></span>
+                                                <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()] / 1000).toFixed(2) + ' km'"></span>
                                                 <!-- /ko -->
                                                 <!-- /ko -->
 
