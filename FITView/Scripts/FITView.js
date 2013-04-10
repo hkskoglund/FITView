@@ -2622,10 +2622,14 @@
 
                      if (((lap.avg_cadence && lap.avg_cadence.length > 0) || (lap.max_cadence && lap.max_cadence.length > 0) || (lap.total_cycles_strides && lap.total_cycles_strides.length > 0))) {
 
+                        var cadence = "cadence";
+                        if (sport === FITSport.running) 
+                          cadence = "Strides";
+
                          yAxisOptions.push({
                              gridLineWidth: 1,
                              title: {
-                                 text: 'Cadence'
+                                 text: cadence;
                              },
                              showEmpty: false
                          });
@@ -2861,9 +2865,11 @@
                          });
 
                      if (lap.total_cycles_strides && lap.total_cycles_strides.length > 0) 
-                         
+                         var cycles_strides_name = "Cycles";
+                         if (sport === FITSport.running)
+                              cycles_strides_name = 'Strides';
                          seriesSetup.push({
-                             name: "Strides/Cycles", id: seriesID.LAP_total_cycles_strides, xAxis: 0, yAxis: YAxis.Cadence, data: lap.total_cycles_strides, type: 'column', visible: false, zIndex: 1,
+                             name: cycles_strides_name, id: seriesID.LAP_total_cycles_strides, xAxis: 0, yAxis: YAxis.Cadence, data: lap.total_cycles_strides, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
                                  enabled: true
                              }
