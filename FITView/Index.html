@@ -875,7 +875,13 @@
                 <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
                 <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
                 <!-- /ko -->
-                
+
+                 <!-- HRV/RR -->
+
+                <!-- ko if: typeof (rawData.hrv) !== "undefined" && typeof (rawData.hrv.time) !== "undefined" && rawData.hrv.time.length > 0 -->
+                    <img class="inlineIcon" alt="HRV" title="HRV - heart rate variability. RR-interval data. Time in ms. between each heartbeat. It varies with expiration/inspiration." src="Images/hrv.png" />
+                    <span data-bind="text: rawData.hrv.time.length, attr: { title: 'Contains ' + rawData.hrv.time.length + ' heart rate variability measurements' } "></span>
+                <!-- /ko -->
 
                 <!-- ko if: total_calories()[selectedSession()] > 0 || total_fat_calories()[selectedSession()] > 0-->
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
@@ -1336,7 +1342,8 @@
 
                                                 <!-- ko with: $parents[2] -->
                                                 <!-- ko if: typeof (hrv) !== "undefined" && typeof (hrv.time) !== "undefined" && hrv.time.length > 0 -->
-                                                HRV (<span data-bind="text: hrv.time.length,attr: { title: 'Contains ' + hrv.time.length + ' heart rate variability measurements' } "></span>)
+                                                 <img class="inlineIcon" alt="HRV" title="HRV - heart rate variability. RR-interval data. Time in ms. between each heartbeat. It varies with expiration/inspiration." src="Images/hrv.png" />
+                                                 <span data-bind="text: hrv.time.length,attr: { title: 'Contains ' + hrv.time.length + ' heart rate variability measurements' } "></span>
                                                 <!-- /ko -->
                                                 <!-- /ko -->
 

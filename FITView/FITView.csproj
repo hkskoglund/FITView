@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
+    <Content Include="Images\hrv.png" />
     <Content Include="Images\number_of_laps.png" />
     <Content Include="Images\cadence.png" />
     <Content Include="Images\ascent.png" />
