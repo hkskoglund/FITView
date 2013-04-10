@@ -2622,14 +2622,14 @@
 
                      if (((lap.avg_cadence && lap.avg_cadence.length > 0) || (lap.max_cadence && lap.max_cadence.length > 0) || (lap.total_cycles_strides && lap.total_cycles_strides.length > 0))) {
 
-                        var cadence = "cadence";
+                        var cadence = "Cadence";
                         if (sport === FITSport.running) 
                           cadence = "Strides";
 
                          yAxisOptions.push({
                              gridLineWidth: 1,
                              title: {
-                                 text: cadence;
+                                 text: cadence
                              },
                              showEmpty: false
                          });
