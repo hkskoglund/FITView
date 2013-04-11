@@ -3096,8 +3096,18 @@
                return mapped;
             }
 
+            function hasHRdata() {
+                if (rawData.record.heart_rate && rawData.record.heart_rate.length > 0)
+                    return true;
+                else
+                    return false;
+            }
+
             function prepareHRSeries() {
-                if (rawData.record.heart_rate) {
+                if (!hasHRdata()) {
+                    self.loggMessage("info", "No HR data available in rawdata");
+                    return;
+                }
                     seriesData[seriesID.HR] = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.HR);
                     heartRateYAxisNr = yAxisNr;
 
@@ -3119,13 +3129,24 @@
                         showEmpty: false
 
                     });
-                }
+                
+            }
+
+            function hasSpeedData() {
+                if (rawData.record.speed && rawData.record.speed.length > 0)
+                    return true;
+                else
+                    return false;
             }
 
             function prepareSpeedSeries() {
                 self.masterVM.speedMode(undefined);
 
-                if (rawData.record.speed) {
+                if (!hasSpeedData()) 
+                {
+                    self.loggMessage("info", "No speed data available in rawdata");
+                    return;
+                }
 
 
                     if (self.masterVM.settingsVM.forceSpeedKMprH())
@@ -3149,7 +3170,7 @@
                    
                     speedYAxisNr = yAxisNr;
 
-                    seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.speed]), type: 'spline', visible: !FITUtil.hasGPSData(rawData), zIndex: 99 });
+                    seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.speed]), type: 'spline', visible: !FITUtil.hasGPSData(rawData) || !hasHRdata(), zIndex: 99 });
 
                     yAxisOptions.push({
                         id : yAxisID.speed,
@@ -3162,7 +3183,7 @@
                         reversed: self.masterVM.speedMode() === 1 // for min/km let y axis be inverted/reversed
 
                     });
-                }
+                
             }
 
             function prepareSpeedAvgSeries() {
@@ -3311,7 +3332,7 @@
 
             function avg_hrv(lookBack, startMeasurementNr, lookForward) {
                 var len = rawData.hrv.time.length;
-                var timeNr;
+                var timeNr;hasHR
                 var sum,n;
 
                 var max = startMeasurementNr+lookForward+1;
