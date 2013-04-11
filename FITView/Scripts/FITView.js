@@ -2594,7 +2594,7 @@
                          yAxisOptions.push({
                              gridLineWidth: 1,
                              title: {
-                                 text: 'Timer time'
+                                 text: 'Time'
                              },
                              labels : {
                                  enabled : false
@@ -2864,16 +2864,17 @@
                              }
                          });
 
-                     if (lap.total_cycles_strides && lap.total_cycles_strides.length > 0) 
+                     if (lap.total_cycles_strides && lap.total_cycles_strides.length > 0) {
                          var cycles_strides_name = "Cycles";
                          if (sport === FITSport.running)
-                              cycles_strides_name = 'Strides';
+                             cycles_strides_name = 'Strides';
                          seriesSetup.push({
                              name: cycles_strides_name, id: seriesID.LAP_total_cycles_strides, xAxis: 0, yAxis: YAxis.Cadence, data: lap.total_cycles_strides, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
                                  enabled: true
                              }
                          });
+                     }
 
                      if (lap.max_cadence && lap.max_cadence.length > 0)
                          seriesSetup.push({
