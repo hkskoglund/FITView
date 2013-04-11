@@ -3497,95 +3497,98 @@
             //function getTimestampAndTE(item, index, arr) {
             //    return [item[0], item[1].TE];
             //}
+
+            var TEdata = self.masterVM.TEVM.TEhistory.map(self.getTimestampAndTE);
             
-            seriesSetup.push({
-                name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: self.masterVM.TEVM.TEhistory.map(self.getTimestampAndTE), visible: false, type: 'column', pointWidth: 5,
-                events: {
-                    // http://jsfiddle.net/jlbriggs/kqHzr/
-                    // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
+            if (TEdata.length > 0) {
+                seriesSetup.push({
+                    name: 'TE', id: seriesID.TE, xAxis: 4, yAxis: yAxisNr++, data: TEdata, visible: false, type: 'column', pointWidth: 5,
+                    events: {
+                        // http://jsfiddle.net/jlbriggs/kqHzr/
+                        // http://jsfiddle.net/gh/get/jquery/1.7.2/highslide-software/highcharts.com/tree/master/samples/highcharts/members/axis-addplotband/
 
-                    legendItemClick: function  () {
-                        
-                        var yaxis = this.chart.get(yAxisID.TE);
-                        var TEseries = this.chart.get(seriesID.TE);
-                        if (this.name === 'TE') {
-                            if (this.visible === false) { // Transition to visible series
-                                //yaxis.setExtremes(1, 5, true, false);
-                                //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
-                                TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(self.getTimestampAndTE));
-                                
+                        legendItemClick: function () {
 
-                                if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
-                                    yaxis.addPlotBand({ // mark high intensity
-                                        color: '#CC0000',
-                                        from: 4.0,
-                                        to: 5.0,
-                                        id: 'plot-band-TE-4.0-5.0'
-                                    });
+                            var yaxis = this.chart.get(yAxisID.TE);
+                            //var TEseries = this.chart.get(seriesID.TE);
+                            if (this.name === 'TE') {
+                                if (this.visible === false) { // Transition to visible series
+                                    //yaxis.setExtremes(1, 5, true, false);
+                                    //// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/sort
+                                    TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(self.getTimestampAndTE));
 
-                                    yaxis.addPlotBand({ // mark low intensity
-                                        color: '#336600',
-                                        from: 1.0,
-                                        to: 2.0,
-                                        id: 'plot-band-TE-1.0-2.0'
-                                    });
+
+                                    if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
+                                        yaxis.addPlotBand({ // mark high intensity
+                                            color: '#CC0000',
+                                            from: 4.0,
+                                            to: 5.0,
+                                            id: 'plot-band-TE-4.0-5.0'
+                                        });
+
+                                        yaxis.addPlotBand({ // mark low intensity
+                                            color: '#336600',
+                                            from: 1.0,
+                                            to: 2.0,
+                                            id: 'plot-band-TE-1.0-2.0'
+                                        });
+                                    }
+
+                                }
+                                else {
+
+                                    if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
+                                        yaxis.removePlotBand('plot-band-TE-4.0-5.0');
+                                        yaxis.removePlotBand('plot-band-TE-1.0-2.0');
+                                    }
                                 }
 
                             }
-                            else {
-                             
-                                if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
-                                    yaxis.removePlotBand('plot-band-TE-4.0-5.0');
-                                    yaxis.removePlotBand('plot-band-TE-1.0-2.0');
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        align: 'left',
+                        formatter: function () {
+                            var len = self.masterVM.TEVM.TEhistory.length;
+                            var item;
+                            var total_elapsed_time, total_calories;
+
+                            // Search for total_elasped_time
+                            for (item = 0; item < len; item++) {
+                                if (this.x === self.masterVM.TEVM.TEhistory[item][0]) {
+                                    total_elapsed_time = self.masterVM.TEVM.TEhistory[item][1].total_elapsed_time;
+                                    total_calories = self.masterVM.TEVM.TEhistory[item][1].total_calories;
+                                    break;
                                 }
                             }
-
+                            return '<b>' + this.y + '</b><br/>' + FITViewUIConverter.formatToHHMMSS(total_elapsed_time) + '<br/>' + total_calories;
                         }
                     }
-                },
-                dataLabels: {
-                    enabled: true,
-                    align: 'left',
-                    formatter: function () {
-                        var len = self.masterVM.TEVM.TEhistory.length;
-                        var item;
-                        var total_elapsed_time, total_calories;
+                });
 
-                        // Search for total_elasped_time
-                        for (item = 0; item < len; item++) {
-                            if (this.x === self.masterVM.TEVM.TEhistory[item][0]) {
-                                total_elapsed_time = self.masterVM.TEVM.TEhistory[item][1].total_elapsed_time;
-                                total_calories = self.masterVM.TEVM.TEhistory[item][1].total_calories;
-                                break;
-                            }
-                        }
-                            return '<b>'+this.y+'</b><br/>'+ FITViewUIConverter.formatToHHMMSS(total_elapsed_time)+'<br/>'+total_calories;
-                    }
-                }
-            });
+                yAxisOptions.push({
 
-            yAxisOptions.push({
+                    gridLineWidth: 0,
 
-                gridLineWidth: 0,
+                    opposite: true,
 
-                opposite: true,
+                    title: {
+                        text: 'Training Effect'
+                    },
 
-                title: {
-                    text: 'Training Effect'
-                },
+                    // Both min/max specified -> will force axis labels ON, even when showEmpty is false?? bug?
+                    // https://github.com/highslide-software/highcharts.com/issues/705
+                    //min: 1.0,
+                    //max: 5.0,
+                    min: 1.0,
 
-                // Both min/max specified -> will force axis labels ON, even when showEmpty is false?? bug?
-                // https://github.com/highslide-software/highcharts.com/issues/705
-                //min: 1.0,
-                //max: 5.0,
-                min : 1.0,
+                    showEmpty: false,
 
-                showEmpty: false,
+                    id: yAxisID.TE
 
-                id : yAxisID.TE
-                
-            });
-
+                });
+            }
       
            
             
