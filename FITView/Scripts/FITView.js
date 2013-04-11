@@ -1641,6 +1641,7 @@
             var timezoneDiff = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
             var startTimestamp, endTimestamp;
             var xAxis;
+            var reverseYAxis;
 
             var updatePoint = function (data, property, converter) {
                 for (var pointNr = 0; pointNr < data.length; pointNr++)
@@ -1648,7 +1649,7 @@
 
             };
 
-            localStorage.forceRunSpeedToKMprH = forceSpeedKMprH;
+            
 
             if (self.multiChart) {
                 speedSeries = self.multiChart.get(seriesID.speed);
@@ -1667,16 +1668,14 @@
                 lapMaxSpeedSeries = self.lapChart.get(seriesID.LAP_max_speed);
             }
 
-            if (speedSeries) {
-                if (forceSpeedKMprH) {
-                   
-                    speedYAxis.update({
-                        reversed: false
-                    });
+            localStorage.forceRunSpeedToKMprH = forceSpeedKMprH;
 
-                    self.masterVM.previousSpeedMode = self.masterVM.speedMode();
-                    self.masterVM.previousSpeedData = speedSeries.data;
-                    self.masterVM.previousSpeedAvgData = speedAvgSeries.data;
+            if (speedSeries) {
+
+                if (forceSpeedKMprH) {
+
+                    reverseYAxis = false;
+
 
                     speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
 
@@ -1690,16 +1689,19 @@
                     if (self.masterVM.settingsVM.requestAveragingOnSpeed())
                         speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
 
-                    self.masterVM.speedMode(2);
+                    self.masterVM.speedMode(FITSport.cycling);
 
                 } else {
-                    self.masterVM.speedMode(self.masterVM.previousSpeedMode);
+                    // Fallback to current speed mode for current sport on the session
 
-                    if (self.masterVM.previousSpeedMode === FITSport.running) // Running 
+                    var currentSession = self.masterVM.sessionVM.selectedSession();
+                    var currentSport = rawData.session.sport[currentSession];
+
+                    self.masterVM.speedMode(currentSport);
+
+                    if (currentSport === FITSport.running) // Running -> convert to min/km
                     {
-                        speedYAxis.update({
-                            reversed: true
-                        });
+                        reverseYAxis = true;
 
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedseries');
 
@@ -1709,13 +1711,11 @@
                             if (typeof self.lapChart !== "undefined")
                                 self.lapChart.redraw();
                         }
+
                         if (self.masterVM.settingsVM.requestAveragingOnSpeed)
                             speedAvgSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToMinPrKM, 'speedavgseries', true, self.masterVM.settingsVM.averageSampleTime());
                     } else {
-
-                        speedYAxis.update({
-                            reversed: false
-                        });
+                        reverseYAxis = false;
 
                         speedSeriesData = FITUtil.combine(rawData, rawData.record.speed, rawData.record.timestamp, startTimestamp, endTimestamp, FITViewUIConverter.convertSpeedToKMprH, 'speedseries');
 
@@ -1746,6 +1746,11 @@
                 }
 
                 speedSeries.setData(speedSeriesData, true);
+
+                speedYAxis.update({
+                    reversed: reverseYAxis
+                });
+
                 if (self.masterVM.settingsVM.requestAveragingOnSpeed())
                     speedAvgSeries.setData(speedAvgSeriesData, true);
             }
