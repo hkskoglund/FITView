@@ -4,7 +4,10 @@
 (function () {
     "use strict";
 
+
     var self,
+
+       seriesData = [], // Actual data in multiChart
 
        xAxisID = {
         lap: 'lapxAxis',
@@ -1658,8 +1661,11 @@
                 xAxis = self.multiChart.get(xAxisID.rawdata);
                 var speedYAxis = self.multiChart.get(yAxisID.speed);
 
-                startTimestamp = xAxis.min - timezoneDiff;
-                endTimestamp = xAxis.max - timezoneDiff;
+                //startTimestamp = xAxis.min - timezoneDiff;
+                //endTimestamp = xAxis.max - timezoneDiff;
+                startTimestamp = rawData.record.timestamp[0];
+                var timestampLen = rawData.record.timestamp.length;
+                endTimestamp = rawData.record.timestamp[timestampLen - 1];
 
             }
 
@@ -1745,7 +1751,13 @@
                     self.masterVM.settingsVM.showEvents(true);
                 }
 
-                speedSeries.setData(speedSeriesData, true);
+                speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
+
+                if (self.hasHRdata(rawData)) {
+                    var speedVSHRSeries = self.multiChart.get(seriesID.speedVSHR);
+                    var combineSpeedVSHR = FITUtil.combineTwo(speedSeriesData, seriesData[seriesID.HR]);
+                    speedVSHRSeries.setData(combineSpeedVSHR, !self.masterVM.settingsVM.requestAveragingOnSpeed())
+                }
 
                 speedYAxis.update({
                     reversed: reverseYAxis
@@ -3047,6 +3059,13 @@
              });
          },
 
+         hasHRdata : function (rawData) {
+             if (rawData.record.heart_rate && rawData.record.heart_rate.length > 0)
+                 return true;
+             else
+                 return false;
+         },
+
         // Handles display of measurements in several graphs with multiple axis
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
@@ -3060,7 +3079,7 @@
             divChart.style.visibility = "visible";
 
             var seriesSetup = []; // Options name,id
-            var seriesData = []; // Actual data in chart
+          
            
           
             var speedSeriesData;
@@ -3102,15 +3121,10 @@
                return mapped;
             }
 
-            function hasHRdata() {
-                if (rawData.record.heart_rate && rawData.record.heart_rate.length > 0)
-                    return true;
-                else
-                    return false;
-            }
+           
 
             function prepareHRSeries() {
-                if (!hasHRdata()) {
+                if (!self.hasHRdata(rawData)) {
                     self.loggMessage("info", "No HR data available in rawdata");
                     return;
                 }
@@ -3176,7 +3190,7 @@
                    
                     speedYAxisNr = yAxisNr;
 
-                    seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.speed]), type: 'spline', visible: !FITUtil.hasGPSData(rawData) || !hasHRdata(), zIndex: 99 });
+                    seriesSetup.push({ name: 'Speed', id: seriesID.speed, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.speed]), type: 'spline', visible: !FITUtil.hasGPSData(rawData) || !self.hasHRdata(rawData), zIndex: 99 });
 
                     yAxisOptions.push({
                         id : yAxisID.speed,
