@@ -39,6 +39,7 @@
         altitude: 'altitudeSeries',
         temperature: 'temperatureSeries',
         speedVSHR: 'speedVSHRSeries',
+        distance: 'distanceSeries',
         hrv: 'HRVSeries',
         weeklyCalories: 'weeklyCaloriesSeries',
         weeklyCaloriesError: 'weeklyCaloriesErrorSeries',
@@ -3324,6 +3325,27 @@
                 }
             }
 
+            function prepareDistanceSeries() {
+                if (rawData.record.distance && rawData.record.distance.length > 0) {
+
+                    seriesData[seriesID.distance] = FITUtil.combine(rawData, rawData.record.distance, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.distance);
+
+                    seriesSetup.push({
+                        name: 'Distance', id: seriesID.distance, yAxis: yAxisNr++, data: stripOffUndefinedValues(seriesData[seriesID.distance]), visible: false, type: 'area', zIndex: 93,
+                        
+                    });
+
+                    yAxisOptions.push({
+                        gridLineWidth: 0,
+                        opposite: true,
+                        title: {
+                            text: 'Distance'
+                        },
+                        showEmpty: false
+                    });
+                }
+            }
+
             function prepareSpeedVSHR()
             {
                 seriesData[seriesID.speedVSHR] = FITUtil.combineTwo(seriesData[seriesID.speed], seriesData[seriesID.HR]);
@@ -3331,6 +3353,7 @@
                     seriesSetup.push({ name: 'Speed vs HR', id: seriesID.speedVSHR, xAxis: 2, yAxis: heartRateYAxisNr, data: seriesData[seriesID.speedVSHR], type: 'scatter', visible: false, zIndex: 94 });
 
             }
+
 
             if (rawData.record) {
                 prepareHRSeries();
@@ -3341,6 +3364,7 @@
                 prepareCadenceSeries();
                 prepareTemperatureSeries();
                 prepareSpeedVSHR();
+                prepareDistanceSeries();
             }
 
             self.setTickPositionsForLapsAndEvents(rawData, startTimestamp, endTimestamp, sport);
@@ -4061,8 +4085,21 @@
 
                         }
 
+                    },
+
+
+                    area: {
+                        marker: {
+                            enabled: false,
+                            symbol: 'circle',
+                            radius: 2,
+                            states: {
+                                hover: {
+                                    enabled: true
+                                }
+                            }
+                        }
                     }
-                    
                 },
 
                 series: seriesSetup
