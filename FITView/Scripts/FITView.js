@@ -1786,13 +1786,15 @@
             var lapNr;
             var len;
 
-            function getPlotLineConfiguration(dashStyleArg,lapLabelArg,value) {
+            function getPlotLineConfiguration(dashStyleArg, lapLabelArg, value, color) {
+                var useColor =  color || 'lightgray';
+
                 return {
                     id: 'plotLines', // + lapNr.toString(), - having the same id allows removal of all lines at once 
 
                     dashStyle: dashStyleArg,
                     //color: '#960000',
-                    color: 'lightgray',
+                    color: useColor,
                     width: 1,
                     label: {
 
@@ -1888,11 +1890,13 @@
                                 switch (ev_type) {
 
                                     case event_type.start: // Should we plot the first START or not?
+                                        axis.addPlotLine(getPlotLineConfiguration('Solid', null, FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]), 'green'));
+                                        break;
                                     case event_type.stop:
                                     case event_type.stop_all:
                                     case event_type.stop_disable:
                                     case event_type.stop_disable_all:
-                                        axis.addPlotLine(getPlotLineConfiguration('Solid',null,FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr])));
+                                        axis.addPlotLine(getPlotLineConfiguration('Solid',null,FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]), 'red'));
                                         break;
 
                                 }
@@ -4086,7 +4090,6 @@
                         }
 
                     },
-
 
                     area: {
                         marker: {
