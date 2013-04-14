@@ -65,7 +65,8 @@
         LAP_total_timer_time: 'LAP_total_timer_time',
         RRiRRi1: 'RRiRRi1',
         RMSSD: 'RMSSD',
-        derivativeHR: 'derivativeHRSeries'
+        derivativeHR: 'derivativeHRSeries',
+        derivativeSpeed: 'derivativeSpeedSeries'
 
     },
     
@@ -3236,6 +3237,37 @@
                     return false;
             }
 
+            function preparederivativeSpeedSeries() {
+                if (!hasSpeedData()) {
+                    self.loggMessage("info", "No speed data available in rawdata");
+                    return;
+                }
+
+                seriesData[seriesID.derivativeSpeed] = FITUtil.combine(rawData, stripOffUndefinedValues(getDerivativeSeries("speed")), rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.derivativeSpeed);
+
+
+                seriesSetup.push({
+
+                    id: seriesID.derivativeSpeed,
+                    name: 'Accel.',
+                    yAxis: yAxisNr++,
+                    type: 'line',
+                    data: stripOffUndefinedValues(seriesData[seriesID.derivativeSpeed]),
+                    zIndex: 100,
+                    visible: false
+                });
+
+                yAxisOptions.push({
+                    gridLineWidth: 1,
+                    title: {
+                        text: 'Acceleration (m/s^2)'
+                    },
+                    showEmpty: false
+
+                });
+
+            }
+
             function prepareSpeedSeries() {
                 self.masterVM.speedMode(undefined);
 
@@ -3441,7 +3473,8 @@
                 prepareTemperatureSeries();
                 prepareSpeedVSHR();
                 prepareDistanceSeries();
-                preparederivativeHRSeries();
+               // preparederivativeHRSeries();
+               // preparederivativeSpeedSeries();
             }
 
             self.setTickPositionsForLapsAndEvents(rawData, startTimestamp, endTimestamp, sport);
