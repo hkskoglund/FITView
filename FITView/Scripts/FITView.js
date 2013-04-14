@@ -64,7 +64,8 @@
         LAP_total_elapsed_time: 'LAP_total_elapsed_time',
         LAP_total_timer_time: 'LAP_total_timer_time',
         RRiRRi1: 'RRiRRi1',
-        RMSSD: 'RMSSD'
+        RMSSD: 'RMSSD',
+        derivativeHR: 'derivativeHRSeries'
 
     },
     
@@ -3126,6 +3127,47 @@
                return mapped;
             }
 
+            // Used for experimentation of HR accelleration/deaccelearation - any effect on fitness? and maybe speed accelerations
+            function getDerivativeSeries(property)
+            {
+                var derivativeSeries = [],
+                    deltaTime,
+                    deltaProperty,
+                    derivative;
+                
+
+                if (typeof rawData.record[property] === "undefined" || rawData.record[property].length <= 0) {
+                    self.loggMessage("warn", "Cannot calculate derivative of property : " + property);
+                    return undefined;
+                }
+
+                if (typeof rawData.record.timestamp === "undefined" || rawData.record.timestamp.length <= 0) {
+                    self.loggMessage("warn", "Cannot calculate derivative due to missing timestamps for property : " + property);
+                    return undefined;
+                }
+
+                var timestampsLen = rawData.record.timestamp.length;
+
+                for (var timestampNr = 0; timestampNr < timestampsLen - 1; timestampNr++) {
+                    deltaProperty = rawData.record[property][timestampNr + 1] - rawData.record[property][timestampNr];
+                    deltaTime = (rawData.record.timestamp[timestampNr + 1] - rawData.record.timestamp[timestampNr])/1000; // In secs. please
+                    if (typeof deltaProperty !== "number") {
+                        self.loggMessage("warn", "Deltaproperty is not a number");
+                        continue;
+                    }
+                    if (typeof deltaTime !== "number") {
+                        self.loggMessage("warn", "Deltatime is not a number");
+                        continue;
+                    }
+
+                    derivative = deltaProperty / deltaTime;
+
+                    derivativeSeries[timestampNr+1] = derivative; // Can get undefined in array now...
+
+                }
+
+                return derivativeSeries;
+            }
            
 
             function prepareHRSeries() {
@@ -3155,6 +3197,36 @@
 
                     });
                 
+            }
+
+            function preparederivativeHRSeries() {
+                if (!self.hasHRdata(rawData)) {
+                    self.loggMessage("info", "No HR data available in rawdata");
+                    return;
+                }
+                seriesData[seriesID.derivativeHR] = FITUtil.combine(rawData, stripOffUndefinedValues(getDerivativeSeries("heart_rate")), rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.derivativeHR);
+              
+
+                seriesSetup.push({
+
+                    id: seriesID.derivativeHR,
+                    name: 'HR accel.',
+                    yAxis: yAxisNr++,
+                    type: 'line',
+                    data: stripOffUndefinedValues(seriesData[seriesID.derivativeHR]),
+                    zIndex: 100,
+                    visible : false
+                });
+
+                yAxisOptions.push({
+                    gridLineWidth: 1,
+                    title: {
+                        text: 'HR accel. (beat/s)'
+                    },
+                    showEmpty: false
+
+                });
+
             }
 
             function hasSpeedData() {
@@ -3369,6 +3441,7 @@
                 prepareTemperatureSeries();
                 prepareSpeedVSHR();
                 prepareDistanceSeries();
+                preparederivativeHRSeries();
             }
 
             self.setTickPositionsForLapsAndEvents(rawData, startTimestamp, endTimestamp, sport);
