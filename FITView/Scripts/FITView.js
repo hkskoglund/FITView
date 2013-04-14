@@ -1753,12 +1753,12 @@
                     self.masterVM.settingsVM.showEvents(true);
                 }
 
-                speedSeries.setData(speedSeriesData, !self.masterVM.settingsVM.requestAveragingOnSpeed());
+                speedSeries.setData(speedSeriesData, true);
 
                 if (self.hasHRdata(rawData)) {
                     var speedVSHRSeries = self.multiChart.get(seriesID.speedVSHR);
                     var combineSpeedVSHR = FITUtil.combineTwo(speedSeriesData, seriesData[seriesID.HR]);
-                    speedVSHRSeries.setData(combineSpeedVSHR, !self.masterVM.settingsVM.requestAveragingOnSpeed())
+                    speedVSHRSeries.setData(combineSpeedVSHR, true)
                 }
 
                 speedYAxis.update({
