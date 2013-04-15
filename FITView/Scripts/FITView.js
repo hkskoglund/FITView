@@ -797,6 +797,7 @@
                 appHostname: ko.observable(window.location.hostname),
                 GCJSESSIONID: ko.observable(localStorage.GCJSESSIONID),
                 GCBIGipServer: ko.observable(localStorage.GCBIGipServer),
+                GCauthtoken: ko.observable(localStorage.GCauthtoken),
                 liveImage: ko.observable(localStorage.liveImage),
                 hasWebNotification : ko.observable(undefined),
                 notificationPermission: function () {
@@ -1144,6 +1145,7 @@
         {
             var jsessionID = localStorage.GCJSESSIONID;
             var BIGipServer = localStorage.GCBIGipServer; // Node at GC
+            var authtoken = localStorage.GCauthtoken;
 
             var activityId = rawdata.garminConnect.activity.activityId;
             //var nodeServer = 'nodejsgc.hkskoglund.c9.io';
@@ -1180,7 +1182,12 @@
             };
 
             xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer }));
+           
+            if (typeof authtoken === "undefined" || authtoken.length === 0)
+                xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer }));
+            else
+                xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer, "org.jboss.seam.security.authtoken" : authtoken }));
+        
         },
 
         sendGCsessionCredentials : function (callback)
@@ -1225,6 +1232,7 @@
             var nodeServer = self.chooseNodeServer();
             var jsessionID = localStorage.GCJSESSIONID;
             var BIGipServer = localStorage.GCBIGipServer; // Node at GC
+            var authtoken = localStorage.GCauthtoken; // If auto-login mode
 
 
             var xhr = new XMLHttpRequest();
@@ -1261,7 +1269,10 @@
             };
 
             xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer }));
+            if (typeof authtoken === "undefined" || authtoken.length === 0)
+                xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer }));
+            else
+                xhr.send(JSON.stringify({ "JSESSIONID": jsessionID, "BIGipServerconnect.garmin.com.80.pool": BIGipServer, "authtoken": authtoken }));
            
         },
 
@@ -1426,6 +1437,10 @@
                localStorage.GCBIGipServer = BIGipServer;
             });
 
+            this.masterVM.settingsVM.GCauthtoken.subscribe(function (authtoken)
+            {
+                localStorage.GCauthtoken = authtoken;
+            });
             
 
             // http://stackoverflow.com/questions/11177565/knockoutjs-checkbox-changed-event
