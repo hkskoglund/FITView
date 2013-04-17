@@ -5239,7 +5239,7 @@
                 self.showTemporaryNotification({
                     title: 'No settings found',
                     icon: '/Images/error.png',
-                    body: 'Please import setting FIT file ./Sports/*-ANTFS-3-{0|1|2}.FIT'
+                    body: 'Please import setting FIT file ./Sports/*.FIT'
                 });
                 return;
             }
@@ -5254,7 +5254,7 @@
                 self.showTemporaryNotification({
                     title: 'No settings found',
                     icon: '/Images/error.png',
-                    body: 'Please import setting FIT file ./Settings/*-ANTFS-2.FIT'
+                    body: 'Please import setting FIT file ./Settings/*.FIT'
                 });
             } else {
                 if (typeof mySettings.user_profile.resting_heart_rate && mySettings.user_profile.resting_heart_rate.length >= 1)
