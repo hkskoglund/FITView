@@ -5219,6 +5219,7 @@
 
             var divChartId = 'zonesChart';
             var divChart = document.getElementById(divChartId);
+            $('#zonesChart').hide();
 
             if (FITUtil.isUndefined(rawdata.record)) {
                 self.loggMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
@@ -5227,7 +5228,7 @@
 
             if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
                 self.loggMessage("warn","No HR data found, skipping HR Zones chart");
-                //$('#zonesChart').hide();
+                
                 return;
             }
 
@@ -5242,6 +5243,8 @@
                 });
                 return;
             }
+
+            $('#zonesChart').show();
 
             var mySettings = self.getSettings();
             var restingHR;
