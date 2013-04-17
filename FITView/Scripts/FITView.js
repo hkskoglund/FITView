@@ -5248,7 +5248,7 @@
 
             var mySettings = self.getSettings();
             var restingHR;
-            if (typeof mySportSettings === "undefined") {
+            if (typeof mySettings === "undefined") {
                 self.loggMessage("warn", "No settings found");
                 // Problem : Why isnt it visible?
                 self.showTemporaryNotification({
