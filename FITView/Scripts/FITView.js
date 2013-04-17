@@ -5272,7 +5272,7 @@
                     backgroundColor: 'transparent',
                     spacingLeft:0,
                     spacingBottom: 0,
-                    spacingTop:7
+                    spacingTop:0
                 },
                 title: {
                     text: ''
@@ -5331,7 +5331,7 @@
                 },
                 plotOptions: {
                     bar: {
-                        pointWidth: 7,
+                        //pointWidth: 7,
                         stacking: 'normal'
                         //dataLabels: {
                         //    enabled: false,
@@ -5422,6 +5422,7 @@
                                 break;
                                 // Unfortunatly resting HR is found in the user profile settings - easier if it was available in sport setting
                             case hr_zone_calc.percent_hrr:
+                                // http://fellrnr.com/wiki/Heart_Rate_Reserve
                                 hry = (hry-restingHR) / (maximumHR-minimumHR) * 100;
                                 break;
                             default:
