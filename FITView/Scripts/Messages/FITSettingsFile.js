@@ -27,7 +27,7 @@ FIT.SettingsFileMessage = function () {
         13: { "property": "speed_setting" },
         14: { "property": "dist_setting" },
         16: { "property": "power_setting" },
-        17: { "property": "activity_class" },
+        17: { "property": "activity_class", scale : 10 }, // Got 70 for 7 ac and 90 for 9 ac without scaling...
         18: { "property": "position_setting" },
         21: { "property": "temperature_setting" },
         22: { "property": "local_id" },
