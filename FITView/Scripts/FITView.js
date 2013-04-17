@@ -5888,30 +5888,27 @@
             self.copyHeaderInfoToViewModel(rawData);
 
             // From profile.xls
-            var 
+            var
 
              sportSetting = {
-                hr_zone: rawData.hr_zone,
-                met_zone: rawData.met_zone,
-                power_zone: rawData.power_zone,
-                speed_zone: rawData.speed_zone,
-                sport: rawData.sport,
-                zones_target: rawData.zones_target
-            },
+                 hr_zone: rawData.hr_zone,
+                 met_zone: rawData.met_zone,
+                 power_zone: rawData.power_zone,
+                 speed_zone: rawData.speed_zone,
+                 sport: rawData.sport,
+                 zones_target: rawData.zones_target
+             },
 
             toJSON = JSON.stringify(sportSetting);
-
+                
             localStorage["sportsetting" + sportSetting.sport.sport[0]] = toJSON;
             self.loggMessage("info", "Saved sport settings to local storage" + toJSON);
 
             self.showTemporaryNotification({
-                title: 'Imported SPORT settings file ',
+                title: 'Imported ' + sportSetting.sport.name + ' settings file ',
                 icon: '/Images/document-import.png',
-                body: JSON.stringify(sportSetting.hr_zone)
-            });
-
-            // rawData.hr_zone
-            // "{"name":["HR Zone 0","HR Zone 1","HR Zone 2","HR Zone 3","HR Zone 4","HR Zone 5"],"message_index":[0,1,2,3,4,5],"high_bpm":[106,140,150,159,171,177]}"
+                body: (sportSetting.hr_zone === undefined) ? 'No HR zones defined' : JSON.stringify(sportSetting.hr_zone)
+            },true);
 
         },
 
@@ -5939,7 +5936,7 @@
                 title: 'Imported settings file',
                 icon: '/Images/document-import.png',
                 body: JSON.stringify(setting.user_profile)
-            });
+            },true);
 
         },
 
@@ -6264,7 +6261,7 @@
                 self.masterVM.headerInfoVM.estimatedFitFileSize(headerInfo.estimatedFitFileSize);
         },
 
-        showTemporaryNotification: function (options) {
+        showTemporaryNotification: function (options,permanent) {
             var nw;
 
             function onShowCallback() {
@@ -6279,11 +6276,11 @@
             if (self.hasWebNotification()) {
                 nw = new window.Notification(options.title, {
                     body: options.body,
-                icon : options.icon});
-                nw.addEventListener("show",onShowCallback, false);
+                    icon: options.icon
+                });
+                if (typeof permanent === "undefined" || !permanent )
+                    nw.addEventListener("show", onShowCallback, false);
             }
-
-            
         },
 
         setMapImage : function(rawData)
