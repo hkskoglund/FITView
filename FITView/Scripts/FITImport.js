@@ -1,7 +1,7 @@
 ﻿// JSHint options
 /* global indexedDB:true, FITCRCTimestampUtility:true, importScripts:true, FIT:true, FileReaderSync:true, self:true */
 // NB!  self = dedicatedWorkerContext automatically set in the global namespace
-importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITActivityFile.js', '/Scripts/Messages/FITSportSetting.js', 'FITCRCTimestampUtility.js');
+importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITActivityFile.js', '/Scripts/Messages/FITSportSetting.js', '/Scripts/Messages/FITSettingsFile.js', 'FITCRCTimestampUtility.js');
 
 (
  function () {
@@ -142,7 +142,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              FILEID: 0,
              FILE_CREATOR: 49,
 
-             // Activity messages
+             // Activity messages - type 4
              SESSION: 18,
              LAP: 19,
              RECORD: 20,
@@ -153,16 +153,24 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              DEVICE_INFO: 23,
              LENGTH: 101,
 
-             // Sport setting messages
+             // Sport setting messages - type 3
 
              ZONES_TARGET: 7,
              HR_ZONE: 8,
              POWER_ZONE: 9,
              MET_ZONE: 10,
              SPORT: 12,
-             SPEED_ZONE: 53
+             SPEED_ZONE: 53,
              // Where is cadence_zone ? Is it implemented in FIT?
 
+             // Settings file - type 2 
+
+             DEVICE_SETTINGS : 2,
+             USER_PROFILE: 3,
+             HRM_PROFILE: 4,
+             SDM_PROFILE:5,
+             BIKE_PROFILE: 6
+             
          };
 
          // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
@@ -1063,6 +1071,21 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  };
                                  break;
 
+                                 // Settings file messages
+
+                             case GLOBAL_FIT_MSG.DEVICE_SETTINGS:
+                             case GLOBAL_FIT_MSG.SDM_PROFILE:
+                             case GLOBAL_FIT_MSG.HRM_PROFILE:
+                             case GLOBAL_FIT_MSG.BIKE_PROFILE:
+                             case GLOBAL_FIT_MSG.USER_PROFILE:
+                                 msg[prop] = {
+                                     value: rec.content[field].value,
+                                     unit: unit,
+                                     scale: scale,
+                                     offset: offset
+                                 };
+                                 break;
+
                              default:
                                  loggMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
                                  break;
@@ -1178,6 +1201,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var fitActivity = FIT.ActivityFile();
              var fitCommonMsg = FIT.CommonMessage();
              var fitSportMsg = FIT.SportSettingMessage();
+             var fitSettingMsg = FIT.SettingsFileMessage();
 
              var message = { properties: undefined };
 
@@ -1243,6 +1267,29 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  case "met_zone":
                      message.properties = fitSportMsg.met_zone();
                      break;
+
+                     // Settings file messages
+
+                 case "device_settings":
+                     message.properties = fitSettingMsg.device_settings();
+                     break;
+
+                 case "user_profile":
+                     message.properties = fitSettingMsg.user_profile();
+                     break;
+
+                 case "hrm_profile":
+                     message.properties = fitSettingMsg.hrm_profile();
+                     break;
+
+                 case "sdm_profile":
+                     message.properties = fitSettingMsg.sdm_profile();
+                     break;
+
+                 case "bike_profile":
+                     message.properties = fitSettingMsg.bike_profile();
+                     break;
+                 
 
                  default:
                      loggMessage({ response: "error", data: "No message properties found, global message type : " + globalMessageType });

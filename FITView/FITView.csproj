@@ -151,6 +151,7 @@
     <Content Include="Scripts\lib\knockout.mapping-latest.debug.js" />
     <Content Include="Scripts\lib\knockout.mapping-latest.js" />
     <Content Include="Scripts\lib\modernizr-2.6.2.js" />
+    <Content Include="Scripts\Messages\FITSettingsFile.js" />
     <Content Include="Snippets\LapDetails.html" />
     <Content Include="Snippets\LapView.html" />
     <Content Include="Snippets\loadchart.html" />

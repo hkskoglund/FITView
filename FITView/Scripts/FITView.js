@@ -141,14 +141,25 @@
         end_all_depreciated: 7,
         stop_disable: 8,
         stop_disable_all: 9
-    },
+     },
 
+     hr_zone_calc = {
+         custom: 0,
+         percent_max_hr: 1,
+         percent_hrr: 2
+     },
+
+    pwr_zone_calc = {
+        custom: 0,
+        percent_ftp: 1
+    },
 
      FITFileType = {
 
-        sportsettingfile : 3,
-        activityfile : 4
-    },
+         settingfile: 2,
+         sportsettingfile: 3,
+         activityfile: 4
+     },
 
      FITUtil =
         {
@@ -1583,7 +1594,7 @@
                         strokeWeight: 1
                     }, "session");
 
-                self.showHRZones(VM.rawData, start_time, timestamp);
+                self.showHRZones(VM.rawData, start_time, timestamp, sport);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
@@ -1628,7 +1639,7 @@
                     strokeWeight: 2
                 }, "lap");
 
-                self.showHRZones(VM.rawData, start_time, timestamp);
+                self.showHRZones(VM.rawData, start_time, timestamp, sport);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
             };
@@ -3949,7 +3960,7 @@
                                 //console.log("afterSetExtremes xAxis in multiChart min, max =  ", event.min, event.max);
                                 var startTimestampUTC = Math.round(event.min) - timezoneDiff;
                                 var endTimestampUTC = Math.round(event.max) - timezoneDiff;
-                                self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC);
+                                self.showHRZones(allRawdata, startTimestampUTC, endTimestampUTC,sport);
                             }
                         }
 
@@ -5195,7 +5206,7 @@
 
         },
 
-        showHRZones: function (rawdata, startTimestamp, endTimestamp) {
+        showHRZones: function (rawdata, startTimestamp, endTimestamp, sport) {
 
             //if (typeof (destroy) !== "undefined") {
             //    if (destroy) {
@@ -5220,6 +5231,32 @@
                 return;
             }
 
+            var mySportSettings = self.getSportSetting(sport);
+            if (typeof mySportSettings === "undefined") {
+                self.loggMessage("warn", "No settings found for sport " + sport);
+                // Problem : Why isnt it visible?
+                self.showTemporaryNotification({
+                    title: 'No settings found',
+                    icon: '/Images/error.png',
+                    body: 'Please import setting FIT file ./Sports/*-ANTFS-3-{0|1|2}.FIT'
+                });
+                return;
+            }
+
+            var mySettings = self.getSettings();
+            var restingHR;
+            if (typeof mySportSettings === "undefined") {
+                self.loggMessage("warn", "No settings found");
+                // Problem : Why isnt it visible?
+                self.showTemporaryNotification({
+                    title: 'No settings found',
+                    icon: '/Images/error.png',
+                    body: 'Please import setting FIT file ./Settings/*-ANTFS-2.FIT'
+                });
+            } else
+                restingHR = mySettings.user_profile.resting_heart_rate[0];
+
+            
             //$('#zonesChart').show();
 
             if (self.HRZonesChart)
@@ -5315,17 +5352,28 @@
                 //}]
             };
 
-            var myZones = getHRZones();
+           
+                
 
             var startIndex = FITUtil.getIndexOfTimestamp(rawdata.record, startTimestamp);
             var endIndex = FITUtil.getIndexOfTimestamp(rawdata.record, endTimestamp);
+
             self.loggMessage("log","Basing HR zone chart on start_time UTC :", new Date(startTimestamp), " at index ", startIndex, "on rawdata.record, and timestamp UTC :", new Date(endTimestamp), " at index: ", endIndex);
 
-            for (var zone = 0; zone < myZones.length; zone++)
-                myZones[zone].timeInZone = 0;
+            var len = mySportSettings.hr_zone.high_bpm.length;
+
+            mySportSettings.hr_zone.timeInZone = [];
+
+            for (var zone = 0; zone < len; zone++)
+                mySportSettings.hr_zone.timeInZone[zone] = 0;
 
             var timeInZoneMillisec;
             var maxTimeDifference = 60000;
+            var hry;
+            var maxHR, minHR;
+
+            var maximumHR = mySportSettings.zones_target.max_heart_rate[0];
+           
 
             for (var datap = startIndex; datap <= endIndex; datap++) {
 
@@ -5348,9 +5396,6 @@
                 } else if (datap === endIndex)
                     timeInZoneMillisec = 1000;
 
-
-                var hry;
-
                 // if (rawdata.record.heart_rate !== undefined)
                 hry = rawdata.record.heart_rate[datap];
                 //else
@@ -5360,32 +5405,60 @@
                     self.loggMessage("error","Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
                 else {
                     // Count Heart rate data points in zone
-                    for (zone = 0; zone < myZones.length; zone++)
-                        if (hry <= myZones[zone].max && hry >= myZones[zone].min) {
+                    for (zone = 0; zone < len; zone++) {
+                        maxHR = mySportSettings.hr_zone.high_bpm[zone];
+                        if (zone == 0)
+                            minHR = 0;
+                        else
+                            minHR = mySportSettings.hr_zone.high_bpm[zone-1];
 
-                            myZones[zone].timeInZone += timeInZoneMillisec;
+                        // Scale hry according to preferred calculation method of HR zone (custom,%ofmax, maybe %hr reserve)
+                        switch (mySportSettings.zones_target.hr_calc_type[0]) {
+                            case hr_zone_calc.custom:
+                                hry = hry;
+                                break;
+                            case hr_zone_calc.percent_max_hr:
+                                hry = hrv / maximumHR * 100;
+                                break;
+                                // Unfortunatly resting HR is found in the user profile settings - easier if it was available in sport setting
+                            case hr_zone_calc.percent_hrr:
+                                hry = (hry-restingHR) / (maximumHR-minimumHR) * 100;
+                                break;
+                            default:
+                                self.loggMessage("error", "Did not find calculation method (custom/%max/%hrr) for heart rate zone calculation");
+                                self.showTemporaryNotification({
+                                    title: 'No HR zone calculation method found',
+                                    icon: '/Images/error.png',
+                                    body: 'Did not find calculation method (custom/%max/%hrr) for heart rate zone calculation'
+                                });
+                                break;
+                        }
+
+                        if (hry <= maxHR && hry >= minHR) {
+
+                            mySportSettings.hr_zone.timeInZone[zone] += timeInZoneMillisec;  // Assume constant HR in timeInZoneMillisec interval..may get a slight error here...
+                            break;
                             //    console.log("HR ", hry, " time in zone", timeInZone, " zone ", zone, " total time (ms) ", myZones[zone].timeInZone);
                         }
+                    }
                 }
             }
 
             options.series = [];
 
-            var timeInSecs;
-            for (var catNr = myZones.length - 1; catNr >= 0; catNr--) {
+            var timeInMinutes;
+            for (var catNr = len - 1; catNr >= 0; catNr--) {
 
                 // s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
                 // timeInSecs = parseFloat(((myZones[catNr].timeInZone) / 60000).toFixed(1));
 
-                timeInSecs = myZones[catNr].timeInZone / 60000;
+                timeInMinutes = mySportSettings.hr_zone.timeInZone[catNr] / (60*1000);
 
                 options.series.push({
-                    name: myZones[catNr].name,
-                    data: [timeInSecs]
+                    name: mySportSettings.hr_zone.name[catNr],
+                    data: [timeInMinutes]
                 });
             }
-
-            
 
             self.HRZonesChart = new Highcharts.Chart(options);
         },
@@ -5792,19 +5865,58 @@
             self.copyHeaderInfoToViewModel(rawData);
 
             // From profile.xls
-            var hr_zone_calc = {
-                custom: 0,
-                percent_max_hr: 1,
-                percent_hrr: 2
-            };
+            var 
 
-            var pwr_zone_calc = {
-                custom: 0,
-                percent_ftp: 1
-            };
+             sportSetting = {
+                hr_zone: rawData.hr_zone,
+                met_zone: rawData.met_zone,
+                power_zone: rawData.power_zone,
+                speed_zone: rawData.speed_zone,
+                sport: rawData.sport,
+                zones_target: rawData.zones_target
+            },
+
+            toJSON = JSON.stringify(sportSetting);
+
+            localStorage["sportsetting" + sportSetting.sport.sport[0]] = toJSON;
+            self.loggMessage("info", "Saved sport settings to local storage" + toJSON);
+
+            self.showTemporaryNotification({
+                title: 'Imported SPORT settings file ',
+                icon: '/Images/document-import.png',
+                body: JSON.stringify(sportSetting.hr_zone)
+            });
 
             // rawData.hr_zone
             // "{"name":["HR Zone 0","HR Zone 1","HR Zone 2","HR Zone 3","HR Zone 4","HR Zone 5"],"message_index":[0,1,2,3,4,5],"high_bpm":[106,140,150,159,171,177]}"
+
+        },
+
+         // Handles a  setting file - user profile, bike profile etc.
+        processSettingFile: function (rawData) {
+
+            self.copyHeaderInfoToViewModel(rawData);
+
+            var 
+
+             setting = {
+                 device_settings: rawData.device_settings,
+                 user_profile: rawData.user_profile,
+                 hrm_profile: rawData.hrm_profile,
+                 sdm_profile: rawData.sdm_profile,
+                 bike_profile: rawData.bike_profile
+             },
+
+            toJSON = JSON.stringify(setting);
+
+            localStorage["setting"] = toJSON;
+            self.loggMessage("info", "Saved settings to local storage" + toJSON);
+
+            self.showTemporaryNotification({
+                title: 'Imported settings file',
+                icon: '/Images/document-import.png',
+                body: JSON.stringify(setting.user_profile)
+            });
 
         },
 
@@ -6036,7 +6148,7 @@
             //   $('#activityMap').show();
 
             var destroy = true;
-            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0]);
+            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
             self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0], destroy);
 
            
@@ -6421,7 +6533,7 @@
                             //    body: rawData._headerInfo_.fitFile.name
                             //});
 
-                            self.loggMessage("info", "Processing an activity file");
+                            self.loggMessage("info", "Processing an activity file - type 4");
 
                             self.setMapImage(rawData);
                             
@@ -6456,14 +6568,14 @@
                             // Sport settings (HR zones)
 
                         case FITFileType.sportsettingfile:
-
-                            //self.showTemporaryNotification({
-                            //    title: 'Imported sport settings file',
-                            //    icon: '/Images/document-import.png',
-                            //    body: rawData._headerInfo_.fitFile.name
-                            //});
-                            self.loggMessage("info","Processing a sport settings file");
+                           
+                            self.loggMessage("info","Processing a sport settings file - type 3");
                             self.processSportSettingFile(rawData);
+                            break;
+
+                        case FITFileType.settingfile:
+                            self.loggMessage("info", "Processing a settings file - type 2");
+                            self.processSettingFile(rawData);
                             break;
 
                         default:
@@ -6682,6 +6794,43 @@
 
                 self.divMsgMap.insertAdjacentHTML("beforeend", '<div class=' + styleClass + '></div>');
             });
+        },
+
+        getSportSetting: function (sport) {
+            // Assume browser supports localStorage
+            var localStorage = window.localStorage;
+            var key = "sportsetting" + sport;
+            var myZonesJSONString = localStorage.getItem(key);
+
+            var myZones;
+            if (myZonesJSONString !== null)
+                myZones = JSON.parse(myZonesJSONString);
+            else {
+                self.loggMessage("info", "Local storage of " + key + " not found");
+                //myZones = [{ name: 'Zone 1', min: 106, max: 140 },   // No storage found use default
+                //         { name: 'Zone 2', min: 141, max: 150 },
+                //         { name: 'Zone 3', min: 151, max: 159 },
+                //         { name: 'Zone 4', min: 160, max: 170 },
+                //         { name: 'Zone 5', min: 171, max: 256 }];
+            }
+
+            return myZones;
+        },
+
+        getSettings: function () {
+            // Assume browser supports localStorage
+            var localStorage = window.localStorage;
+            var key = "setting";
+            var mySettingsJSONString = localStorage.getItem(key);
+
+            var mySettings;
+            if (mySettingsJSONString !== null)
+                mySettings = JSON.parse(mySettingsJSONString);
+            else {
+                self.loggMessage("info", "Local storage of " + key + " not found");
+            }
+
+            return mySettings;
         }
     };
 
@@ -6721,26 +6870,7 @@
 
     }
 
-    function getHRZones() {
-        // Assume browser supports localStorage
-        var localStorage = window.localStorage;
-        var key = "FITView.HRZones";
-        var myZonesJSONString = localStorage.getItem(key);
-
-        var myZones;
-        if (myZonesJSONString !== null)
-            myZones = JSON.parse(myZonesJSONString);
-        else {
-            self.loggMessage("info","Local storage of " + key + " not found, using default HR Zones");
-            myZones = [{ name: 'Zone 1', min: 106, max: 140 },   // No storage found use default
-                     { name: 'Zone 2', min: 141, max: 150 },
-                     { name: 'Zone 3', min: 151, max: 159 },
-                     { name: 'Zone 4', min: 160, max: 170 },
-                     { name: 'Zone 5', min: 171, max: 256 }];
-        }
-
-        return myZones;
-    }
+    
 
 })
 
