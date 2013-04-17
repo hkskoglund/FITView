@@ -5275,12 +5275,17 @@
                     backgroundColor: 'transparent',
                     spacingLeft:0,
                     spacingBottom: 0,
-                    spacingTop:0
+                    spacingTop: 0
+                   // margin: [0, 0, 0, 0]
                 },
                 title: {
                     text: ''
                 },
                 xAxis: {
+                    // http://stackoverflow.com/questions/10877927/hide-axis-and-gridlines-highcharts
+                    lineWidth: 0,
+                    minorGridLineWidth: 0,
+                    lineColor: 'transparent',
                     labels:
                             {
                                 enabled: false
@@ -5326,7 +5331,8 @@
                 },
                 tooltip: {
                     formatter: function () {
-                        return this.series.name + ': ' + FITViewUIConverter.formatToHHMMSS(this.y*60);
+                        return this.series.name + ': ' + FITViewUIConverter.formatToHHMMSS(this.y * 60);
+                           
                     }
                     //positioner: function () {
                     //    return { x: 50, y: 0 };
