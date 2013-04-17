@@ -5256,8 +5256,9 @@
                     icon: '/Images/error.png',
                     body: 'Please import setting FIT file ./Settings/*-ANTFS-2.FIT'
                 });
-            } else
-                restingHR = mySettings.user_profile.resting_heart_rate[0];
+            } else {
+                if (typeof mySettings.user_profile.resting_heart_rate && mySettings.user_profile.resting_heart_rate.length >= 1)
+                 restingHR = mySettings.user_profile.resting_heart_rate[0];
 
             
             //$('#zonesChart').show();
