@@ -5335,11 +5335,24 @@
                 plotOptions: {
                     bar: {
                         //pointWidth: 7,
-                        stacking: 'normal'
-                        //dataLabels: {
-                        //    enabled: false,
-                        //    color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
-                        //}
+                        stacking: 'normal',
+                        dataLabels: {
+                            enabled: true,
+                            formatter: function () {
+
+                                if (this.point.shapeArgs.height < 50) // Don't show labels if not available space
+                                    return "";
+
+                                if (this.y === 0)
+                                    return "";
+                                else
+                                  return FITViewUIConverter.formatToHHMMSS(this.y * 60);
+                            },
+                            style: {
+                                fontWeight: 'bold',
+                                //color: 'black'
+                            }
+                        }
                     }
                 }
                 //,
