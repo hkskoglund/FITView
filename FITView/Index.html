@@ -804,7 +804,7 @@
                               <!-- /ko -->
                         </li>
 
-                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a title="Heart Rate Monitor" href="#"><img class="inlineIcon" src ="Images/deviceinfo/HRM.jpg" /></a>
+                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a title="Heart Rate Monitor in FIT settings" href="#"><img class="inlineIcon" src ="Images/deviceinfo/HRM.jpg" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined" -->
                             <!-- ko with: FITSetting().hrm_profile -->
                             <ul>
@@ -848,7 +848,7 @@
                               <!-- /ko -->
                         </li>
 
-                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a title="Speed Distance Monitor" href="#"><img class="inlineIcon" src ="Images/deviceinfo/garmin/footpod.jpg" /></a>
+                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a title="Speed Distance Monitor in FIT settings" href="#"><img class="inlineIcon" src ="Images/deviceinfo/garmin/footpod.jpg" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined" -->
                                 <!-- ko with: FITSetting().sdm_profile -->
                                      <ul>
@@ -914,7 +914,7 @@
                             <!-- /ko -->
                         </li>
 
-                    <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" href="#"></a>
+                    <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" href="#">Zones</a>
                         
                         <!-- ko if: typeof FITSportSetting() !== "undefined" -->
 
@@ -936,6 +936,7 @@
                                     </li>
                                 <!-- /ko -->
 
+                                <!-- MAYBE: Include MET zones -->
 
                                 <!-- ko if: typeof power_zone !== "undefined" && typeof power_zone.high_value !== "undefined" -->
                                     <li><a href="#">
@@ -949,7 +950,7 @@
 
                         <!-- /ko -->
                         
-                        </li>
+                    </li>
                     
 
                     <!-- /ko -->
