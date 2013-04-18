@@ -46,7 +46,7 @@ FIT.SettingsFileMessage = function () {
         254: { "property": "message_index" },
         0: { "property": "enabled" },
         1: { "property": "sdm_ant_id" },
-        2: { "property": "sdm_cal_factor", unit : "%", scale :10 },
+        2: { "property": "sdm_cal_factor", unit : "%", scale : 10 },
         3: { "property": "odometer", unit: "m", scale: 100 },
         4: { "property": "speed_source" }, // Footpod or GPS
         5: { "property": "sdm_ant_id_trans_type" }

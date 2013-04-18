@@ -727,7 +727,7 @@
 
                      <!-- ko with: settingsVM -->
 
-                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined"'><a href="#">User profile</a>
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined"'><a title="User profile in FIT settings" href="#"><img src="Images/user-silhouette.png" class="inlineIcon" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined" -->
                             <!-- ko with: FITSetting().user_profile -->
                             <ul>
@@ -804,7 +804,7 @@
                               <!-- /ko -->
                         </li>
 
-                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a href="#">HRM profile</a>
+                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a title="Heart Rate Monitor" href="#"><img class="inlineIcon" src ="Images/deviceinfo/HRM.jpg" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined" -->
                             <!-- ko with: FITSetting().hrm_profile -->
                             <ul>
@@ -848,7 +848,7 @@
                               <!-- /ko -->
                         </li>
 
-                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a href="#">SDM profile</a>
+                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a title="Speed Distance Monitor" href="#"><img class="inlineIcon" src ="Images/deviceinfo/garmin/footpod.jpg" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined" -->
                                 <!-- ko with: FITSetting().sdm_profile -->
                                      <ul>
@@ -888,7 +888,8 @@
                                 <!-- ko if: typeof sdm_cal_factor !== "undefined" && typeof sdm_cal_factor[0] !== "undefined" -->
                                 <li><a href="#">
                                     <label>SDM cal. factor: </label>
-                                    <span data-bind="text: sdm_cal_factor[0]" />
+                                    <span data-bind="text: (sdm_cal_factor[0]/100)*1000" />
+                                    <!-- By default scale factor is in %, on 910XT 100% = scale fator of 1000 -->
                                     </a>
                                 </li>
                                  <!-- /ko -->
@@ -896,7 +897,13 @@
                                 <!-- ko if: typeof speed_source !== "undefined" && typeof speed_source[0] !== "undefined" -->
                                 <li><a href="#">
                                     <label>Speed source: </label>
-                                    <span data-bind="text: speed_source[0]" />
+                                    <!--<span data-bind="text: speed_source[0]" />-->
+                                     <!-- ko if: speed_source[0] === 1 -->
+                                    <span>Footpod</span>
+                                    <!-- /ko -->
+                                    <!-- ko if: speed_source[0] === 0 -->
+                                    <span>GPS</span>
+                                     <!-- /ko -->
                                     </a>
                                 </li>
                                  <!-- /ko -->
@@ -907,16 +914,33 @@
                             <!-- /ko -->
                         </li>
 
-                    <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a href="#">HR Zones</a>
+                    <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" href="#"></a>
                         
                         <!-- ko if: typeof FITSportSetting() !== "undefined" -->
 
                             <ul data-bind="foreach: FITSportSetting()">
 
+                                <!-- ko if: typeof speed_zone !== "undefined" && typeof speed_zone.high_value !== "undefined" -->
+                                    <li><a href="#">
+                                        <label data-bind ="text: 'Speed-' + sport.name[0] + ': '"></label>
+                                        <span data-bind="text: JSON.stringify(speed_zone.high_value)" />
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
                                 <!-- ko if: typeof hr_zone !== "undefined" && typeof hr_zone.high_bpm !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: sport.name[0]+': '"></label>
+                                        <label data-bind ="text: 'HR-'+sport.name[0]+': '"></label>
                                         <span data-bind="text: JSON.stringify(hr_zone.high_bpm)" />
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
+
+                                <!-- ko if: typeof power_zone !== "undefined" && typeof power_zone.high_value !== "undefined" -->
+                                    <li><a href="#">
+                                        <label data-bind ="text: 'Power-' + sport.name[0] + ': '"></label>
+                                        <span data-bind="text: JSON.stringify(power_zone.high_value)" />
                                     </a>
                                     </li>
                                 <!-- /ko -->

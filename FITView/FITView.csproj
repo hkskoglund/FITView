@@ -126,6 +126,7 @@
     <Content Include="Images\laptrigger\distance.png" />
     <Content Include="Images\laptrigger\manual.png" />
     <Content Include="Images\sport\generic.png" />
+    <Content Include="Images\user-silhouette.png" />
     <Content Include="Images\watt.png" />
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
