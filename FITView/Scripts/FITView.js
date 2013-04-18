@@ -1295,6 +1295,46 @@
 
             self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
 
+            self.masterVM.settingsVM.FITSetting = self.getSettings();
+            if (typeof self.masterVM.settingsVM.FITSetting === "undefined") {
+                self.loggMessage("warn", "No settings found");
+                self.showTemporaryNotification({
+                    title: 'No settings found',
+                    icon: '/Images/error.png',
+                    body: 'Please import setting FIT file ./Settings/*.FIT'
+                });
+            }
+
+            self.masterVM.settingsVM.FITSportSetting = {};
+
+            function setSportSetting(sport) {
+                self.masterVM.settingsVM.FITSportSetting[sport] = self.getSportSetting(sport);
+                if (typeof self.masterVM.settingsVM.FITSportSetting[sport] === "undefined") {
+                    self.loggMessage("warn", "No settings (i.e HR zones) found for sport " + sport);
+                    var sportStr;
+
+                    switch (sport) {
+                        case FITSport.generic: sportStr = "Other"; break;
+                        case FITSport.running: sportStr = "Running"; break;
+                        case FITSport.cycling: sportStr = "Cycling"; break;
+                        default: sportStr = 'unknown sport ' + sport; break;
+                    }
+
+                    self.showTemporaryNotification({
+                        title: 'No settings (i.e HR zones) found for sport '+sportStr,
+                        icon: '/Images/error.png',
+                        body: 'Please import setting FIT file ./Sports/*.FIT'
+                    });
+                  
+                }
+            }
+
+            setSportSetting(FITSport.generic);
+            setSportSetting(FITSport.running);
+            setSportSetting(FITSport.cycling);
+            //setSportSetting(FITSport.swimming);
+            
+
             function checkOnlineStatus() {
                 self.masterVM.settingsVM.networkStatus(navigator.onLine);
             }
@@ -5208,15 +5248,6 @@
 
         showHRZones: function (rawdata, startTimestamp, endTimestamp, sport) {
 
-            //if (typeof (destroy) !== "undefined") {
-            //    if (destroy) {
-            //        if (self.HRZonesChart) {
-            //            self.HRZonesChart.destroy();
-            //            self.HRZonesChart = undefined;
-            //        }
-            //    }
-            //}
-
             var divChartId = 'zonesChart';
             var divChart = document.getElementById(divChartId);
             $('#zonesChart').hide();
@@ -5232,41 +5263,34 @@
                 return;
             }
 
-            var mySportSettings = self.getSportSetting(sport);
+            if (typeof self.masterVM.settingsVM.FITSportSetting !== "undefined")
+                var mySportSettings = self.masterVM.settingsVM.FITSportSetting[sport];
+            else {
+                self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
+                return;
+            }
+
             if (typeof mySportSettings === "undefined") {
-                self.loggMessage("warn", "No settings found for sport " + sport);
-                // Problem : Why isnt it visible?
-                self.showTemporaryNotification({
-                    title: 'No settings found',
-                    icon: '/Images/error.png',
-                    body: 'Please import setting FIT file ./Sports/*.FIT'
-                });
+                self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
                 return;
             }
 
             $('#zonesChart').show();
 
-            var mySettings = self.getSettings();
+            var mySettings = self.masterVM.settingsVM.FITSetting;
             var restingHR;
-            if (typeof mySettings === "undefined") {
-                self.loggMessage("warn", "No settings found");
-                // Problem : Why isnt it visible?
-                self.showTemporaryNotification({
-                    title: 'No settings found',
-                    icon: '/Images/error.png',
-                    body: 'Please import setting FIT file ./Settings/*.FIT'
-                });
-            } else 
-                if (typeof mySettings.user_profile.resting_heart_rate !== "undefined" && mySettings.user_profile.resting_heart_rate.length >= 1)
-                 restingHR = mySettings.user_profile.resting_heart_rate[0];
 
+            if (typeof mySetting !== "undefined" && typeof mySettings.user_profile !== "undefined" && typeof mySettings.user_profile.resting_heart_rate !== "undefined" && mySettings.user_profile.resting_heart_rate.length >= 1)
+                restingHR = mySettings.user_profile.resting_heart_rate[0];
+            else {
+                self.loggMessage("warn", "Did not find resting heart rate in user profile (from ./Settings/*.FIT), used to calculate HRR  - heart rate reserve. Setting default resting HR to 60");
+                restingHR = 60; // Default fallback
+            }
             
             //$('#zonesChart').show();
 
             if (self.HRZonesChart)
                 self.HRZonesChart.destroy();
-
-            
 
             // http://highcharts.com/demo/column-stacked
             var options = {
@@ -5446,6 +5470,7 @@
                                 // Unfortunatly resting HR is found in the user profile settings - easier if it was available in sport setting
                             case hr_zone_calc.percent_hrr:
                                 // http://fellrnr.com/wiki/Heart_Rate_Reserve
+                               
                                 hry = (hry-restingHR) / (maximumHR-minimumHR) * 100;
                                 break;
                             default:
