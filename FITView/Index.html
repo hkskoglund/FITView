@@ -722,6 +722,212 @@
                         </ul>
 
                     </li>
+                     <!-- /ko -->
+
+
+                     <!-- ko with: settingsVM -->
+
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined"'><a href="#">User profile</a>
+                            <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined" -->
+                            <!-- ko with: FITSetting().user_profile -->
+                            <ul>
+
+                                <!-- ko if: typeof friendly_name !== "undefined" && typeof friendly_name[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Name: </label>
+                                    <span data-bind="text: friendly_name[0]" />
+
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof weight !== "undefined" && typeof weight[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Weight: </label>
+                                    <span data-bind="text: weight[0]" />
+
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof gender !== "undefined" && typeof gender[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Gender: </label>
+                                    <!-- ko if: gender[0] === 1 -->
+                                    <span>Male</span>
+                                    <!-- /ko -->
+                                    <!-- ko if: gender[0] === 0 -->
+                                    <span>Female</span>
+                                    <!-- /ko -->
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof age !== "undefined" && typeof age[0] !== "undefined" -->
+                                 <li><a href="#">
+                                    <label>Age: </label>
+                                    <span data-bind="text: age[0]" />
+
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof height !== "undefined" && typeof height[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Height: </label>
+                                    <span data-bind="text: height[0]" />
+
+                                </a>
+                                </li>
+                                <!-- /ko -->
+
+                                 <!-- ko if: typeof resting_heart_rate !== "undefined" && typeof resting_heart_rate[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Resting heart rate: </label>
+                                    <span data-bind="text: resting_heart_rate[0]" />
+
+                                </a>
+                                </li>
+                                <!-- /ko -->
+
+                                <!-- ko if: typeof activity_class !== "undefined" && typeof activity_class[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label title="Firstbeat activity class">Activity class:</label>
+                                    <span data-bind="text: activity_class[0]" />
+                                </a>
+                                </li>
+                                <!-- /ko -->
+
+
+                            </ul>
+                            <!-- /ko -->
+                              <!-- /ko -->
+                        </li>
+
+                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a href="#">HRM profile</a>
+                            <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined" -->
+                            <!-- ko with: FITSetting().hrm_profile -->
+                            <ul>
+
+                                <!-- ko if: typeof hrm_ant_id !== "undefined" && typeof hrm_ant_id[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>ANT id: </label>
+                                    <span data-bind="text: hrm_ant_id[0]" />
+
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof hrm_ant_id_trans_type !== "undefined" && typeof hrm_ant_id_trans_type[0] !== "undefined" -->
+                                 <li><a href="#">
+                                    <label>ANT id trans. type: </label>
+                                    <span data-bind="text: hrm_ant_id_trans_type[0]" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof enabled !== "undefined" && typeof enabled[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Enabled: </label>
+                                     <input type="checkbox" data-bind="checked: enabled[0]" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof log_hrv !== "undefined" && typeof log_hrv[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Log HRV: </label>
+                                     <input type="checkbox" data-bind="checked: log_hrv[0]" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+
+                            </ul>
+                            <!-- /ko -->
+                              <!-- /ko -->
+                        </li>
+
+                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a href="#">SDM profile</a>
+                            <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined" -->
+                                <!-- ko with: FITSetting().sdm_profile -->
+                                     <ul>
+
+                                <!-- ko if: typeof sdm_ant_id !== "undefined" && typeof sdm_ant_id[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>ANT id: </label>
+                                    <span data-bind="text: sdm_ant_id[0]" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof sdm_ant_id_trans_type !== "undefined" && typeof sdm_ant_id_trans_type[0] !== "undefined" -->
+                                 <li><a href="#">
+                                    <label>ANT id trans. type: </label>
+                                    <span data-bind="text: sdm_ant_id_trans_type[0]" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof enabled !== "undefined" && typeof enabled[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Enabled: </label>
+                                     <input type="checkbox" data-bind="checked: enabled[0]" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof odometer !== "undefined" && typeof odometer[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Odometer: </label>
+                                       <span data-bind="text: odometer[0]" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof sdm_cal_factor !== "undefined" && typeof sdm_cal_factor[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>SDM cal. factor: </label>
+                                    <span data-bind="text: sdm_cal_factor[0]" />
+                                    </a>
+                                </li>
+                                 <!-- /ko -->
+
+                                <!-- ko if: typeof speed_source !== "undefined" && typeof speed_source[0] !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Speed source: </label>
+                                    <span data-bind="text: speed_source[0]" />
+                                    </a>
+                                </li>
+                                 <!-- /ko -->
+
+
+                            </ul>
+                                <!-- /ko -->
+                            <!-- /ko -->
+                        </li>
+
+                    <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a href="#">HR Zones</a>
+                        
+                        <!-- ko if: typeof FITSportSetting() !== "undefined" -->
+
+                            <ul data-bind="foreach: FITSportSetting()">
+
+                                <!-- ko if: typeof hr_zone !== "undefined" && typeof hr_zone.high_bpm !== "undefined" -->
+                                    <li><a href="#">
+                                        <label data-bind ="text: sport.name[0]+': '"></label>
+                                        <span data-bind="text: JSON.stringify(hr_zone.high_bpm)" />
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
+                            </ul>
+
+                        <!-- /ko -->
+                        
+                        </li>
+                    
+
                     <!-- /ko -->
                     
                     <!--<li>-->
@@ -750,7 +956,7 @@
                 
             </nav>
 
-            <!-- <div data-bind="text: ko.toJSON($root.activityVM)"></div>-->
+            <div data-bind="text: ko.toJSON($root.settingsVM)"></div>
 
             
 

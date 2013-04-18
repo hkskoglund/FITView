@@ -1295,8 +1295,9 @@
 
             self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
 
-            self.masterVM.settingsVM.FITSetting = self.getSettings();
-            if (typeof self.masterVM.settingsVM.FITSetting === "undefined") {
+            self.masterVM.settingsVM.FITSetting = ko.observable(undefined);
+            self.masterVM.settingsVM.FITSetting(self.getSettings());
+            if (typeof self.masterVM.settingsVM.FITSetting() === "undefined") {
                 self.loggMessage("warn", "No settings found");
                 self.showTemporaryNotification({
                     title: 'No settings found',
@@ -1305,21 +1306,32 @@
                 });
             }
 
-            self.masterVM.settingsVM.FITSportSetting = {};
+            self.masterVM.settingsVM.FITSportSetting = ko.observableArray();
 
             function setSportSetting(sport) {
-                self.masterVM.settingsVM.FITSportSetting[sport] = self.getSportSetting(sport);
-                if (typeof self.masterVM.settingsVM.FITSportSetting[sport] === "undefined") {
+
+                var sportStr, sportSetting;
+               
+                sportSetting = self.getSportSetting(sport);
+                if (typeof sportSetting !== "undefined")
+                    self.masterVM.settingsVM.FITSportSetting.push(sportSetting);
+
+                switch (sport) {
+                    case FITSport.generic: 
+                        sportStr = "Other";
+                        break;
+                    case FITSport.running:
+                       sportStr = "Running";
+                        break;
+                    case FITSport.cycling:
+                         sportStr = "Cycling";
+                        break;
+                    default: sportStr = 'unknown sport ' + sport; break;
+                }
+                
+                if (typeof sportSetting === "undefined") {
                     self.loggMessage("warn", "No settings (i.e HR zones) found for sport " + sport);
-                    var sportStr;
-
-                    switch (sport) {
-                        case FITSport.generic: sportStr = "Other"; break;
-                        case FITSport.running: sportStr = "Running"; break;
-                        case FITSport.cycling: sportStr = "Cycling"; break;
-                        default: sportStr = 'unknown sport ' + sport; break;
-                    }
-
+                   
                     self.showTemporaryNotification({
                         title: 'No settings (i.e HR zones) found for sport '+sportStr,
                         icon: '/Images/error.png',
@@ -5263,8 +5275,21 @@
                 return;
             }
 
-            if (typeof self.masterVM.settingsVM.FITSportSetting !== "undefined")
-                var mySportSettings = self.masterVM.settingsVM.FITSportSetting[sport];
+            // http://www.knockmeout.net/2011/04/utility-functions-in-knockoutjs.html
+            // http://stackoverflow.com/questions/6926155/how-to-use-indexof-in-knockoutjs
+
+            var search;
+            switch (sport) {
+                case 0: search = "other"; break;
+                case 1: search = "running"; break;
+                case 2: search = "cycling"; break;
+                default: self.loggMessage("warn", "No support for HR zones for sport " + sport); return;  break;
+            }
+
+            if (typeof self.masterVM.settingsVM.FITSportSetting() !== "undefined")
+                var mySportSettings = ko.utils.arrayFirst(self.masterVM.settingsVM.FITSportSetting(), function(item) {
+                    return ko.utils.stringStartsWith(item.sport.name[0].toLowerCase(), search);
+                });
             else {
                 self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
                 return;
@@ -5277,7 +5302,7 @@
 
             $('#zonesChart').show();
 
-            var mySettings = self.masterVM.settingsVM.FITSetting;
+            var mySettings = self.masterVM.settingsVM.FITSetting();
             var restingHR;
 
             if (typeof mySetting !== "undefined" && typeof mySettings.user_profile !== "undefined" && typeof mySettings.user_profile.resting_heart_rate !== "undefined" && mySettings.user_profile.resting_heart_rate.length >= 1)
@@ -5925,17 +5950,28 @@
                  zones_target: rawData.zones_target
              },
 
-            toJSON = JSON.stringify(sportSetting);
+            toJSON = JSON.stringify(sportSetting),
                 
-            localStorage["sportsetting" + sportSetting.sport.sport[0]] = toJSON;
+            sport = sportSetting.sport.sport[0];
+            
+            localStorage["sportsetting" + sport] = toJSON;
             self.loggMessage("info", "Saved sport settings to local storage" + toJSON);
 
             self.showTemporaryNotification({
                 title: 'Imported ' + sportSetting.sport.name + ' settings file ',
                 icon: '/Images/document-import.png',
                 body: (sportSetting.hr_zone === undefined) ? 'No HR zones defined' : JSON.stringify(sportSetting.hr_zone)
-            },true);
+            }, true);
 
+            // Update view
+
+                // Remove previous setting if any...
+                self.masterVM.settingsVM.FITSportSetting.remove(function (item) {
+                    return item.sport.name[0] === sportSetting.sport.name[0]
+                });
+
+                self.masterVM.settingsVM.FITSportSetting.push(sportSetting);
+          
         },
 
          // Handles a  setting file - user profile, bike profile etc.
@@ -5962,7 +5998,11 @@
                 title: 'Imported settings file',
                 icon: '/Images/document-import.png',
                 body: JSON.stringify(setting.user_profile)
-            },true);
+            }, true);
+
+            // Update view
+
+            self.masterVM.settingsVM.FITSetting(self.getSettings());
 
         },
 
