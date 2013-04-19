@@ -5326,7 +5326,7 @@
                 return;
             }
 
-            if (typeof mySportSettings === "undefined") {
+            if (typeof mySportSettings === "undefined" || mySportSettings === null) {
                 self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
                 return;
             }
@@ -5920,22 +5920,22 @@
                 return -1;
             }
 
-            if (counter.fileIdCounter !== 1)
+            if (counter.file_id !== 1)
                 self.loggMessage("error","File id msg. should be 1, but is ", counter.fileIdCounter);
-            if (counter.fileCreatorCounter !== 1)
+            if (counter.file_creator !== 1)
                 self.loggMessage("error","File creator msg. should be 1, but is ", counter.fileCreatorCounter);
 
             if (type === FITFileType.activityfile) { // Activity
 
-                if (counter.sessionCounter === 0)
+                if (counter.session === 0)
                     self.loggMessage("error","Session msg. should be at least 1, but is ", counter.sessionCounter);
-                if (counter.lapCounter === 0)
+                if (counter.lap === 0)
                     self.loggMessage("error","Lap msg. should be at least 1, but is ", counter.lapCounter);
-                if (counter.activityCounter !== 1)
+                if (counter.activity !== 1)
                     self.loggMessage("error","Activity msg. should be 1, but is ", counter.activityCounter);
-                if (counter.deviceInfoCounter === 0)
+                if (counter.device_info === 0)
                     self.loggMessage("error","Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
-                if (counter.recordCounter === 0)
+                if (counter.record === 0)
                     self.loggMessage("error","No record msg. ", counter.lapCounter);
             }
 

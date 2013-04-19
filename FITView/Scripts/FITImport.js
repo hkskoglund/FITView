@@ -556,42 +556,52 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var unacceptableLat = false;
              var unacceptableLong = false;
 
-             var counter = {
+             //var counter = {
 
-                 // Common
+             //    // Common
 
-                 fileIdCounter: 0,
-                 fileCreatorCounter: 0,
+             //    fileIdCounter: 0,
+             //    fileCreatorCounter: 0,
 
-                 // Activity
+             //    // Activity
 
-                 lapCounter: 0,
-                 sessionCounter: 0,
-                 lengthCounter: 0,
-                 deviceInfoCounter: 0,
-                 activityCounter: 0,
-                 eventCounter: 0,
-                 recordCounter: 0,
-                 hrvCounter: 0,
+             //    lapCounter: 0,
+             //    sessionCounter: 0,
+             //    lengthCounter: 0,
+             //    deviceInfoCounter: 0,
+             //    activityCounter: 0,
+             //    eventCounter: 0,
+             //    recordCounter: 0,
+             //    hrvCounter: 0,
 
-                 // Sport setting
+             //    // Sport setting
 
-                 zones_target_Counter: 0,
-                 sport_Counter: 0,
-                 hr_zone_Counter: 0,
-                 speed_zone_Counter: 0,
-                 cadence_zone_Counter: 0,
-                 power_zone_Counter: 0,
-                 met_zone_Counter: 0,
+             //    zones_target_Counter: 0,
+             //    sport_Counter: 0,
+             //    hr_zone_Counter: 0,
+             //    speed_zone_Counter: 0,
+             //    cadence_zone_Counter: 0,
+             //    power_zone_Counter: 0,
+             //    met_zone_Counter: 0,
 
-                 // Setting
+             //    // Setting
 
-                 device_settings_Counter : 0,
-                 user_profile_Counter : 0,
-                 hrm_profile_Counter : 0,
-                 sdm_profile_Counter : 0,
-                 bike_profile_Counter : 0,
+             //    device_settings_Counter : 0,
+             //    user_profile_Counter : 0,
+             //    hrm_profile_Counter : 0,
+             //    sdm_profile_Counter : 0,
+             //    bike_profile_Counter : 0,
 
+             //};
+
+             // Try instead to use a generic counter aggregate with an increment function
+             var newCounter = {
+                 increment: function (globalMsg) {
+                     if (typeof this[globalMsg] === "undefined")
+                         this[globalMsg] = 1;
+                     else
+                         this[globalMsg]++;
+                 }
              };
 
              var progressHandle;
@@ -620,6 +630,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              if (rawdata[datarec.message] === undefined)
                                  rawdata[datarec.message] = {};
 
+                             newCounter.increment(datarec.message);
+
                              unacceptableTimestamp = false;
                              unacceptableLat = false;
                              unacceptableLong = false;
@@ -631,12 +643,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                                  case "file_id":
                                      // Well formed .FIT should have one file_id at the start
-                                     counter.fileIdCounter++;
+                                   
                                      fileidRec = datarec;
                                      // addRawdata(fileidStore, datarec);
                                      break;
                                  case "file_creator":
-                                     counter.fileCreatorCounter++;
+                                     
                                      // Seems rather redudant, same info. is also in device_info record
                                      if (fileidRec !== undefined) {
                                          fileidRec.file_creator = datarec;
@@ -675,7 +687,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          }
 
                                          if (!unacceptableTimestamp && !unacceptableLat && !unacceptableLong) {
-                                             counter.recordCounter++;
+                                          
                                              prevTimestamp = datarec.timestamp;
                                              prevLat = datarec.position_lat;
                                              prevLong = datarec.position_long;
@@ -690,21 +702,21 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      }
                                      break;
                                  case "lap":
-                                     counter.lapCounter++;
+                                    
                                      if (datarec.timestamp !== undefined)
                                          addRawdata(lapStore, datarec);
                                      else
                                          loggMessage({ response: "error", data: "No timestamp found in lap message, not written to indexedDB" });
                                      break;
                                  case "session":
-                                     counter.sessionCounter++;
+                                  
                                      if (speedDistanceRecs.length >= 1)
                                          datarec.speedDistanceRecord = speedDistanceRecs;
 
                                      addRawdata(sessionStore, datarec);
                                      break;
                                  case "activity":
-                                     counter.activityCounter++;
+                                    
                                      if (datarec.timestamp !== undefined)
                                          if (!isNaN(datarec.timestamp.value))
                                              addRawdata(activityStore, datarec);
@@ -714,7 +726,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  case "length":
                                      //loggMessage({ response: "info", data: "Found length message" });
                                      //addRawdata(lengthStore, datarec);
-                                     counter.lengthCounter++;
+                                    
                                      if (datarec.start_time !== undefined)
                                          addRawdata(lengthStore, datarec);
                                      else
@@ -722,7 +734,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                                      break;
                                  case "event":
-                                     counter.eventCounter++;
+                                    
                                      if (datarec.timestamp !== undefined)
                                          addRawdata(eventStore, datarec);
                                      else
@@ -730,57 +742,13 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      break;
 
                                  case "device_info":
-                                     counter.deviceInfoCounter++;
+                                    
                                      addRawdata(deviceinfoStore, datarec);
                                      break;
 
                                  case "hrv":
-                                     counter.hrvCounter++;
-                                     // TO DO : add hrv
+                                   
                                      break;
-
-                                     // Sport setting
-
-                                 case "zones_target":
-                                     counter.zones_target_Counter++;
-                                     break;
-                                 case "sport":
-                                     counter.sport_Counter++;
-                                     break;
-                                 case "hr_zone":
-                                     counter.hr_zone_Counter++;
-                                     break;
-                                 case "speed_zone":
-                                     counter.speed_zone_Counter++;
-                                     break;
-                                 case "cadence_zone":
-                                     counter.cadence_zone_Counter++;
-                                     break;
-                                 case "power_zone":
-                                     counter.power_zone_Counter++;
-                                     break;
-                                 case "met_zone":
-                                     counter.met_zone_Counter++;
-                                     break;
-
-                                     // Setting
-
-                                 case "device_settings":
-                                     counter.device_settings_Counter++;
-                                     break;
-                                 case "user_profile":
-                                     counter.user_profile_Counter++;
-                                     break;
-                                 case "hrm_profile":
-                                     counter.hrm_profile_Counter++;
-                                     break;
-                                 case "sdm_profile":
-                                     counter.sdm_profile_Counter++;
-                                     break;
-                                 case "bike_profile":
-                                     counter.bike_profile_Counter++;
-                                     break;
-                                 
 
 
                              }
@@ -802,108 +770,19 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          if (rawdata[(datarec.message)][prop] === undefined)
                                              rawdata[(datarec.message)][prop] = [];
 
-                                         switch (datarec.message) {
-                                             case "lap":
-                                                 // Make sure we insert property at the right position
-                                                 rawdata[datarec.message][prop][counter.lapCounter - 1] = val;
-                                                 break;
-
-                                             case "session":
-                                                 rawdata[datarec.message][prop][counter.sessionCounter - 1] = val;
-                                                 break;
-
-                                             case "file_id":
-                                                 rawdata[datarec.message][prop][counter.fileIdCounter - 1] = val;
-                                                 break;
-
-                                             case "file_creator":
-                                                 rawdata[datarec.message][prop][counter.fileCreatorCounter - 1] = val;
-                                                 break;
-
-                                             case "length":
-                                                 rawdata[datarec.message][prop][counter.lengthCounter - 1] = val;
-                                                 break;
-
-                                             case "device_info":
-                                                 rawdata[datarec.message][prop][counter.deviceInfoCounter - 1] = val;
-                                                 break;
-
-                                             case "activity":
-                                                 rawdata[datarec.message][prop][counter.activityCounter - 1] = val;
-                                                 break;
-
-
-                                             case "event":
-                                                 rawdata[datarec.message][prop][counter.eventCounter - 1] = val;
-                                                 break;
-
-                                             case "record":
-                                                 rawdata[datarec.message][prop][counter.recordCounter - 1] = val;
-                                                 break;
-
-                                             case "hrv":
-
-                                                 if (typeof val.length !== "undefined") // Array 
-                                                 {
-                                                     var itemNr;
-                                                     var len = val.length;
-                                                     for (itemNr = 0; itemNr < len; itemNr++) {
-                                                         rawdata[datarec.message][prop][counter.hrvCounter - 1] = val[itemNr];
-                                                         if (itemNr < len - 1)  // Don't advance at end
-                                                             counter.hrvCounter++;
-                                                     }
-                                                 }
-                                                 else
-                                                     rawdata[datarec.message][prop][counter.hrvCounter - 1] = val;
-                                                 break;
-
-                                                 // Sport setting
-
-                                             case "zones_target":
-                                                 rawdata[datarec.message][prop][counter.zones_target_Counter - 1] = val;
-                                                 break;
-                                             case "sport":
-                                                 rawdata[datarec.message][prop][counter.sport_Counter - 1] = val;
-                                                 break;
-                                             case "hr_zone":
-                                                 rawdata[datarec.message][prop][counter.hr_zone_Counter - 1] = val;
-                                                 break;
-                                             case "speed_zone":
-                                                 rawdata[datarec.message][prop][ counter.speed_zone_Counter - 1] = val;
-                                                 break;
-                                             case "cadence_zone":
-                                                 rawdata[datarec.message][prop][ counter.cadence_zone_Counter - 1] = val;
-                                                 break;
-                                             case "power_zone":
-                                                 rawdata[datarec.message][prop][counter.power_zone_Counter - 1] = val;
-                                                 break;
-                                             case "met_zone":
-                                                 rawdata[datarec.message][prop][counter.met_zone_Counter - 1] = val;
-                                                 break;
-
-                                                 // Setting
-
-                                             case "device_settings":
-                                                 rawdata[datarec.message][prop][counter.device_settings_Counter - 1] = val;
-                                                 break;
-                                             case "user_profile":
-                                                 rawdata[datarec.message][prop][counter.user_profile_Counter - 1] = val;
-                                                 break;
-                                             case "hrm_profile":
-                                                 rawdata[datarec.message][prop][counter.hrm_profile_Counter - 1] = val;
-                                                 break;
-                                             case "sdm_profile":
-                                                 rawdata[datarec.message][prop][counter.sdm_profile_Counter - 1] = val;
-                                                 break;
-                                             case "bike_profile":
-                                                 rawdata[datarec.message][prop][counter.bike_profile_Counter - 1] = val;
-                                                 break;
-
-                                             default:
-                                                 loggMessage({ response: "warn", data: "Pushing value " + val.toString() + "to " + prop.toString()+" on message" + datarec.message + ", may introduce indexing error, please configure counter for message" });
-                                                 rawdata[datarec.message][prop].push(val);
-                                                 break;
+                                         if (typeof val === "object" && typeof val.length !== "undefined") // Array of values 
+                                         {
+                                             var itemNr;
+                                             var len = val.length;
+                                             for (itemNr = 0; itemNr < len; itemNr++) {
+                                                 rawdata[datarec.message][prop][newCounter[datarec.message] - 1] = val[itemNr];
+                                                 if (itemNr < len - 1)  // Don't advance at end
+                                                     newCounter.increment(datarec.message);
+                                             }
                                          }
+                                         else
+                                             rawdata[datarec.message][prop][newCounter[datarec.message] - 1] = val;  // Single value
+                                         
                                      }
                                      else
                                          loggMessage({ response: "info", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
@@ -919,8 +798,10 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              clearInterval(progressHandle);
 
              //self.postMessage({ response: "importFinished", data: 100 });
-            // self.postMessage({ response: "messageCounter", counter: counter });
-             rawdata._msgCounter_ = counter;
+             // self.postMessage({ response: "messageCounter", counter: counter });
+             // Strip off increment method
+             delete newCounter.increment;
+             rawdata._msgCounter_ = newCounter;
              // Persist file_id msg.
 
              if (fileidRec !== undefined)
