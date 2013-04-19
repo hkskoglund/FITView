@@ -1306,6 +1306,26 @@
                 });
             }
 
+
+            // Bike profile - hook up ability to track selected bike
+
+            if (typeof self.masterVM.settingsVM.FITSetting().bike_profile !== "undefined") { // === "Object"
+
+                self.masterVM.settingsVM.FITSetting().bike_profile.selectedBikeName = ko.observable();
+
+                // If any change to selectedBikeName track it please...
+                self.masterVM.settingsVM.FITSetting().bike_profile.selectedBikeIndex = ko.computed(function () {
+                    var nameNr,
+                        len = self.masterVM.settingsVM.FITSetting().bike_profile.name.length;
+
+                    for (nameNr = 0; nameNr < len; nameNr++)
+                        if (self.masterVM.settingsVM.FITSetting().bike_profile.selectedBikeName() === self.masterVM.settingsVM.FITSetting().bike_profile.name[nameNr])
+                            break;
+
+                    return nameNr;
+                });
+            }
+
             self.masterVM.settingsVM.FITSportSetting = ko.observableArray();
 
             function setSportSetting(sport) {
@@ -1345,6 +1365,10 @@
             setSportSetting(FITSport.running);
             setSportSetting(FITSport.cycling);
             //setSportSetting(FITSport.swimming);
+
+            // Handle bike profile
+
+
             
 
             function checkOnlineStatus() {
