@@ -1287,6 +1287,30 @@
            
         },
 
+        hookupSelectedBikeName : function (settings)
+        {
+            if (typeof settings != "undefined" && typeof settings.bike_profile !== "undefined") { // === "Object"
+
+                settings.bike_profile.selectedBikeName = ko.observable();
+
+                // If any change to selectedBikeName track it please...
+                settings.bike_profile.selectedBikeIndex = ko.computed(function () {
+
+                    if (typeof self.masterVM.settingsVM.FITSetting === "undefined" || typeof self.masterVM.settingsVM.FITSetting() === "undefined") {
+                        return;
+                    }
+
+                    var nameNr,
+                        len = self.masterVM.settingsVM.FITSetting().bike_profile.name.length;
+
+                    for (nameNr = 0; nameNr < len; nameNr++)
+                        if (self.masterVM.settingsVM.FITSetting().bike_profile.selectedBikeName() === self.masterVM.settingsVM.FITSetting().bike_profile.name[nameNr])
+                            break;
+
+                    return nameNr;
+                });
+            }
+        },
             
         // Initialization of view models and some checks for desired functinality of the browser environment/user agent
         init: function () {
@@ -1296,32 +1320,16 @@
             self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
 
             self.masterVM.settingsVM.FITSetting = ko.observable(undefined);
-            self.masterVM.settingsVM.FITSetting(self.getSettings());
+            var settings = self.getSettings();
+            self.hookupSelectedBikeName(settings);
+
+            self.masterVM.settingsVM.FITSetting(settings);
             if (typeof self.masterVM.settingsVM.FITSetting() === "undefined") {
                 self.loggMessage("warn", "No settings found");
                 self.showTemporaryNotification({
                     title: 'No settings found',
                     icon: '/Images/error.png',
                     body: 'Please import setting FIT file ./Settings/*.FIT'
-                });
-            }
-
-            else       // Bike profile - hook up ability to track selected bike
-
-            if (typeof self.masterVM.settingsVM.FITSetting().bike_profile !== "undefined") { // === "Object"
-
-                self.masterVM.settingsVM.FITSetting().bike_profile.selectedBikeName = ko.observable();
-
-                // If any change to selectedBikeName track it please...
-                self.masterVM.settingsVM.FITSetting().bike_profile.selectedBikeIndex = ko.computed(function () {
-                    var nameNr,
-                        len = self.masterVM.settingsVM.FITSetting().bike_profile.name.length;
-
-                    for (nameNr = 0; nameNr < len; nameNr++)
-                        if (self.masterVM.settingsVM.FITSetting().bike_profile.selectedBikeName() === self.masterVM.settingsVM.FITSetting().bike_profile.name[nameNr])
-                            break;
-
-                    return nameNr;
                 });
             }
 
@@ -6025,7 +6033,9 @@
 
             // Update view
 
-            self.masterVM.settingsVM.FITSetting(self.getSettings());
+            var newSettings = self.getSettings();
+            self.hookupSelectedBikeName(newSettings);
+            self.masterVM.settingsVM.FITSetting(newSettings);
 
         },
 
