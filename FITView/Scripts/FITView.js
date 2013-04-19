@@ -1306,8 +1306,7 @@
                 });
             }
 
-
-            // Bike profile - hook up ability to track selected bike
+            else       // Bike profile - hook up ability to track selected bike
 
             if (typeof self.masterVM.settingsVM.FITSetting().bike_profile !== "undefined") { // === "Object"
 

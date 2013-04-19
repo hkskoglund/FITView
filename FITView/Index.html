@@ -1086,6 +1086,24 @@
                                         </li>
                                     <!-- /ko -->
 
+                                    
+
+                                    <!-- ko if: typeof crank_length !== "undefined"  -->
+                                        <li><a href="#">
+                                            <label>Crank length: </label>
+                                            <span data-bind="text: crank_length[selectedBikeIndex()] + ' %'" />
+                                        </a>
+                                        </li>
+                                    <!-- /ko -->
+
+                                     <!-- ko if: typeof enabled !== "undefined"  -->
+                                        <li><a href="#">
+                                            <label>Enabled: </label>
+                                             <input type="checkbox" data-bind="checked:enabled[selectedBikeIndex()]" />
+                                        </a>
+                                        </li>
+                                 <!-- /ko -->
+
                                     <!-- ko if: typeof spd_enabled !== "undefined" && spd_enabled[selectedBikeIndex()] -->
                                         <li><a href="#">
                                             <label>SPD enabled: </label>
@@ -1118,23 +1136,7 @@
                                         </li>
                                  <!-- /ko -->
 
-                                    <!-- ko if: typeof crank_length !== "undefined"  -->
-                                        <li><a href="#">
-                                            <label>Crank length: </label>
-                                            <span data-bind="text: crank_length[selectedBikeIndex()] + ' %'" />
-                                        </a>
-                                        </li>
-                                    <!-- /ko -->
-
-                                     <!-- ko if: typeof nabled !== "undefined"  -->
-                                        <li><a href="#">
-                                            <label>Enabled: </label>
-                                             <input type="checkbox" data-bind="checked:enabled[selectedBikeIndex()]" />
-                                        </a>
-                                        </li>
-                                 <!-- /ko -->
-
-                                    <!-- ko if: typeof bike_spd_ant_id !== "undefined" && typeof bike_spd_ant_id[selectedBikeIndex()] !== "undefined" -->
+                                    <!-- ko if: typeof bike_spd_ant_id !== "undefined" &&  bike_spd_ant_id[selectedBikeIndex()] -->
                                         <li title="Bike speed sensor ANT id."><a href="#">
                                             <label>SPD ANT ID: </label>
                                             <span data-bind="text: bike_spd_ant_id[selectedBikeIndex()]" />
@@ -1142,7 +1144,7 @@
                                         </li>
                                     <!-- /ko -->
 
-                                     <!-- ko if: typeof bike_spd_ant_id_trans_type !== "undefined" && typeof bike_spd_ant_id_trans_type[selectedBikeIndex()] !== "undefined"   -->
+                                     <!-- ko if: typeof bike_spd_ant_id_trans_type !== "undefined" &&  bike_spd_ant_id_trans_type[selectedBikeIndex()]   -->
                                         <li><a href="#">
                                             <label>SPD ANT id. trans. type: </label>
                                             <span data-bind="text: bike_spd_ant_id_trans_type[selectedBikeIndex()]"  />
@@ -1150,7 +1152,7 @@
                                         </li>
                                     <!-- /ko -->
 
-                                    <!-- ko if: typeof bike_cad_ant_id !== "undefined" && typeof bike_cad_ant_id[selectedBikeIndex()] !== "undefined"  -->
+                                    <!-- ko if: typeof bike_cad_ant_id !== "undefined" &&  bike_cad_ant_id[selectedBikeIndex()]   -->
                                         <li title="Bike cadence sensor ANT id."><a href="#">
                                             <label>Cad ANT ID: </label>
                                             <span data-bind="text: bike_cad_ant_id[selectedBikeIndex()]" />
@@ -1158,7 +1160,7 @@
                                         </li>
                                     <!-- /ko -->
 
-                                    <!-- ko if: typeof bike_cad_ant_id_trans_type !== "undefined" && typeof bike_cad_ant_id_trans_type[selectedBikeIndex()] !== "undefined" -->
+                                    <!-- ko if: typeof bike_cad_ant_id_trans_type !== "undefined" &&  bike_cad_ant_id_trans_type[selectedBikeIndex()]  -->
                                         <li><a href="#">
                                             <label>CAD ANT id. trans. type: </label>
                                             <span data-bind="text: bike_cad_ant_id_trans_type[selectedBikeIndex()]" />
@@ -1166,7 +1168,7 @@
                                         </li>
                                     <!-- /ko -->
 
-                                    <!-- ko if: typeof bike_spdcad_ant_id !== "undefined" && typeof bike_spdcad_ant_id[selectedBikeIndex()] !== "undefined" -->
+                                    <!-- ko if: typeof bike_spdcad_ant_id !== "undefined" &&  bike_spdcad_ant_id[selectedBikeIndex()]  -->
                                         <li title="Bike speed and cadence sensor ANT id."><a href="#">
                                             <label>SPDCAD ANT ID: </label>
                                             <span data-bind="text: bike_spdcad_ant_id[selectedBikeIndex()]" />
@@ -1174,7 +1176,7 @@
                                         </li>
                                     <!-- /ko -->
 
-                                     <!-- ko if: typeof bike_spdcad_ant_id_trans_type !== "undefined" && typeof bike_spdcad_ant_id_trans_type[selectedBikeIndex()] !== "undefined" -->
+                                     <!-- ko if: typeof bike_spdcad_ant_id_trans_type !== "undefined" &&  bike_spdcad_ant_id_trans_type[selectedBikeIndex()]  -->
                                         <li><a href="#">
                                             <label>SPDCAD ANT id. trans. type: </label>
                                             <span data-bind="text: bike_spdcad_ant_id_trans_type[selectedBikeIndex()]" />
@@ -1182,7 +1184,7 @@
                                         </li>
                                     <!-- /ko -->
 
-                                    <!-- ko if: typeof bike_power_ant_id !== "undefined" && typeof bike_power_ant_id[selectedBikeIndex()] !== "undefined"  -->
+                                    <!-- ko if: typeof bike_power_ant_id !== "undefined" &&  bike_power_ant_id[selectedBikeIndex()]   -->
                                         <li title="Bike power sensor ANT id."><a href="#">
                                             <label>Power ANT ID: </label>
                                             <span data-bind="text: bike_power_ant_id[selectedBikeIndex()]" />
@@ -1190,7 +1192,7 @@
                                         </li>
                                     <!-- /ko -->
 
-                                     <!-- ko if: typeof bike_power_ant_id_trans_type !== "undefined" && typeof bike_power_ant_id_trans_type[selectedBikeIndex()] !== "undefined" -->
+                                     <!-- ko if: typeof bike_power_ant_id_trans_type !== "undefined" &&  bike_power_ant_id_trans_type[selectedBikeIndex()]  -->
                                         <li><a href="#">
                                             <label>POWER ANT id. trans. type: </label>
                                             <span data-bind="text: bike_power_ant_id_trans_type[selectedBikeIndex()]" />

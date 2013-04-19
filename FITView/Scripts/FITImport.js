@@ -582,7 +582,15 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  speed_zone_Counter: 0,
                  cadence_zone_Counter: 0,
                  power_zone_Counter: 0,
-                 met_zone_Counter: 0
+                 met_zone_Counter: 0,
+
+                 // Setting
+
+                 device_settings_Counter : 0,
+                 user_profile_Counter : 0,
+                 hrm_profile_Counter : 0,
+                 sdm_profile_Counter : 0,
+                 bike_profile_Counter : 0,
 
              };
 
@@ -755,6 +763,26 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      counter.met_zone_Counter++;
                                      break;
 
+                                     // Setting
+
+                                 case "device_settings":
+                                     counter.device_settings_Counter++;
+                                     break;
+                                 case "user_profile":
+                                     counter.user_profile_Counter++;
+                                     break;
+                                 case "hrm_profile":
+                                     counter.hrm_profile_Counter++;
+                                     break;
+                                 case "sdm_profile":
+                                     counter.sdm_profile_Counter++;
+                                     break;
+                                 case "bike_profile":
+                                     counter.bike_profile_Counter++;
+                                     break;
+                                 
+
+
                              }
 
                              // Build rawdata structure tailored for integration with highchart
@@ -829,7 +857,50 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                                      rawdata[datarec.message][prop][counter.hrvCounter - 1] = val;
                                                  break;
 
+                                                 // Sport setting
+
+                                             case "zones_target":
+                                                 rawdata[datarec.message][prop][counter.zones_target_Counter - 1] = val;
+                                                 break;
+                                             case "sport":
+                                                 rawdata[datarec.message][prop][counter.sport_Counter - 1] = val;
+                                                 break;
+                                             case "hr_zone":
+                                                 rawdata[datarec.message][prop][counter.hr_zone_Counter - 1] = val;
+                                                 break;
+                                             case "speed_zone":
+                                                 rawdata[datarec.message][prop][ counter.speed_zone_Counter - 1] = val;
+                                                 break;
+                                             case "cadence_zone":
+                                                 rawdata[datarec.message][prop][ counter.cadence_zone_Counter - 1] = val;
+                                                 break;
+                                             case "power_zone":
+                                                 rawdata[datarec.message][prop][counter.power_zone_Counter - 1] = val;
+                                                 break;
+                                             case "met_zone":
+                                                 rawdata[datarec.message][prop][counter.met_zone_Counter - 1] = val;
+                                                 break;
+
+                                                 // Setting
+
+                                             case "device_settings":
+                                                 rawdata[datarec.message][prop][counter.device_settings_Counter - 1] = val;
+                                                 break;
+                                             case "user_profile":
+                                                 rawdata[datarec.message][prop][counter.user_profile_Counter - 1] = val;
+                                                 break;
+                                             case "hrm_profile":
+                                                 rawdata[datarec.message][prop][counter.hrm_profile_Counter - 1] = val;
+                                                 break;
+                                             case "sdm_profile":
+                                                 rawdata[datarec.message][prop][counter.sdm_profile_Counter - 1] = val;
+                                                 break;
+                                             case "bike_profile":
+                                                 rawdata[datarec.message][prop][counter.bike_profile_Counter - 1] = val;
+                                                 break;
+
                                              default:
+                                                 loggMessage({ response: "warn", data: "Pushing value " + val.toString() + "to " + prop.toString()+" on message" + datarec.message + ", may introduce indexing error, please configure counter for message" });
                                                  rawdata[datarec.message][prop].push(val);
                                                  break;
                                          }
