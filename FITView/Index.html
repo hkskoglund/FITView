@@ -914,7 +914,7 @@
                             <!-- /ko -->
                         </li>
 
-                     <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" href="#">Zones</a>
+                     <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" href="#"><img class="inlineIcon" src ="Images/heart.png" /></a>
                         
                         <!-- ko if: typeof FITSportSetting() !== "undefined" -->
 
@@ -943,6 +943,65 @@
                                     <li><a href="#">
                                         <label data-bind ="text: 'Power-' + sport.name[0] + ': '"></label>
                                         <span data-bind="text: JSON.stringify(power_zone.high_value)" />
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
+                                <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.max_heart_rate !== "undefined" -->
+                                    <li><a href="#">
+                                        <label data-bind ="text: 'Max HR-' + sport.name[0] + ': '"></label>
+                                        <span data-bind="text: zones_target.max_heart_rate" />
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
+                                <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.threshold_heart_rate !== "undefined" -->
+                                    <li><a href="#">
+                                        <label data-bind ="text: 'Threshold HR-' + sport.name[0] + ': '"></label>
+                                        <span data-bind="text: zones_target.threshold_heart_rate" />
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
+                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.functional_threshold_power !== "undefined" -->
+                                    <li><a href="#">
+                                        <label title="Functional threshold power" data-bind ="text: 'FTP-' + sport.name[0] + ': '"></label>
+                                        <span data-bind="text: zones_target.functional_threshold_power" />
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
+                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.hr_calc_type !== "undefined" -->
+                                    <li><a href="#">
+                                        <label data-bind ="text: 'HR calc. type-' + sport.name[0] + ': '"> </label>
+
+                                        <!-- ko if: zones_target.hr_calc_type[0] === 0 -->
+                                            <span>Custom</span>
+                                        <!-- /ko -->
+
+                                         <!-- ko if: zones_target.hr_calc_type[0] === 1 -->
+                                            <span>Percent of max HR</span>
+                                        <!-- /ko -->
+
+                                         <!-- ko if: zones_target.hr_calc_type[0] === 2 -->
+                                            <span title="HRR = Heart rate reserve (Max HR - resting HR)">Percent of HRR</span>
+                                        <!-- /ko -->
+                                    </a>
+                                    </li>
+                                <!-- /ko -->
+
+                                <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.pwr_calc_type !== "undefined" -->
+                                    <li><a href="#">
+                                        <label data-bind ="text: 'Power calc. type-' + sport.name[0] + ': '"></label>
+
+                                        <!-- ko if: zones_target.pwr_calc_type[0] === 0 -->
+                                            <span>Custom</span>
+                                        <!-- /ko -->
+
+                                         <!-- ko if: zones_target.pwr_calc_type[0] === 1 -->
+                                            <span title="FTP = Functional threshold power">Percent of FTP</span>
+                                        <!-- /ko -->
+                                        
                                     </a>
                                     </li>
                                 <!-- /ko -->
