@@ -626,6 +626,7 @@
             var hours = parseInt(totalSec / 3600, 10) % 24;
             var minutes = parseInt(totalSec / 60, 10) % 60;
             var seconds = parseInt(totalSec % 60, 10);
+            var tenthOfSec = parseInt((totalSec - parseInt(totalSec, 10)) * 10, 10);
 
             var hourResult;
             if (hours !== 0)
@@ -633,7 +634,13 @@
             else
                 hourResult = "";
 
-            var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+            var tenthOfSecResult;
+            if (tenthOfSec === 0)
+                tenthOfSecResult = "";
+            else
+                tenthOfSecResult = "." + tenthOfSec;
+
+            var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds)+tenthOfSecResult;
 
             return result;
         },
@@ -2212,10 +2219,15 @@
                                  lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
                                  if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
                                      self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
+                                   //self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + rawData.lap.total_timer_time[lapNr] * 1000] = rawData.lap.total_distance[lapNr];
+
                                  else
                                      self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
 
+                                 // Timestamp seems to be integer -> no way to get tenth of seconds from lap timestamp ...
+                                 // Fraction of second is available on total_elapsed_time or total_timer_time
                                  self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
+                                 //self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)+rawData.lap.total_timer_time[lapNr]*1000);
                              }
                          }
                      }
