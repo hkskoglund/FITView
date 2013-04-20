@@ -232,12 +232,12 @@
                                         <span title="Total calories (kcal)" data-bind="text: total_calories()[$index()]"></span>
                                     <!-- ko if: total_timer_time()[$index()].value > 0 -->
                                      <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                                       <span title="Watt" data-bind="text: ((total_calories()[$index()]  )* 1000 * 4.1868 / total_timer_time()[$index()].value).toFixed(1)"></span>
+                                       <span title="Watt" data-bind="text: ((total_calories()[$index()]  )* 1000 * 4.1868 / total_elapsed_time()[$index()].value).toFixed(1)"></span>
                                      <!-- /ko -->
                                       <!-- ko if: typeof total_fat_calories()[$index()] !== "undefined" && total_fat_calories()[$index()] > 0 -->
                                             <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[$index()]"></span>
                                     <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                                       <span title="Watt" data-bind="text: ((total_fat_calories()[$index()]) * 1000 * 4.1868 / total_timer_time()[$index()].value).toFixed(1)"></span>
+                                       <span title="Watt" data-bind="text: ((total_fat_calories()[$index()]) * 1000 * 4.1868 / total_elapsed_time()[$index()].value).toFixed(1)"></span>
                                         <!-- /ko -->
                                     <!-- /ko -->
 
@@ -1415,14 +1415,14 @@
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
                 <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedSession()]"></span>
-                <!-- ko if: typeof total_timer_time()[selectedSession()].value !== "undefined" && total_timer_time()[selectedSession()].value > 0 -->
+                <!-- ko if: typeof total_timer_time()[selectedSession()].value !== "undefined" && total_elapsed_time()[selectedSession()].value > 0 -->
                 <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                <span title="Watt" data-bind="text: ((total_calories()[selectedSession()]) * 1000 * 4.1868 / total_timer_time()[selectedSession()].value).toFixed(1)"></span>
+                <span title="Watt" data-bind="text: ((total_calories()[selectedSession()]) * 1000 * 4.1868 / total_elapsed_time()[selectedSession()].value).toFixed(1)"></span>
                 <!-- /ko -->
                 <!-- ko if: total_fat_calories()[selectedSession()] > 0 -->
                 <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedSession()]"></span>
                 <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                <span title="Watt" data-bind="text: ((total_fat_calories()[selectedSession()]) * 1000 * 4.1868 / total_timer_time()[selectedSession()].value).toFixed(1)"></span>
+                <span title="Watt" data-bind="text: ((total_fat_calories()[selectedSession()]) * 1000 * 4.1868 / total_elapsed_time()[selectedSession()].value).toFixed(1)"></span>
                 <!-- /ko -->
 
                 <!-- /ko -->
@@ -1639,14 +1639,14 @@
                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
                 <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedLap()]"></span>
-                 <!-- ko if: typeof total_timer_time()[selectedLap()].value !== "undefined" && total_timer_time()[selectedLap()].value > 0 -->
+                 <!-- ko if: typeof total_calories()[selectedLap()] !== "undefined" && total_elapsed_time()[selectedLap()].value > 0 -->
                   <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
                      <span title="Watt" data-bind="text: ((total_calories()[selectedLap()]  )* 1000 * 4.1868 / total_timer_time()[selectedLap()].value).toFixed(1)"></span>
                  <!-- /ko -->
                 <!-- ko if: typeof total_fat_calories()[selectedLap()] !== "undefined" && total_fat_calories()[selectedLap()] > 0 -->
                 <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedLap()]"></span>
                  <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                     <span title="Watt" data-bind="text: (( total_fat_calories()[selectedLap()]) * 1000 * 4.1868 / total_timer_time()[selectedLap()].value).toFixed(1)"></span>
+                     <span title="Watt" data-bind="text: (( total_fat_calories()[selectedLap()]) * 1000 * 4.1868 / total_elapsed_time()[selectedLap()].value).toFixed(1)"></span>
                 
                 <!-- /ko -->
                 <!-- /ko -->
@@ -1880,14 +1880,14 @@
                                                 <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
                                                 <span title="Total calories (kcal)" data-bind="text: total_calories[$index()]"></span>
-                                                 <!-- ko if: typeof total_timer_time[$index()] !== "undefined" && total_timer_time[$index()] > 0 -->
+                                                 <!-- ko if: typeof total_elapsed_time[$index()] !== "undefined" && total_elapsed_time[$index()] > 0 -->
                                                    <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                                                   <span title="Watt" data-bind="text: (total_calories[$index()]* 1000 * 4.1868 / total_timer_time[$index()]).toFixed(1)"></span>
+                                                   <span title="Watt" data-bind="text: (total_calories[$index()]* 1000 * 4.1868 / total_elapsed_time[$index()]).toFixed(1)"></span>
                                                 <!-- /ko -->
                                                 <!-- ko if: (typeof (total_fat_calories) !== "undefined" && total_fat_calories.length > 0 && total_fat_calories[$index()] > 0) -->
                                                 <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories[$index()]"></span>
                                                 <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                                                   <span title="Watt" data-bind="text: (total_fat_calories[$index()] * 1000 * 4.1868 / total_timer_time[$index()]).toFixed(1)"></span>
+                                                   <span title="Watt" data-bind="text: (total_fat_calories[$index()] * 1000 * 4.1868 / total_elapsed_time[$index()]).toFixed(1)"></span>
                                                 <!-- /ko -->
                                                 <!-- /ko -->
 
