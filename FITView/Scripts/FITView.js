@@ -2207,27 +2207,31 @@
                  self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
 
                  var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
+                 var total_elapsed_time = 0;
+                 var total_distance = 0;
 
                  if (typeof rawData.lap.start_time !== "undefined" && typeof rawData.lap.timestamp !== "undefined") {
                      for (lapNr = 0; lapNr < len; lapNr++) {
 
+                         total_elapsed_time += rawData.lap.total_elapsed_time[lapNr] * 1000;
+                         total_distance += rawData.lap.total_distance[lapNr];
 
                          if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
 
 
                              if (!(rawData.lap.lap_trigger[lapNr] === lap_trigger.time && self.masterVM.settingsVM.hideLAPtriggerTime())) {
-                                 lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
-                                 if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
-                                     self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
-                                   //self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + rawData.lap.total_timer_time[lapNr] * 1000] = rawData.lap.total_distance[lapNr];
+                                 //lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
+                                 //if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
+                                 //    self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
+                                   self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_elapsed_time] = total_distance;
 
-                                 else
-                                     self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
+                                 //else
+                                 //    self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
 
                                  // Timestamp seems to be integer -> no way to get tenth of seconds from lap timestamp ...
                                  // Fraction of second is available on total_elapsed_time or total_timer_time
-                                 self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
-                                 //self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)+rawData.lap.total_timer_time[lapNr]*1000);
+                                 //self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
+                                 self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)+total_elapsed_time);
                              }
                          }
                      }
@@ -2235,6 +2239,7 @@
                      self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
              } else
                  self.loggMessage("warn", "No lap data available to get tickpositions from");
+             // TO DO : Default fallback, i.e tickPosition each 1km
 
              if (rawData.event) {
                  var ev, ev_type, eventIndexTimestamp;
