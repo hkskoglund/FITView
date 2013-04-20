@@ -2670,7 +2670,7 @@
                                          pushData("total_distance");
                                          pushData("total_elapsed_time");
                                          pushData("total_timer_time");
-                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_elapsed_time[lapNr]);
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
                                      case FITSport.cycling: // Cycling
@@ -2690,7 +2690,7 @@
                                          pushData("total_distance");
                                          pushData("total_elapsed_time");
                                          pushData("total_timer_time");
-                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_elapsed_time[lapNr]);
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
 
                                      default:
@@ -2709,7 +2709,7 @@
                                          pushData("total_distance");
                                          pushData("total_elapsed_time");
                                          pushData("total_timer_time");
-                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_elapsed_time[lapNr]);
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
                                          break;
                                  }
                              }
