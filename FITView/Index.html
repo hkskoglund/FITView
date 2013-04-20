@@ -155,11 +155,15 @@
                                     <img class="lapSport" alt="Generic" title="Generic" src="Images/sport/generic.png" />
                                     <!-- /ko -->
 
-                                    <!-- ko if: total_elapsed_time().length > 0  -->
+                                    <!-- ko if: typeof total_elapsed_time !== "undefined" && total_elapsed_time().length > 0  -->
                                     <time><span class="lapHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[$index()].toHHMMSS()"></span></time>
                                     <!-- /ko -->
 
-                                    <!-- ko if: total_distance().length > 0 -->
+                                    <!-- ko if: typeof total_timer_time !== "undefined" &&  total_timer_time().length > 0 &&  total_elapsed_time()[$index()].value !== total_timer_time()[$index()].value-->
+                                    <time><span class="lapHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[$index()].toHHMMSS()"></span></time>
+                                    <!-- /ko -->
+
+                                    <!-- ko if: typeof total_distance !== "undefined" && total_distance().length > 0 -->
                                     <span class="lapTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[$index()].toFixed(0)"></span>
                                     <!-- /ko -->
 
@@ -1552,7 +1556,7 @@
 
 
 
-                <!-- ko if: total_timer_time().length > 0 && selectedLap() !== undefined && total_timer_time()[selectedLap()].toHHMMSS() !== total_elapsed_time()[selectedLap()].toHHMMSS() -->
+                <!-- ko if: total_timer_time().length > 0 && selectedLap() !== undefined && total_timer_time()[selectedLap()].value !== total_elapsed_time()[selectedLap()].value -->
                   <img class="inlineIcon" alt="Total timer time" title="Total timer time" src="Images/total_timer_time.png" />
                 <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedLap()].toHHMMSS()"></span></time>
                 <!-- /ko -->
