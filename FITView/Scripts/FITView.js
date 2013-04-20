@@ -2670,7 +2670,7 @@
                                          pushData("total_distance");
                                          pushData("total_elapsed_time");
                                          pushData("total_timer_time");
-                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_elapsed_time[lapNr]);
                                          break;
 
                                      case FITSport.cycling: // Cycling
@@ -2690,7 +2690,7 @@
                                          pushData("total_distance");
                                          pushData("total_elapsed_time");
                                          pushData("total_timer_time");
-                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_elapsed_time[lapNr]);
                                          break;
 
                                      default:
@@ -2709,7 +2709,7 @@
                                          pushData("total_distance");
                                          pushData("total_elapsed_time");
                                          pushData("total_timer_time");
-                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_timer_time[lapNr]);
+                                         lap.intensity.push(rawData.lap.total_calories[lapNr] * 1000 * 4.1868 / rawData.lap.total_elapsed_time[lapNr]);
                                          break;
                                  }
                              }
@@ -3090,7 +3090,7 @@
 
                      if (lap.intensity && lap.intensity.length > 0)
                          seriesSetup.push({
-                             name: "Intensity", id: seriesID.LAP_intensity, xAxis: 0, yAxis: YAxis.intensity, data: lap.intensity, type: 'column', visible: false, zIndex: 1,
+                             name: "Watt", id: seriesID.LAP_intensity, xAxis: 0, yAxis: YAxis.intensity, data: lap.intensity, type: 'column', visible: false, zIndex: 1,
                              dataLabels: {
                                  enabled: true,
                                  formatter: function () {
