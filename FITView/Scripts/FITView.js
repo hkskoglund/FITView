@@ -5973,6 +5973,9 @@
             var
 
              sportSetting = {
+                 header_info: rawData._headerInfo_,
+                 file_id: rawData.file_id,
+                 file_creator: rawData.file_creator,
                  hr_zone: rawData.hr_zone,
                  met_zone: rawData.met_zone,
                  power_zone: rawData.power_zone,
@@ -6013,6 +6016,11 @@
             var 
 
              setting = {
+                 // Meta
+                 header_info : rawData._headerInfo_,
+                 file_id: rawData.file_id ,
+                 file_creator : rawData.file_creator,
+
                  device_settings: rawData.device_settings,
                  user_profile: rawData.user_profile,
                  hrm_profile: rawData.hrm_profile,

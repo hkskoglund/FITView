@@ -759,18 +759,21 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                                  for (var prop in datarec) {
 
-                                     if (prop === "message" || prop === "globalMessageType") 
-                                         continue; // Skip these, they don't have a .value property
+                                     //if (prop === "message" || prop === "globalMessageType") 
+                                     //    continue; // Skip these, they don't have a .value property
 
-                                     var val = datarec[prop].value;
+                                     if (typeof datarec[prop].value !== "undefined")
+                                         var val = datarec[prop].value;
+                                     else
+                                         continue;
 
-                                     if (val !== undefined) {
+                                     //if (val !== undefined) {
 
                                          // Initialize rawdata for message and property if necessary
                                          if (rawdata[(datarec.message)][prop] === undefined)
                                              rawdata[(datarec.message)][prop] = [];
 
-                                         if (typeof val === "object" && typeof val.length !== "undefined") // Array of values 
+                                         if (typeof val === "object" && typeof val.length !== "undefined") // Array of values, i.e HRV/RR
                                          {
                                              var itemNr;
                                              var len = val.length;
@@ -783,9 +786,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          else
                                              rawdata[datarec.message][prop][newCounter[datarec.message] - 1] = val;  // Single value
                                          
-                                     }
-                                     else
-                                         loggMessage({ response: "info", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
+                                     //}
+                                     //else
+                                     //    loggMessage({ response: "info", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
                                  }
                              }
                              
@@ -799,6 +802,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              //self.postMessage({ response: "importFinished", data: 100 });
              // self.postMessage({ response: "messageCounter", counter: counter });
+
              // Strip off increment method
              delete newCounter.increment;
              rawdata._msgCounter_ = newCounter;
@@ -825,6 +829,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              return rawdata;
          }
 
+         // Adds property names, scaling and units to data -> intepretation of raw harvested data record
          function getDataRecordContent(rec) {
 
              var localMsgType = rec.header.localMessageType.toString();
@@ -882,7 +887,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          var offset = globalMsg[fieldDefNr].offset;
                          var val = rec.content[field].value; // Can be an array in case of HRV data - invalid values are skipped in getRecord (raw)
 
-                         if (typeof val.length !== "undefined") // Probably array
+                         if (typeof val === "object" && typeof val.length !== "undefined") // Probably array
                          {
                              var itemNr;
                              var len = val.length;
@@ -900,6 +905,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              if (offset !== undefined)
                                  val = val - offset;
                          }
+
                          rec.content[field].value = val;
 
                          // Duplication of code, maybe later do some value conversions here for specific messages
@@ -1163,7 +1169,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      message.properties = fitCommonMsg.fileCreator();
                      break;
 
-
                  case "file_id":
                      message.properties = fitCommonMsg.fileId();
                      break;
@@ -1270,6 +1275,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              // FIT file header protocol v. 1.3 stored as little endian
 
              var headerInfo = {
+                 // Extra meta data added (timestamp, fitfile)
                  timestamp: new Date().getTime(),
                  fitFile: {
                      size: fitFile.size,
@@ -1434,6 +1440,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      var currentField, bType, bSize, numBytesRead;
 
                      for (fieldNr = 0; fieldNr < localMsgDefinition.content.fieldNumbers; fieldNr++) {
+
                          currentField = "field" + fieldNr.toString();
                          bType = localMsgDefinition.content[currentField].baseType;
                          bSize = localMsgDefinition.content[currentField].size;
@@ -1465,9 +1472,11 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              case 0x01: recContent[currentField].value = dviewFit.getInt8(index);
                                  numBytesRead = 1;
                                  break;
+
                              case 0x02: recContent[currentField].value = dviewFit.getUint8(index);
                                  numBytesRead = 1;
                                  break;
+
                              case 0x83: recContent[currentField].value = dviewFit.getInt16(index, littleEndian);
                                  numBytesRead = 2;
                                  break;
@@ -1514,6 +1523,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              case 0x85: recContent[currentField].value = dviewFit.getInt32(index, littleEndian);
                                  numBytesRead = 4;
                                  break;
+
                              case 0x86:
                              case 0x8C:
                                  recContent[currentField].value = dviewFit.getUint32(index, littleEndian);
@@ -1537,11 +1547,10 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  numBytesRead = str.length;
                                  break;
 
-
-
                              case 0x88: recContent[currentField].value = dviewFit.getFloat32(index, littleEndian);
                                  numBytesRead = 4;
                                  break;
+
                              case 0x89: recContent[currentField].value = dviewFit.getFloat64(index, littleEndian);
                                  numBytesRead = 8;
                                  break;
@@ -1556,6 +1565,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                  recContent[currentField].value = bytes;
                                  numBytesRead = bytes.length;
                                  break;
+
                              default:
                                  loggMessage({ response: "error", data: "Base type " + bType.toString() + " not found in lookup switch" });
                                  break;

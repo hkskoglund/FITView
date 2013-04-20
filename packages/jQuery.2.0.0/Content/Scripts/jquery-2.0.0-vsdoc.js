@@ -1,14 +1,14 @@
-﻿/*
+/*
 * This file has been generated to support Visual Studio IntelliSense.
 * You should not use this file at runtime inside the browser--it is only
 * intended to be used only for design-time IntelliSense.  Please use the
 * standard jQuery library for all runtime use.
 *
-* Comment version: 1.9.1
+* Comment version: 2.0.0
 */
 
 /*!
-* jQuery JavaScript Library v1.9.1
+* jQuery JavaScript Library v2.0.0
 * http://jquery.com/
 *
 * Includes Sizzle.js
@@ -1784,7 +1784,7 @@
         return select(selector.replace(rtrim, "$1"), context, results, seed);
     };
     jQuery.fn = {
-        "jquery": '1.9.1',
+        "jquery": '2.0.0',
         "selector": '',
         "length": 0
     };

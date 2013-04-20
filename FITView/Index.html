@@ -5,7 +5,7 @@
     <title>.FITview</title>
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvei58o_T1ViClyqpY9728ob_RhbhbiRg&sensor=false"></script>
-    <script src="Scripts/lib/jquery-1.9.1.js"></script>
+    <script src="Scripts/lib/jquery-2.0.0.js"></script>
     <script src="Scripts/lib/knockout-2.2.1.debug.js"></script>
     <script src="Scripts/lib/knockout.mapping-latest.debug.js"></script>
     <script src="Scripts/lib/modernizr-2.6.2.js"></script>
@@ -732,6 +732,14 @@
                             <!-- ko with: FITSetting().user_profile -->
                             <ul>
 
+                                <!-- ko if: typeof $parent.FITSetting !== "undefined" && typeof $parent.FITSetting().header_info !== "undefined" && typeof $parent.FITSetting().header_info.timestamp !== "undefined" -->
+                                <li><a href="#">
+                                    <label>Imported: </label>
+                                    <span data-bind="text: (new Date($parent.FITSetting().header_info.timestamp)).toLocaleString()" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
                                 <!-- ko if: typeof friendly_name !== "undefined" && typeof friendly_name[0] !== "undefined" -->
                                 <li><a href="#">
                                     <label>Name: </label>
@@ -919,6 +927,14 @@
                         <!-- ko if: typeof FITSportSetting() !== "undefined" -->
 
                             <ul data-bind="foreach: FITSportSetting()">
+
+                                 <!-- ko if: typeof header_info !== "undefined" && typeof header_info.timestamp !== "undefined" -->
+                                <li><a href="#">
+                                    <label data-bind ="text: 'Imported-' + sport.name[0] + ': '"></label>
+                                    <span data-bind="text: (new Date(header_info.timestamp)).toLocaleString()" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
 
                                 <!-- ko if: typeof speed_zone !== "undefined" && typeof speed_zone.high_value !== "undefined" -->
                                     <li><a href="#">
