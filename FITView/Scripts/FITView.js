@@ -2200,8 +2200,7 @@
              var lapNr,
               len;
 
-             // FOR TESTING 
-             rawData.lap = undefined;
+             // FOR TESTING              rawData.lap = undefined;
              
              self.masterVM.tickPositions = [];  // Tick at end of each lap
              self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
