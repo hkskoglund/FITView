@@ -137,41 +137,41 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
          // Global msg types.
 
-         var GLOBAL_FIT_MSG = {
-             // Common
-             FILEID: 0,
-             FILE_CREATOR: 49,
+         //var GLOBAL_FIT_MSG = {
+         //    // Common
+         //    FILEID: 0,
+         //    FILE_CREATOR: 49,
 
-             // Activity messages - type 4
-             SESSION: 18,
-             LAP: 19,
-             RECORD: 20,
-             EVENT: 21,
-             ACTIVITY: 34,
+         //    // Activity messages - type 4
+         //    SESSION: 18,
+         //    LAP: 19,
+         //    RECORD: 20,
+         //    EVENT: 21,
+         //    ACTIVITY: 34,
 
-             HRV: 78,
-             DEVICE_INFO: 23,
-             LENGTH: 101,
+         //    HRV: 78,
+         //    DEVICE_INFO: 23,
+         //    LENGTH: 101,
 
-             // Sport setting messages - type 3
+         //    // Sport setting messages - type 3
 
-             ZONES_TARGET: 7,
-             HR_ZONE: 8,
-             POWER_ZONE: 9,
-             MET_ZONE: 10,
-             SPORT: 12,
-             SPEED_ZONE: 53,
-             // Where is cadence_zone ? Is it implemented in FIT?
+         //    ZONES_TARGET: 7,
+         //    HR_ZONE: 8,
+         //    POWER_ZONE: 9,
+         //    MET_ZONE: 10,
+         //    SPORT: 12,
+         //    SPEED_ZONE: 53,
+         //    // Where is cadence_zone ? Is it implemented in FIT?
 
-             // Settings file - type 2 
+         //    // Settings file - type 2 
 
-             DEVICE_SETTINGS : 2,
-             USER_PROFILE: 3,
-             HRM_PROFILE: 4,
-             SDM_PROFILE:5,
-             BIKE_PROFILE: 6
+         //    DEVICE_SETTINGS : 2,
+         //    USER_PROFILE: 3,
+         //    HRM_PROFILE: 4,
+         //    SDM_PROFILE:5,
+         //    BIKE_PROFILE: 6
              
-         };
+         //};
 
          // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
 
@@ -384,7 +384,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  //    displayActionFailure("This engine doesn't know how to clone a Blob, " +
                  //                         "use Firefox");
                  //throw e;
-                 loggMessage({ response: "error", data: "Could not write data to objectstore, global msg. = " + datarec.message + ", event = " + e.toString(), event: e });
+                 loggMessage({ response: "error", data: "Could not write data to objectstore, global msg. = " + datarec._message + ", event = " + e.toString(), event: e });
              }
 
              //req.transaction.oncompleted = function (evt) {
@@ -405,7 +405,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              };
 
              req.onerror = function (evt) {
-                 var errMsg = datarec.message;
+                 var errMsg = datarec._message;
                  if (errMsg !== undefined) {
                      if (datarec.timestamp !== undefined)
                          errMsg += " timestamp " + datarec.timestamp.value.toString();
@@ -624,20 +624,20 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                      if (datarec !== undefined) {
 
-                         records.push(datarec.globalMessageType); // Store all data globalmessage types contained in FIT file
+                         records.push(datarec._globalMessageType); // Store all data globalmessage types contained in FIT file
 
-                         if (datarec.message !== undefined) {
-                             if (rawdata[datarec.message] === undefined)
-                                 rawdata[datarec.message] = {};
+                         if (datarec._message !== undefined) {
+                             if (rawdata[datarec._message] === undefined)
+                                 rawdata[datarec._message] = {};
 
-                             newCounter.increment(datarec.message);
+                             newCounter.increment(datarec._message);
 
                              unacceptableTimestamp = false;
                              unacceptableLat = false;
                              unacceptableLong = false;
 
                              // Presist data to indexedDB
-                             switch (datarec.message) {
+                             switch (datarec._message) {
 
                                  // Common
 
@@ -770,21 +770,21 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                      //if (val !== undefined) {
 
                                          // Initialize rawdata for message and property if necessary
-                                         if (rawdata[(datarec.message)][prop] === undefined)
-                                             rawdata[(datarec.message)][prop] = [];
+                                         if (rawdata[(datarec._message)][prop] === undefined)
+                                             rawdata[(datarec._message)][prop] = [];
 
                                          if (typeof val === "object" && typeof val.length !== "undefined") // Array of values, i.e HRV/RR
                                          {
                                              var itemNr;
                                              var len = val.length;
                                              for (itemNr = 0; itemNr < len; itemNr++) {
-                                                 rawdata[datarec.message][prop][newCounter[datarec.message] - 1] = val[itemNr];
+                                                 rawdata[datarec._message][prop][newCounter[datarec._message] - 1] = val[itemNr];
                                                  if (itemNr < len - 1)  // Don't advance at end
-                                                     newCounter.increment(datarec.message);
+                                                     newCounter.increment(datarec._message);
                                              }
                                          }
                                          else
-                                             rawdata[datarec.message][prop][newCounter[datarec.message] - 1] = val;  // Single value
+                                             rawdata[datarec._message][prop][newCounter[datarec._message] - 1] = val;  // Single value
                                          
                                      //}
                                      //else
@@ -793,7 +793,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                              }
                              
                          } else
-                             loggMessage({ response: "info", data: "Unknown global message skipped " + datarec.globalMessageType.toString() });
+                             loggMessage({ response: "info", data: "Unknown global message skipped " + datarec._globalMessageType.toString() });
                      }
                  }
              }
@@ -851,8 +851,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              var globalMsg = messageFactory(globalMsgType);
 
-             var msg = { "message": getGlobalMessageTypeName(globalMsgType) };
-             msg.globalMessageType = globalMsgType;
+             var msg = { "_message": getGlobalMessageTypeName(globalMsgType) };
+             msg._globalMessageType = globalMsgType;
 
              var prop;
 
@@ -879,7 +879,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  // Skip fields with invalid value
                  if (!rec.content[field].invalid) {
 
-                     if (globalMsg[fieldDefNr] !== undefined && globalMsg[fieldDefNr] !== null) {
+                     if (globalMsg[fieldDefNr]) {
                          prop = globalMsg[fieldDefNr].property;
 
                          var unit = globalMsg[fieldDefNr].unit;
@@ -908,146 +908,152 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                          rec.content[field].value = val;
 
+                         // Handle timestamps
+                         if (prop === "timestamp" || prop === "start_time" || prop === "time_created")
+                             rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         
+                         msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+
                          // Duplication of code, maybe later do some value conversions here for specific messages
-                         switch (globalMsgType) {
+                         //switch (msg.mesage) {
 
-                             // Common messages
+                         //    // Common messages
 
-                             // file_id
-                             case GLOBAL_FIT_MSG.FILEID:
-                                 if (prop === "time_created")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-                                 //  file_creator
-                             case GLOBAL_FIT_MSG.FILE_CREATOR: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                         //    // file_id
+                         //    case "file_id":
+                         //        if (prop === "time_created")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
+                         //        //  file_creator
+                         //    case "file_creator": msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                                 // Activity messages
-                                 // session
-                             case GLOBAL_FIT_MSG.SESSION:
-                                 if (prop === "timestamp" || prop === "start_time")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        // Activity messages
+                         //        // session
+                         //    case "session":
+                         //        if (prop === "timestamp" || prop === "start_time")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                                 break;
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                         //        break;
 
-                                 // lap
-                             case GLOBAL_FIT_MSG.LAP:
-                                 if (prop === "timestamp" || prop === "start_time")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        // lap
+                         //    case "lap":
+                         //        if (prop === "timestamp" || prop === "start_time")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                                 break;
-                                 // record
-                             case GLOBAL_FIT_MSG.RECORD:
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                         //        break;
+                         //        // record
+                         //    case "record":
 
-                                 if (prop === "timestamp")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        if (prop === "timestamp")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                                 break;
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                         //        break;
 
-                                 // activity
-                             case GLOBAL_FIT_MSG.ACTIVITY:
-                                 if (prop === "timestamp")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        // activity
+                         //    case "activity":
+                         //        if (prop === "timestamp")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
 
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-
-
-                                 // hrv
-                             case GLOBAL_FIT_MSG.HRV: msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-
-                                 // event
-                             case GLOBAL_FIT_MSG.EVENT:
-                                 if (prop === "timestamp")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                                 break;
-
-                             case GLOBAL_FIT_MSG.DEVICE_INFO:
-                                 if (prop === "timestamp")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                                 break;
-
-                             case GLOBAL_FIT_MSG.LENGTH:
-                                 if (prop === "timestamp" || prop === "start_time")
-                                     rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                                 msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                                 break;
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
 
-                                 // Sport setting messages
+                         //        // hrv
+                         //    case "hrv": msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
 
-                             case GLOBAL_FIT_MSG.ZONES_TARGET:
-                                 msg[prop] = {
-                                     value: rec.content[field].value,
-                                     unit: unit,
-                                     scale: scale,
-                                     offset: offset
-                                 };
-                                 break;
-                             case GLOBAL_FIT_MSG.SPORT:
-                                 msg[prop] = {
-                                     value: rec.content[field].value,
-                                     unit: unit,
-                                     scale: scale,
-                                     offset: offset
-                                 };
-                                 break;
-                             case GLOBAL_FIT_MSG.HR_ZONE:
-                                 msg[prop] = {
-                                     value: rec.content[field].value,
-                                     unit: unit,
-                                     scale: scale,
-                                     offset: offset
-                                 };
-                                 break;
-                             case GLOBAL_FIT_MSG.SPEED_ZONE:
-                                 msg[prop] = {
-                                     value: rec.content[field].value,
-                                     unit: unit,
-                                     scale: scale,
-                                     offset: offset
-                                 };
-                                 break;
-                                 // case cadence...
-                             case GLOBAL_FIT_MSG.POWER_ZONE:
-                                 msg[prop] = {
-                                     value: rec.content[field].value,
-                                     unit: unit,
-                                     scale: scale,
-                                     offset: offset
-                                 };
-                                 break;
-                             case GLOBAL_FIT_MSG.MET_ZONE:
-                                 msg[prop] = {
-                                     value: rec.content[field].value,
-                                     unit: unit,
-                                     scale: scale,
-                                     offset: offset
-                                 };
-                                 break;
+                         //        // event
+                         //    case "event":
+                         //        if (prop === "timestamp")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                         //        break;
 
-                                 // Settings file messages
+                         //    case "device_info":
+                         //        if (prop === "timestamp")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                         //        break;
 
-                             case GLOBAL_FIT_MSG.DEVICE_SETTINGS:
-                             case GLOBAL_FIT_MSG.SDM_PROFILE:
-                             case GLOBAL_FIT_MSG.HRM_PROFILE:
-                             case GLOBAL_FIT_MSG.BIKE_PROFILE:
-                             case GLOBAL_FIT_MSG.USER_PROFILE:
-                                 msg[prop] = {
-                                     value: rec.content[field].value,
-                                     unit: unit,
-                                     scale: scale,
-                                     offset: offset
-                                 };
-                                 break;
+                         //    case "length":
+                         //        if (prop === "timestamp" || prop === "start_time")
+                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
+                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
+                         //        break;
 
-                             default:
-                                 loggMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
-                                 break;
-                         }
+
+                         //        // Sport setting messages
+
+                         //    case "zones_target":
+                         //        msg[prop] = {
+                         //            value: rec.content[field].value,
+                         //            unit: unit,
+                         //            scale: scale,
+                         //            offset: offset
+                         //        };
+                         //        break;
+                         //    case "sport":
+                         //        msg[prop] = {
+                         //            value: rec.content[field].value,
+                         //            unit: unit,
+                         //            scale: scale,
+                         //            offset: offset
+                         //        };
+                         //        break;
+                         //    case "hr_zone":
+                         //        msg[prop] = {
+                         //            value: rec.content[field].value,
+                         //            unit: unit,
+                         //            scale: scale,
+                         //            offset: offset
+                         //        };
+                         //        break;
+                         //    case "speed_zone":
+                         //        msg[prop] = {
+                         //            value: rec.content[field].value,
+                         //            unit: unit,
+                         //            scale: scale,
+                         //            offset: offset
+                         //        };
+                         //        break;
+                         //        // case cadence...
+                         //    case "pwr_zone":
+                         //        msg[prop] = {
+                         //            value: rec.content[field].value,
+                         //            unit: unit,
+                         //            scale: scale,
+                         //            offset: offset
+                         //        };
+                         //        break;
+                         //    case "met_zone":
+                         //        msg[prop] = {
+                         //            value: rec.content[field].value,
+                         //            unit: unit,
+                         //            scale: scale,
+                         //            offset: offset
+                         //        };
+                         //        break;
+
+                         //        // Settings file messages
+
+                         //    case "device_settings":
+                         //    case "sdm_profile":
+                         //    case "hrm_profile":
+                         //    case "bike_profile":
+                         //    case "user_profile":
+                         //        msg[prop] = {
+                         //            value: rec.content[field].value,
+                         //            unit: unit,
+                         //            scale: scale,
+                         //            offset: offset
+                         //        };
+                         //        break;
+
+                         //    default:
+                         //        loggMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
+                         //        break;
+                         //}
                      } else {
 
                          // Allow for auto generating unknown properties than have data (not defined in FITActivitiyFile.js)
@@ -1085,7 +1091,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              }
 
              // Hrv and Records are the most prominent data, so skip these for now too not fill the console.log
-             if (globalMsgType !== GLOBAL_FIT_MSG.RECORD && globalMsgType !== GLOBAL_FIT_MSG.HRV)
+             if (msg._message !== "record" && msg._message !== "hrv")
                  loggMessage({ response: "info", data: "Local msg. type = " + localMsgType.toString() + " linked to global msg. type = " + globalMsgType.toString() + ":" + getGlobalMessageTypeName(globalMsgType) + " field values = " + logger });
              //}
 
@@ -1146,6 +1152,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              };
 
              var globalMessage = mesg_num[globalMessageType];
+
+             // Handle case where we don't find message name
              if (globalMessage === undefined)
                  globalMessage = "globalMessage" + globalMessageType.toString();
 
