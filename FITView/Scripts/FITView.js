@@ -6497,10 +6497,10 @@
                 }
 
 
-                if (rawData.session.total_elapsed_time[sessionNr] >= 0 && rawData.session.total_calories[sessionNr] >= 0) {
+                if (rawData.session.total_timer_time[sessionNr] >= 0 && rawData.session.total_calories[sessionNr] >= 0) {
 
 
-                    watt = rawData.session.total_calories[sessionNr] * 1000 * 4.1868 / rawData.session.total_elapsed_time[sessionNr];
+                    watt = rawData.session.total_calories[sessionNr] * 1000 * 4.1868 / rawData.session.total_timer_time[sessionNr];
 
                     self.masterVM.IntensityVM.history.push([FITUtil.timestampUtil.addTimezoneOffsetToUTC(sessionStartTime), watt]);
 
