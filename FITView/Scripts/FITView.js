@@ -2199,12 +2199,14 @@
          {
              var lapNr,
               len;
+
+            // FOR TESTING rawData.lap = undefined;
              
+             self.masterVM.tickPositions = [];  // Tick at end of each lap
+             self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
+
              if (rawData.lap) {
                  len = rawData.lap.timestamp.length;;
-
-                 self.masterVM.tickPositions = [];  // Tick at end of each lap
-                 self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
 
                  var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
                  var total_elapsed_time = 0;
@@ -2223,7 +2225,7 @@
                                  //lapIndexTimestamp = FITUtil.getIndexOfTimestamp(rawData.record, rawData.lap.timestamp[lapNr]);
                                  //if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
                                  //    self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
-                                   self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_elapsed_time] = total_distance;
+                                 self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_elapsed_time] = total_distance;
 
                                  //else
                                  //    self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
@@ -2231,15 +2233,35 @@
                                  // Timestamp seems to be integer -> no way to get tenth of seconds from lap timestamp ...
                                  // Fraction of second is available on total_elapsed_time or total_timer_time
                                  //self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
-                                 self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)+total_elapsed_time);
+                                 self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_elapsed_time);
                              }
                          }
                      }
                  } else
                      self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
-             } else
-                 self.loggMessage("warn", "No lap data available to get tickpositions from");
-             // TO DO : Default fallback, i.e tickPosition each 1km
+             } else {
+                 self.loggMessage("warn", "No lap data available to get tickpositions from, trying to set tick each 1km or each 100m if total distance less than 1km");
+                 // TO DO : Default fallback, i.e tickPosition each 1km
+                 var recLen = rawData.record.timestamp.length;
+                 //var step = Math.round(recLen / 10); // Just chop it in 10 
+                 var totRecDistance = rawData.record.distance[recLen - 1];
+                 var numberOfKM = totRecDistance / 1000;
+                 var kmCounter = 1;
+                 var meterCounter = 100;
+                 for (var recordNr = 0; recordNr < recLen; recordNr++) {
+                     if (rawData.record.distance[recordNr] / 1000 > kmCounter && numberOfKM >= 1) { // Each 1km
+                         self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr])] = rawData.record.distance[recordNr];
+                         self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr]));
+                         kmCounter++;
+                     } else if (rawData.record.distance[recordNr] / 1000 > meterCounter && numberOfKM < 1) { // Each 100m
+                         self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr])] = rawData.record.distance[recordNr];
+                         self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr]));
+                         meterCounter+=100;
+                     }
+                         
+                 }
+
+             }
 
              if (rawData.event) {
                  var ev, ev_type, eventIndexTimestamp;
