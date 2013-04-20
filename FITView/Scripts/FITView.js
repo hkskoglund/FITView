@@ -2200,7 +2200,8 @@
              var lapNr,
               len;
 
-            // FOR TESTING rawData.lap = undefined;
+             // FOR TESTING 
+             rawData.lap = undefined;
              
              self.masterVM.tickPositions = [];  // Tick at end of each lap
              self.masterVM.distanceAtTick = {};    // Fetches rawdata.record distance at specific timestamp
@@ -2242,23 +2243,29 @@
              } else {
                  self.loggMessage("warn", "No lap data available to get tickpositions from, trying to set tick each 1km or each 100m if total distance less than 1km");
                  // TO DO : Default fallback, i.e tickPosition each 1km
-                 var recLen = rawData.record.timestamp.length;
-                 //var step = Math.round(recLen / 10); // Just chop it in 10 
-                 var totRecDistance = rawData.record.distance[recLen - 1];
-                 var numberOfKM = totRecDistance / 1000;
-                 var kmCounter = 1;
-                 var meterCounter = 100;
-                 for (var recordNr = 0; recordNr < recLen; recordNr++) {
-                     if (rawData.record.distance[recordNr] / 1000 > kmCounter && numberOfKM >= 1) { // Each 1km
-                         self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr])] = rawData.record.distance[recordNr];
-                         self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr]));
-                         kmCounter++;
-                     } else if (rawData.record.distance[recordNr] / 1000 > meterCounter && numberOfKM < 1) { // Each 100m
-                         self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr])] = rawData.record.distance[recordNr];
-                         self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr]));
-                         meterCounter+=100;
+                 if (sport === FITSport.running) {
+                     var recLen = rawData.record.timestamp.length;
+                     //var step = Math.round(recLen / 10); // Just chop it in 10 
+                     var totRecDistance = rawData.record.distance[recLen - 1];
+                     var numberOfKM = totRecDistance / 1000;
+                     var kmCounter = 1;
+                     var meterCounter = 100;
+                     for (var recordNr = 0; recordNr < recLen; recordNr++) {
+                         if (rawData.record.distance[recordNr] / 1000 > kmCounter && numberOfKM >= 1) { // Each 1km
+                             if (rawData.record.timestamp[recordNr] >= startTimestamp && rawData.record.timestamp[recordNr] <= endTimestamp) {
+                                 self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr])] = rawData.record.distance[recordNr];
+                                 self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr]));
+                             }
+                             kmCounter++;
+                         } else if (rawData.record.distance[recordNr] / 1000 > meterCounter && numberOfKM < 1) { // Each 100m
+                             if (rawData.record.timestamp[recordNr] >= startTimestamp && rawData.record.timestamp[recordNr] <= endTimestamp) {
+                                 self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr])] = rawData.record.distance[recordNr];
+                                 self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.record.timestamp[recordNr]));
+                             }
+                             meterCounter += 100;
+                         }
+
                      }
-                         
                  }
 
              }
