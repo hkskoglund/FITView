@@ -66,116 +66,52 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
 
      function FitFileImport(options) {
-         var exposeFunc = {};
 
+         var exposeFunc = {},
 
          // var fitFileManager = this;
 
-         var fitFile = options.fitfile; // Reference to FIT file in browser - FILE API
-         var fitFiles = options.fitfiles;
-         var storeInIndexedDB = options.store;
-         var logging = options.logging;
+          fitFile = options.fitfile, // Reference to FIT file in browser - FILE API
+          fitFiles = options.fitfiles,
+          storeInIndexedDB = options.store,
+          logging = options.logging,
 
-         var index = 0; // Pointer to next unread byte in FIT file
-         var records = []; // Holds every global message nr. contained in FIT file
+          index = 0, // Pointer to next unread byte in FIT file
+          records = [], // Holds every global message nr. contained in FIT file
 
-         var fileBuffer = {};
+          fileBuffer = {},
 
-         var fitFileReader;
-         var headerInfo;
+          fitFileReader,
+          headerInfo,
 
-         var localMsgDef = {};
+          localMsgDef = {},
 
          //this.query = options.query;
 
-
-         //this.event_type = {
-         //    start: 0,
-         //    stop: 1,
-         //    consecutive_depreciated: 2,
-         //    marker: 3,
-         //    stop_all: 4,
-         //    begin_depreciated: 5,
-         //    end_depreciated: 6,
-         //    end_all_depreciated: 7,
-         //    stop_disable: 8,
-         //    stop_disable_all: 9
-         //};
-
-
-         var DB_NAME = 'fit-import';
-         var DB_VERSION = 1; // Use a long long for this value (don't use a float)
+          DB_NAME = 'fit-import',
+          DB_VERSION = 1, // Use a long long for this value (don't use a float)
 
          // Object store
-         var RECORD_OBJECTSTORE_NAME = 'records';
-         var LAP_OBJECTSTORE_NAME = 'lap';
-         var SESSION_OBJECTSTORE_NAME = 'session';
-         var HRV_OBJECTSTORE_NAME = 'hrv';
-         var ACTIVITY_OBJECTSTORE_NAME = 'activity';
-         var LENGTH_OBJECTSTORE_NAME = 'length';
-         var EVENT_OBJECTSTORE_NAME = 'event';
-         var FILEID_OBJECTSTORE_NAME = 'fileid';
-         var DEVICEINFO_OBJECTSTORE_NAME = 'deviceinfo';
-         var META_OBJECTSTORE_NAME = 'meta';
+          RECORD_OBJECTSTORE_NAME = 'records',
+          LAP_OBJECTSTORE_NAME = 'lap',
+          SESSION_OBJECTSTORE_NAME = 'session',
+          HRV_OBJECTSTORE_NAME = 'hrv',
+          ACTIVITY_OBJECTSTORE_NAME = 'activity',
+          LENGTH_OBJECTSTORE_NAME = 'length',
+          EVENT_OBJECTSTORE_NAME = 'event',
+          FILEID_OBJECTSTORE_NAME = 'fileid',
+          DEVICEINFO_OBJECTSTORE_NAME = 'deviceinfo',
+          META_OBJECTSTORE_NAME = 'meta',
 
-         var recordStore;
-         var lapStore;
-         var sessionStore;
-         var hrvStore;
-         var activityStore;
-         var lengthStore;
-         var eventStore;
-         var fileidStore;
-         var deviceinfoStore;
-         var metaStore;
-
-         var db;
+          recordStore, lapStore, sessionStore, hrvStore, activityStore, lengthStore, eventStore, fileidStore, deviceinfoStore, metaStore,   db,
 
          // FIT file contains definition rec. followed by data rec.
-         var FIT_DEFINITION_MSG = 1;
-         var FIT_DATA_MSG = 0;
-
-         // Global msg types.
-
-         //var GLOBAL_FIT_MSG = {
-         //    // Common
-         //    FILEID: 0,
-         //    FILE_CREATOR: 49,
-
-         //    // Activity messages - type 4
-         //    SESSION: 18,
-         //    LAP: 19,
-         //    RECORD: 20,
-         //    EVENT: 21,
-         //    ACTIVITY: 34,
-
-         //    HRV: 78,
-         //    DEVICE_INFO: 23,
-         //    LENGTH: 101,
-
-         //    // Sport setting messages - type 3
-
-         //    ZONES_TARGET: 7,
-         //    HR_ZONE: 8,
-         //    POWER_ZONE: 9,
-         //    MET_ZONE: 10,
-         //    SPORT: 12,
-         //    SPEED_ZONE: 53,
-         //    // Where is cadence_zone ? Is it implemented in FIT?
-
-         //    // Settings file - type 2 
-
-         //    DEVICE_SETTINGS : 2,
-         //    USER_PROFILE: 3,
-         //    HRM_PROFILE: 4,
-         //    SDM_PROFILE:5,
-         //    BIKE_PROFILE: 6
-             
-         //};
+          FIT_DEFINITION_MSG = 1,
+          FIT_DATA_MSG = 0,
 
          // From table 4-6 p. 22 in D00001275 Flexible & Interoperable Data Transfer (FIT) Protocol Rev 1.3
 
-         var fitBaseTypesInvalidValues = {
+          fitBaseTypesInvalidValues = {
 
              0x00: {
                  "name": "enum",
@@ -423,9 +359,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
 
          function getRawdata(fileBuffer,fitFile) {
-             var rawData, type;
 
-             var headerInfo = getFITHeader(fileBuffer, fitFile);
+             var rawData, type, headerInfo = getFITHeader(fileBuffer, fitFile);
 
              if (isFIT(headerInfo)) {
                  // Store header to indexedDB
@@ -507,9 +442,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
          function getFITDataRecords(fileBuffer,headerInfo) {
 
-             var aFITBuffer = fileBuffer;
-             var dvFITBuffer = new DataView(aFITBuffer);
-
+             var dvFITBuffer = new DataView(fileBuffer);
 
              var prevIndex = index; // If getDataRecords are called again it will start just after header again
 
@@ -555,44 +488,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var SEMICIRCLE_THRESHOLD = 1520000;
              var unacceptableLat = false;
              var unacceptableLong = false;
-
-             //var counter = {
-
-             //    // Common
-
-             //    fileIdCounter: 0,
-             //    fileCreatorCounter: 0,
-
-             //    // Activity
-
-             //    lapCounter: 0,
-             //    sessionCounter: 0,
-             //    lengthCounter: 0,
-             //    deviceInfoCounter: 0,
-             //    activityCounter: 0,
-             //    eventCounter: 0,
-             //    recordCounter: 0,
-             //    hrvCounter: 0,
-
-             //    // Sport setting
-
-             //    zones_target_Counter: 0,
-             //    sport_Counter: 0,
-             //    hr_zone_Counter: 0,
-             //    speed_zone_Counter: 0,
-             //    cadence_zone_Counter: 0,
-             //    power_zone_Counter: 0,
-             //    met_zone_Counter: 0,
-
-             //    // Setting
-
-             //    device_settings_Counter : 0,
-             //    user_profile_Counter : 0,
-             //    hrm_profile_Counter : 0,
-             //    sdm_profile_Counter : 0,
-             //    bike_profile_Counter : 0,
-
-             //};
 
              // Try instead to use a generic counter aggregate with an increment function
              var newCounter = {
@@ -863,9 +758,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              //else {
 
              for (var i = 0; i < fieldNrs; i++) {
+
                  var field = "field" + i.toString();
-
-
 
                  if (rec.content[field] === undefined) {
                      loggMessage({ response: "error", data: "Cannot read content of field " + field + " global message type " + globalMsgType.toString() });
@@ -914,146 +808,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          
                          msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
 
-                         // Duplication of code, maybe later do some value conversions here for specific messages
-                         //switch (msg.mesage) {
-
-                         //    // Common messages
-
-                         //    // file_id
-                         //    case "file_id":
-                         //        if (prop === "time_created")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-                         //        //  file_creator
-                         //    case "file_creator": msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-
-                         //        // Activity messages
-                         //        // session
-                         //    case "session":
-                         //        if (prop === "timestamp" || prop === "start_time")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                         //        break;
-
-                         //        // lap
-                         //    case "lap":
-                         //        if (prop === "timestamp" || prop === "start_time")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                         //        break;
-                         //        // record
-                         //    case "record":
-
-                         //        if (prop === "timestamp")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                         //        break;
-
-                         //        // activity
-                         //    case "activity":
-                         //        if (prop === "timestamp")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-
-
-                         //        // hrv
-                         //    case "hrv": msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset }; break;
-
-                         //        // event
-                         //    case "event":
-                         //        if (prop === "timestamp")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                         //        break;
-
-                         //    case "device_info":
-                         //        if (prop === "timestamp")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                         //        break;
-
-                         //    case "length":
-                         //        if (prop === "timestamp" || prop === "start_time")
-                         //            rec.content[field].value = util.convertTimestampToUTC(rec.content[field].value);
-                         //        msg[prop] = { "value": rec.content[field].value, "unit": unit, "scale": scale, "offset": offset };
-                         //        break;
-
-
-                         //        // Sport setting messages
-
-                         //    case "zones_target":
-                         //        msg[prop] = {
-                         //            value: rec.content[field].value,
-                         //            unit: unit,
-                         //            scale: scale,
-                         //            offset: offset
-                         //        };
-                         //        break;
-                         //    case "sport":
-                         //        msg[prop] = {
-                         //            value: rec.content[field].value,
-                         //            unit: unit,
-                         //            scale: scale,
-                         //            offset: offset
-                         //        };
-                         //        break;
-                         //    case "hr_zone":
-                         //        msg[prop] = {
-                         //            value: rec.content[field].value,
-                         //            unit: unit,
-                         //            scale: scale,
-                         //            offset: offset
-                         //        };
-                         //        break;
-                         //    case "speed_zone":
-                         //        msg[prop] = {
-                         //            value: rec.content[field].value,
-                         //            unit: unit,
-                         //            scale: scale,
-                         //            offset: offset
-                         //        };
-                         //        break;
-                         //        // case cadence...
-                         //    case "pwr_zone":
-                         //        msg[prop] = {
-                         //            value: rec.content[field].value,
-                         //            unit: unit,
-                         //            scale: scale,
-                         //            offset: offset
-                         //        };
-                         //        break;
-                         //    case "met_zone":
-                         //        msg[prop] = {
-                         //            value: rec.content[field].value,
-                         //            unit: unit,
-                         //            scale: scale,
-                         //            offset: offset
-                         //        };
-                         //        break;
-
-                         //        // Settings file messages
-
-                         //    case "device_settings":
-                         //    case "sdm_profile":
-                         //    case "hrm_profile":
-                         //    case "bike_profile":
-                         //    case "user_profile":
-                         //        msg[prop] = {
-                         //            value: rec.content[field].value,
-                         //            unit: unit,
-                         //            scale: scale,
-                         //            offset: offset
-                         //        };
-                         //        break;
-
-                         //    default:
-                         //        loggMessage({ response: "error", data: "Not implemented message for global type nr., check messageFactory " + globalMsgType.toString() });
-                         //        break;
-                         //}
                      } else {
 
                          // Allow for auto generating unknown properties than have data (not defined in FITActivitiyFile.js)
@@ -1161,7 +915,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          }
 
          function messageFactory(globalMessageType) {
-
+             // Maybe can be improved by allowing a configuration file thats loaded at runtime defining properties for each global msg.
              var name = getGlobalMessageTypeName(globalMessageType);
              //var fitMsg = FITMessage();
              var fitActivity = FIT.ActivityFile();
@@ -1263,10 +1017,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              }
 
-
              return message.properties;
-
-
 
          }
 
@@ -1314,8 +1065,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var firstPartOfHeaderLength = 12;
              index = firstPartOfHeaderLength;
 
-
-
              // Optional header info, header CRC
 
              if (headerInfo.headerSize >= MAXFITHEADERLENGTH) {
@@ -1339,8 +1088,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              headerInfo.CRC = dviewFitHeader.getUint16(fileLength - CRCbytesLength, true); // Force little endian
              loggMessage({ response: "info", data: "Stored 16-bit CRC at end FIT file is (MSBLSB=bigendian) : " + headerInfo.CRC.toString(16) });
-
-
 
              headerInfo.verifyCRC = util.fitCRC(dviewFitHeader, 0, fileLength - CRCbytesLength, 0);
 
@@ -1597,9 +1344,6 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      }
 
                      // loggMessage({ response: "info", data: "Raw record content of data message : " + JSON.stringify(recContent) });
-
-
-
                      break;
              }
 
