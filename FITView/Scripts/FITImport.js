@@ -84,7 +84,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
           fitFileReader,
           headerInfo,
 
-          localMsgDef = {},
+          localMessageDefinitionCache = {},
 
          //this.query = options.query;
 
@@ -511,9 +511,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  // Probably it would be possible to integrate the first and second-pass in a integrated pass, but it would
                  // complicate the code. A decision was made to stick with the current solution - it works -
 
-                 if (recRaw.header.messageType === FIT_DEFINITION_MSG)
-                     localMsgDef["localMsgDefinition" + recRaw.header.localMessageType.toString()] = recRaw; // If we got an definition message, store it as a property
-                 else {
+                 if (recRaw.header.messageType === FIT_DATA_MSG) {
+                 //    localMessageDefinitionCache["localMsgDefinition" + recRaw.header.localMessageType.toString()] = recRaw; // If we got an definition message, store it as a property
+                 //else {
 
                      var datarec = getDataRecordContent(recRaw); // Do a second-pass and try to intepret content and generate messages with meaningfull properties
 
@@ -728,7 +728,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          function getDataRecordContent(rec) {
 
              var localMsgType = rec.header.localMessageType.toString();
-             var definitionMsg = localMsgDef["localMsgDefinition" + localMsgType];
+             var definitionMsg = localMessageDefinitionCache["localMsgDefinition" + localMsgType];
 
              if (definitionMsg === undefined) {
                  loggMessage({ response: "error", data: "No msg. definition found for local msg. type = " + localMsgType });
@@ -905,6 +905,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  104: "battery"
              };
 
+             
              var globalMessage = mesg_num[globalMessageType];
 
              // Handle case where we don't find message name
@@ -1098,6 +1099,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
          }
 
+         // Get raw FIT record
          function getRecord(dviewFit, maxReadToByte) {
 
              var fieldNr;
@@ -1123,6 +1125,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              recHeader.headerType = (recHeader.byte & HEADERTYPE_FLAG) >> 7; // MSB 7 0 = normal header, 1 = compressed timestampheader
 
              switch (recHeader.headerType) {
+
+                 // FIXED HEADER
+
                  case FIT_NORMAL_HEADER: // Normal header
                      recHeader.messageType = (recHeader.byte & NORMAL_MESSAGE_TYPE_FLAG) >> 6; // bit 6 - 1 = definition, 0 = data msg.
                      // bit 5 = 0 reserved
@@ -1143,6 +1148,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              // VARIALE CONTENT, EITHER DATA OR DEFINITION
 
              switch (recHeader.messageType) {
+
                  case FIT_DEFINITION_MSG:
                      //  5 byte FIXED content header
                      recContent.reserved = dviewFit.getUint8(index++); // Reserved = 0
@@ -1172,6 +1178,13 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                          };
                      }
 
+                  
+                     record.content = recContent;
+
+                     // Update local message definition cache
+                     localMessageDefinitionCache["localMsgDefinition" + record.header.localMessageType.toString()] = record; // If we got an definition message, store it as a property
+
+
                      loggMessage({ response: "info", data: "Raw record content of definition message : " + JSON.stringify(recContent) });
 
                      //       console.log("Definition message, global message nr. = ", recContent["globalMsgNr"].toString() + " contains " + recContent["fieldNumbers"].toString() + " fields");
@@ -1179,7 +1192,8 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                      break;
 
                  case FIT_DATA_MSG: // Lookup in msg. definition in properties -> read fields
-                     var localMsgDefinition = localMsgDef["localMsgDefinition" + recHeader.localMessageType.toString()];
+
+                     var localMsgDefinition = localMessageDefinitionCache["localMsgDefinition" + recHeader.localMessageType.toString()];
                      if (localMsgDefinition === undefined || localMsgDefinition === null) {
                          //  throw new Error("Could not find message definition of data message - local message type = " + recHeader.localMessageType.toString());
                          loggMessage({ response: "error", data: "Could not find message definition of data message - local message type = " + recHeader.localMessageType.toString() });
@@ -1343,12 +1357,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                      }
 
+                     record.content = recContent;
+
                      // loggMessage({ response: "info", data: "Raw record content of data message : " + JSON.stringify(recContent) });
                      break;
              }
-
-             record.content = recContent;
-
+             
              return record;
          }
 
