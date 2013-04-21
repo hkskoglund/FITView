@@ -2210,12 +2210,14 @@
 
                  var lapIndexTimestamp; // Index of timestamp for current lap in rawdata.record.timestamp
                  var total_elapsed_time = 0;
+                 //var total_timer_time = 0;  // Using total_timer_time will give problems with scaling on datetime axis when there is pauses in activity -> safest to use total_elapsed_time
                  var total_distance = 0;
 
                  if (typeof rawData.lap.start_time !== "undefined" && typeof rawData.lap.timestamp !== "undefined") {
                      for (lapNr = 0; lapNr < len; lapNr++) {
 
                          total_elapsed_time += rawData.lap.total_elapsed_time[lapNr] * 1000;
+                         //total_timer_time += rawData.lap.total_timer_time[lapNr] * 1000;
                          total_distance += rawData.lap.total_distance[lapNr];
 
                          if (rawData.lap.start_time[lapNr] >= startTimestamp && rawData.lap.timestamp[lapNr] <= endTimestamp) {
@@ -2226,7 +2228,7 @@
                                  //if (lapIndexTimestamp !== -1 && rawData.record.distance && rawData.record.distance[lapIndexTimestamp] >= 0)
                                  //    self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr])] = rawData.record.distance[lapIndexTimestamp];
                                  self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_elapsed_time] = total_distance;
-
+                                 //self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_timer_time] = total_distance;
                                  //else
                                  //    self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
 
