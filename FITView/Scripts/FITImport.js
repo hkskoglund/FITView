@@ -491,11 +491,11 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              // Try instead to use a generic counter aggregate with an increment function
              var newCounter = {
-                 increment: function (globalMsg) {
-                     if (typeof this[globalMsg] === "undefined")
-                         this[globalMsg] = 1;
+                 increment: function (globalMessage) {
+                     if (typeof this[globalMessage] === "undefined")
+                         this[globalMessage] = 1;
                      else
-                         this[globalMsg]++;
+                         this[globalMessage]++;
                  }
              };
 
@@ -515,7 +515,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  //    localMessageDefinitionCache["localMsgDefinition" + recRaw.header.localMessageType.toString()] = recRaw; // If we got an definition message, store it as a property
                  //else {
 
-                     var datarec = getDataRecordContent(recRaw); // Do a second-pass and try to intepret content and generate messages with meaningfull properties
+                     var datarec = intepretDataRecord(recRaw); // Do a second-pass and try to intepret content and generate messages with meaningfull properties
 
                      if (datarec !== undefined) {
 
@@ -725,7 +725,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
          }
 
          // Adds property names, scaling and units to data -> intepretation of raw harvested data record
-         function getDataRecordContent(rec) {
+         function intepretDataRecord(rec) {
 
              var localMsgType = rec.header.localMessageType.toString();
              var definitionMsg = localMessageDefinitionCache["localMsgDefinition" + localMsgType];
@@ -744,14 +744,15 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              var logger = "";
 
-             var globalMsg = messageFactory(globalMsgType);
+             // Fetch new global message template to populate with rawdata values
+             var globalMessage = messageFactory(globalMsgType);
 
              var msg = { "_message": getGlobalMessageTypeName(globalMsgType) };
              msg._globalMessageType = globalMsgType;
 
              var prop;
 
-             //if (globalMsg === undefined)
+             //if (globalMessage === undefined)
 
              //    loggMessage({ response: "error", data: "Global Message Type " + globalMsgType.toString() + " number unsupported" });
 
@@ -773,12 +774,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                  // Skip fields with invalid value
                  if (!rec.content[field].invalid) {
 
-                     if (globalMsg[fieldDefNr]) {
-                         prop = globalMsg[fieldDefNr].property;
+                     if (globalMessage[fieldDefNr]) {
+                         prop = globalMessage[fieldDefNr].property;
 
-                         var unit = globalMsg[fieldDefNr].unit;
-                         var scale = globalMsg[fieldDefNr].scale;
-                         var offset = globalMsg[fieldDefNr].offset;
+                         var unit = globalMessage[fieldDefNr].unit;
+                         var scale = globalMessage[fieldDefNr].scale;
+                         var offset = globalMessage[fieldDefNr].offset;
                          var val = rec.content[field].value; // Can be an array in case of HRV data - invalid values are skipped in getRecord (raw)
 
                          if (typeof val === "object" && typeof val.length !== "undefined") // Probably array
