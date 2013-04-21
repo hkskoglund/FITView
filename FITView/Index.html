@@ -1852,16 +1852,22 @@
                                                             <img class="inlineIcon" src="Images/sport/generic.png" data-bind="attr: { title: 'Sport is ' + sport[$index()],  alt: 'Sport is ' + sport[$index()] }" />
                                                         <!-- /ko -->
 
-                                                        <!-- ko if: typeof (total_distance) !== "undefined" && total_distance.length > 0  -->
+                                                        <!-- ko if: typeof total_distance !== "undefined" && total_distance.length > 0  -->
+                                                             <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
 
-                                                            <!-- ko if: total_distance[$index()] > 0 && total_distance[$index()] < 1000 -->
+                                                            <!-- ko if: total_distance[$index()] >= 0 && total_distance[$index()] < 1000 -->
                                                                 <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance[$index()].toFixed(0) + ' m'"></span>
                                                             <!-- /ko -->
 
-                                                            <!-- ko if: total_distance[$index()] > 0 && total_distance[$index()] >= 1000 -->
+                                                            <!-- ko if: total_distance[$index()] >= 1000 -->
                                                                 <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()] / 1000).toFixed(2) + ' km'"></span>
                                                             <!-- /ko -->
                                                         <!-- /ko -->
+
+                                                         <!-- ko if: typeof total_distance === "undefined" -->
+                                                            <!-- In case only HR and speed data, i.e indoor cycling without speed/cadence sensor -->
+                                                            <img class="inlineIcon" alt="Total distance not measured" title="Total distance not measured" src="Images/total_distance.png" />!
+                                                         <!-- /ko -->
 
                                                          <!-- ko if: typeof num_laps !== "undefined" && num_laps[$index()] >= 0 -->
                                                                 <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />

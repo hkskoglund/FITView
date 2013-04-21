@@ -387,9 +387,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              // Will send undefined if not .FIT datatype
 
-             if (self.webkitPostMessage)
-                 self.webkitpostMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file: fitFile });
-             else
+             //if (self.webkitPostMessage)
+             //    self.webkitpostMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file: fitFile });
+             //else
                  self.postMessage({ response: "rawData", "rawdata": rawData, datamessages: records, file: fitFile });
 
              return rawData;
@@ -650,21 +650,18 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                              }
 
-                             // Build rawdata structure tailored for integration with highchart
+                             // Build rawdata structure tailored for integration with Highcharts
 
                              if (!unacceptableTimestamp && !unacceptableLat && !unacceptableLong) {
 
                                  for (var prop in datarec) {
 
-                                     //if (prop === "message" || prop === "globalMessageType") 
-                                     //    continue; // Skip these, they don't have a .value property
-
                                      if (typeof datarec[prop].value !== "undefined")
                                          var val = datarec[prop].value;
                                      else
-                                         continue;
+                                         continue; // Skip these, they don't have a .value property
 
-                                     //if (val !== undefined) {
+                                     if (val !== undefined) {
 
                                          // Initialize rawdata for message and property if necessary
                                          if (rawdata[(datarec._message)][prop] === undefined)
@@ -683,9 +680,9 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
                                          else
                                              rawdata[datarec._message][prop][newCounter[datarec._message] - 1] = val;  // Single value
                                          
-                                     //}
-                                     //else
-                                     //    loggMessage({ response: "info", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
+                                     }
+                                     else
+                                         loggMessage({ response: "warn", data: "Tried to access " + prop.toString() + ".value on " + datarec.message + ", but it was undefined" });
                                  }
                              }
                              
