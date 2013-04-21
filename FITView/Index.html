@@ -1857,14 +1857,14 @@
                                                         <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance[$index()].toFixed(0) + ' m'"></span>
                                                     <!-- /ko -->
 
-                                                    <!-- ko if: total_distance[$index()] > 0 && total_distance[$index()] > 1000 -->
+                                                    <!-- ko if: total_distance[$index()] > 0 && total_distance[$index()] >= 1000 -->
                                                         <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()] / 1000).toFixed(2) + ' km'"></span>
                                                     <!-- /ko -->
                                                 <!-- /ko -->
 
                                                  <!-- ko if: typeof num_laps !== "undefined" && num_laps[$index()] >= 0 -->
                                                         <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
-                                                        <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps[$index()].toFixed(0)"></span>
+                                                        <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="//text: num_laps[$index()].toFixed(0)"></span>
                                                  <!-- /ko -->
 
                                                 <!-- ko if: typeof (avg_heart_rate) !== "undefined" && avg_heart_rate[$index()] >= 0 || typeof (max_heart_rate) !== "undefined" && max_heart_rate[$index()] >= 0 -->
