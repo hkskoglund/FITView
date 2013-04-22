@@ -1788,7 +1788,7 @@
                     <ul id="activityList" data-bind=" foreach: activity">
 
                         
-                        <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data)}">
+                        <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data), attr: { title: 'Filename: ' + _headerInfo_.fitFile.name + ' Size: ' + _headerInfo_.fitFile.size + ' bytes' }}">
                            <!-- http://stackoverflow.com/questions/9261296/any-good-techniques-to-debug-template-binding-faults-for-knockout-js -->
                            <!-- <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>-->
                                 <a href="#" data-bind="click: $parent.showActivity.bind($index())">
@@ -1797,12 +1797,7 @@
                                     <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" />
                                     <!-- /ko -->
                                    
-                                        <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
-                                        <span  data-bind="text : (new Date(record.timestamp[0])).toLocaleString(), attr: { title: 'Filename: '+ _headerInfo_.fitFile.name + ' Size: '+_headerInfo_.fitFile.size+ ' bytes'}"></span>
-                                        <!-- /ko -->
-
-
-
+                                       
                                         <!-- ko if: typeof garminConnect !== "undefined" && typeof (garminConnect.activity) !== "undefined" -->
                                           <!-- ko if: typeof (garminConnect.activity.activityName) !== "undefined" -->
                                               <span style="display: block" data-bind="text: garminConnect.activity.activityName, attr: { title: garminConnect.activity.activityDescription }"></span>
@@ -1814,15 +1809,13 @@
                                         <span style="display: inline">No data.</span>
                                         <!-- /ko -->
 
-                                        <!-- ko ifnot:  (typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0) -->
-                                        <!-- ko if: typeof session !== "undefined" && session.start_time && session.start_time.length > 0 -->
-                                        <span style="display: inline" data-bind="text : (new Date(session.start_time[0])).toLocaleString()"></span>
-                                        <!-- /ko -->
-                                        <!-- /ko -->
-                                        
-                                        <!-- ko if: typeof session === "undefined" -->
-                                        No session info. available
-                                        <!-- /ko -->
+                                       <!-- ko if: typeof session === "undefined" -->
+                                            <span> No session info. available </span> 
+                                            <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
+                                                <span data-bind="text: (new Date(record.timestamp[0])).toLocaleString()"></span>
+                                            <!-- /ko -->
+                                             
+                                    <!-- /ko -->
 
                                     <!-- ko if: typeof session !== "undefined" -->
                                     
@@ -1850,6 +1843,10 @@
 
                                                         <!-- ko if: sport[$index()] !== 5 && sport[$index()]!== 2 && sport[$index()] !== 1 -->
                                                             <img class="inlineIcon" src="Images/sport/generic.png" data-bind="attr: { title: 'Sport is ' + sport[$index()],  alt: 'Sport is ' + sport[$index()] }" />
+                                                        <!-- /ko -->
+
+                                                        <!-- ko if: typeof start_time !== "undefined"  && start_time.length > 0 && typeof start_time[$index()] !== "undefined" -->
+                                                            <span style="display: inline" data-bind="text: (new Date(start_time[$index()])).toLocaleString()"></span>
                                                         <!-- /ko -->
 
                                                         <!-- ko if: typeof total_distance !== "undefined" && total_distance.length > 0  -->

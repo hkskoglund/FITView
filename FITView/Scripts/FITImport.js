@@ -507,16 +507,10 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
              while (index < maxReadToByte) { // Try reading from file in case something is wrong with header (datasize/headersize) 
 
-                 var FITrecord = getRecord(dvFITBuffer, maxReadToByte); // Do a first-pass harvest of a datarecord without regard to intepretation of content
-                 // Probably it would be possible to integrate the first and second-pass in a integrated pass, but it would
-                 // complicate the code. A decision was made to stick with the current solution - it works -
+                 var FITrecord = getRecord(dvFITBuffer, maxReadToByte); 
 
                  if (FITrecord.record.header.messageType === FIT_DATA_MSG) {
-                 //    localMessageDefinitionCache["localMessageDefinition" + FITrecord.header.localMessageType.toString()] = FITrecord; // If we got an definition message, store it as a property
-                 //else {
-
-                    // var datarec = intepretDataRecord(FITrecord); // Do a second-pass and try to intepret content and generate messages with meaningfull properties
-
+               
                      var datarec = FITrecord.message;
 
                      if (datarec !== undefined) {
