@@ -779,6 +779,12 @@
                 TEhistory : []
             },
 
+            HRZonesVM: {
+                running: {},
+                cycling: {},
+                other: {}
+            },
+
             headerInfoVM: {
 
                 fileName: ko.observable(),
@@ -1684,9 +1690,9 @@
                         strokeWeight: 1
                     }, "session");
 
-                self.showHRZones(VM.rawData, start_time, timestamp, sport);
 
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
+                self.showHRZones(VM.rawData, start_time, timestamp, sport);
             };
 
             this.masterVM.activityVM.showActivity = function (data, event) {
@@ -1729,9 +1735,9 @@
                     strokeWeight: 2
                 }, "lap");
 
-                self.showHRZones(VM.rawData, start_time, timestamp, sport);
-
+                
                 self.showMultiChart(VM.rawData, start_time, timestamp, sport);
+                self.showHRZones(VM.rawData, start_time, timestamp, sport);
             };
 
             ko.applyBindings(this.masterVM, bodyElement); // Initialize master model with DOM 
@@ -6370,11 +6376,14 @@
             //if (sessionMarkerSet || sessionAsOverlaySet || polylinePlotted)
             //   $('#activityMap').show();
 
+
+
+
             var destroy = true;
-            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
-            self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0], destroy);
 
            
+            self.showMultiChart(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0], destroy);
+            self.showHRZones(rawData, rawData.session.start_time[0], rawData.session.timestamp[0], rawData.session.sport[0]);
 
             //FITUI.showDataRecordsOnMap(eventdata.datamessages); 
         },
@@ -6614,6 +6623,7 @@
                 }
         },
 
+        
         updateWeeklyCalories : function (rawData)
         {
             var weekOfYear, year, startMoment, weekMoment;
