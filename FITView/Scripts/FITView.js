@@ -5352,7 +5352,7 @@
 
         },
 
-        setTimeInHRZone : function (rawdata,mySportSettings,startTimestamp,endTimestamp)
+        getTimeInHRZone : function (rawdata,sport,startTimestamp,endTimestamp,fixedStartIndex,fixedEndIndex)
         {
             if (FITUtil.isUndefined(rawdata.record)) {
                 self.loggMessage("warn", "Cannot set HR zones data when there is no rawdata, tried looking in rawdata.record");
@@ -5364,8 +5364,24 @@
                 return undefined;
             }
 
-            var startIndex = FITUtil.getIndexOfTimestamp(rawdata.record, startTimestamp);
-            var endIndex = FITUtil.getIndexOfTimestamp(rawdata.record, endTimestamp);
+            var mySportSettings = self.getSportSettingsFromMemory(sport);
+            if (typeof mySportSettings === "undefined" || mySportSettings === null) {
+                self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
+                return undefined;
+            }
+
+            var startIndex;
+            if (fixedStartIndex !== undefined)
+                startIndex = fixedStartIndex;
+            else
+                startIndex = FITUtil.getIndexOfTimestamp(rawdata.record, startTimestamp);
+
+            var endIndex;
+            
+            if (fixedEndIndex !== undefined)
+              endIndex = fixedEndIndex;
+            else
+              endIndex =  FITUtil.getIndexOfTimestamp(rawdata.record, endTimestamp);
 
             var restingHR = self.getRestingHR();
 
@@ -5374,22 +5390,21 @@
             var len = mySportSettings.hr_zone.high_bpm.length;
 
             // Init zones to 0
-            mySportSettings.hr_zone.timeInZone = [];
+            var timeInZone = [];
 
             for (var zone = 0; zone < len; zone++)
-                mySportSettings.hr_zone.timeInZone[zone] = 0;
+                timeInZone[zone] = 0;
 
             var timeInZoneMillisec;
             var maxTimeDifference = 15000; // Allow max 15 seconds between each timestamp, otherwise filter out (i.e during stop/pause)
-            var hry;
+            var HR;
             var maxHR, minHR;
 
             var maximumHR = mySportSettings.zones_target.max_heart_rate[0];
 
-
             for (var datap = startIndex; datap <= endIndex; datap++) {
 
-                // var hry = rawData["heart_rate"][datap][1];
+                // var HR = rawData["heart_rate"][datap][1];
 
                 if (datap < endIndex) {
                     timeInZoneMillisec = rawdata.record.timestamp[datap + 1] - rawdata.record.timestamp[datap];
@@ -5405,17 +5420,19 @@
                         continue;
                     }
 
-                } else if (datap === endIndex)
-                    timeInZoneMillisec = 1000;
-
+                } 
                 // if (rawdata.record.heart_rate !== undefined)
-                hry = rawdata.record.heart_rate[datap];
+                HR = rawdata.record.heart_rate[datap];
                 //else
-                //    hry = undefined;
+                //    HR = undefined;
 
-                if (hry === undefined || hry === null)
+                if (HR === undefined || HR === null)
                     self.loggMessage("error", "Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
                 else {
+
+                    if (datap === endIndex)
+                        timeInZoneMillisec = 60000 / HR;
+
                     // Count Heart rate data points in zone
                     for (zone = 0; zone < len; zone++) {
                         maxHR = mySportSettings.hr_zone.high_bpm[zone];
@@ -5424,19 +5441,19 @@
                         else
                             minHR = mySportSettings.hr_zone.high_bpm[zone - 1];
 
-                        // Scale hry according to preferred calculation method of HR zone (custom,%ofmax, maybe %hr reserve)
+                        // Scale HR according to preferred calculation method of HR zone (custom,%ofmax, maybe %hr reserve)
                         switch (mySportSettings.zones_target.hr_calc_type[0]) {
                             case hr_zone_calc.custom:
-                                hry = hry;
+                                HR = HR;
                                 break;
                             case hr_zone_calc.percent_max_hr:
-                                hry = hrv / maximumHR * 100;
+                                HR = hrv / maximumHR * 100;
                                 break;
                                 // Unfortunatly resting HR is found in the user profile settings - easier if it was available in sport setting
                             case hr_zone_calc.percent_hrr:
                                 // http://fellrnr.com/wiki/Heart_Rate_Reserve
 
-                                hry = (hry - restingHR) / (maximumHR - minimumHR) * 100;
+                                HR = (HR - restingHR) / (maximumHR - minimumHR) * 100;
                                 break;
                             default:
                                 self.loggMessage("error", "Did not find calculation method (custom/%max/%hrr) for heart rate zone calculation");
@@ -5448,15 +5465,18 @@
                                 break;
                         }
 
-                        if (hry <= maxHR && hry >= minHR) {
+                        if (HR <= maxHR && HR >= minHR) {
 
-                            mySportSettings.hr_zone.timeInZone[zone] += timeInZoneMillisec;  // Assume constant HR in timeInZoneMillisec interval..may get a slight error here...
+                            timeInZone[zone] += timeInZoneMillisec;  // Assume constant HR in timeInZoneMillisec interval..may get a slight error here...
                             break;
-                            //    console.log("HR ", hry, " time in zone", timeInZone, " zone ", zone, " total time (ms) ", myZones[zone].timeInZone);
+                            //    console.log("HR ", HR, " time in zone", timeInZone, " zone ", zone, " total time (ms) ", myZones[zone].timeInZone);
                         }
                     }
                 }
             }
+
+            return timeInZone;
+           
         },
 
         getSportSettingsFromMemory : function(sport)
@@ -5505,16 +5525,13 @@
                 return;
             }
 
-            var mySportSettings = self.getSportSettingsFromMemory(sport);
+            //var mySportSettings = self.getSportSettingsFromMemory(sport);
 
-            if (typeof mySportSettings === "undefined" || mySportSettings === null) {
-                self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
-                return;
-            }
+           
 
             $('#zonesChart').show();
 
-            self.setTimeInHRZone(rawdata,mySportSettings, startTimestamp, endTimestamp);
+            var timeInZone = self.getTimeInHRZone(rawdata,sport, startTimestamp, endTimestamp);
            
             //$('#zonesChart').show();
 
@@ -5628,22 +5645,15 @@
                 //}]
             };
 
-           
-                
-
-          
-
             options.series = [];
 
-            var timeInMinutes,
-             len = mySportSettings.hr_zone.high_bpm.length;
+            var  timeInMinutes,
+                 len = timeInZone.length,
+                 mySportSettings = self.getSportSettingsFromMemory(sport);
 
             for (var catNr = len - 1; catNr >= 0; catNr--) {
 
-                // s1.data.push([myZones[catNr].name + " (" + myZones[catNr].min.toString() + "-" + myZones[catNr].max.toString() + ")", myZones[catNr].count / 60]);
-                // timeInSecs = parseFloat(((myZones[catNr].timeInZone) / 60000).toFixed(1));
-
-                timeInMinutes = mySportSettings.hr_zone.timeInZone[catNr] / (60*1000);
+                timeInMinutes = timeInZone[catNr] / (60*1000);
 
                 options.series.push({
                     name: mySportSettings.hr_zone.name[catNr],
