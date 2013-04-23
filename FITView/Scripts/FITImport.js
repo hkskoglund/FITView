@@ -1,7 +1,7 @@
 ﻿// JSHint options
 /* global indexedDB:true, FITCRCTimestampUtility:true, importScripts:true, FIT:true, FileReaderSync:true, self:true */
 // NB!  self = dedicatedWorkerContext automatically set in the global namespace
-importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITActivityFile.js', '/Scripts/Messages/FITSportSetting.js', '/Scripts/Messages/FITSettingsFile.js', 'FITCRCTimestampUtility.js');
+importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITActivityFile.js', '/Scripts/Messages/FITSportSetting.js', '/Scripts/Messages/FITSettingsFile.js', '/Scripts/Messages/FITTotalsFile.js','FITCRCTimestampUtility.js');
 
 (
  function () {
@@ -789,6 +789,7 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
              var fitCommonMsg = FIT.CommonMessage();
              var fitSportMsg = FIT.SportSettingMessage();
              var fitSettingMsg = FIT.SettingsFileMessage();
+             var fitTotalsMsg = FIT.TotalsFileMessage();
 
              var message = { properties: undefined };
 
@@ -874,6 +875,12 @@ importScripts('/Scripts/Messages/FITCommonMessage.js', '/Scripts/Messages/FITAct
 
                  case "bike_profile":
                      message.properties = fitSettingMsg.bike_profile();
+                     break;
+
+                     // Totals file messages
+
+                 case "totals":
+                     message.properties = fitTotalsMsg.totals();
                      break;
                  
 

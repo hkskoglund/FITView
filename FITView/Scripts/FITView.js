@@ -158,7 +158,8 @@
 
          settingfile: 2,
          sportsettingfile: 3,
-         activityfile: 4
+         activityfile: 4,
+         totalsfile : 10
      },
 
      FITUtil =
@@ -836,7 +837,9 @@
                         });
                     }
                 },
-                networkStatus : ko.observable(navigator.onLine)
+                networkStatus: ko.observable(navigator.onLine),
+
+                FITTotals : ko.observable(undefined)
                 //requestHideAltitude : ko.observable(true)
             },
 
@@ -1332,8 +1335,14 @@
 
             self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
 
+            // Totals
+
+            self.masterVM.settingsVM.FITTotals(self.getJSONAsObjectFromLocalStorage("totals"));
+
+            // Settings
+
             self.masterVM.settingsVM.FITSetting = ko.observable(undefined);
-            var settings = self.getSettings();
+            var settings = self.getJSONAsObjectFromLocalStorage("setting");
             self.hookupSelectedBikeName(settings);
 
             self.masterVM.settingsVM.FITSetting(settings);
@@ -1346,13 +1355,15 @@
                 });
             }
 
+            // Sport settings
+
             self.masterVM.settingsVM.FITSportSetting = ko.observableArray();
 
             function setSportSetting(sport) {
 
                 var sportStr, sportSetting;
                
-                sportSetting = self.getSportSetting(sport);
+                sportSetting = self.getJSONAsObjectFromLocalStorage("sportsetting"+sport);
                 if (typeof sportSetting !== "undefined")
                     self.masterVM.settingsVM.FITSportSetting.push(sportSetting);
 
@@ -1385,11 +1396,6 @@
             setSportSetting(FITSport.running);
             setSportSetting(FITSport.cycling);
             //setSportSetting(FITSport.swimming);
-
-            // Handle bike profile
-
-
-            
 
             function checkOnlineStatus() {
                 self.masterVM.settingsVM.networkStatus(navigator.onLine);
@@ -6072,42 +6078,65 @@
             self.copyHeaderInfoToViewModel(rawData);
 
             // From profile.xls
-            var
+            //var
 
-             sportSetting = {
-                 header_info: rawData._headerInfo_,
-                 file_id: rawData.file_id,
-                 file_creator: rawData.file_creator,
-                 hr_zone: rawData.hr_zone,
-                 met_zone: rawData.met_zone,
-                 power_zone: rawData.power_zone,
-                 speed_zone: rawData.speed_zone,
-                 sport: rawData.sport,
-                 zones_target: rawData.zones_target
-             },
+            // sportSetting = {
+            //     header_info: rawData._headerInfo_,
+            //     file_id: rawData.file_id,
+            //     file_creator: rawData.file_creator,
+            //     hr_zone: rawData.hr_zone,
+            //     met_zone: rawData.met_zone,
+            //     power_zone: rawData.power_zone,
+            //     speed_zone: rawData.speed_zone,
+            //     sport: rawData.sport,
+            //     zones_target: rawData.zones_target
+            // },
 
-            toJSON = JSON.stringify(sportSetting),
+            var toJSON = JSON.stringify(rawData),
                 
-            sport = sportSetting.sport.sport[0];
+            sport = rawData.sport.sport[0];
             
             localStorage["sportsetting" + sport] = toJSON;
             self.loggMessage("info", "Saved sport settings to local storage" + toJSON);
 
             self.showTemporaryNotification({
-                title: 'Imported ' + sportSetting.sport.name + ' settings file ',
+                title: 'Imported ' + rawData.sport.name + ' settings file ',
                 icon: '/Images/document-import.png',
-                body: (sportSetting.hr_zone === undefined) ? 'No HR zones defined' : JSON.stringify(sportSetting.hr_zone)
+                body: (rawData.hr_zone === undefined) ? 'No HR zones defined' : JSON.stringify(rawData.hr_zone)
             }, true);
 
             // Update view
 
                 // Remove previous setting if any...
                 self.masterVM.settingsVM.FITSportSetting.remove(function (item) {
-                    return item.sport.name[0] === sportSetting.sport.name[0]
+                    return item.sport.name[0] === rawData.sport.name[0]
                 });
 
-                self.masterVM.settingsVM.FITSportSetting.push(sportSetting);
+                self.masterVM.settingsVM.FITSportSetting.push(rawData);
           
+        },
+
+        processTotalsFile : function (rawData)
+        {
+            self.copyHeaderInfoToViewModel(rawData);
+
+            var toJSON = JSON.stringify(rawData);
+
+            localStorage["totals"] = toJSON;
+            self.loggMessage("info", "Saved totals to local storage" + toJSON);
+
+            self.showTemporaryNotification({
+                title: 'Imported totals file for running/cycling/swimming',
+                icon: '/Images/document-import.png',
+                body: 'Sessions for other/running/cycling/swimming: '+JSON.stringify(rawData.totals.sessions)
+            }, true);
+
+            // Update view
+
+            //var newSettings = self.getSettings();
+            //self.hookupSelectedBikeName(newSettings);
+            self.masterVM.settingsVM.FITTotals(toJSON);
+
         },
 
          // Handles a  setting file - user profile, bike profile etc.
@@ -6115,22 +6144,22 @@
 
             self.copyHeaderInfoToViewModel(rawData);
 
-            var 
+            //var 
 
-             setting = {
-                 // Meta
-                 header_info : rawData._headerInfo_,
-                 file_id: rawData.file_id ,
-                 file_creator : rawData.file_creator,
+            // setting = {
+            //     // Meta
+            //     header_info : rawData._headerInfo_,
+            //     file_id: rawData.file_id ,
+            //     file_creator : rawData.file_creator,
 
-                 device_settings: rawData.device_settings,
-                 user_profile: rawData.user_profile,
-                 hrm_profile: rawData.hrm_profile,
-                 sdm_profile: rawData.sdm_profile,
-                 bike_profile: rawData.bike_profile
-             },
+            //     device_settings: rawData.device_settings,
+            //     user_profile: rawData.user_profile,
+            //     hrm_profile: rawData.hrm_profile,
+            //     sdm_profile: rawData.sdm_profile,
+            //     bike_profile: rawData.bike_profile
+            // },
 
-            toJSON = JSON.stringify(setting);
+            var toJSON = JSON.stringify(rawData);
 
             localStorage["setting"] = toJSON;
             self.loggMessage("info", "Saved settings to local storage" + toJSON);
@@ -6138,12 +6167,13 @@
             self.showTemporaryNotification({
                 title: 'Imported settings file',
                 icon: '/Images/document-import.png',
-                body: JSON.stringify(setting.user_profile)
+                body: JSON.stringify(rawData.user_profile)
             }, true);
 
             // Update view
 
-            var newSettings = self.getSettings();
+            
+            var newSettings = self.getJSONAsObjectFromLocalStorage("setting");
             self.hookupSelectedBikeName(newSettings);
             self.masterVM.settingsVM.FITSetting(newSettings);
 
@@ -6811,6 +6841,11 @@
                             self.processSettingFile(rawData);
                             break;
 
+                        case FITFileType.totalsfile:
+                            self.loggMessage("info", "Processing a totals file - type 10");
+                            self.processTotalsFile(rawData);
+                            break;
+
                         default:
                             self.showTemporaryNotification({
                                 title: 'Cannot process file id with type',
@@ -7029,41 +7064,24 @@
             });
         },
 
-        getSportSetting: function (sport) {
+        
+       
+
+        getJSONAsObjectFromLocalStorage: function (key) {
             // Assume browser supports localStorage
             var localStorage = window.localStorage;
-            var key = "sportsetting" + sport;
-            var myZonesJSONString = localStorage.getItem(key);
+            //var key = "setting";
+            var JSONstring = localStorage.getItem(key);
 
-            var myZones;
-            if (myZonesJSONString !== null)
-                myZones = JSON.parse(myZonesJSONString);
-            else {
-                self.loggMessage("info", "Local storage of " + key + " not found");
-                //myZones = [{ name: 'Zone 1', min: 106, max: 140 },   // No storage found use default
-                //         { name: 'Zone 2', min: 141, max: 150 },
-                //         { name: 'Zone 3', min: 151, max: 159 },
-                //         { name: 'Zone 4', min: 160, max: 170 },
-                //         { name: 'Zone 5', min: 171, max: 256 }];
-            }
+            var myObject;
 
-            return myZones;
-        },
-
-        getSettings: function () {
-            // Assume browser supports localStorage
-            var localStorage = window.localStorage;
-            var key = "setting";
-            var mySettingsJSONString = localStorage.getItem(key);
-
-            var mySettings;
-            if (mySettingsJSONString !== null)
-                mySettings = JSON.parse(mySettingsJSONString);
+            if (JSONstring !== null)
+                 myObject = JSON.parse(JSONstring);
             else {
                 self.loggMessage("info", "Local storage of " + key + " not found");
             }
 
-            return mySettings;
+            return myObject;
         }
     };
 

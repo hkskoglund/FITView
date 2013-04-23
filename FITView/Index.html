@@ -739,10 +739,10 @@
                             <!-- ko with: FITSetting().user_profile -->
                             <ul>
 
-                                <!-- ko if: typeof $parent.FITSetting !== "undefined" && typeof $parent.FITSetting().header_info !== "undefined" && typeof $parent.FITSetting().header_info.timestamp !== "undefined" -->
+                                <!-- ko if: typeof $parent.FITSetting !== "undefined" && typeof $parent.FITSetting()._headerInfo_ !== "undefined" && typeof $parent.FITSetting()._headerInfo_.timestamp !== "undefined" -->
                                 <li><a href="#">
                                     <label>Imported: </label>
-                                    <span data-bind="text: (new Date($parent.FITSetting().header_info.timestamp)).toLocaleString()" />
+                                    <span data-bind="text: (new Date($parent.FITSetting()._headerInfo_.timestamp)).toLocaleString()" />
                                 </a>
                                 </li>
                                  <!-- /ko -->
@@ -937,10 +937,10 @@
 
                             <ul data-bind="foreach: FITSportSetting()">
 
-                                 <!-- ko if: typeof header_info !== "undefined" && typeof header_info.timestamp !== "undefined" -->
+                                 <!-- ko if: typeof _headerInfo_ !== "undefined" && typeof _headerInfo_.timestamp !== "undefined" -->
                                 <li><a href="#">
                                     <label data-bind ="text: 'Imported-' + sport.name[0] + ': '"></label>
-                                    <span data-bind="text: (new Date(header_info.timestamp)).toLocaleString()" />
+                                    <span data-bind="text: (new Date(_headerInfo_.timestamp)).toLocaleString()" />
                                 </a>
                                 </li>
                                  <!-- /ko -->
@@ -1230,6 +1230,108 @@
                                 </ul>
                              <!-- /ko -->
                          <!-- /ko -->
+                    </li>
+
+
+                    <li data-bind='visible: typeof FITTotals() !== "undefined" && FITTotals().totals.message_index && FITTotals().totals.message_index.length > 0'><a title="Totals (time/distance/calories/sessions)" href="#">
+                        <img src="Images/totals.png" class="inlineIcon" /></a>
+                        <!-- ko if: typeof FITTotals() !== "undefined" && FITTotals().totals && FITTotals().totals.message_index && FITTotals().totals.message_index.length > 0 -->
+                           
+                        <ul data-bind="with: FITTotals()">
+
+                            <!-- ko if: typeof _headerInfo_ !== "undefined" && typeof _headerInfo_.timestamp !== "undefined" -->
+                                <li><a href="#">
+                                    <label data-bind ="text: 'Imported : '"></label>
+                                    <span data-bind="text: (new Date(_headerInfo_.timestamp)).toLocaleString()" />
+                                </a>
+                                </li>
+                                 <!-- /ko -->
+
+                            <!-- ko foreach:  totals.message_index -->
+                                
+                            <!-- ko with: $parent.totals -->
+                                
+                                    <!-- ko if: typeof sport !== "undefined"  -->
+                              
+                                      <li><a href="#">
+                                            <!--<label>Sport: </label>-->
+                                            <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 1 -->
+                                                    <img src="Images/Sport/running.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                             <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 2 -->
+                                                    <img src="Images/Sport/cycling.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                             <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 0 -->
+                                                    <img src="Images/Sport/generic.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                             <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 5 -->
+                                                    <img src="Images/Sport/swimming.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                            </a>
+                                        </li>
+
+                                   <!-- /ko -->
+
+                                 <!-- ko if: typeof timer_time !== "undefined"  -->
+                              
+                                      <li><a href="#">
+                                            <label title="Excludes pauses">Timer time: </label>
+                                            <span data-bind="text: (timer_time[$index()]/3600).toFixed(1) +' h'" /></a>
+                                        </li>
+
+                                   <!-- /ko -->
+
+                                <!-- ko if: typeof elapsed_time !== "undefined"  -->
+                              
+                                      <li><a href="#">
+                                            <label title="Include pauses">Elapsed time: </label>
+                                            <span data-bind="text: (elapsed_time[$index()]/3600).toFixed(1) + ' h'" /></a>
+                                        </li>
+
+                                   <!-- /ko -->
+
+                                 <!-- ko if: typeof active_time !== "undefined"  -->
+                              
+                                      <li><a href="#">
+                                            <label ">Active time: </label>
+                                            <span data-bind="text: (active_time[$index()]/3600).toFixed(1) + ' h' " /></a>
+                                        </li>
+
+                                   <!-- /ko -->
+
+                                    <!-- ko if: typeof distance !== "undefined"  -->
+                              
+                                      <li><a href="#">
+                                            <label>Distance: </label>
+                                            <span data-bind="text: distance[$index()] / 1000 + ' km'" /></a>
+                                        </li>
+
+                                   <!-- /ko -->
+
+                                 <!-- ko if: typeof calories !== "undefined"  -->
+                              
+                                      <li><a href="#">
+                                            <label>Calories: </label>
+                                            <span data-bind="text: calories[$index()] + ' kcal'" /></a>
+                                        </li>
+
+                                   <!-- /ko -->
+
+                            <!-- ko if: typeof calories !== "undefined"  -->
+                              
+                                      <li><a href="#">
+                                            <label>Sessions: </label>
+                                            <span data-bind="text: sessions[$index()]" /></a>
+                                        </li>
+
+                                   <!-- /ko -->
+
+                                <!-- /ko -->
+                            <!-- /ko -->
+
+                        </ul>
+                             
+                           <!-- /ko -->
                     </li>
                     
 
