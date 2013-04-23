@@ -1276,7 +1276,7 @@
                               
                                       <li><a href="#">
                                             <label title="Excludes pauses">Timer time: </label>
-                                            <span data-bind="text: (timer_time[$index()]/3600).toFixed(1) +' h'" /></a>
+                                            <span data-bind="text: $root.converter.formatToHHMMSS(timer_time[$index()])" /></a>
                                         </li>
 
                                    <!-- /ko -->
@@ -1285,7 +1285,7 @@
                               
                                       <li><a href="#">
                                             <label title="Include pauses">Elapsed time: </label>
-                                            <span data-bind="text: (elapsed_time[$index()]/3600).toFixed(1) + ' h'" /></a>
+                                            <span data-bind="text: $root.converter.formatToHHMMSS(elapsed_time[$index()])" /></a>
                                         </li>
 
                                    <!-- /ko -->
@@ -1294,7 +1294,7 @@
                               
                                       <li><a href="#">
                                             <label ">Active time: </label>
-                                            <span data-bind="text: (active_time[$index()]/3600).toFixed(1) + ' h' " /></a>
+                                            <span data-bind="text: $root.converter.formatToHHMMSS(active_time[$index()])" /></a>
                                         </li>
 
                                    <!-- /ko -->
@@ -1317,7 +1317,7 @@
 
                                    <!-- /ko -->
 
-                            <!-- ko if: typeof calories !== "undefined"  -->
+                            <!-- ko if: typeof sessions !== "undefined"  -->
                               
                                       <li><a href="#">
                                             <label>Sessions: </label>

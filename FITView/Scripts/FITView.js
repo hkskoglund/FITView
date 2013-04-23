@@ -624,10 +624,18 @@
         {
             // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
 
-            var hours = parseInt(totalSec / 3600, 10) % 24;
+            //var days = parseInt(totalSec / (3600*24), 10);
+            var hours = parseInt(totalSec / 3600, 10)
+           // var hours = parseInt(totalSec / 3600, 10) % 24; // If days are used to get hours
             var minutes = parseInt(totalSec / 60, 10) % 60;
             var seconds = parseInt(totalSec % 60, 10);
             var tenthOfSec = parseInt((totalSec - parseInt(totalSec, 10)) * 10, 10);
+
+            //var dayResult;
+            //if (days === 0)
+            //    dayResult = "";
+            //else
+            //    dayResult = days; // Implicit conversion
 
             var hourResult;
             if (hours !== 0)
@@ -732,7 +740,7 @@
     //View models
      FITViewUI = {
         
-        masterVM: {
+         masterVM: {
 
             exportVM: {
                 csv: {
@@ -1332,6 +1340,10 @@
         init: function () {
 
             self = this;
+
+            // Converter
+
+            self.masterVM.converter = FITViewUIConverter;
 
             self.masterVM.settingsVM.hasWebNotification(self.hasWebNotification());
 
@@ -6121,14 +6133,16 @@
             self.copyHeaderInfoToViewModel(rawData);
 
             var toJSON = JSON.stringify(rawData);
+        
 
             localStorage["totals"] = toJSON;
             self.loggMessage("info", "Saved totals to local storage" + toJSON);
 
+           
             self.showTemporaryNotification({
                 title: 'Imported totals file for running/cycling/swimming',
                 icon: '/Images/document-import.png',
-                body: 'Sessions for other/running/cycling/swimming: '+JSON.stringify(rawData.totals.sessions)
+                body: rawData.totals.sessions ? 'Sessions for other/running/cycling/swimming: ' + JSON.stringify(rawData.totals.sessions) : 'Distance: ' + JSON.stringify(rawData.totals.distance)
             }, true);
 
             // Update view
