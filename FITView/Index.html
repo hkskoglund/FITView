@@ -937,9 +937,30 @@
 
                             <ul data-bind="foreach: FITSportSetting()">
 
+                                <!-- ko if: typeof sport !== "undefined" && sport.sport && sport.sport.length > 0 -->
+                              
+                                      <li><a href="#">
+                                            <!--<label>Sport: </label>-->
+                                            <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 1 -->
+                                                    <img src="Images/Sport/running.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                             <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 2 -->
+                                                    <img src="Images/Sport/cycling.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                             <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 0 -->
+                                                    <img src="Images/Sport/generic.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                             <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 5 -->
+                                                    <img src="Images/Sport/swimming.png" class="inlineIconTotals" />
+                                             <!-- /ko -->
+                                            </a>
+                                        </li>
+
+                                   <!-- /ko -->
+
                                  <!-- ko if: typeof _headerInfo_ !== "undefined" && typeof _headerInfo_.timestamp !== "undefined" -->
                                 <li><a href="#">
-                                    <label data-bind ="text: 'Imported-' + sport.name[0] + ': '"></label>
+                                    <label data-bind ="text: 'Imported: '"></label>
                                     <span data-bind="text: (new Date(_headerInfo_.timestamp)).toLocaleString()" />
                                 </a>
                                 </li>
@@ -947,7 +968,7 @@
 
                                 <!-- ko if: typeof speed_zone !== "undefined" && typeof speed_zone.high_value !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: 'Speed-' + sport.name[0] + ': '"></label>
+                                        <label data-bind ="text: 'Speed: '"></label>
                                         <span data-bind="text: JSON.stringify(speed_zone.high_value)" />
                                        
                                     </a>
@@ -956,7 +977,7 @@
 
                                 <!-- ko if: typeof hr_zone !== "undefined" && typeof hr_zone.high_bpm !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: 'HR-'+sport.name[0]+': '"></label>
+                                        <label data-bind ="text: 'HR: '"></label>
                                         <span data-bind="text: JSON.stringify(hr_zone.high_bpm)" />
                                     </a>
                                     </li>
@@ -966,7 +987,7 @@
 
                                 <!-- ko if: typeof power_zone !== "undefined" && typeof power_zone.high_value !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: 'Power-' + sport.name[0] + ': '"></label>
+                                        <label data-bind ="text: 'Power: '"></label>
                                         <span data-bind="text: JSON.stringify(power_zone.high_value)" />
                                     </a>
                                     </li>
@@ -974,7 +995,7 @@
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.max_heart_rate !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: 'Max HR-' + sport.name[0] + ': '"></label>
+                                        <label data-bind ="text: 'Max HR: '"></label>
                                         <span data-bind="text: zones_target.max_heart_rate" />
                                     </a>
                                     </li>
@@ -982,7 +1003,7 @@
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.threshold_heart_rate !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: 'Threshold HR-' + sport.name[0] + ': '"></label>
+                                        <label data-bind ="text: 'Threshold HR: '"></label>
                                         <span data-bind="text: zones_target.threshold_heart_rate" />
                                     </a>
                                     </li>
@@ -990,7 +1011,7 @@
 
                                  <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.functional_threshold_power !== "undefined" -->
                                     <li><a href="#">
-                                        <label title="Functional threshold power" data-bind ="text: 'FTP-' + sport.name[0] + ': '"></label>
+                                        <label title="Functional threshold power" data-bind ="text: 'FTP: '"></label>
                                         <span data-bind="text: zones_target.functional_threshold_power" />
                                     </a>
                                     </li>
@@ -998,7 +1019,7 @@
 
                                  <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.hr_calc_type !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: 'HR calc. type-' + sport.name[0] + ': '"> </label>
+                                        <label data-bind ="text: 'HR calc. type: '"> </label>
 
                                         <!-- ko if: zones_target.hr_calc_type[0] === 0 -->
                                             <span>Custom</span>
@@ -1017,7 +1038,7 @@
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.pwr_calc_type !== "undefined" -->
                                     <li><a href="#">
-                                        <label data-bind ="text: 'Power calc. type-' + sport.name[0] + ': '"></label>
+                                        <label data-bind ="text: 'Power calc. type: '"></label>
 
                                         <!-- ko if: zones_target.pwr_calc_type[0] === 0 -->
                                             <span>Custom</span>
