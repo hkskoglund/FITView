@@ -6133,14 +6133,13 @@
             self.copyHeaderInfoToViewModel(rawData);
 
             var toJSON = JSON.stringify(rawData);
-        
 
             localStorage["totals"] = toJSON;
             self.loggMessage("info", "Saved totals to local storage" + toJSON);
 
            
             self.showTemporaryNotification({
-                title: 'Imported totals file for running/cycling/swimming',
+                title: 'Imported totals file',
                 icon: '/Images/document-import.png',
                 body: rawData.totals.sessions ? 'Sessions for other/running/cycling/swimming: ' + JSON.stringify(rawData.totals.sessions) : 'Distance: ' + JSON.stringify(rawData.totals.distance)
             }, true);
