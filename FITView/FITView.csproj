@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
+    <Content Include="Images\stream-sensors.png" />
     <Content Include="Images\totals.png" />
     <Content Include="Images\total_elapsed_time.png" />
     <Content Include="Images\hrv.png" />

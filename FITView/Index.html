@@ -564,7 +564,6 @@
                             </a>
                             </li>
 
-                            
                             <li>
                                
                                 <a>
@@ -578,13 +577,18 @@
                                 </a>
                             </li>
 
+
+                            <li title="Live data from sensors are provided by a separate nodejs app. that interfaces with the USB ANT stick (nRF24AP2) and provides a websocket server">
+                                <a>
+                                    <label>Websocket server:</label>
+                                    <label data-bind="text: webSocketServerURL"></label>
+                                </a>
+                            </li>
+
                         </ul>
                     </li>
                     <!-- /ko -->
 
-                    
-
-                    
                     <!-- ko with: headerInfoVM -->
                     <li data-bind="visible: $parent.settingsVM.showHeaderInfo">
                         <a href="#">FIT header</a>
@@ -1354,9 +1358,23 @@
                              
                            <!-- /ko -->
                     </li>
-                    
 
                     <!-- /ko -->
+
+                    <li>
+                        <a href="#" title="(EXPERIMENTAL) Live streaming from sensors requires running an nodejs app. on the local machine that interfaces to the ANT USB stick and provides a websocket server">Live</a>
+                        <ul>
+                            
+                            <li >
+                               <!-- <a id="a1" title="Export HRV as CSV" data-bind="click: csv.tryMSBlobSave">
+                                    Export HRV as CSV 
+                            </a>-->
+                                 <a title="Stream live from sensors" data-bind="click: startWebSocketClient"> <img class="inlineIcon" src="Images/stream-sensors.png" />Stream</a>
+                         
+                            </li>
+                        </ul>
+
+                    </li>
                     
                     <!--<li>-->
                        <!-- <div id="zonesChart"></div>-->

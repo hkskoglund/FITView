@@ -847,8 +847,11 @@
                 },
                 networkStatus: ko.observable(navigator.onLine),
 
-                FITTotals : ko.observable(undefined)
+                FITTotals : ko.observable(undefined),
                 //requestHideAltitude : ko.observable(true)
+
+                webSocketServerHost : ko.observable('localhost'),
+                webSocketServerPort : ko.observable(8093)
             },
 
             progressVM: {
@@ -1340,6 +1343,16 @@
         init: function () {
 
             self = this;
+
+            // Add dependent property
+            self.masterVM.settingsVM.webSocketServerURL = ko.computed(function() {
+                return 'ws:/'+self.masterVM.settingsVM.webSocketServerHost() + ":" + self.masterVM.settingsVM.webSocketServerPort();
+            });
+
+            // Click-handler for live streaming from sensors
+            self.masterVM.startWebSocketClient = function () {
+                self.showLiveChart();
+            }
 
             // Converter
 
@@ -3253,7 +3266,44 @@
                  return false;
          },
 
-        // Handles display of measurements in several graphs with multiple axis
+         showLiveChart: function () {
+             var timeoutForOpen = 3000;
+             // Clean up previous chart
+             // http://api.highcharts.com/highcharts#Chart.destroy()
+             if (this.multiChart)
+                 this.multiChart.destroy();
+
+             var chartId = "multiChart";
+             var divChart = document.getElementById(chartId);
+             divChart.style.visibility = "visible";
+
+             var seriesSetup = []; // Options name,id
+
+             var startTimestamp = Date.now();
+             var ws = new WebSocket(self.masterVM.settingsVM.webSocketServerURL()), wsResourceURL = self.masterVM.settingsVM.webSocketServerURL();
+
+             ws.onclose = function () {
+                 var closeTimestamp = Date.now();
+                 if ((closeTimestamp - startTimestamp) <= timeoutForOpen)
+                     self.loggMessage('log', 'Websocket is closed. Make sure websocket server is running.');
+                 self.loggMessage('log', 'Closed websocket to ' + wsResourceURL);
+             };
+
+             ws.onopen = function () { self.loggMessage('log','Open websocket to ' + wsResourceURL); };
+            
+             ws.onerror = function (error) { self.loggMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
+             ws.onmessage = function (e) { self.loggMessage('log','Received : ' + e.data); };
+
+             //setTimeout(function ()
+             //{
+             //    if (ws.readyState === WebSocket.prototype.CLOSED)
+             //        self.loggMessage('log',"Failed to open websocket to " + wsResourceURL);
+             //}, timeoutForOpen);
+
+         },
+
+
+        // Handles display of measurements in several graphs with multiple axes
         showMultiChart: function (rawData, startTimestamp, endTimestamp, sport) {
 
             // Clean up previous chart
