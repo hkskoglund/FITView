@@ -133,6 +133,7 @@
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
     <None Include="Scripts\lib\jquery-2.0.0.intellisense.js" />
+    <Content Include="Scripts\lib\highstock-src.js" />
     <Content Include="Scripts\lib\jquery-2.0.0.js" />
     <Content Include="Scripts\lib\jquery-2.0.0.min.js" />
     <Content Include="Scripts\lib\highcharts-more.src.js" />

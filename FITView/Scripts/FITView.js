@@ -3174,6 +3174,7 @@
 
              var lap = initLapCategories();
 
+             //self.lapChart = new Highcharts.Chart({
              self.lapChart = new Highcharts.Chart({
                  chart: chartOptions,
                  credits: {
@@ -3267,7 +3268,17 @@
          },
 
          showLiveChart: function () {
-             var timeoutForOpen = 3000;
+             var timeoutForOpen = 3000,
+                 currentSeries,
+                 seriesOptions = {
+                     heart_rate: []
+                 },
+                 deviceType = {
+                     0x78 : "HRM",
+                     HRM :  0x78
+                 },
+                 connectedSensor = {
+                 };
              // Clean up previous chart
              // http://api.highcharts.com/highcharts#Chart.destroy()
              if (this.multiChart)
@@ -3278,6 +3289,43 @@
              divChart.style.visibility = "visible";
 
              var seriesSetup = []; // Options name,id
+
+             function initChart() {
+                 self.multiChart = new Highcharts.StockChart({
+                     chart: {
+                         renderTo: chartId
+                     },
+
+                     navigator : {
+                         enabled : false
+                     },
+
+                     scrollbar : {
+                         enabled : false
+                     },
+                     
+                     xAxis: [{
+                    
+                         id: xAxisID.rawdata,
+                         //minPadding: 0.015,  // Allow some space at end of axis to avoid some potential cluttering 
+                         //maxPadding: 0.05,
+                         type: 'datetime'
+                        
+                     }]
+
+                 //    seriesSetup.push({
+
+                 //    id: seriesID.HR,
+                 //name: 'Heart rate',
+                 //yAxis: yAxisNr++,
+                 //type: 'line',
+                 //data: stripOffUndefinedValues(seriesData[seriesID.HR]),
+                 //zIndex: 100
+             });
+
+                 };
+
+             initChart(); // Should be moved to .onopen
 
              var startTimestamp = Date.now();
              var ws = new WebSocket(self.masterVM.settingsVM.webSocketServerURL()), wsResourceURL = self.masterVM.settingsVM.webSocketServerURL();
@@ -3292,7 +3340,48 @@
              ws.onopen = function () { self.loggMessage('log','Open websocket to ' + wsResourceURL); };
             
              ws.onerror = function (error) { self.loggMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
-             ws.onmessage = function (e) { self.loggMessage('log','Received : ' + e.data); };
+
+             ws.onmessage = function (e) {
+                 var page = JSON.parse(e.data);
+                 self.loggMessage('log', 'Received from device '+ deviceType[page.deviceType]+ " "+ e.data);
+
+                 // Is this a previously registered sensor? If no, set up series for it
+
+                 if (typeof connectedSensor[page.deviceType] === "undefined")
+                 {
+                     connectedSensor[page.deviceType] = true;
+                     self.loggMessage('log','New sensor for device type '+deviceType[page.deviceType]+' registered');
+                     http://api.highcharts.com/highstock#Chart.addSeries()
+                         self.multiChart.addSeries({
+
+                             id: seriesID.HR,
+                             name: 'Heart rate',
+                             yAxis: 0,
+                             data : [],
+                             type: 'line'},false,false);
+                 }
+
+
+                 switch (page.deviceType) {
+                     case 0x78:
+                         currentSeries = self.multiChart.get(seriesID.HR);
+                         switch (page.dataPageNumber) {
+                             case 4:
+                                 self.loggMessage('log', 'Timestamp ' + page.timestamp + ' HR '+page.computedHeartRate);
+                                 currentSeries.addPoint([page.timestamp,page.computedHeartRate],true,false,true);
+                                 break;
+                             default:
+                                 self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented');
+                                 break;
+
+                         }
+                     
+                     default:
+                         self.loggMessage('log', 'Device type ' + page.deviceType + ' not implemented');
+                         break;
+                 }
+                 
+             };
 
              //setTimeout(function ()
              //{
@@ -3300,6 +3389,8 @@
              //        self.loggMessage('log',"Failed to open websocket to " + wsResourceURL);
              //}, timeoutForOpen);
 
+             
+             
          },
 
 
@@ -5406,7 +5497,8 @@
                 });
             }
 
-            self.intensityChart = new Highcharts.Chart(options);
+            //self.intensityChart = new Highcharts.Chart(options);
+            self.intensityChart = new Highcharts.StockChart(options);
 
         },
 
@@ -5623,6 +5715,12 @@
                     spacingTop: 0
                    // margin: [0, 0, 0, 0]
                 },
+                //rangeSelector : {
+                //    enabled : false
+                //},
+                //navigator: {
+                //    enabled: false
+                //},
                 title: {
                     text: ''
                 },
