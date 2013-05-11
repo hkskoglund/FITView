@@ -3269,7 +3269,7 @@
 
          showLiveChart: function () {
              var timeoutForOpen = 3000,
-                 currentSeries,
+                 currentSeries = {},
                  seriesOptions = {
                      heart_rate: []
                  },
@@ -3290,10 +3290,22 @@
 
              var seriesSetup = []; // Options name,id
 
+             var msgCounter = {
+                 HR : 0
+             };
+
              function initChart() {
                  self.multiChart = new Highcharts.StockChart({
                      chart: {
                          renderTo: chartId
+                     },
+
+                     legend : {
+                         enabled : true
+                     },
+
+                     rangeSelector: {
+                         enabled: false
                      },
 
                      navigator : {
@@ -3301,6 +3313,11 @@
                      },
 
                      scrollbar : {
+                         enabled : false
+                     },
+
+                     tooltip : {
+                         animation: false,
                          enabled : false
                      },
                      
@@ -3311,6 +3328,21 @@
                          //maxPadding: 0.05,
                          type: 'datetime'
                         
+                     }],
+
+                     yAxis : [{
+                         gridLineWidth: 1,
+                         title: {
+                             text: 'Heart rate'
+                         },
+                         showEmpty: false
+                     }, {
+                         gridLineWidth: 0,
+                         opposite: true,
+                         title: {
+                             text: 'Heart Rate Variability'
+                         },
+                         showEmpty: false
                      }]
 
                  //    seriesSetup.push({
@@ -3325,11 +3357,13 @@
 
                  };
 
-             initChart(); // Should be moved to .onopen
+            
 
              var startTimestamp = Date.now();
+
              var ws = new WebSocket(self.masterVM.settingsVM.webSocketServerURL()), wsResourceURL = self.masterVM.settingsVM.webSocketServerURL();
 
+             // Setup socket handlers
              ws.onclose = function () {
                  var closeTimestamp = Date.now();
                  if ((closeTimestamp - startTimestamp) <= timeoutForOpen)
@@ -3337,7 +3371,10 @@
                  self.loggMessage('log', 'Closed websocket to ' + wsResourceURL);
              };
 
-             ws.onopen = function () { self.loggMessage('log','Open websocket to ' + wsResourceURL); };
+             ws.onopen = function () {
+                 self.loggMessage('log', 'Open websocket to ' + wsResourceURL);
+                 initChart(); 
+             };
             
              ws.onerror = function (error) { self.loggMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
 
@@ -3355,26 +3392,57 @@
                          self.multiChart.addSeries({
 
                              id: seriesID.HR,
-                             name: 'Heart rate',
+                             name: 'HR',
                              yAxis: 0,
                              data : [],
-                             type: 'line'},false,false);
+                             //marker: {
+                             //    enabled: true,
+                             //    radius: 2
+                             //},
+                             //type: 'line'
+                         }, false, false);
+
+                     self.multiChart.addSeries({
+
+                         id: seriesID.hrv,
+                         name: 'HRV',
+                         yAxis: 1,
+                         data: [],
+                         //marker: {
+                         //    enabled: true,
+                         //    radius: 2
+                         //},
+                         visible : false,
+                         type: 'spline'
+                     }, false, false);
                  }
 
 
                  switch (page.deviceType) {
+
                      case 0x78:
-                         currentSeries = self.multiChart.get(seriesID.HR);
+
                          switch (page.dataPageNumber) {
                              case 4:
-                                 self.loggMessage('log', 'Timestamp ' + page.timestamp + ' HR '+page.computedHeartRate);
-                                 currentSeries.addPoint([page.timestamp,page.computedHeartRate],true,false,true);
+                                 self.loggMessage('log', 'Timestamp ' + page.timestamp + ' HR ' + page.computedHeartRate + ' RR ' + page.RRInterval);
+                                 currentSeries.HR = self.multiChart.get(seriesID.HR);
+                                 currentSeries.HRV = self.multiChart.get(seriesID.hrv);
+                                 msgCounter.HR++; // Added to prevent stall in redraw of chart
+                                 //console.log(currentSeries.HR.data.length, (currentSeries.HR.data.length > 50) ? true : false);
+                                 currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 10), false);
+                                 currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HR.data.length > 10), false);
+
+                                 if (!(msgCounter.HR % 2))
+                                     self.multiChart.redraw();
+
                                  break;
                              default:
                                  self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented');
                                  break;
 
                          }
+
+                         break;
                      
                      default:
                          self.loggMessage('log', 'Device type ' + page.deviceType + ' not implemented');
