@@ -1346,7 +1346,7 @@
 
             // Add dependent property
             self.masterVM.settingsVM.webSocketServerURL = ko.computed(function() {
-                return 'ws:/'+self.masterVM.settingsVM.webSocketServerHost() + ":" + self.masterVM.settingsVM.webSocketServerPort();
+                return 'ws://'+self.masterVM.settingsVM.webSocketServerHost() + ":" + self.masterVM.settingsVM.webSocketServerPort();
             });
 
             // Click-handler for live streaming from sensors
@@ -3309,7 +3309,8 @@
                      },
 
                      navigator : {
-                         enabled : false
+                         enabled: false,
+                        // adaptToUpdatedData : false
                      },
 
                      scrollbar : {
@@ -3330,17 +3331,19 @@
                         
                      }],
 
-                     yAxis : [{
+                     yAxis: [{
+                         min : 0,
                          gridLineWidth: 1,
                          title: {
                              text: 'Heart rate'
                          },
                          showEmpty: false
                      }, {
+                         min : 0,
                          gridLineWidth: 0,
                          opposite: true,
                          title: {
-                             text: 'Heart Rate Variability'
+                             text: 'RR (ms)'
                          },
                          showEmpty: false
                      }]
@@ -3361,7 +3364,8 @@
 
              var startTimestamp = Date.now();
 
-             var ws = new WebSocket(self.masterVM.settingsVM.webSocketServerURL()), wsResourceURL = self.masterVM.settingsVM.webSocketServerURL();
+             var ws = new WebSocket(self.masterVM.settingsVM.webSocketServerURL()),
+                wsResourceURL = self.masterVM.settingsVM.webSocketServerURL();
 
              // Setup socket handlers
              ws.onclose = function () {
@@ -3429,11 +3433,14 @@
                                  currentSeries.HRV = self.multiChart.get(seriesID.hrv);
                                  msgCounter.HR++; // Added to prevent stall in redraw of chart
                                  //console.log(currentSeries.HR.data.length, (currentSeries.HR.data.length > 50) ? true : false);
-                                 currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 10), false);
-                                 currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HR.data.length > 10), false);
+                                 currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
+                                 currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HR.data.length > 60), false);
 
-                                 if (!(msgCounter.HR % 2))
+                                 if (!(msgCounter.HR % 4)) {
+                                     //console.time("Redraw multichart");
                                      self.multiChart.redraw();
+                                     //console.timeEnd("Redraw multichart");
+                                 }
 
                                  break;
                              default:
@@ -4001,7 +4008,7 @@
                         gridLineWidth: 0,
                         opposite: true,
                         title: {
-                            text: 'Heart Rate Variability'
+                            text: 'RR (ms)'
                         },
                         showEmpty : false
                 });
