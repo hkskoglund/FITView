@@ -3346,6 +3346,24 @@
                              text: 'RR (ms)'
                          },
                          showEmpty: false
+                     },
+                     {
+                         min: 0,
+                         gridLineWidth: 0,
+                         opposite: true,
+                         title: {
+                             text: 'Strides/min'
+                         },
+                         showEmpty: false
+                     },
+                     {
+                         min: 0,
+                         gridLineWidth: 0,
+                         opposite: true,
+                         title: {
+                             text: 'Tempo (min/km)'
+                         },
+                         showEmpty: false
                      }]
 
                  //    seriesSetup.push({
@@ -3383,55 +3401,127 @@
              ws.onerror = function (error) { self.loggMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
 
              ws.onmessage = function (e) {
-                 var page = JSON.parse(e.data);
-                 self.loggMessage('log', 'Received from device '+ deviceType[page.deviceType]+ " "+ e.data);
+                 var page = JSON.parse(e.data),
+                     channelIDProperty = page.channelID.toProperty;
+                 self.loggMessage('log', 'Received from device ' + channelIDProperty + " " + e.data);
 
                  // Is this a previously registered sensor? If no, set up series for it
 
-                 if (typeof connectedSensor[page.deviceType] === "undefined")
+                 if (typeof connectedSensor[channelIDProperty] === "undefined")
                  {
-                     connectedSensor[page.deviceType] = true;
-                     self.loggMessage('log','New sensor for device type '+deviceType[page.deviceType]+' registered');
-                     http://api.highcharts.com/highstock#Chart.addSeries()
-                         self.multiChart.addSeries({
+                     connectedSensor[channelIDProperty] = true;
+                     self.loggMessage('log', 'New sensor for device type ' + deviceType[page.channelID.deviceTypeID] + ' registered');
 
-                             id: seriesID.HR,
-                             name: 'HR',
-                             yAxis: 0,
-                             data : [],
-                             //marker: {
-                             //    enabled: true,
-                             //    radius: 2
-                             //},
-                             //type: 'line'
-                         }, false, false);
+                     switch (page.channelID.deviceTypeID) {
 
-                     self.multiChart.addSeries({
+                         // SDM 4
 
-                         id: seriesID.hrv,
-                         name: 'HRV',
-                         yAxis: 1,
-                         data: [],
-                         //marker: {
-                         //    enabled: true,
-                         //    radius: 2
-                         //},
-                         visible : false,
-                         type: 'spline'
-                     }, false, false);
+                         case 124:
+                             self.multiChart.addSeries({
+
+                                 id: seriesID.cadence + channelIDProperty,
+                                 name: 'Strides' + page.channelID.deviceNumber,
+                                 yAxis: 2,
+                                 data: [],
+                                 //marker: {
+                                 //    enabled: true,
+                                 //    radius: 2
+                                 //},
+                                 //type: 'line'
+                             }, false, false);
+
+                             self.multiChart.addSeries({
+
+                                 id: seriesID.speed + channelIDProperty,
+                                 name: 'Tempo' + page.channelID.deviceNumber,
+                                 yAxis: 3,
+                                 data: [],
+                                 //marker: {
+                                 //    enabled: true,
+                                 //    radius: 2
+                                 //},
+                                 //type: 'line'
+                             }, false, false);
+                             break;
+
+                         // HRM
+                         case 0x78:
+                             http://api.highcharts.com/highstock#Chart.addSeries()
+                                 self.multiChart.addSeries({
+
+                                     id: seriesID.HR+channelIDProperty,
+                                     name: 'HR'+page.channelID.deviceNumber,
+                                     yAxis: 0,
+                                     data: [],
+                                     //marker: {
+                                     //    enabled: true,
+                                     //    radius: 2
+                                     //},
+                                     //type: 'line'
+                                 }, false, false);
+
+                             self.multiChart.addSeries({
+
+                                 id: seriesID.hrv+channelIDProperty,
+                                 name: 'HRV'+page.channelID.deviceNumber,
+                                 yAxis: 1,
+                                 data: [],
+                                 //marker: {
+                                 //    enabled: true,
+                                 //    radius: 2
+                                 //},
+                                 visible: false,
+                                 type: 'spline'
+                             }, false, false);
+                             break;
+
+                         default:
+                             self.loggMessage('log', 'Add series for this device type not implemented');
+                             break;
+                     }
                  }
 
 
-                 switch (page.deviceType) {
+                 switch (page.channelID.deviceTypeID) {
 
+                     // SDM 4
+
+                     case 124:
+
+                         //console.log(page);
+                         currentSeries.cadence = self.multiChart.get(seriesID.cadence + channelIDProperty);
+                         currentSeries.speed = self.multiChart.get(seriesID.speed + channelIDProperty);
+
+                         switch (page.dataPageNumber) {
+                             // Main
+
+                             case 1:
+                                 currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                                 break;
+                             // Background
+                             case 2:
+                                 
+                                 currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
+                                 currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                                 break;
+
+                             default:
+                                 self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented for SDM');
+                                 break;
+                         }
+
+                     // HRM
                      case 0x78:
+
+                         currentSeries.HR = self.multiChart.get(seriesID.HR + channelIDProperty);
+                         currentSeries.HRV = self.multiChart.get(seriesID.hrv + channelIDProperty);
 
                          switch (page.dataPageNumber) {
                              case 4:
                                  self.loggMessage('log', 'Timestamp ' + page.timestamp + ' HR ' + page.computedHeartRate + ' RR ' + page.RRInterval);
-                                 currentSeries.HR = self.multiChart.get(seriesID.HR);
-                                 currentSeries.HRV = self.multiChart.get(seriesID.hrv);
-                                 msgCounter.HR++; // Added to prevent stall in redraw of chart
+                                 //console.log(Date.now(), "SeriesID", seriesID.HR + channelIDProperty);
+                               
+                                 msgCounter.HR++; // Added to prevent stall in redraw of chart - only redraw each n points
                                  //console.log(currentSeries.HR.data.length, (currentSeries.HR.data.length > 50) ? true : false);
                                  currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
                                  currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HR.data.length > 60), false);
@@ -3444,7 +3534,7 @@
 
                                  break;
                              default:
-                                 self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented');
+                                 self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented for HRM');
                                  break;
 
                          }
