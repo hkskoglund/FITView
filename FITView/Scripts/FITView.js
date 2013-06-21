@@ -3291,7 +3291,7 @@
              var seriesSetup = []; // Options name,id
 
              var msgCounter = {
-                 HR : 0
+                 count: 0,
              };
 
              function initChart() {
@@ -3481,6 +3481,8 @@
                      }
                  }
 
+                 msgCounter.count++;
+
 
                  switch (page.channelID.deviceTypeID) {
 
@@ -3496,13 +3498,16 @@
                              // Main
 
                              case 1:
+
                                  currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                                
                                  break;
                              // Background
                              case 2:
                                  
                                  currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
                                  currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                                 
                                  break;
 
                              default:
@@ -3521,16 +3526,12 @@
                                  self.loggMessage('log', 'Timestamp ' + page.timestamp + ' HR ' + page.computedHeartRate + ' RR ' + page.RRInterval);
                                  //console.log(Date.now(), "SeriesID", seriesID.HR + channelIDProperty);
                                
-                                 msgCounter.HR++; // Added to prevent stall in redraw of chart - only redraw each n points
+                                 //msgCounter.HR++; // Added to prevent stall in redraw of chart - only redraw each n points
                                  //console.log(currentSeries.HR.data.length, (currentSeries.HR.data.length > 50) ? true : false);
                                  currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
                                  currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HR.data.length > 60), false);
 
-                                 if (!(msgCounter.HR % 4)) {
-                                     //console.time("Redraw multichart");
-                                     self.multiChart.redraw();
-                                     //console.timeEnd("Redraw multichart");
-                                 }
+                                
 
                                  break;
                              default:
@@ -3544,6 +3545,12 @@
                      default:
                          self.loggMessage('log', 'Device type ' + page.deviceType + ' not implemented');
                          break;
+                 }
+
+                 if (!(msgCounter.count % 4)) {
+                     //console.time("Redraw multichart");
+                     self.multiChart.redraw();
+                     //console.timeEnd("Redraw multichart");
                  }
                  
              };
