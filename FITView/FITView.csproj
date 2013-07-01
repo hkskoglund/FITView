@@ -132,10 +132,11 @@
     <Content Include="Images\watt.png" />
     <Content Include="Images\temperature.png" />
     <Content Include="Index.html" />
-    <None Include="Scripts\lib\jquery-2.0.0.intellisense.js" />
+    <None Include="Scripts\lib\jquery-2.0.2.intellisense.js" />
+    <Content Include="Scripts\lib\jquery-2.0.2.js" />
+    <Content Include="Scripts\lib\jquery-2.0.2.min.js" />
+    <Content Include="Scripts\lib\jquery-2.0.2.min.map" />
     <Content Include="Scripts\lib\highstock-src.js" />
-    <Content Include="Scripts\lib\jquery-2.0.0.js" />
-    <Content Include="Scripts\lib\jquery-2.0.0.min.js" />
     <Content Include="Scripts\lib\highcharts-more.src.js" />
     <Content Include="Scripts\lib\highcharts.src.js" />
     <Content Include="Scripts\lib\moment.isocalendar.js" />
@@ -150,7 +151,6 @@
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
     <Content Include="Scripts\Messages\FITActivityFile.js" />
     <Content Include="Scripts\FITCRCTimestampUtility.js" />
-    <Content Include="Scripts\lib\jquery-2.0.0.min.map" />
     <Content Include="Scripts\lib\knockout-2.2.1.debug.js" />
     <Content Include="Scripts\lib\knockout-2.2.1.js" />
     <Content Include="Scripts\lib\knockout.mapping-latest.debug.js" />
