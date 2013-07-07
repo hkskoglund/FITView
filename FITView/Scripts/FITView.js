@@ -3273,9 +3273,18 @@
                  seriesOptions = {
                      heart_rate: []
                  },
+
                  deviceType = {
                      0x78 : "HRM",
-                     HRM :  0x78
+                     HRM: 0x78,
+
+                     121: "SPDCAD",
+                     SPDCAD: 121,
+
+                     124: "SDM",
+                     SDM : 124,
+
+
                  },
                  connectedSensor = {
                  };
@@ -3364,6 +3373,24 @@
                              text: 'Tempo (min/km)'
                          },
                          showEmpty: false
+                     },
+                     {
+                         min: 0,
+                         gridLineWidth: 0,
+                         opposite: true,
+                         title: {
+                             text: 'Cadence (RPM)'
+                         },
+                         showEmpty: false
+                     },
+                     {
+                         min: 0,
+                         gridLineWidth: 0,
+                         opposite: true,
+                         title: {
+                             text: 'Speed (km/h)'
+                         },
+                         showEmpty: false
                      }]
 
                  //    seriesSetup.push({
@@ -3378,7 +3405,6 @@
 
                  };
 
-            
 
              var startTimestamp = Date.now();
 
@@ -3414,9 +3440,44 @@
 
                      switch (page.channelID.deviceTypeID) {
 
+                         // Combined speed/cadence sensor
+
+                         case 121:
+
+                             self.multiChart.addSeries({
+
+                                 id: seriesID.cadence + channelIDProperty,
+                                 name: 'Cadence' + page.channelID.deviceNumber,
+                                 yAxis: 4,
+                                 data: [],
+                                 //marker: {
+                                 //    enabled: true,
+                                 //    radius: 2
+                                 //},
+                                 //type: 'line'
+                             }, false, false);
+
+                             self.multiChart.addSeries({
+
+                                 id: seriesID.speed + channelIDProperty,
+                                 name: 'Speed' + page.channelID.deviceNumber,
+                                 yAxis: 5,
+                                 data: [],
+                                 //marker: {
+                                 //    enabled: true,
+                                 //    radius: 2
+                                 //},
+                                 //type: 'line'
+                             }, false, false);
+
+
+
+                             break;
+
                          // SDM 4
 
                          case 124:
+
                              self.multiChart.addSeries({
 
                                  id: seriesID.cadence + channelIDProperty,
@@ -3486,6 +3547,23 @@
 
                  switch (page.channelID.deviceTypeID) {
 
+                     // Bike speed/cadence sensor
+
+                     case 121:
+
+                         currentSeries.cadence = self.multiChart.get(seriesID.cadence + channelIDProperty);
+                         currentSeries.speed = self.multiChart.get(seriesID.speed + channelIDProperty);
+
+                         //http://api.highcharts.com/highcharts#Series.addPoint()
+                         if (typeof page.speed !== "undefined")
+                             currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToKMprH(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+
+                         if (typeof page.cadence !== "undefined")
+                           currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
+
+                         break;
+
+
                      // SDM 4
 
                      case 124:
@@ -3547,7 +3625,7 @@
                          break;
                  }
 
-                 if (!(msgCounter.count % 4)) {
+                 if (msgCounter.count % 4) {
                      //console.time("Redraw multichart");
                      self.multiChart.redraw();
                      //console.timeEnd("Redraw multichart");
