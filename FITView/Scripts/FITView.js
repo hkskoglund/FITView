@@ -3555,6 +3555,7 @@
                          currentSeries.speed = self.multiChart.get(seriesID.speed + channelIDProperty);
 
                          //http://api.highcharts.com/highcharts#Series.addPoint()
+
                          if (typeof page.speed !== "undefined")
                              currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToKMprH(page.speed)], false, (currentSeries.speed.data.length > 60), false);
 
@@ -3578,20 +3579,22 @@
                              case 1:
 
                                  currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
-                                
+
                                  break;
-                             // Background
+                                 // Background
                              case 2:
-                                 
+
                                  currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
                                  currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
-                                 
+
                                  break;
 
                              default:
                                  self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented for SDM');
                                  break;
                          }
+
+                         break;
 
                      // HRM
                      case 0x78:
@@ -3600,6 +3603,7 @@
                          currentSeries.HRV = self.multiChart.get(seriesID.hrv + channelIDProperty);
 
                          switch (page.dataPageNumber) {
+
                              case 4:
                                  self.loggMessage('log', 'Timestamp ' + page.timestamp + ' HR ' + page.computedHeartRate + ' RR ' + page.RRInterval);
                                  //console.log(Date.now(), "SeriesID", seriesID.HR + channelIDProperty);
@@ -3609,9 +3613,8 @@
                                  currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
                                  currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HR.data.length > 60), false);
 
-                                
-
                                  break;
+
                              default:
                                  self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented for HRM');
                                  break;
@@ -3625,9 +3628,11 @@
                          break;
                  }
 
-                 if (msgCounter.count % 4) {
+                 console.log("msgCounter",msgCounter);
+                 if (msgCounter.count > 3) {
                      //console.time("Redraw multichart");
                      self.multiChart.redraw();
+                     msgCounter.count = 0;
                      //console.timeEnd("Redraw multichart");
                  }
                  
