@@ -3312,7 +3312,8 @@
              function initChart() {
                  self.multiChart = new Highcharts.StockChart({
                      chart: {
-                         renderTo: chartId
+                         renderTo: chartId,
+                         alignTicks: false
                      },
 
                      legend : {
@@ -3365,7 +3366,7 @@
                      {
                          min: 0,
                          gridLineWidth: 0,
-                         opposite: true,
+                        // opposite: true,
                          title: {
                              text: 'Strides/min'
                          },
@@ -3386,7 +3387,7 @@
                          endOnTick: false,
                          startOnTick : false,
                          gridLineWidth: 0,
-                         opposite: true,
+                         //opposite: true,
                          title: {
                              text: 'Cadence (RPM)'
                          },
@@ -3413,8 +3414,6 @@
              });
 
              };
-
-             
 
              var startTimestamp = Date.now();
 
