@@ -3381,8 +3381,10 @@
                          showEmpty: false
                      },
                      {
-                         min: 0,
-                         max : 250, // RPM
+                        // min: 0,
+                        // max: 250, // RPM
+                         endOnTick: false,
+                         startOnTick : false,
                          gridLineWidth: 0,
                          opposite: true,
                          title: {
@@ -3410,8 +3412,9 @@
                  //zIndex: 100
              });
 
-                 };
+             };
 
+             
 
              var startTimestamp = Date.now();
 
@@ -3428,7 +3431,10 @@
 
              ws.onopen = function () {
                  self.loggMessage('log', 'Open websocket to ' + wsResourceURL);
-                 initChart(); 
+                 initChart();
+
+                 //self.multiChart.yAxis[4].setExtremes(0, 250, true, false);
+
              };
             
              ws.onerror = function (error) { self.loggMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
