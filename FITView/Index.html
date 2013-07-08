@@ -41,10 +41,10 @@
 
                    
 
-                    <li><a href="#">.FITview</a>
+                    <li><a >.FITview</a>
 
                         <ul>
-                            <li><a href="#">
+                            <li><a >
                                 <input id="inpFITFile" type="file" multiple="multiple" title="Import activity/setting/sport setting/totals .FIT files" />
 
                                 <progress class="FITprogressImport" id="progressFITimport" max="100" data-bind="value: progressVM.progress"></progress>
@@ -65,7 +65,7 @@
 
                     <!-- ko with: sessionVM -->
 
-                    <li id="liSessions" style="display: none" data-bind="visible: timestamp().length > 0"><a href="#">Sessions</a>
+                    <li id="liSessions" style="display: none" data-bind="visible: timestamp().length > 0"><a >Sessions</a>
 
                         <ul style="max-height: 300px; overflow-y: auto; overflow-x: hidden" data-bind="foreach: timestamp">
 
@@ -73,7 +73,7 @@
 
                                
 
-                                <a href="#" data-bind="click: showSession.bind($index())">
+                                <a  data-bind="click: showSession.bind($index())">
 
                                     
 
@@ -132,13 +132,13 @@
 
                     <!-- ko with: lapVM -->
 
-                    <li id="liLaps" style="display: none" data-bind="visible: timestamp().length > 0"><a href="#">Laps</a>
+                    <li id="liLaps" style="display: none" data-bind="visible: timestamp().length > 0"><a >Laps</a>
 
                         <ul style="max-height: 300px; overflow-y: scroll; overflow-x: scroll" data-bind="foreach: timestamp">
 
                             <li data-bind="with: $parent">
 
-                                <a href="#" data-bind="click: showLap.bind($index())">
+                                <a  data-bind="click: showLap.bind($index())">
 
                                     <!-- ko if: sport()[$index()] === 1 -->
                                     <img class="lapSport" src="Images/sport/running.png" title="Running" alt="Running" />
@@ -348,9 +348,9 @@
                     <!-- /ko -->
 
                     <!-- ko with: settingsVM -->
-                    <li><a href="#">Settings</a>
+                    <li><a >Settings</a>
                         <ul>
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showLapLines" />
@@ -360,7 +360,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showLapTriggers" />
@@ -370,7 +370,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: hideLAPtriggerTime" />
@@ -380,7 +380,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showEvents" />
@@ -390,7 +390,7 @@
                             </a>
                             </li>
 
-                           <!-- <li><a href="#">
+                           <!-- <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showLegends" />
@@ -400,7 +400,7 @@
                             </a>
                             </li>-->
 
-                            <!--<li><a href="#">
+                            <!--<li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: storeInIndexedDB" />
@@ -409,7 +409,7 @@
                             </a>
                             </li>-->
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showDeviceInfo" />
@@ -418,7 +418,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showHeaderInfo" />
@@ -427,7 +427,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" title="Some devices only record data in run sport mode, i.e FR 110. Forced mode introduced to allow for km/h activities like i.e cycling" data-bind="checked: forceSpeedKMprH" />
@@ -436,7 +436,7 @@
                             </a>
                             </li>
 
-                            <!--<li><a href="#">
+                            <!--<li><a >
 
                             <div>
                                 <input type="checkbox" data-bind="checked: requestHideAltitude" />
@@ -445,7 +445,7 @@
                         </a>
                         </li>-->
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: requestAveragingOnSpeed" />
@@ -454,7 +454,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     Avg.speed sample
@@ -464,7 +464,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
                                 <div>
                                     <input type="checkbox" data-bind="checked: distanceOnXAxis" />
                                     Distance (km) on X-axis
@@ -472,7 +472,7 @@
                             </a>
                             </li>
 
-                             <li><a href="#">
+                             <li><a >
  	 	
                                 <div>
  	 	
@@ -486,7 +486,7 @@
  		
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
  	 	
                                 <div>
  	 	
@@ -500,7 +500,7 @@
  		
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
                                 <div>
                                     <img class="inlineIcon" title="Hostname where application was loaded" src="Images/server.png" />
                                     <span style="margin-left:2px" title="Hostname where application was loaded" data-bind="text: appHostname" ></span>
@@ -510,7 +510,7 @@
                             </li>
 
                             <!--<li>
-                                <a href="#">
+                                <a >
 
                                     <div>
                                         <img class="inlineIcon" src="Images/cookie-chocolate.png" />
@@ -524,7 +524,7 @@
 
                             </li>-->
 
-                           <!-- <li><a href="#">
+                           <!-- <li><a >
 
                                 <div>
                                     <img class="inlineIcon" src="Images/cookie-chocolate.png" />
@@ -536,7 +536,7 @@
                             </a>
                             </li>
 
-                            <li><a href="#">
+                            <li><a >
 
                                 <div>
                                     <img class="inlineIcon" src="Images/cookie-chocolate.png" />
@@ -548,7 +548,7 @@
                             </a>
                             </li>-->
 
-                             <li><a href="#">
+                             <li><a >
 
                                 <div>
                                     <img class="inlineIcon" src="Images/image.png" />
@@ -592,7 +592,7 @@
 
                     <!-- ko with: headerInfoVM -->
                     <li data-bind="visible: $parent.settingsVM.showHeaderInfo">
-                        <a href="#">FIT header</a>
+                        <a >FIT header</a>
                         <ul>
                             <li>
                                <a> 
@@ -613,7 +613,7 @@
                     <!-- /ko -->
 
                     <li>
-                        <a href="#">Credits</a>
+                        <a >Credits</a>
                         <ul>
 
                             <li>
@@ -697,7 +697,7 @@
                     </li>
 
                    <!--  <li>
-                        <a href="#">About</a>
+                        <a >About</a>
                         <ul>
 
                             <li>
@@ -709,7 +709,7 @@
 
                      <!-- ko with: exportVM -->
                     <li>
-                        <a href="#">Export</a>
+                        <a >Export</a>
                         <ul>
                             
                              <li>
@@ -721,7 +721,7 @@
                                     <label style="color: white">Scale</label>
                                     <input type="text"  title="1 = seconds, 1000 = ms." data-bind="value: csv.scale" /> 
                                 </div>
-                             <a href="#"></a>
+                             <a ></a>
                             </li>
 
                             <li >
@@ -739,13 +739,13 @@
 
                      <!-- ko with: settingsVM -->
 
-                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined"'><a title="User profile in FIT settings" href="#"><img src="Images/user-silhouette.png" class="inlineIcon" /></a>
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined"'><a title="User profile in FIT settings" ><img src="Images/user-silhouette.png" class="inlineIcon" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined" -->
                             <!-- ko with: FITSetting().user_profile -->
                             <ul>
 
                                 <!-- ko if: typeof $parent.FITSetting !== "undefined" && typeof $parent.FITSetting()._headerInfo_ !== "undefined" && typeof $parent.FITSetting()._headerInfo_.timestamp !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Imported: </label>
                                     <span data-bind="text: (new Date($parent.FITSetting()._headerInfo_.timestamp)).toLocaleString()" ></span>
                                 </a>
@@ -753,7 +753,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof friendly_name !== "undefined" && typeof friendly_name[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Name: </label>
                                     <span data-bind="text: friendly_name[0]" ></span>
 
@@ -762,7 +762,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof weight !== "undefined" && typeof weight[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Weight: </label>
                                     <span data-bind="text: weight[0]" ></span>
 
@@ -771,7 +771,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof gender !== "undefined" && typeof gender[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Gender: </label>
                                     <!-- ko if: gender[0] === 1 -->
                                     <span>Male</span>
@@ -784,7 +784,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof age !== "undefined" && typeof age[0] !== "undefined" -->
-                                 <li><a href="#">
+                                 <li><a >
                                     <label>Age: </label>
                                     <span data-bind="text: age[0]" ></span>
 
@@ -793,7 +793,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof height !== "undefined" && typeof height[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Height: </label>
                                     <span data-bind="text: height[0]" ></span>
 
@@ -802,7 +802,7 @@
                                 <!-- /ko -->
 
                                  <!-- ko if: typeof resting_heart_rate !== "undefined" && typeof resting_heart_rate[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Resting heart rate: </label>
                                     <span data-bind="text: resting_heart_rate[0]" ></span>
 
@@ -811,7 +811,7 @@
                                 <!-- /ko -->
 
                                 <!-- ko if: typeof activity_class !== "undefined" && typeof activity_class[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label title="Firstbeat activity class">Activity class:</label>
                                     <span data-bind="text: activity_class[0]" ></span>
                                 </a>
@@ -826,13 +826,13 @@
                               <!-- /ko -->
                         </li>
 
-                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a title="Heart Rate Monitor in FIT settings" href="#"><img class="inlineIcon" src ="Images/deviceinfo/HRM.jpg" /></a>
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a title="Heart Rate Monitor in FIT settings" ><img class="inlineIcon" src ="Images/deviceinfo/HRM.jpg" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined" -->
                             <!-- ko with: FITSetting().hrm_profile -->
                             <ul>
 
                                 <!-- ko if: typeof hrm_ant_id !== "undefined" && typeof hrm_ant_id[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>ANT id: </label>
                                     <span data-bind="text: hrm_ant_id[0]" ></span>
 
@@ -841,7 +841,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof hrm_ant_id_trans_type !== "undefined" && typeof hrm_ant_id_trans_type[0] !== "undefined" -->
-                                 <li><a href="#">
+                                 <li><a >
                                     <label>ANT id trans. type: </label>
                                     <span data-bind="text: hrm_ant_id_trans_type[0]" ></span>
                                 </a>
@@ -849,7 +849,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof enabled !== "undefined" && typeof enabled[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Enabled: </label>
                                      <input type="checkbox" disabled="disabled" data-bind="checked: enabled[0]" />
                                 </a>
@@ -857,7 +857,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof log_hrv !== "undefined" && typeof log_hrv[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Log HRV: </label>
                                      <input type="checkbox" disabled="disabled" data-bind="checked: log_hrv[0]" />
                                 </a>
@@ -870,13 +870,13 @@
                               <!-- /ko -->
                         </li>
 
-                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a title="Speed Distance Monitor in FIT settings" href="#"><img class="inlineIcon" src ="Images/deviceinfo/garmin/footpod.jpg" /></a>
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a title="Speed Distance Monitor in FIT settings" ><img class="inlineIcon" src ="Images/deviceinfo/garmin/footpod.jpg" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined" -->
                                 <!-- ko with: FITSetting().sdm_profile -->
                                      <ul>
 
                                 <!-- ko if: typeof sdm_ant_id !== "undefined" && typeof sdm_ant_id[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>ANT id: </label>
                                     <span data-bind="text: sdm_ant_id[0]" ></span>
                                 </a>
@@ -884,7 +884,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof sdm_ant_id_trans_type !== "undefined" && typeof sdm_ant_id_trans_type[0] !== "undefined" -->
-                                 <li><a href="#">
+                                 <li><a >
                                     <label>ANT id trans. type: </label>
                                     <span data-bind="text: sdm_ant_id_trans_type[0]" ></span>
                                 </a>
@@ -892,7 +892,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof enabled !== "undefined" && typeof enabled[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Enabled: </label>
                                      <input type="checkbox" disabled="disabled" data-bind="checked: enabled[0]" />
                                 </a>
@@ -900,7 +900,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof odometer !== "undefined" && typeof odometer[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Odometer: </label>
                                        <span data-bind="text: odometer[0]" ></span>
                                 </a>
@@ -908,7 +908,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof sdm_cal_factor !== "undefined" && typeof sdm_cal_factor[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>SDM cal. factor: </label>
                                     <span data-bind="text: (sdm_cal_factor[0]/100)*1000" ></span>
                                     <!-- By default scale factor is in %, on 910XT 100% = scale fator of 1000 -->
@@ -917,7 +917,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof speed_source !== "undefined" && typeof speed_source[0] !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label>Speed source: </label>
                                     <!--<span data-bind="text: speed_source[0]" />-->
                                      <!-- ko if: speed_source[0] === 1 -->
@@ -936,7 +936,7 @@
                             <!-- /ko -->
                         </li>
 
-                     <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" href="#"><img class="inlineIcon" src ="Images/heart.png" /></a>
+                     <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" ><img class="inlineIcon" src ="Images/heart.png" /></a>
                         
                         <!-- ko if: typeof FITSportSetting() !== "undefined" -->
 
@@ -944,7 +944,7 @@
 
                                 <!-- ko if: typeof sport !== "undefined" && sport.sport && sport.sport.length > 0 -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <!--<label>Sport: </label>-->
                                             <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 1 -->
                                                     <img src="Images/Sport/running.png" class="inlineIconTotals" />
@@ -964,7 +964,7 @@
                                    <!-- /ko -->
 
                                  <!-- ko if: typeof _headerInfo_ !== "undefined" && typeof _headerInfo_.timestamp !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label data-bind ="text: 'Imported: '"></label>
                                     <span data-bind="text: (new Date(_headerInfo_.timestamp)).toLocaleString()" ></span>
                                 </a>
@@ -972,7 +972,7 @@
                                  <!-- /ko -->
 
                                 <!-- ko if: typeof speed_zone !== "undefined" && typeof speed_zone.high_value !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label data-bind ="text: 'Speed: '"></label>
                                         <span data-bind="text: JSON.stringify(speed_zone.high_value)" ></span>
                                        
@@ -981,7 +981,7 @@
                                 <!-- /ko -->
 
                                 <!-- ko if: typeof hr_zone !== "undefined" && typeof hr_zone.high_bpm !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label data-bind ="text: 'HR: '"></label>
                                         <span data-bind="text: JSON.stringify(hr_zone.high_bpm)" ></span>
                                     </a>
@@ -991,7 +991,7 @@
                                 <!-- MAYBE: Include MET zones -->
 
                                 <!-- ko if: typeof power_zone !== "undefined" && typeof power_zone.high_value !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label data-bind ="text: 'Power: '"></label>
                                         <span data-bind="text: JSON.stringify(power_zone.high_value)" ></span>
                                     </a>
@@ -999,7 +999,7 @@
                                 <!-- /ko -->
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.max_heart_rate !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label data-bind ="text: 'Max HR: '"></label>
                                         <span data-bind="text: zones_target.max_heart_rate" ></span>
                                     </a>
@@ -1007,7 +1007,7 @@
                                 <!-- /ko -->
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.threshold_heart_rate !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label data-bind ="text: 'Threshold HR: '"></label>
                                         <span data-bind="text: zones_target.threshold_heart_rate" ></span>
                                     </a>
@@ -1015,7 +1015,7 @@
                                 <!-- /ko -->
 
                                  <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.functional_threshold_power !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label title="Functional threshold power" data-bind ="text: 'FTP: '"></label>
                                         <span data-bind="text: zones_target.functional_threshold_power" ></span>
                                     </a>
@@ -1023,7 +1023,7 @@
                                 <!-- /ko -->
 
                                  <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.hr_calc_type !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label data-bind ="text: 'HR calc. type: '"> </label>
 
                                         <!-- ko if: zones_target.hr_calc_type[0] === 0 -->
@@ -1042,7 +1042,7 @@
                                 <!-- /ko -->
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.pwr_calc_type !== "undefined" -->
-                                    <li><a href="#">
+                                    <li><a >
                                         <label data-bind ="text: 'Power calc. type: '"></label>
 
                                         <!-- ko if: zones_target.pwr_calc_type[0] === 0 -->
@@ -1063,7 +1063,7 @@
                         
                     </li>
 
-                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().bike_profile !== "undefined"'><a title="Bike profile in FIT settings" href="#">
+                    <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().bike_profile !== "undefined"'><a title="Bike profile in FIT settings" >
                         <img src="Images/Sport/cycling.png" class="inlineIcon" /></a>
                         <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().bike_profile !== "undefined" && typeof FITSetting().bike_profile.name !== "undefined" && FITSetting().bike_profile.name.length > 0 -->
                             <!-- ko with: FITSetting().bike_profile -->
@@ -1073,7 +1073,7 @@
                                     </li>
 
                                     <!-- ko if: typeof odometer !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Odometer: </label>
                                             <span data-bind="text: odometer[selectedBikeIndex()]/1000+ ' km'" ></span></a>
                                         </li>
@@ -1082,7 +1082,7 @@
                                     
 
                                     <!-- ko if: typeof custom_wheelsize !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Custom wheelsize:</label>
                                             <span data-bind="text: custom_wheelsize[selectedBikeIndex()] * 1000 + ' mm'" ></span>
                                         </a>
@@ -1090,7 +1090,7 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof auto_wheelsize !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Auto wheelsize:</label>
                                             <span data-bind="text: auto_wheelsize[selectedBikeIndex()]*1000 + ' mm'" ></span>
                                         </a>
@@ -1098,7 +1098,7 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof bike_weight !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Weight:</label>
                                             <span data-bind="text: bike_weight[selectedBikeIndex()]+ ' kg'" ></span>
                                         </a>
@@ -1106,7 +1106,7 @@
                                     <!-- /ko -->
 
                                      <!-- ko if: typeof power_cal_factor !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Power cal. factor: </label>
                                             <span data-bind="text: power_cal_factor[selectedBikeIndex()] + ' %'" ></span>
                                         </a>
@@ -1114,7 +1114,7 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof auto_wheel_cal !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Auto wheel cal.: </label>
                                              <input type="checkbox" disabled="disabled" data-bind="checked: auto_wheel_cal[selectedBikeIndex()]" />
                                         </a>
@@ -1122,7 +1122,7 @@
                                  <!-- /ko -->
 
                                     <!-- ko if: typeof auto_power_zero !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Auto power zero: </label>
                                              <input type="checkbox" disabled="disabled" data-bind="checked: auto_power_zero[selectedBikeIndex()]" />
                                         </a>
@@ -1130,7 +1130,7 @@
                                  <!-- /ko -->
 
                                     <!-- ko if: typeof id !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Id: </label>
                                             <span data-bind="text: id[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1140,7 +1140,7 @@
                                     
 
                                     <!-- ko if: typeof crank_length !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Crank length: </label>
                                             <span data-bind="text: crank_length[selectedBikeIndex()] + ' %'" ></span>
                                         </a>
@@ -1148,7 +1148,7 @@
                                     <!-- /ko -->
 
                                      <!-- ko if: typeof enabled !== "undefined"  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Enabled: </label>
                                              <input type="checkbox" disabled="disabled" data-bind="checked:enabled[selectedBikeIndex()]" />
                                         </a>
@@ -1156,7 +1156,7 @@
                                  <!-- /ko -->
 
                                     <!-- ko if: typeof spd_enabled !== "undefined" && spd_enabled[selectedBikeIndex()] -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>SPD enabled: </label>
                                              <input type="checkbox" disabled="disabled" data-bind="checked: spd_enabled[selectedBikeIndex()]" />
                                         </a>
@@ -1164,7 +1164,7 @@
                                  <!-- /ko -->
 
                                     <!-- ko if: typeof cad_enabled !== "undefined"  && cad_enabled[selectedBikeIndex()]-->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>CAD enabled: </label>
                                              <input type="checkbox" disabled="disabled" data-bind="checked: cad_enabled[selectedBikeIndex()]" />
                                         </a>
@@ -1172,7 +1172,7 @@
                                  <!-- /ko -->
 
                                     <!-- ko if: typeof spdcad_enabled !== "undefined"  && spdcad_enabled[selectedBikeIndex()]-->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>SPDCAD enabled: </label>
                                              <input type="checkbox" disabled="disabled" data-bind="checked: spdcad_enabled[selectedBikeIndex()]" />
                                         </a>
@@ -1180,7 +1180,7 @@
                                  <!-- /ko -->
 
                                      <!-- ko if: typeof power_enabled !== "undefined" && power_enabled[selectedBikeIndex()] -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>Power enabled: </label>
                                              <input type="checkbox" disabled="disabled" data-bind="checked: power_enabled[selectedBikeIndex()]" />
                                         </a>
@@ -1188,7 +1188,7 @@
                                  <!-- /ko -->
 
                                     <!-- ko if: typeof bike_spd_ant_id !== "undefined" &&  bike_spd_ant_id[selectedBikeIndex()] -->
-                                        <li title="Bike speed sensor ANT id."><a href="#">
+                                        <li title="Bike speed sensor ANT id."><a >
                                             <label>SPD ANT ID: </label>
                                             <span data-bind="text: bike_spd_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1196,7 +1196,7 @@
                                     <!-- /ko -->
 
                                      <!-- ko if: typeof bike_spd_ant_id_trans_type !== "undefined" &&  bike_spd_ant_id_trans_type[selectedBikeIndex()]   -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>SPD ANT id. trans. type: </label>
                                             <span data-bind="text: bike_spd_ant_id_trans_type[selectedBikeIndex()]"  ></span>
                                         </a>
@@ -1204,7 +1204,7 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof bike_cad_ant_id !== "undefined" &&  bike_cad_ant_id[selectedBikeIndex()]   -->
-                                        <li title="Bike cadence sensor ANT id."><a href="#">
+                                        <li title="Bike cadence sensor ANT id."><a >
                                             <label>Cad ANT ID: </label>
                                             <span data-bind="text: bike_cad_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1212,7 +1212,7 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof bike_cad_ant_id_trans_type !== "undefined" &&  bike_cad_ant_id_trans_type[selectedBikeIndex()]  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>CAD ANT id. trans. type: </label>
                                             <span data-bind="text: bike_cad_ant_id_trans_type[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1220,7 +1220,7 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof bike_spdcad_ant_id !== "undefined" &&  bike_spdcad_ant_id[selectedBikeIndex()]  -->
-                                        <li title="Bike speed and cadence sensor ANT id."><a href="#">
+                                        <li title="Bike speed and cadence sensor ANT id."><a >
                                             <label>SPDCAD ANT ID: </label>
                                             <span data-bind="text: bike_spdcad_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1228,7 +1228,7 @@
                                     <!-- /ko -->
 
                                      <!-- ko if: typeof bike_spdcad_ant_id_trans_type !== "undefined" &&  bike_spdcad_ant_id_trans_type[selectedBikeIndex()]  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>SPDCAD ANT id. trans. type: </label>
                                             <span data-bind="text: bike_spdcad_ant_id_trans_type[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1236,7 +1236,7 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof bike_power_ant_id !== "undefined" &&  bike_power_ant_id[selectedBikeIndex()]   -->
-                                        <li title="Bike power sensor ANT id."><a href="#">
+                                        <li title="Bike power sensor ANT id."><a >
                                             <label>Power ANT ID: </label>
                                             <span data-bind="text: bike_power_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1244,7 +1244,7 @@
                                     <!-- /ko -->
 
                                      <!-- ko if: typeof bike_power_ant_id_trans_type !== "undefined" &&  bike_power_ant_id_trans_type[selectedBikeIndex()]  -->
-                                        <li><a href="#">
+                                        <li><a >
                                             <label>POWER ANT id. trans. type: </label>
                                             <span data-bind="text: bike_power_ant_id_trans_type[selectedBikeIndex()]" ></span>
                                         </a>
@@ -1259,14 +1259,14 @@
                     </li>
 
 
-                    <li data-bind='visible: typeof FITTotals() !== "undefined" && FITTotals().totals.message_index && FITTotals().totals.message_index.length > 0'><a title="Totals (time/distance/calories/sessions)" href="#">
+                    <li data-bind='visible: typeof FITTotals() !== "undefined" && FITTotals().totals.message_index && FITTotals().totals.message_index.length > 0'><a title="Totals (time/distance/calories/sessions)" >
                         <img src="Images/totals.png" class="inlineIcon" /></a>
                         <!-- ko if: typeof FITTotals() !== "undefined" && FITTotals().totals && FITTotals().totals.message_index && FITTotals().totals.message_index.length > 0 -->
                            
                         <ul data-bind="with: FITTotals()">
 
                             <!-- ko if: typeof _headerInfo_ !== "undefined" && typeof _headerInfo_.timestamp !== "undefined" -->
-                                <li><a href="#">
+                                <li><a >
                                     <label data-bind ="text: 'Imported : '"></label>
                                     <span data-bind="text: (new Date(_headerInfo_.timestamp)).toLocaleString()" ></span>
                                 </a>
@@ -1279,7 +1279,7 @@
                                 
                                     <!-- ko if: typeof sport !== "undefined"  -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <!--<label>Sport: </label>-->
                                             <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 1 -->
                                                     <img src="Images/Sport/running.png" class="inlineIconTotals" />
@@ -1300,7 +1300,7 @@
 
                                  <!-- ko if: typeof timer_time !== "undefined"  -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <label title="Excludes pauses">Timer time: </label>
                                             <span data-bind="text: $root.converter.formatToHHMMSS(timer_time[$index()])" ></span></a>
                                         </li>
@@ -1309,7 +1309,7 @@
 
                                 <!-- ko if: typeof elapsed_time !== "undefined"  -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <label title="Include pauses">Elapsed time: </label>
                                             <span data-bind="text: $root.converter.formatToHHMMSS(elapsed_time[$index()])" ></span></a>
                                         </li>
@@ -1318,7 +1318,7 @@
 
                                  <!-- ko if: typeof active_time !== "undefined"  -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <label>Active time: </label>
                                             <span data-bind="text: $root.converter.formatToHHMMSS(active_time[$index()])" ></span></a>
                                         </li>
@@ -1327,7 +1327,7 @@
 
                                     <!-- ko if: typeof distance !== "undefined"  -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <label>Distance: </label>
                                             <span data-bind="text: distance[$index()] / 1000 + ' km'" ></span></a>
                                         </li>
@@ -1336,7 +1336,7 @@
 
                                  <!-- ko if: typeof calories !== "undefined"  -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <label>Calories: </label>
                                             <span data-bind="text: calories[$index()] + ' kcal'" ></span></a>
                                         </li>
@@ -1345,7 +1345,7 @@
 
                             <!-- ko if: typeof sessions !== "undefined"  -->
                               
-                                      <li><a href="#">
+                                      <li><a >
                                             <label>Sessions: </label>
                                             <span data-bind="text: sessions[$index()]" ></span></a>
                                         </li>
@@ -1363,7 +1363,7 @@
                     <!-- /ko -->
 
                     <li>
-                        <a href="#" title="(EXPERIMENTAL) Live streaming from sensors requires running an nodejs app. on the local machine that interfaces to the ANT USB stick and provides a websocket server">Live</a>
+                        <a  title="(EXPERIMENTAL) Live streaming from sensors requires running an nodejs app. on the local machine that interfaces to the ANT USB stick and provides a websocket server">Live</a>
                         <ul>
                             
                             <li >
@@ -1380,7 +1380,7 @@
                     <!--<li>-->
                        <!-- <div id="zonesChart"></div>-->
                         <!--<ul>
-                            <li><a href="#"></a>
+                            <li><a ></a>
                                  
                             </li>
                         </ul>-->
@@ -1925,7 +1925,7 @@
                         <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data), attr: { title: 'Filename: ' + _headerInfo_.fitFile.name + ' Size: ' + _headerInfo_.fitFile.size + ' bytes' }}">
                            <!-- http://stackoverflow.com/questions/9261296/any-good-techniques-to-debug-template-binding-faults-for-knockout-js -->
                            <!-- <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>-->
-                                <a href="#" data-bind="click: $parent.showActivity.bind($index())">
+                                <a  data-bind="click: $parent.showActivity.bind($index())">
 
                                     <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
                                     <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" />
