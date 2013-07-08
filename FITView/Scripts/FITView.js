@@ -3303,6 +3303,12 @@
                  count: 0,
              };
 
+             var SPDCAD_Speed_Timeout,
+                 SPDCAD_Cadence_Timeout,
+                 HRM_Timeout,
+                 SPDCAD_Timeout_Interval = 2000,
+                 HRM_Timeout_Interval = 2000;
+
              function initChart() {
                  self.multiChart = new Highcharts.StockChart({
                      chart: {
@@ -3376,6 +3382,7 @@
                      },
                      {
                          min: 0,
+                         max : 250, // RPM
                          gridLineWidth: 0,
                          opposite: true,
                          title: {
@@ -3388,7 +3395,7 @@
                          gridLineWidth: 0,
                          opposite: true,
                          title: {
-                             text: 'Speed (km/h)'
+                             text: 'Speed (Km/h)'
                          },
                          showEmpty: false
                      }]
@@ -3427,9 +3434,21 @@
              ws.onerror = function (error) { self.loggMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
 
              ws.onmessage = function (e) {
+                 // Clears all timeouts that will generate a null on the specific series to visualize discontinous data
+               
+
                  var page = JSON.parse(e.data),
                      channelIDProperty = page.channelID.toProperty;
                  self.loggMessage('log', 'Received from device ' + channelIDProperty + " " + e.data);
+
+                 //function clearAllTimeouts() {
+                 //    if (page.speed)
+                 //        clearTimeout(SPDCAD_Speed_Timeout);
+                 //    if (page.cadence)
+                 //    clearTimeout(SPDCAD_Cadence_Timeout);
+                 //}
+
+                 //clearAllTimeouts();
 
                  // Is this a previously registered sensor? If no, set up series for it
 
@@ -3556,11 +3575,23 @@
 
                          //http://api.highcharts.com/highcharts#Series.addPoint()
 
-                         if (typeof page.speed !== "undefined")
+                         if (typeof page.speed !== "undefined") {
+                             clearTimeout(SPDCAD_Speed_Timeout);
                              currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToKMprH(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                             SPDCAD_Speed_Timeout = setTimeout(function spdcad_speed_handler() {
+                                 self.loggMessage('log', 'Adding null to SPDCAD speed series to allow for discontinous series - no speed data received in '+SPDCAD_Timeout_Interval+" ms");
+                                 currentSeries.speed.addPoint([page.timestamp + 1, null], false, (currentSeries.speed.data.length > 60), false);
+                             }, SPDCAD_Timeout_Interval);
+                         }
 
-                         if (typeof page.cadence !== "undefined")
-                           currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
+                         if (typeof page.cadence !== "undefined") {
+                             clearTimeout(SPDCAD_Cadence_Timeout);
+                             currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
+                             SPDCAD_Cadence_Timeout = setTimeout(function spdcad_cadence_handler() {
+                                 self.loggMessage('log', 'Adding null to SPDCAD cadence series to allow for discontinous series - no cadence data received in '+SPDCAD_Timeout_Interval+" ms");
+                                 currentSeries.cadence.addPoint([page.timestamp + 1, null], false, (currentSeries.cadence.data.length > 60), false);
+                             }, SPDCAD_Timeout_Interval);
+                         }
 
                          break;
 
@@ -3610,9 +3641,17 @@
                                
                                  //msgCounter.HR++; // Added to prevent stall in redraw of chart - only redraw each n points
                                  //console.log(currentSeries.HR.data.length, (currentSeries.HR.data.length > 50) ? true : false);
-                                 currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
-                                 currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HR.data.length > 60), false);
 
+                                 clearTimeout(HRM_Timeout);
+
+                                 currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
+                                 currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HRV.data.length > 60), false);
+                                 
+                                 HRM_Timeout = setTimeout(function hrm_timeout_handler() {
+                                     self.loggMessage('log', 'Adding null to HR/HRV series to allow for discontinous series - no HRM data received in ' + HRM_Timeout_Interval + " ms");
+                                     currentSeries.HR.addPoint([page.timestamp + 1, null], false, (currentSeries.HR.data.length > 60), false);
+                                     currentSeries.HRV.addPoint([page.timestamp + 1, null], false, (currentSeries.HRV.data.length > 60), false);
+                                 }, HRM_Timeout);
                                  break;
 
                              default:
