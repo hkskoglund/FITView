@@ -104,19 +104,19 @@
                                     <!-- Session trigger -->
 
                                     <!-- ko if: trigger()[$index()] === 0 -->
-                                    <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" />
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" alt="Activity end" />
                                     <!-- /ko -->
 
                                     <!-- ko if: trigger()[$index()] === 1 -->
-                                    <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" />
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" alt="User changed sport (MODE)"/>
                                     <!-- /ko -->
 
                                     <!-- ko if: trigger()[$index()] === 2 -->
-                                    <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" alt="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
                                     <!-- /ko -->
 
                                     <!-- ko if: trigger()[$index()] === 3 -->
-                                    <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
+                                    <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" alt="Auto sport change caused by user linking to fitness equipment" />
                                     <!-- /ko -->
 
                                     <!-- /ko -->
@@ -309,35 +309,35 @@
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 0 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/manual.png" title="LAP pressed" />
+                                    <img class="lapTrigger" src="Images/laptrigger/manual.png" title="LAP pressed" alt="LAP pressed" />
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 1 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" />
+                                    <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" alt="Time" />
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger && lap_trigger()[$index()] === 2 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
+                                    <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" alt="Distance" />
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 3 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
+                                    <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" alt="Position start" />
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 4 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
+                                    <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" alt="Position lap" />
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger && lap_trigger()[$index()] === 5 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
+                                    <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" alt="Position waypoint" />
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 6 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
+                                    <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" alt="Position marked" />
                                     <!-- /ko -->
 
                                     <!-- ko if: lap_trigger  && lap_trigger()[$index()] === 7 -->
-                                    <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
+                                    <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" alt="Session end"/>
                                     <!-- /ko -->
 
                                 </a>
@@ -502,7 +502,7 @@
 
                             <li><a >
                                 <div>
-                                    <img class="inlineIcon" title="Hostname where application was loaded" src="Images/server.png" />
+                                    <img class="inlineIcon" title="Hostname where application was loaded" src="Images/server.png"  alt="Hostname where application was loaded"/>
                                     <span style="margin-left:2px" title="Hostname where application was loaded" data-bind="text: appHostname" ></span>
                                 </div>
 
@@ -551,7 +551,7 @@
                              <li><a >
 
                                 <div>
-                                    <img class="inlineIcon" src="Images/image.png" />
+                                    <img class="inlineIcon" src="Images/image.png" alt="Live image i.e web cam" />
                                     <label title="Live image">Live image URL</label>
                                     <input data-bind="value: liveImage" size="32" title="Live image URL, i.e web cam of interesting place" />
 
@@ -739,7 +739,7 @@
 
                      <!-- ko with: settingsVM -->
 
-                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined"'><a title="User profile in FIT settings" ><img src="Images/user-silhouette.png" class="inlineIcon" /></a>
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined"'><a title="User profile in FIT settings" ><img src="Images/user-silhouette.png" class="inlineIcon" alt="User profile in FIT settings" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().user_profile !== "undefined" -->
                             <!-- ko with: FITSetting().user_profile -->
                             <ul>
@@ -826,7 +826,7 @@
                               <!-- /ko -->
                         </li>
 
-                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a title="Heart Rate Monitor in FIT settings" ><img class="inlineIcon" src ="Images/deviceinfo/HRM.jpg" /></a>
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined"'><a title="Heart Rate Monitor in FIT settings" ><img class="inlineIcon" src ="Images/deviceinfo/HRM.jpg" alt="Heart Rate Monitor in FIT settings" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().hrm_profile !== "undefined" -->
                             <!-- ko with: FITSetting().hrm_profile -->
                             <ul>
@@ -870,7 +870,7 @@
                               <!-- /ko -->
                         </li>
 
-                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a title="Speed Distance Monitor in FIT settings" ><img class="inlineIcon" src ="Images/deviceinfo/garmin/footpod.jpg" /></a>
+                        <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined"'><a title="Speed Distance Monitor in FIT settings" ><img class="inlineIcon" src ="Images/deviceinfo/garmin/footpod.jpg" alt="Speed Distance Monitor in FIT settings" /></a>
                             <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().sdm_profile !== "undefined" -->
                                 <!-- ko with: FITSetting().sdm_profile -->
                                      <ul>
@@ -936,7 +936,7 @@
                             <!-- /ko -->
                         </li>
 
-                     <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" ><img class="inlineIcon" src ="Images/heart.png" /></a>
+                     <li data-bind='visible: typeof FITSportSetting() !== "undefined" && FITSportSetting().length > 0'><a title="Zones (i.e HR zones)" ><img class="inlineIcon" src ="Images/heart.png" alt="Zones (i.e HR zones)" /></a>
                         
                         <!-- ko if: typeof FITSportSetting() !== "undefined" -->
 
@@ -947,16 +947,16 @@
                                       <li><a >
                                             <!--<label>Sport: </label>-->
                                             <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 1 -->
-                                                    <img src="Images/Sport/running.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/running.png" class="inlineIconTotals" alt="Running" />
                                              <!-- /ko -->
                                              <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 2 -->
-                                                    <img src="Images/Sport/cycling.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/cycling.png" class="inlineIconTotals" alt="Cycling" />
                                              <!-- /ko -->
                                              <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 0 -->
-                                                    <img src="Images/Sport/generic.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/generic.png" class="inlineIconTotals" alt="Generic"/>
                                              <!-- /ko -->
                                              <!-- ko if: typeof sport.sport[0] !== "undefined"  && sport.sport[0] === 5 -->
-                                                    <img src="Images/Sport/swimming.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/swimming.png" class="inlineIconTotals" alt="Swimming"/>
                                              <!-- /ko -->
                                             </a>
                                         </li>
@@ -1064,7 +1064,7 @@
                     </li>
 
                     <li data-bind='visible: typeof FITSetting() !== "undefined" && typeof FITSetting().bike_profile !== "undefined"'><a title="Bike profile in FIT settings" >
-                        <img src="Images/Sport/cycling.png" class="inlineIcon" /></a>
+                        <img src="Images/Sport/cycling.png" class="inlineIcon" alt="Cycling" /></a>
                         <!-- ko if: typeof FITSetting() !== "undefined" && typeof FITSetting().bike_profile !== "undefined" && typeof FITSetting().bike_profile.name !== "undefined" && FITSetting().bike_profile.name.length > 0 -->
                             <!-- ko with: FITSetting().bike_profile -->
                                 <ul>
@@ -1260,7 +1260,7 @@
 
 
                     <li data-bind='visible: typeof FITTotals() !== "undefined" && FITTotals().totals.message_index && FITTotals().totals.message_index.length > 0'><a title="Totals (time/distance/calories/sessions)" >
-                        <img src="Images/totals.png" class="inlineIcon" /></a>
+                        <img src="Images/totals.png" class="inlineIcon" alt="Totals" /></a>
                         <!-- ko if: typeof FITTotals() !== "undefined" && FITTotals().totals && FITTotals().totals.message_index && FITTotals().totals.message_index.length > 0 -->
                            
                         <ul data-bind="with: FITTotals()">
@@ -1282,16 +1282,16 @@
                                       <li><a >
                                             <!--<label>Sport: </label>-->
                                             <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 1 -->
-                                                    <img src="Images/Sport/running.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/running.png" class="inlineIconTotals" alt="Running"/>
                                              <!-- /ko -->
                                              <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 2 -->
-                                                    <img src="Images/Sport/cycling.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/cycling.png" class="inlineIconTotals" alt="Cycling"/>
                                              <!-- /ko -->
                                              <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 0 -->
-                                                    <img src="Images/Sport/generic.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/generic.png" class="inlineIconTotals" alt="Generic"/>
                                              <!-- /ko -->
                                              <!-- ko if: typeof sport[$index()] !== "undefined"  && sport[$index()] === 5 -->
-                                                    <img src="Images/Sport/swimming.png" class="inlineIconTotals" />
+                                                    <img src="Images/Sport/swimming.png" class="inlineIconTotals" alt="Swimming"/>
                                              <!-- /ko -->
                                             </a>
                                         </li>
@@ -1370,7 +1370,7 @@
                                <!-- <a id="a1" title="Export HRV as CSV" data-bind="click: csv.tryMSBlobSave">
                                     Export HRV as CSV 
                             </a>-->
-                                 <a title="Stream live from sensors" data-bind="click: startWebSocketClient"> <img class="inlineIcon" src="Images/stream-sensors.png" />Stream</a>
+                                 <a title="Stream live from sensors" data-bind="click: startWebSocketClient"> <img class="inlineIcon" src="Images/stream-sensors.png" alt="Live stream sensors" />Stream</a>
                          
                             </li>
                         </ul>
@@ -1650,19 +1650,19 @@
 
 
                 <!-- ko if: trigger()[selectedSession()] === 0 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" />
+                <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" alt="Activity end" />
                 <!-- /ko -->
 
                 <!-- ko if: trigger()[selectedSession()] === 1 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" />
+                <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)"  alt="User changed sport (MODE)"/>
                 <!-- /ko -->
 
                 <!-- ko if: trigger()[selectedSession()] === 2 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
+                <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" alt="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
                 <!-- /ko -->
 
                 <!-- ko if: trigger()[selectedSession()] === 3 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" />
+                <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" alt="Auto sport change caused by user linking to fitness equipment"" />
                 <!-- /ko -->
 
                 <!-- /ko -->
@@ -1854,36 +1854,36 @@
                 <!-- /ko -->
 
                 <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 0 -->
-                <img class="lapTrigger" src="Images/laptrigger/manual.png" title="LAP pressed" />
+                <img class="lapTrigger" src="Images/laptrigger/manual.png" title="LAP pressed" alt="LAP pressed" />
                 <!-- /ko -->
 
 
                 <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 1 -->
-                <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" />
+                <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" alt="Time" />
                 <!-- /ko -->
 
                 <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 2 -->
-                <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" />
+                <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" alt="Distance"" />
                 <!-- /ko -->
 
                 <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 3 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" />
+                <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" alt="Position start"" />
                 <!-- /ko -->
 
                 <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 4 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" />
+                <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" alt="Position lap" />
                 <!-- /ko -->
 
                 <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 5 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" />
+                <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" alt="Position waypoint" />
                 <!-- /ko -->
 
                 <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 6 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" />
+                <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" alt="Position marked" />
                 <!-- /ko -->
 
                 <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 7 -->
-                <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" />
+                <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" alt="Session End" />
                 <!-- /ko -->
 
 
@@ -1912,7 +1912,7 @@
 
             <div id="divMapWrapper">
                 <div>
-                    <img id="liveImage" data-bind="attr: { src: settingsVM.liveImage}" />
+                    <img id="liveImage" data-bind="attr: { src: settingsVM.liveImage}" alt="Live image"/>
                 </div>
                 <!-- ko with: activityVM -->
                 <div id="importedActivities">
@@ -1928,7 +1928,7 @@
                                 <a  data-bind="click: $parent.showActivity.bind($index())">
 
                                     <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
-                                    <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" />
+                                    <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" alt="Static google map image of activity" />
                                     <!-- /ko -->
                                    
                                        
