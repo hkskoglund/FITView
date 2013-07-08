@@ -413,7 +413,7 @@
 
                                 <div>
                                     <input type="checkbox" data-bind="checked: showDeviceInfo" />
-                                    Devices/Sensors
+                                    Devices used based on FIT
                                 </div>
                             </a>
                             </li>
@@ -552,8 +552,8 @@
 
                                 <div>
                                     <img class="inlineIcon" src="Images/image.png" alt="Live image i.e web cam" />
-                                    <label title="Live image">Live image URL</label>
-                                    <input data-bind="value: liveImage" size="32" title="Live image URL, i.e web cam of interesting place" />
+                                    <label title="Live image" >Live image URL</label>
+                                    <input  data-bind="value: liveImage" size="32" title="Live image URL, i.e web cam of interesting place" />
 
                                 </div>
 
@@ -581,8 +581,8 @@
 
                             <li title="Live data from sensors are provided by a separate nodejs app. that interfaces with the USB ANT stick (nRF24AP2) and provides a websocket server">
                                 <a>
-                                    <label>Websocket server:</label>
-                                    <label data-bind="text: webSocketServerURL"></label>
+                                    <span>Websocket server:</span>
+                                    <span data-bind="text: webSocketServerURL"></span>
                                 </a>
                             </li>
 
@@ -598,12 +598,12 @@
                                <a> 
               <!--  <span title="File name" data-bind="text: fileName"></span>
                 <span title="File size" data-bind="text: fileSize"></span> -->
-                                    <label class="HeaderLabel">Data type:</label><span title="Data type" data-bind="text: dataType"></span>
-                                    <label class="HeaderLabel">Size:</label><span title="Header size" data-bind="text: headerSize"></span>
-                                    <label class="HeaderLabel">Data size:</label><span title="Data size" data-bind="text: dataSize"></span>
-                                    <label class="HeaderLabel">Protocol version:</label><span title="Protocol version" data-bind="text: protocolVersion"></span>
-                                    <label class="HeaderLabel">Profile version:</label><span title="Profile version" data-bind="text: profileVersion"></span>
-                                    <label class="HeaderLabel">CRC:</label><span title="CRC" data-bind="text: headerCRC"></span>
+                                    <span class="HeaderLabel">Data type:</span><span title="Data type" data-bind="text: dataType"></span>
+                                    <span class="HeaderLabel">Size:</span><span title="Header size" data-bind="text: headerSize"></span>
+                                    <span class="HeaderLabel">Data size:</span><span title="Data size" data-bind="text: dataSize"></span>
+                                    <span class="HeaderLabel">Protocol version:</span><span title="Protocol version" data-bind="text: protocolVersion"></span>
+                                    <span class="HeaderLabel">Profile version:</span><span title="Profile version" data-bind="text: profileVersion"></span>
+                                    <span class="HeaderLabel">CRC:</span><span title="CRC" data-bind="text: headerCRC"></span>
                                 </a>
                                
 
@@ -746,7 +746,7 @@
 
                                 <!-- ko if: typeof $parent.FITSetting !== "undefined" && typeof $parent.FITSetting()._headerInfo_ !== "undefined" && typeof $parent.FITSetting()._headerInfo_.timestamp !== "undefined" -->
                                 <li><a >
-                                    <label>Imported: </label>
+                                    <span>Imported: </span>
                                     <span data-bind="text: (new Date($parent.FITSetting()._headerInfo_.timestamp)).toLocaleString()" ></span>
                                 </a>
                                 </li>
@@ -754,7 +754,7 @@
 
                                 <!-- ko if: typeof friendly_name !== "undefined" && typeof friendly_name[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Name: </label>
+                                    <span>Name: </span>
                                     <span data-bind="text: friendly_name[0]" ></span>
 
                                 </a>
@@ -763,7 +763,7 @@
 
                                 <!-- ko if: typeof weight !== "undefined" && typeof weight[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Weight: </label>
+                                    <span>Weight: </span>
                                     <span data-bind="text: weight[0]" ></span>
 
                                 </a>
@@ -772,7 +772,7 @@
 
                                 <!-- ko if: typeof gender !== "undefined" && typeof gender[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Gender: </label>
+                                    <span>Gender: </span>
                                     <!-- ko if: gender[0] === 1 -->
                                     <span>Male</span>
                                     <!-- /ko -->
@@ -785,7 +785,7 @@
 
                                 <!-- ko if: typeof age !== "undefined" && typeof age[0] !== "undefined" -->
                                  <li><a >
-                                    <label>Age: </label>
+                                    <span>Age: </span>
                                     <span data-bind="text: age[0]" ></span>
 
                                 </a>
@@ -794,7 +794,7 @@
 
                                 <!-- ko if: typeof height !== "undefined" && typeof height[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Height: </label>
+                                    <span>Height: </span>
                                     <span data-bind="text: height[0]" ></span>
 
                                 </a>
@@ -803,7 +803,7 @@
 
                                  <!-- ko if: typeof resting_heart_rate !== "undefined" && typeof resting_heart_rate[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Resting heart rate: </label>
+                                    <span>Resting heart rate: </span>
                                     <span data-bind="text: resting_heart_rate[0]" ></span>
 
                                 </a>
@@ -812,7 +812,7 @@
 
                                 <!-- ko if: typeof activity_class !== "undefined" && typeof activity_class[0] !== "undefined" -->
                                 <li><a >
-                                    <label title="Firstbeat activity class">Activity class:</label>
+                                    <span title="Firstbeat activity class">Activity class:</span>
                                     <span data-bind="text: activity_class[0]" ></span>
                                 </a>
                                 </li>
@@ -833,7 +833,7 @@
 
                                 <!-- ko if: typeof hrm_ant_id !== "undefined" && typeof hrm_ant_id[0] !== "undefined" -->
                                 <li><a >
-                                    <label>ANT id: </label>
+                                    <span>ANT id: </span>
                                     <span data-bind="text: hrm_ant_id[0]" ></span>
 
                                 </a>
@@ -842,7 +842,7 @@
 
                                 <!-- ko if: typeof hrm_ant_id_trans_type !== "undefined" && typeof hrm_ant_id_trans_type[0] !== "undefined" -->
                                  <li><a >
-                                    <label>ANT id trans. type: </label>
+                                    <span>ANT id trans. type: </span>
                                     <span data-bind="text: hrm_ant_id_trans_type[0]" ></span>
                                 </a>
                                 </li>
@@ -850,7 +850,7 @@
 
                                 <!-- ko if: typeof enabled !== "undefined" && typeof enabled[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Enabled: </label>
+                                    <span>Enabled: </span>
                                      <input type="checkbox" disabled="disabled" data-bind="checked: enabled[0]" />
                                 </a>
                                 </li>
@@ -858,7 +858,7 @@
 
                                 <!-- ko if: typeof log_hrv !== "undefined" && typeof log_hrv[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Log HRV: </label>
+                                    <span>Log HRV: </span>
                                      <input type="checkbox" disabled="disabled" data-bind="checked: log_hrv[0]" />
                                 </a>
                                 </li>
@@ -877,7 +877,7 @@
 
                                 <!-- ko if: typeof sdm_ant_id !== "undefined" && typeof sdm_ant_id[0] !== "undefined" -->
                                 <li><a >
-                                    <label>ANT id: </label>
+                                    <span>ANT id: </span>
                                     <span data-bind="text: sdm_ant_id[0]" ></span>
                                 </a>
                                 </li>
@@ -885,7 +885,7 @@
 
                                 <!-- ko if: typeof sdm_ant_id_trans_type !== "undefined" && typeof sdm_ant_id_trans_type[0] !== "undefined" -->
                                  <li><a >
-                                    <label>ANT id trans. type: </label>
+                                    <span>ANT id trans. type: </span>
                                     <span data-bind="text: sdm_ant_id_trans_type[0]" ></span>
                                 </a>
                                 </li>
@@ -893,7 +893,7 @@
 
                                 <!-- ko if: typeof enabled !== "undefined" && typeof enabled[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Enabled: </label>
+                                    <span>Enabled: </span>
                                      <input type="checkbox" disabled="disabled" data-bind="checked: enabled[0]" />
                                 </a>
                                 </li>
@@ -901,7 +901,7 @@
 
                                 <!-- ko if: typeof odometer !== "undefined" && typeof odometer[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Odometer: </label>
+                                    <span>Odometer: </span>
                                        <span data-bind="text: odometer[0]" ></span>
                                 </a>
                                 </li>
@@ -909,7 +909,7 @@
 
                                 <!-- ko if: typeof sdm_cal_factor !== "undefined" && typeof sdm_cal_factor[0] !== "undefined" -->
                                 <li><a >
-                                    <label>SDM cal. factor: </label>
+                                    <span>SDM cal. factor: </span>
                                     <span data-bind="text: (sdm_cal_factor[0]/100)*1000" ></span>
                                     <!-- By default scale factor is in %, on 910XT 100% = scale fator of 1000 -->
                                     </a>
@@ -918,7 +918,7 @@
 
                                 <!-- ko if: typeof speed_source !== "undefined" && typeof speed_source[0] !== "undefined" -->
                                 <li><a >
-                                    <label>Speed source: </label>
+                                    <span>Speed source: </span>
                                     <!--<span data-bind="text: speed_source[0]" />-->
                                      <!-- ko if: speed_source[0] === 1 -->
                                     <span>Footpod</span>
@@ -965,7 +965,7 @@
 
                                  <!-- ko if: typeof _headerInfo_ !== "undefined" && typeof _headerInfo_.timestamp !== "undefined" -->
                                 <li><a >
-                                    <label data-bind ="text: 'Imported: '"></label>
+                                    <span data-bind ="text: 'Imported: '"></span>
                                     <span data-bind="text: (new Date(_headerInfo_.timestamp)).toLocaleString()" ></span>
                                 </a>
                                 </li>
@@ -973,7 +973,7 @@
 
                                 <!-- ko if: typeof speed_zone !== "undefined" && typeof speed_zone.high_value !== "undefined" -->
                                     <li><a >
-                                        <label data-bind ="text: 'Speed: '"></label>
+                                        <span data-bind ="text: 'Speed: '"></span>
                                         <span data-bind="text: JSON.stringify(speed_zone.high_value)" ></span>
                                        
                                     </a>
@@ -982,7 +982,7 @@
 
                                 <!-- ko if: typeof hr_zone !== "undefined" && typeof hr_zone.high_bpm !== "undefined" -->
                                     <li><a >
-                                        <label data-bind ="text: 'HR: '"></label>
+                                        <span data-bind ="text: 'HR: '"></span>
                                         <span data-bind="text: JSON.stringify(hr_zone.high_bpm)" ></span>
                                     </a>
                                     </li>
@@ -992,7 +992,7 @@
 
                                 <!-- ko if: typeof power_zone !== "undefined" && typeof power_zone.high_value !== "undefined" -->
                                     <li><a >
-                                        <label data-bind ="text: 'Power: '"></label>
+                                        <span data-bind ="text: 'Power: '"></span>
                                         <span data-bind="text: JSON.stringify(power_zone.high_value)" ></span>
                                     </a>
                                     </li>
@@ -1000,7 +1000,7 @@
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.max_heart_rate !== "undefined" -->
                                     <li><a >
-                                        <label data-bind ="text: 'Max HR: '"></label>
+                                        <span data-bind ="text: 'Max HR: '"></span>
                                         <span data-bind="text: zones_target.max_heart_rate" ></span>
                                     </a>
                                     </li>
@@ -1008,7 +1008,7 @@
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.threshold_heart_rate !== "undefined" -->
                                     <li><a >
-                                        <label data-bind ="text: 'Threshold HR: '"></label>
+                                        <span data-bind ="text: 'Threshold HR: '"></span>
                                         <span data-bind="text: zones_target.threshold_heart_rate" ></span>
                                     </a>
                                     </li>
@@ -1016,7 +1016,7 @@
 
                                  <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.functional_threshold_power !== "undefined" -->
                                     <li><a >
-                                        <label title="Functional threshold power" data-bind ="text: 'FTP: '"></label>
+                                        <span title="Functional threshold power" data-bind ="text: 'FTP: '"></span>
                                         <span data-bind="text: zones_target.functional_threshold_power" ></span>
                                     </a>
                                     </li>
@@ -1024,7 +1024,7 @@
 
                                  <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.hr_calc_type !== "undefined" -->
                                     <li><a >
-                                        <label data-bind ="text: 'HR calc. type: '"> </label>
+                                        <span data-bind ="text: 'HR calc. type: '"> </span>
 
                                         <!-- ko if: zones_target.hr_calc_type[0] === 0 -->
                                             <span>Custom</span>
@@ -1043,7 +1043,7 @@
 
                                 <!-- ko if: typeof zones_target !== "undefined" && typeof zones_target.pwr_calc_type !== "undefined" -->
                                     <li><a >
-                                        <label data-bind ="text: 'Power calc. type: '"></label>
+                                        <span data-bind ="text: 'Power calc. type: '"></span>
 
                                         <!-- ko if: zones_target.pwr_calc_type[0] === 0 -->
                                             <span>Custom</span>
@@ -1074,7 +1074,7 @@
 
                                     <!-- ko if: typeof odometer !== "undefined"  -->
                                         <li><a >
-                                            <label>Odometer: </label>
+                                            <span>Odometer: </span>
                                             <span data-bind="text: odometer[selectedBikeIndex()]/1000+ ' km'" ></span></a>
                                         </li>
                                     <!-- /ko -->
@@ -1083,7 +1083,7 @@
 
                                     <!-- ko if: typeof custom_wheelsize !== "undefined"  -->
                                         <li><a >
-                                            <label>Custom wheelsize:</label>
+                                            <span>Custom wheelsize:</span>
                                             <span data-bind="text: custom_wheelsize[selectedBikeIndex()] * 1000 + ' mm'" ></span>
                                         </a>
                                         </li>
@@ -1091,7 +1091,7 @@
 
                                     <!-- ko if: typeof auto_wheelsize !== "undefined"  -->
                                         <li><a >
-                                            <label>Auto wheelsize:</label>
+                                            <span>Auto wheelsize:</span>
                                             <span data-bind="text: auto_wheelsize[selectedBikeIndex()]*1000 + ' mm'" ></span>
                                         </a>
                                         </li>
@@ -1099,7 +1099,7 @@
 
                                     <!-- ko if: typeof bike_weight !== "undefined"  -->
                                         <li><a >
-                                            <label>Weight:</label>
+                                            <span>Weight:</span>
                                             <span data-bind="text: bike_weight[selectedBikeIndex()]+ ' kg'" ></span>
                                         </a>
                                         </li>
@@ -1107,7 +1107,7 @@
 
                                      <!-- ko if: typeof power_cal_factor !== "undefined"  -->
                                         <li><a >
-                                            <label>Power cal. factor: </label>
+                                            <span>Power cal. factor: </span>
                                             <span data-bind="text: power_cal_factor[selectedBikeIndex()] + ' %'" ></span>
                                         </a>
                                         </li>
@@ -1131,7 +1131,7 @@
 
                                     <!-- ko if: typeof id !== "undefined"  -->
                                         <li><a >
-                                            <label>Id: </label>
+                                            <span>Id: </span>
                                             <span data-bind="text: id[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1141,7 +1141,7 @@
 
                                     <!-- ko if: typeof crank_length !== "undefined"  -->
                                         <li><a >
-                                            <label>Crank length: </label>
+                                            <span>Crank length: </span>
                                             <span data-bind="text: crank_length[selectedBikeIndex()] + ' %'" ></span>
                                         </a>
                                         </li>
@@ -1189,7 +1189,7 @@
 
                                     <!-- ko if: typeof bike_spd_ant_id !== "undefined" &&  bike_spd_ant_id[selectedBikeIndex()] -->
                                         <li title="Bike speed sensor ANT id."><a >
-                                            <label>SPD ANT ID: </label>
+                                            <span>SPD ANT ID: </span>
                                             <span data-bind="text: bike_spd_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1197,7 +1197,7 @@
 
                                      <!-- ko if: typeof bike_spd_ant_id_trans_type !== "undefined" &&  bike_spd_ant_id_trans_type[selectedBikeIndex()]   -->
                                         <li><a >
-                                            <label>SPD ANT id. trans. type: </label>
+                                            <span>SPD ANT id. trans. type: </span>
                                             <span data-bind="text: bike_spd_ant_id_trans_type[selectedBikeIndex()]"  ></span>
                                         </a>
                                         </li>
@@ -1205,7 +1205,7 @@
 
                                     <!-- ko if: typeof bike_cad_ant_id !== "undefined" &&  bike_cad_ant_id[selectedBikeIndex()]   -->
                                         <li title="Bike cadence sensor ANT id."><a >
-                                            <label>Cad ANT ID: </label>
+                                            <span>Cad ANT ID: </span>
                                             <span data-bind="text: bike_cad_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1213,7 +1213,7 @@
 
                                     <!-- ko if: typeof bike_cad_ant_id_trans_type !== "undefined" &&  bike_cad_ant_id_trans_type[selectedBikeIndex()]  -->
                                         <li><a >
-                                            <label>CAD ANT id. trans. type: </label>
+                                            <span>CAD ANT id. trans. type: </span>
                                             <span data-bind="text: bike_cad_ant_id_trans_type[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1221,7 +1221,7 @@
 
                                     <!-- ko if: typeof bike_spdcad_ant_id !== "undefined" &&  bike_spdcad_ant_id[selectedBikeIndex()]  -->
                                         <li title="Bike speed and cadence sensor ANT id."><a >
-                                            <label>SPDCAD ANT ID: </label>
+                                            <span>SPDCAD ANT ID: </span>
                                             <span data-bind="text: bike_spdcad_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1229,7 +1229,7 @@
 
                                      <!-- ko if: typeof bike_spdcad_ant_id_trans_type !== "undefined" &&  bike_spdcad_ant_id_trans_type[selectedBikeIndex()]  -->
                                         <li><a >
-                                            <label>SPDCAD ANT id. trans. type: </label>
+                                            <span>SPDCAD ANT id. trans. type: </span>
                                             <span data-bind="text: bike_spdcad_ant_id_trans_type[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1237,7 +1237,7 @@
 
                                     <!-- ko if: typeof bike_power_ant_id !== "undefined" &&  bike_power_ant_id[selectedBikeIndex()]   -->
                                         <li title="Bike power sensor ANT id."><a >
-                                            <label>Power ANT ID: </label>
+                                            <span>Power ANT ID: </span>
                                             <span data-bind="text: bike_power_ant_id[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1245,7 +1245,7 @@
 
                                      <!-- ko if: typeof bike_power_ant_id_trans_type !== "undefined" &&  bike_power_ant_id_trans_type[selectedBikeIndex()]  -->
                                         <li><a >
-                                            <label>POWER ANT id. trans. type: </label>
+                                            <span>POWER ANT id. trans. type: </span>
                                             <span data-bind="text: bike_power_ant_id_trans_type[selectedBikeIndex()]" ></span>
                                         </a>
                                         </li>
@@ -1267,7 +1267,7 @@
 
                             <!-- ko if: typeof _headerInfo_ !== "undefined" && typeof _headerInfo_.timestamp !== "undefined" -->
                                 <li><a >
-                                    <label data-bind ="text: 'Imported : '"></label>
+                                    <span data-bind ="text: 'Imported : '"></span>
                                     <span data-bind="text: (new Date(_headerInfo_.timestamp)).toLocaleString()" ></span>
                                 </a>
                                 </li>
@@ -1301,7 +1301,7 @@
                                  <!-- ko if: typeof timer_time !== "undefined"  -->
                               
                                       <li><a >
-                                            <label title="Excludes pauses">Timer time: </label>
+                                            <span title="Excludes pauses">Timer time: </span>
                                             <span data-bind="text: $root.converter.formatToHHMMSS(timer_time[$index()])" ></span></a>
                                         </li>
 
@@ -1310,7 +1310,7 @@
                                 <!-- ko if: typeof elapsed_time !== "undefined"  -->
                               
                                       <li><a >
-                                            <label title="Include pauses">Elapsed time: </label>
+                                            <span title="Include pauses">Elapsed time: </span>
                                             <span data-bind="text: $root.converter.formatToHHMMSS(elapsed_time[$index()])" ></span></a>
                                         </li>
 
@@ -1319,7 +1319,7 @@
                                  <!-- ko if: typeof active_time !== "undefined"  -->
                               
                                       <li><a >
-                                            <label>Active time: </label>
+                                            <span>Active time: </span>
                                             <span data-bind="text: $root.converter.formatToHHMMSS(active_time[$index()])" ></span></a>
                                         </li>
 
@@ -1328,7 +1328,7 @@
                                     <!-- ko if: typeof distance !== "undefined"  -->
                               
                                       <li><a >
-                                            <label>Distance: </label>
+                                            <span>Distance: </span>
                                             <span data-bind="text: distance[$index()] / 1000 + ' km'" ></span></a>
                                         </li>
 
@@ -1337,7 +1337,7 @@
                                  <!-- ko if: typeof calories !== "undefined"  -->
                               
                                       <li><a >
-                                            <label>Calories: </label>
+                                            <span>Calories: </span>
                                             <span data-bind="text: calories[$index()] + ' kcal'" ></span></a>
                                         </li>
 
@@ -1346,7 +1346,7 @@
                             <!-- ko if: typeof sessions !== "undefined"  -->
                               
                                       <li><a >
-                                            <label>Sessions: </label>
+                                            <span>Sessions: </span>
                                             <span data-bind="text: sessions[$index()]" ></span></a>
                                         </li>
 
