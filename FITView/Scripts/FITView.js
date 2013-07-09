@@ -3590,8 +3590,14 @@
                          }
 
                          if (typeof page.cadence !== "undefined") {
+                             // Sensor max. message rate is about 4 Hz -> 4 rounds/sconds -> 4*60 rounds/minute
+                             if (page.cadence > 240) {
+                                 self.loggMessage('log', 'Unrealistic cadence, something is wrong with data received from sensor cadence, max. sensor rate is about 4 Hz: ' + page.cadence);
+                                 self.loggMessage('log', 'Received page:' + JSON.stringify(page));
+                             }
                              clearTimeout(SPDCAD_Cadence_Timeout);
-                             currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
+                             if (page.cadence <= 240)
+                                 currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
                              SPDCAD_Cadence_Timeout = setTimeout(function spdcad_cadence_handler() {
                                  self.loggMessage('log', 'Adding null to SPDCAD cadence series to allow for discontinous series - no cadence data received in '+SPDCAD_Timeout_Interval+" ms");
                                  currentSeries.cadence.addPoint([page.timestamp + 1, null], false, (currentSeries.cadence.data.length > 60), false);
@@ -3672,7 +3678,8 @@
                          break;
                  }
 
-                 console.log("msgCounter",msgCounter);
+                 //console.log("msgCounter",msgCounter);
+
                  if (msgCounter.count > 3) {
                      //console.time("Redraw multichart");
                      self.multiChart.redraw();
