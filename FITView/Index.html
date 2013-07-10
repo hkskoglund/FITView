@@ -351,44 +351,28 @@
                     <!-- ko with: settingsVM -->
                     <li><a >Settings</a>
                         <ul>
-                            <li><a >
-
-                                <div>
-                                    <input type="checkbox" data-bind="checked: showLapLines" />
-                                    Lap and event timer start/stop lines
-                                </div>
-
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: showLapLines" />Lap and event timer start/stop lines
+                                </a>
                             </li>
 
-                            <li><a >
-
-                                <div>
-                                    <input type="checkbox" data-bind="checked: showLapTriggers" />
-                                    Lap triggers (i.e manual, auto distance)
-                                </div>
-
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: showLapTriggers" />Lap triggers (i.e manual, auto distance)
+                                </a>
                             </li>
 
-                            <li><a >
-
-                                <div>
-                                    <input type="checkbox" data-bind="checked: hideLAPtriggerTime" />
-                                    Hide lap trigger on time from labels on chart
-                                </div>
-
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: hideLAPtriggerTime" />Hide lap trigger on time from labels on chart
+                                </a>
                             </li>
 
-                            <li><a >
-
-                                <div>
-                                    <input type="checkbox" data-bind="checked: showEvents" />
-                                    Events (i.e START, STOP, HR recovery)
-                                </div>
-
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: showEvents" />Events (i.e START, STOP, HR recovery)
+                                </a>
                             </li>
 
                            <!-- <li><a >
@@ -410,31 +394,23 @@
                             </a>
                             </li>-->
 
-                            <li><a >
-
-                                <div>
-                                    <input type="checkbox" data-bind="checked: showDeviceInfo" />
-                                    Devices used based on FIT
-                                </div>
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: showDeviceInfo" />Devices used based on FIT
+                                </a>
                             </li>
 
-                            <li><a >
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: showHeaderInfo" />FIT header info.
 
-                                <div>
-                                    <input type="checkbox" data-bind="checked: showHeaderInfo" />
-                                    FIT header info.
-                                </div>
-                            </a>
+                                </a>
                             </li>
 
-                            <li><a >
-
-                                <div>
-                                    <input type="checkbox" title="Some devices only record data in run sport mode, i.e FR 110. Forced mode introduced to allow for km/h activities like i.e cycling" data-bind="checked: forceSpeedKMprH" />
-                                    Speed always in km/h
-                                </div>
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" title="Some devices only record data in run sport mode, i.e FR 110. Forced mode introduced to allow for km/h activities like i.e cycling" data-bind="checked: forceSpeedKMprH" />Speed always in km/h
+                                </a>
                             </li>
 
                             <!--<li><a >
@@ -446,68 +422,42 @@
                         </a>
                         </li>-->
 
-                            <li><a >
-
-                                <div>
-                                    <input type="checkbox" data-bind="checked: requestAveragingOnSpeed" />
-                                    Average speed
-                                </div>
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: requestAveragingOnSpeed" />Average speed
+                                </a>
                             </li>
 
-                            <li><a >
-
-                                <div>
-                                    Avg.speed sample
-                                <input type="range" min="3000" max="120000" data-bind="value: averageSampleTime" />
-                                    <span data-bind="text: averageSampleTime"></span>ms
-                                </div>
-                            </a>
+                            <li>
+                                <a>Avg.speed sample<input type="range" min="3000" max="120000" data-bind="value: averageSampleTime" /><span data-bind="text: averageSampleTime"></span>ms
+                                </a>
                             </li>
 
-                            <li><a >
-                                <div>
-                                    <input type="checkbox" data-bind="checked: distanceOnXAxis" />
-                                    Distance (km) on X-axis
-                                </div>
-                            </a>
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: distanceOnXAxis" />Distance (km) on X-axis
+                                </a>
                             </li>
 
-                             <li><a >
- 	 	
-                                <div>
- 	 	
-                                    <input type="checkbox" data-bind="checked: TEIntensityPlotbands" />
- 	 
-                                    TE intensity plotbands
- 	 
-                                </div>
- 	 	
-                            </a>
- 		
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: TEIntensityPlotbands" />TE intensity plotbands
+
+                                </a>
                             </li>
 
-                            <li><a >
- 	 	
-                                <div>
- 	 	
-                                    <input type="checkbox" data-bind="checked: logging" />
- 	 
-                                    Log messages to console (for debugging)
- 	 
-                                </div>
- 	 	
-                            </a>
- 		
+                            <li>
+                                <a>
+                                    <input type="checkbox" data-bind="checked: logging" />Log messages to console (for debugging)
+                                </a>
+
                             </li>
 
-                            <li><a >
-                                <div>
-                                    <img class="inlineIcon" title="Hostname where application was loaded" src="Images/server.png"  alt="Hostname where application was loaded"/>
-                                    <span style="margin-left:2px" title="Hostname where application was loaded" data-bind="text: appHostname" ></span>
-                                </div>
-
-                            </a>
+                            <li>
+                                <a>
+                                    <img class="inlineIcon" title="Hostname where application was loaded" src="Images/server.png" alt="Hostname where application was loaded" />
+                                    <span style="margin-left: 2px" title="Hostname where application was loaded" data-bind="text: appHostname"></span>
+                                </a>
                             </li>
 
                             <!--<li>
@@ -549,21 +499,18 @@
                             </a>
                             </li>-->
 
-                             <li><a >
-
-                                <div>
+                            <li>
+                                <a>
                                     <img class="inlineIcon" src="Images/image.png" alt="Live image i.e web cam" />
-                                    <label title="Live image" >Live image URL</label>
-                                    <input  data-bind="value: liveImage" size="32" title="Live image URL, i.e web cam of interesting place" />
-
-                                </div>
-
-                            </a>
+                                    <label title="Live image">Live image URL</label>
+                                    <input data-bind="value: liveImage" size="32" title="Live image URL, i.e web cam of interesting place" />
+                                </a>
                             </li>
 
-                            <li data-bind="visible: hasWebNotification"><a data-bind="click: notificationPermission">
-                                <span>Give permission for notifications</span>
-                            </a>
+                            <li data-bind="visible: hasWebNotification">
+                                <a data-bind="click: notificationPermission">
+                                    <span>Give permission for notifications</span>
+                                </a>
                             </li>
 
                             <li>
