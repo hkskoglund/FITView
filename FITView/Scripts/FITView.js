@@ -6,6 +6,7 @@
 
 
     var self,
+        liveStreamWebSocket,
 
        seriesData = [], // Actual data in multiChart
 
@@ -832,7 +833,7 @@
                 GCBIGipServer: ko.observable(localStorage.GCBIGipServer),
                 GCauthtoken: ko.observable(localStorage.GCauthtoken),
                 liveImage: ko.observable(localStorage.liveImage),
-                hasWebNotification : ko.observable(undefined),
+                hasWebNotification: ko.observable(undefined),
                 notificationPermission: function () {
                     // http://www.thecssninja.com/javascript/web-notifications
                     // https://dvcs.w3.org/hg/notifications/raw-file/tip/Overview.html#dom-notification
@@ -847,11 +848,13 @@
                 },
                 networkStatus: ko.observable(navigator.onLine),
 
-                FITTotals : ko.observable(undefined),
+                FITTotals: ko.observable(undefined),
                 //requestHideAltitude : ko.observable(true)
 
-                webSocketServerHost : ko.observable('localhost'),
-                webSocketServerPort : ko.observable(8093)
+                webSocketServerHost: ko.observable('localhost'),
+                webSocketServerPort: ko.observable(8093),
+
+                liveStreamingFromSensors: ko.observable(false)
             },
 
             progressVM: {
@@ -1352,6 +1355,13 @@
             // Click-handler for live streaming from sensors
             self.masterVM.startWebSocketClient = function () {
                 self.showLiveChart();
+            }
+
+            self.masterVM.stopWebSocketClient = function () {
+                if (typeof liveStreamWebSocket !== "undefined")
+                    liveStreamWebSocket.close();
+                else
+                    self.loggMessage("warn", "liveStreamWebSocket is undefined. Attempt to close it was skipped");
             }
 
             // Converter
@@ -3293,6 +3303,13 @@
              if (this.multiChart)
                  this.multiChart.destroy();
 
+             $('#divMapWrapper').hide();
+             $('#sessionDetails').hide();
+             $('#zonesChart').hide();
+             $('#lapChart').hide();
+             $('#weeklyCaloriesChart').hide();
+             $('#intensityChart').hide();
+
              var chartId = "multiChart";
              var divChart = document.getElementById(chartId);
              divChart.style.visibility = "visible";
@@ -3425,11 +3442,13 @@
                  var closeTimestamp = Date.now();
                  if ((closeTimestamp - startTimestamp) <= timeoutForOpen)
                      self.loggMessage('log', 'Websocket is closed. Make sure websocket server is running.');
+                 self.masterVM.settingsVM.liveStreamingFromSensors(false);
                  self.loggMessage('log', 'Closed websocket to ' + wsResourceURL);
              };
 
              ws.onopen = function () {
                  self.loggMessage('log', 'Open websocket to ' + wsResourceURL);
+                 self.masterVM.settingsVM.liveStreamingFromSensors(true);
                  initChart();
 
                  //self.multiChart.yAxis[4].setExtremes(0, 250, true, false);
@@ -3695,7 +3714,7 @@
              //        self.loggMessage('log',"Failed to open websocket to " + wsResourceURL);
              //}, timeoutForOpen);
 
-             
+             liveStreamWebSocket = ws;
              
          },
 
@@ -3707,6 +3726,8 @@
             // http://api.highcharts.com/highcharts#Chart.destroy()
             if (this.multiChart)
                 this.multiChart.destroy();
+
+            $('#divMapWrapper').show();
 
             var chartId = "multiChart";
             var divChart = document.getElementById(chartId);
@@ -4293,7 +4314,7 @@
                                     TEseries.setData(self.masterVM.TEVM.TEhistory.sort(comparator, true).map(self.getTimestampAndTE));
 
 
-                                    if (self.masterVM.settingsVM.TEIntensityPlotbands()) {
+                                    if (self.masterVM.TEIntensityPlotbands()) {
                                         yaxis.addPlotBand({ // mark high intensity
                                             color: '#CC0000',
                                             from: 4.0,

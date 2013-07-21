@@ -1308,7 +1308,7 @@
                            <!-- /ko -->
                     </li>
 
-                    <!-- /ko -->
+                   
 
                     <li>
                         <a  title="(EXPERIMENTAL) Live streaming from sensors requires running an nodejs app. on the local machine that interfaces to the ANT USB stick and provides a websocket server">Live</a>
@@ -1318,12 +1318,27 @@
                                <!-- <a id="a1" title="Export HRV as CSV" data-bind="click: csv.tryMSBlobSave">
                                     Export HRV as CSV 
                             </a>-->
-                                 <a title="Stream live from sensors" data-bind="click: startWebSocketClient"> <img class="inlineIcon" src="Images/stream-sensors.png" alt="Live stream sensors" />Stream</a>
-                         
+                                <!-- ko ifnot: liveStreamingFromSensors -->
+                                 <a title="Open live stream from sensors" data-bind="click: $parent.startWebSocketClient"> <img class="inlineIcon" src="Images/livestream/openstream.png" alt="Open live stream sensors" />Open stream</a>
+                                 <!-- /ko -->
+
+                                 <!-- ko if: liveStreamingFromSensors -->
+                                     <a title="Close live stream from sensors" data-bind="click: $parent.stopWebSocketClient"> <img class="inlineIcon" src="Images/livestream/closestream.png" alt="Close live stream sensors" />Close stream</a>
+                            >
+                                <!-- /ko -->
+                              
                             </li>
+
+                            <!--<li>
+                                <a>
+                                    <span data-bind="text: liveStreamingFromSensors"></span>
+                                </a>
+                            </li>-->
                         </ul>
 
                     </li>
+
+                     <!-- /ko -->
                     
                     <!--<li>-->
                        <!-- <div id="zonesChart"></div>-->
