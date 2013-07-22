@@ -3298,17 +3298,14 @@
                  },
                  connectedSensor = {
                  };
+
              // Clean up previous chart
              // http://api.highcharts.com/highcharts#Chart.destroy()
              if (this.multiChart)
                  this.multiChart.destroy();
 
-             $('#divMapWrapper').hide();
-             $('#sessionDetails').hide();
-             $('#zonesChart').hide();
-             $('#lapChart').hide();
-             $('#weeklyCaloriesChart').hide();
-             $('#intensityChart').hide();
+             $('#divDetailsAndMap').hide();
+             $('#divAdditionalCharts').hide();
 
              var chartId = "multiChart";
              var divChart = document.getElementById(chartId);
@@ -6777,6 +6774,8 @@
 
         // Handles an ordinary activity file with measurement and GPS data
         processActivityFile: function (rawData) {
+
+           
            
             self.resetLapSessionViewModel();
             self.resetTimestampIndexCache(); // Tries to speed up lookup of timestamps
@@ -6836,6 +6835,9 @@
 
             self.masterVM.lapVM.setRawdata(self, rawData);
             ko.mapping.fromJS(rawData.lap, mappingOptions, self.masterVM.lapVM);
+
+            $('#divDetailsAndMap').show();
+            $('#divAdditionalCharts').show();
 
             // Activity file
 

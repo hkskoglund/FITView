@@ -1390,12 +1390,13 @@
                 <button id="btnSaveHRZones" style="float: right">Save</button>
             </div>-->
 
+            <div id="divDetailsAndMap">
 
-            <!-- ko with: sessionVM -->
-            <div id="sessionDetails">
-                <!--<div data-bind="text: ko.toJSON($root)"></div>-->
+                <!-- ko with: sessionVM -->
+                <div id="sessionDetails">
+                    <!--<div data-bind="text: ko.toJSON($root)"></div>-->
 
-                <!-- ko if: selectedSession() !== undefined -->
+                    <!-- ko if: selectedSession() !== undefined -->
 
 
                     <!-- ko if: sport()[selectedSession()] === 1 -->
@@ -1412,629 +1413,629 @@
 
                     <!-- ko if : start_time()[selectedSession()] -->
 
-                    <span class = "sessionStartTime" data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedSession()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
+                    <span class="sessionStartTime" data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedSession()] + $parent.settingsVM.timeZoneDifferenceUTC)"></span>
                     <!-- /ko -->
 
-                
+
                     <!-- ko if: typeof total_timer_time !== "undefined" &&  total_timer_time().length > 0 && typeof total_timer_time()[selectedSession()] !== "undefined"  -->
-                        <img class="inlineIcon" alt="Total timer time" title="Total timer time" src="Images/total_timer_time.png" />
-                        <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
+                    <img class="inlineIcon" alt="Total timer time" title="Total timer time" src="Images/total_timer_time.png" />
+                    <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedSession()].toHHMMSS()"></span></time>
                     <!-- /ko -->
 
-                 <!-- ko if: typeof total_elapsed_time !== "undefined" && total_elapsed_time().length > 0  && total_timer_time()[selectedSession()].value !== total_elapsed_time()[selectedSession()].value -->
-                        <img class="inlineIcon" alt="Total elapsed time" title="Total elapsed time" src="Images/total_elapsed_time.png" />
-                        <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
+                    <!-- ko if: typeof total_elapsed_time !== "undefined" && total_elapsed_time().length > 0  && total_timer_time()[selectedSession()].value !== total_elapsed_time()[selectedSession()].value -->
+                    <img class="inlineIcon" alt="Total elapsed time" title="Total elapsed time" src="Images/total_elapsed_time.png" />
+                    <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedSession()].toHHMMSS()"></span></time>
                     <!-- /ko -->
 
                     <!-- ko if: total_distance().length > 0 -->
-                         
-                        <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
 
-                        <!-- ko if:  total_distance()[selectedSession()] < 1000 -->
-                            <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[selectedSession()].toFixed(0)+' m'"></span>
-                        <!-- /ko -->
+                    <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
 
-                         <!-- ko if:  total_distance()[selectedSession()] >= 1000 -->
-                            <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance()[selectedSession()]/1000).toFixed(2)+' km'"></span>
-                         <!-- /ko -->
+                    <!-- ko if:  total_distance()[selectedSession()] < 1000 -->
+                    <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance()[selectedSession()].toFixed(0) + ' m'"></span>
+                    <!-- /ko -->
+
+                    <!-- ko if:  total_distance()[selectedSession()] >= 1000 -->
+                    <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance()[selectedSession()] / 1000).toFixed(2) + ' km'"></span>
+                    <!-- /ko -->
 
                     <!-- /ko -->
 
                     <!-- ko if: typeof num_laps !== "undefined" && num_laps().length > 0 && num_laps()[selectedSession()] >= 0 -->
-                        <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
-                        <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>
+                    <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
+                    <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps()[selectedSession()].toFixed(0)"></span>
                     <!-- /ko -->
 
                     <!-- SPEED -->
 
                     <!-- ko if: avg_speed()[selectedSession()]  || max_speed()[selectedSession()]  -->
-                        <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
+                    <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
                     <!-- /ko -->
 
 
-                <!-- BIKING/GENERIC -->
-                <!-- ko if: sport()[selectedSession()] === 2 || sport()[selectedSession()] === 0  -->
+                    <!-- BIKING/GENERIC -->
+                    <!-- ko if: sport()[selectedSession()] === 2 || sport()[selectedSession()] === 0  -->
 
 
-                <!-- ko if: avg_speed()[selectedSession()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toKMprH()"></span>
-                <!-- /ko -->
+                    <!-- ko if: avg_speed()[selectedSession()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toKMprH()"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedSession()]  -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toKMprH()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- ko if: max_speed()[selectedSession()]  -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toKMprH()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- RUNNING -->
+                    <!-- RUNNING -->
 
-                <!-- ko if: sport()[selectedSession()] === 1 && $parent.speedMode() === 1-->
+                    <!-- ko if: sport()[selectedSession()] === 1 && $parent.speedMode() === 1-->
 
-                <!-- ko if: avg_speed()[selectedSession()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toMINprKM()"></span>
-                <!-- /ko -->
+                    <!-- ko if: avg_speed()[selectedSession()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toMINprKM()"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedSession()] -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINprKM()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- ko if: max_speed()[selectedSession()] -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINprKM()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ko if: sport()[selectedSession()] === 1 && $parent.speedMode() === 2 -->
+                    <!-- ko if: sport()[selectedSession()] === 1 && $parent.speedMode() === 2 -->
 
-                <!-- ko if: avg_speed()[selectedSession()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toKMprH()"></span>
-                <!-- /ko -->
+                    <!-- ko if: avg_speed()[selectedSession()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toKMprH()"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedSession()] -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toKMprH()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- ko if: max_speed()[selectedSession()] -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toKMprH()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- SWIMMING TO DO .... -->
+                    <!-- SWIMMING TO DO .... -->
 
-                <!-- ko if: sport()[selectedSession()] === 5  -->
+                    <!-- ko if: sport()[selectedSession()] === 5  -->
 
-                <!-- ko if: avg_speed()[selectedSession()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toMINpr100M()"></span>
-                <!-- /ko -->
+                    <!-- ko if: avg_speed()[selectedSession()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedSession()].toMINpr100M()"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedSession()] -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINpr100M()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- ko if: max_speed()[selectedSession()] -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedSession()].toMINpr100M()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- HEART RATE -->
+                    <!-- HEART RATE -->
 
-                <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
-                <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
-                <!-- /ko -->
+                    <!-- ko if: avg_heart_rate()[selectedSession()] ||  max_heart_rate()[selectedSession()] -->
+                    <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
+                    <!-- /ko -->
 
 
-                <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
-                <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
-                <!-- /ko -->
+                    <!-- ko if:  avg_heart_rate()[selectedSession()]  >= 0 -->
+                    <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedSession()]"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
-                <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
-                <!-- /ko -->
+                    <!-- ko if: max_heart_rate()[selectedSession()] >= 0 -->
+                    <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedSession()]"></span>
+                    <!-- /ko -->
 
-                 <!-- HRV/RR -->
+                    <!-- HRV/RR -->
 
-                <!-- ko if: typeof (rawData.hrv) !== "undefined" && typeof (rawData.hrv.time) !== "undefined" && rawData.hrv.time.length > 0 -->
+                    <!-- ko if: typeof (rawData.hrv) !== "undefined" && typeof (rawData.hrv.time) !== "undefined" && rawData.hrv.time.length > 0 -->
                     <img class="inlineIcon" alt="HRV" title="HRV - heart rate variability. RR-interval data. Time in ms. between each heartbeat. It varies with expiration/inspiration." src="Images/hrv.png" />
                     <span data-bind="text: rawData.hrv.time.length, attr: { title: 'Contains ' + rawData.hrv.time.length + ' heart rate variability measurements' } "></span>
-                <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ko if: total_calories()[selectedSession()] > 0 || total_fat_calories()[selectedSession()] > 0-->
-                <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+                    <!-- ko if: total_calories()[selectedSession()] > 0 || total_fat_calories()[selectedSession()] > 0-->
+                    <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
-                <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedSession()]"></span>
-                <!-- ko if: typeof total_timer_time()[selectedSession()].value !== "undefined" && total_elapsed_time()[selectedSession()].value > 0 -->
-                <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                <span title="Watt" data-bind="text: ((total_calories()[selectedSession()]) * 1000 * 4.1868 / total_timer_time()[selectedSession()].value).toFixed(1)"></span>
-                <!-- /ko -->
-                <!-- ko if: total_fat_calories()[selectedSession()] > 0 -->
-                <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedSession()]"></span>
-                <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                <span title="Watt" data-bind="text: ((total_fat_calories()[selectedSession()]) * 1000 * 4.1868 / total_timer_time()[selectedSession()].value).toFixed(1)"></span>
-                <!-- /ko -->
+                    <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedSession()]"></span>
+                    <!-- ko if: typeof total_timer_time()[selectedSession()].value !== "undefined" && total_elapsed_time()[selectedSession()].value > 0 -->
+                    <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
+                    <span title="Watt" data-bind="text: ((total_calories()[selectedSession()]) * 1000 * 4.1868 / total_timer_time()[selectedSession()].value).toFixed(1)"></span>
+                    <!-- /ko -->
+                    <!-- ko if: total_fat_calories()[selectedSession()] > 0 -->
+                    <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedSession()]"></span>
+                    <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
+                    <span title="Watt" data-bind="text: ((total_fat_calories()[selectedSession()]) * 1000 * 4.1868 / total_timer_time()[selectedSession()].value).toFixed(1)"></span>
+                    <!-- /ko -->
 
-                <!-- /ko -->
-
-
-                <!-- POWER -->
-
-                <!-- ko if: avg_power()[selectedSession()] > 0   ||  max_power()[selectedSession()] > 0  -->
-
-                <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
-
-                <span title="Average power (w)" data-bind="text: avg_power()[selectedSession()]"></span>
-
-                <span title="Max power (w)" data-bind="text: max_power()[selectedSession()]"></span>
-
-                <!-- /ko -->
+                    <!-- /ko -->
 
 
-                <!-- CADENCE/STRIDES -->
+                    <!-- POWER -->
 
-                <!-- ko if: avg_cadence()[selectedSession()] >= 0 || 
+                    <!-- ko if: avg_power()[selectedSession()] > 0   ||  max_power()[selectedSession()] > 0  -->
+
+                    <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
+
+                    <span title="Average power (w)" data-bind="text: avg_power()[selectedSession()]"></span>
+
+                    <span title="Max power (w)" data-bind="text: max_power()[selectedSession()]"></span>
+
+                    <!-- /ko -->
+
+
+                    <!-- CADENCE/STRIDES -->
+
+                    <!-- ko if: avg_cadence()[selectedSession()] >= 0 || 
                             max_cadence()[selectedSession()] >= 0 ||  
                           total_cycles_strides()[selectedSession()] >=0 -->
-                <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
-                <!-- /ko -->
+                    <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
+                    <!-- /ko -->
 
-                <!-- ko if:  avg_cadence().length > 0  -->
-                <span title="Average cadence" data-bind="text: avg_cadence()[selectedSession()]"></span>
-                <!-- /ko -->
+                    <!-- ko if:  avg_cadence().length > 0  -->
+                    <span title="Average cadence" data-bind="text: avg_cadence()[selectedSession()]"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: max_cadence().length > 0  -->
-                <span title="Max cadence" data-bind="text: max_cadence()[selectedSession()]"></span>
-                <!-- /ko -->
+                    <!-- ko if: max_cadence().length > 0  -->
+                    <span title="Max cadence" data-bind="text: max_cadence()[selectedSession()]"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: total_cycles_strides().length > 0  -->
-                <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[selectedSession()]"></span>
+                    <!-- ko if: total_cycles_strides().length > 0  -->
+                    <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[selectedSession()]"></span>
 
-                <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ASCENT/DESCENT -->
+                    <!-- ASCENT/DESCENT -->
 
-                <!-- ko if: total_ascent()[selectedSession()] >= 0  ||  total_descent()[selectedSession()] >= 0 -->
+                    <!-- ko if: total_ascent()[selectedSession()] >= 0  ||  total_descent()[selectedSession()] >= 0 -->
 
-                <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
+                    <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
 
-                <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedSession()]"></span>
+                    <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedSession()]"></span>
 
-                <span title="Total descent (m)" data-bind="text: total_descent()[selectedSession()]"></span>
+                    <span title="Total descent (m)" data-bind="text: total_descent()[selectedSession()]"></span>
 
-                <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ko if: avg_temperature()[selectedSession()] >= 0  ||  max_temperature()[selectedSession()] >= 0  -->
+                    <!-- ko if: avg_temperature()[selectedSession()] >= 0  ||  max_temperature()[selectedSession()] >= 0  -->
 
-                <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
+                    <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
 
-                <span title="Average temperature (C)" data-bind="text: avg_temperature()[selectedSession()]"></span>
+                    <span title="Average temperature (C)" data-bind="text: avg_temperature()[selectedSession()]"></span>
 
-                <span title="Max temperature (C)" data-bind="text: max_temperature()[selectedSession()]"></span>
+                    <span title="Max temperature (C)" data-bind="text: max_temperature()[selectedSession()]"></span>
 
-                <!-- /ko -->
+                    <!-- /ko -->
 
 
-                <!-- ko if:  total_training_effect()[selectedSession()] >= 1 -->
-                TE
+                    <!-- ko if:  total_training_effect()[selectedSession()] >= 1 -->
+                    TE
                         <span data-bind="text: total_training_effect()[selectedSession()]"></span>
 
-                <!-- meter tag ignored in  IE 10, but works in Chrome -->
-                <meter title="Training effect" style="padding-left: 5px; padding-bottom: 6px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect()[selectedSession()]"></meter>
+                    <!-- meter tag ignored in  IE 10, but works in Chrome -->
+                    <meter title="Training effect" style="padding-left: 5px; padding-bottom: 6px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect()[selectedSession()]"></meter>
+                    <!-- /ko -->
+
+
+
+                    <!-- Session trigger -->
+
+
+
+                    <!-- ko if: trigger()[selectedSession()] === 0 -->
+                    <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" alt="Activity end" />
+                    <!-- /ko -->
+
+                    <!-- ko if: trigger()[selectedSession()] === 1 -->
+                    <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)" alt="User changed sport (MODE)" />
+                    <!-- /ko -->
+
+                    <!-- ko if: trigger()[selectedSession()] === 2 -->
+                    <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" alt="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
+                    <!-- /ko -->
+
+                    <!-- ko if: trigger()[selectedSession()] === 3 -->
+                    <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" alt="Auto sport change caused by user linking to fitness equipment" />
+                    <!-- /ko -->
+
+                    <!-- /ko -->
+
+                </div>
                 <!-- /ko -->
 
+                <!-- ko with: lapVM -->
+                <div id="lapDetails">
+                    <!--<div data-bind="text: ko.toJSON($root)"></div>-->
+
+                    <!-- ko if: selectedLap() !== undefined -->
 
 
-                <!-- Session trigger -->
+                    <!-- ko if: sport()[selectedLap()] === 1 -->
+                    <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
+                    <!-- /ko -->
+
+                    <!-- ko if: sport()[selectedLap()] === 2 -->
+                    <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
+                    <!-- /ko -->
+
+                    <!-- ko if: sport()[selectedLap()] === 5 -->
+                    <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
+                    <!-- /ko -->
+
+                    <!-- ko if : start_time()[selectedLap()] -->
+
+                    <span data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedLap()] + $parent.settingsVM.timeZoneDifferenceUTC)"></span>
+                    <!-- /ko -->
 
 
 
-                <!-- ko if: trigger()[selectedSession()] === 0 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/activity_end.png" title="Activity end" alt="Activity end" />
-                <!-- /ko -->
+                    <!-- ko if: total_timer_time().length > 0 && selectedLap() !== undefined  -->
+                    <img class="inlineIcon" alt="Total timer time" title="Total timer time" src="Images/total_timer_time.png" />
+                    <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedLap()].toHHMMSS()"></span></time>
+                    <!-- /ko -->
 
-                <!-- ko if: trigger()[selectedSession()] === 1 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/manual.png" title="User changed sport (MODE)"  alt="User changed sport (MODE)"/>
-                <!-- /ko -->
+                    <!-- ko if: total_elapsed_time().length > 0  && total_timer_time()[selectedLap()].value !== total_elapsed_time()[selectedLap()].value -->
+                    <img class="inlineIcon" alt="Total elapsed time" title="Total elapsed time" src="Images/total_elapsed_time.png" />
+                    <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedLap()].toHHMMSS()"></span></time>
+                    <!-- /ko -->
 
-                <!-- ko if: trigger()[selectedSession()] === 2 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/auto_multi_sport.png" title="Auto multi-sport feature is enabled and user pressed LAP button to advance session" alt="Auto multi-sport feature is enabled and user pressed LAP button to advance session" />
-                <!-- /ko -->
+                    <!-- ko if: total_distance().length > 0 -->
+                    <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
+                    <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedLap()].toFixed(0)"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: trigger()[selectedSession()] === 3 -->
-                <img class="sessionTrigger" src="Images/sessiontrigger/fitness_equipment.png" title="Auto sport change caused by user linking to fitness equipment" alt="Auto sport change caused by user linking to fitness equipment" />
-                <!-- /ko -->
+                    <!-- SPEED -->
 
-                <!-- /ko -->
-
-            </div>
-            <!-- /ko -->
-
-            <!-- ko with: lapVM -->
-            <div id="lapDetails">
-                <!--<div data-bind="text: ko.toJSON($root)"></div>-->
-
-                <!-- ko if: selectedLap() !== undefined -->
+                    <!-- ko if: avg_speed()[selectedLap()]  || max_speed()[selectedLap()]  -->
+                    <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
+                    <!-- /ko -->
 
 
-                <!-- ko if: sport()[selectedLap()] === 1 -->
-                <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
-                <!-- /ko -->
-
-                <!-- ko if: sport()[selectedLap()] === 2 -->
-                <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
-                <!-- /ko -->
-
-                <!-- ko if: sport()[selectedLap()] === 5 -->
-                <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
-                <!-- /ko -->
-
-                <!-- ko if : start_time()[selectedLap()] -->
-
-                <span data-bind="text: Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', start_time()[selectedLap()]+$parent.settingsVM.timeZoneDifferenceUTC)"></span>
-                <!-- /ko -->
+                    <!-- BIKING/GENERIC -->
+                    <!-- ko if: sport()[selectedLap()] === 2 || sport()[selectedLap()] === 0  -->
 
 
-                
-                <!-- ko if: total_timer_time().length > 0 && selectedLap() !== undefined  -->
-                  <img class="inlineIcon" alt="Total timer time" title="Total timer time" src="Images/total_timer_time.png" />
-                <time><span class="sessionHHMMSS" title="Total timer time (excludes pauses)" data-bind="text: total_timer_time()[selectedLap()].toHHMMSS()"></span></time>
-                <!-- /ko -->
+                    <!-- ko if: avg_speed()[selectedLap()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toKMprH()"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: total_elapsed_time().length > 0  && total_timer_time()[selectedLap()].value !== total_elapsed_time()[selectedLap()].value -->
-                  <img class="inlineIcon" alt="Total elapsed time" title="Total elapsed time" src="Images/total_elapsed_time.png" />
-                <time><span class="sessionHHMMSS" title="Total elapsed time (includes pauses)" data-bind="text: total_elapsed_time()[selectedLap()].toHHMMSS()"></span></time>
-                <!-- /ko -->
+                    <!-- ko if: max_speed()[selectedLap()]  -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toKMprH()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ko if: total_distance().length > 0 -->
-                  <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
-                <span class="sessionTOTALDISTANCE" title="Total distance (m)" data-bind="text: total_distance()[selectedLap()].toFixed(0)"></span>
-                <!-- /ko -->
+                    <!-- RUNNING -->
 
-                <!-- SPEED -->
+                    <!-- ko if: sport()[selectedLap()] === 1 && $parent.speedMode() === 1-->
 
-                <!-- ko if: avg_speed()[selectedLap()]  || max_speed()[selectedLap()]  -->
-                <img class="inlineIcon" alt="Speed" title="Speed" src="Images/speed.png" />
-                <!-- /ko -->
+                    <!-- ko if: avg_speed()[selectedLap()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toMINprKM()"></span>
+                    <!-- /ko -->
 
+                    <!-- ko if: max_speed()[selectedLap()] -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toMINprKM()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- BIKING/GENERIC -->
-                <!-- ko if: sport()[selectedLap()] === 2 || sport()[selectedLap()] === 0  -->
+                    <!-- ko if: sport()[selectedLap()] === 1 && $parent.speedMode() === 2 -->
 
+                    <!-- ko if: avg_speed()[selectedLap()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toKMprH()"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: avg_speed()[selectedLap()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toKMprH()"></span>
-                <!-- /ko -->
+                    <!-- ko if: max_speed()[selectedLap()] -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toKMprH()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedLap()]  -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toKMprH()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- SWIMMING TO DO .... -->
 
-                <!-- RUNNING -->
+                    <!-- ko if: sport()[selectedLap()] === 5  -->
 
-                <!-- ko if: sport()[selectedLap()] === 1 && $parent.speedMode() === 1-->
+                    <!-- ko if: avg_speed()[selectedLap()] -->
+                    <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toMINpr100M()"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: avg_speed()[selectedLap()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toMINprKM()"></span>
-                <!-- /ko -->
+                    <!-- ko if: max_speed()[selectedLap()] -->
+                    <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toMINpr100M()"></span>
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedLap()] -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toMINprKM()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- HEART RATE -->
 
-                <!-- ko if: sport()[selectedLap()] === 1 && $parent.speedMode() === 2 -->
+                    <!-- ko if: avg_heart_rate()[selectedLap()] ||  max_heart_rate()[selectedLap()] -->
+                    <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
+                    <!-- /ko -->
 
-                <!-- ko if: avg_speed()[selectedLap()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toKMprH()"></span>
-                <!-- /ko -->
+                    <!-- ko if:  avg_heart_rate()[selectedLap()]  >= 0 -->
+                    <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedLap()]"></span>
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedLap()] -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toKMprH()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- ko if: max_heart_rate()[selectedLap()] >= 0 -->
+                    <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedLap()]"></span>
+                    <!-- /ko -->
 
-                <!-- SWIMMING TO DO .... -->
+                    <!-- ko if: total_calories()[selectedLap()] > 0 || total_fat_calories()[selectedLap()] > 0-->
+                    <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
-                <!-- ko if: sport()[selectedLap()] === 5  -->
+                    <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedLap()]"></span>
+                    <!-- ko if: typeof total_calories()[selectedLap()] !== "undefined" && total_timer_time()[selectedLap()].value > 0 -->
+                    <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
+                    <span title="Watt" data-bind="text: ((total_calories()[selectedLap()]) * 1000 * 4.1868 / total_timer_time()[selectedLap()].value).toFixed(1)"></span>
+                    <!-- /ko -->
+                    <!-- ko if: typeof total_fat_calories()[selectedLap()] !== "undefined" && total_fat_calories()[selectedLap()] > 0 -->
+                    <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedLap()]"></span>
+                    <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
+                    <span title="Watt" data-bind="text: ((total_fat_calories()[selectedLap()]) * 1000 * 4.1868 / total_timer_time()[selectedLap()].value).toFixed(1)"></span>
 
-                <!-- ko if: avg_speed()[selectedLap()] -->
-                <span title="Average speed" data-bind="text: avg_speed()[selectedLap()].toMINpr100M()"></span>
-                <!-- /ko -->
+                    <!-- /ko -->
+                    <!-- /ko -->
 
-                <!-- ko if: max_speed()[selectedLap()] -->
-                <span title="Max speed" data-bind="text: max_speed()[selectedLap()].toMINpr100M()"></span>
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- POWER -->
 
-                <!-- HEART RATE -->
+                    <!-- ko if: avg_power()[selectedLap()] > 0  ||  max_power()[selectedLap()] > 0  -->
 
-                <!-- ko if: avg_heart_rate()[selectedLap()] ||  max_heart_rate()[selectedLap()] -->
-                <img class="inlineIcon" alt="heartrate" title="Heart rate (bpm)" src="Images/heart.png" />
-                <!-- /ko -->
+                    <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
 
-                <!-- ko if:  avg_heart_rate()[selectedLap()]  >= 0 -->
-                <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate()[selectedLap()]"></span>
-                <!-- /ko -->
+                    <span title="Average power (w)" data-bind="text: avg_power()[selectedLap()]"></span>
 
-                <!-- ko if: max_heart_rate()[selectedLap()] >= 0 -->
-                <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate()[selectedLap()]"></span>
-                <!-- /ko -->
+                    <span title="Max power (w)" data-bind="text: max_power()[selectedLap()]"></span>
 
-                <!-- ko if: total_calories()[selectedLap()] > 0 || total_fat_calories()[selectedLap()] > 0-->
-                <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+                    <!-- /ko -->
 
-                <span title="Total calories (kcal)" data-bind="text: total_calories()[selectedLap()]"></span>
-                 <!-- ko if: typeof total_calories()[selectedLap()] !== "undefined" && total_timer_time()[selectedLap()].value > 0 -->
-                  <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                     <span title="Watt" data-bind="text: ((total_calories()[selectedLap()]  )* 1000 * 4.1868 / total_timer_time()[selectedLap()].value).toFixed(1)"></span>
-                 <!-- /ko -->
-                <!-- ko if: typeof total_fat_calories()[selectedLap()] !== "undefined" && total_fat_calories()[selectedLap()] > 0 -->
-                <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories()[selectedLap()]"></span>
-                 <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                     <span title="Watt" data-bind="text: (( total_fat_calories()[selectedLap()]) * 1000 * 4.1868 / total_timer_time()[selectedLap()].value).toFixed(1)"></span>
-                
-                <!-- /ko -->
-                <!-- /ko -->
+                    <!-- CADENCE/STRIDES -->
 
-                <!-- POWER -->
-
-                <!-- ko if: avg_power()[selectedLap()] > 0  ||  max_power()[selectedLap()] > 0  -->
-
-                <img class="inlineIcon" alt="Power" title="Power (w)" src="Images/power.png" />
-
-                <span title="Average power (w)" data-bind="text: avg_power()[selectedLap()]"></span>
-
-                <span title="Max power (w)" data-bind="text: max_power()[selectedLap()]"></span>
-
-                <!-- /ko -->
-
-                <!-- CADENCE/STRIDES -->
-
-                <!-- ko if: avg_cadence()[selectedLap()] >= 0 || 
+                    <!-- ko if: avg_cadence()[selectedLap()] >= 0 || 
                             max_cadence()[selectedLap()] >= 0 ||  
                           total_cycles_strides()[selectedLap()] >=0 -->
-                <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
+                    <img class="inlineIcon" alt="Cadence" title="Cadence" src="Images/cadence.png" />
+                    <!-- /ko -->
+
+                    <!-- ko if:  avg_cadence().length > 0  -->
+                    <span title="Average cadence" data-bind="text: avg_cadence()[selectedLap()]"></span>
+                    <!-- /ko -->
+
+                    <!-- ko if: max_cadence().length > 0  -->
+                    <span title="Max cadence" data-bind="text: max_cadence()[selectedLap()]"></span>
+                    <!-- /ko -->
+
+                    <!-- ko if: total_cycles_strides().length > 0  -->
+                    <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[selectedLap()]"></span>
+
+                    <!-- /ko -->
+
+                    <!-- ASCENT/DESCENT -->
+
+                    <!-- ko if: total_ascent()[selectedLap()] >= 0  ||  total_descent()[selectedLap()] >= 0 -->
+
+                    <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
+
+                    <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedLap()]"></span>
+
+                    <span title="Total descent (m)" data-bind="text: total_descent()[selectedLap()]"></span>
+
+                    <!-- /ko -->
+
+                    <!-- ko if: avg_temperature()[selectedLap()] >= 0  ||  max_temperature()[selectedLap()] >= 0  -->
+
+                    <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
+
+                    <span title="Average temperature (C)" data-bind="text: avg_temperature()[selectedLap()]"></span>
+
+                    <span title="Max temperature (C)" data-bind="text: max_temperature()[selectedLap()]"></span>
+
+                    <!-- /ko -->
+
+                    <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 0 -->
+                    <img class="lapTrigger" src="Images/laptrigger/manual.png" title="LAP pressed" alt="LAP pressed" />
+                    <!-- /ko -->
+
+
+                    <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 1 -->
+                    <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" alt="Time" />
+                    <!-- /ko -->
+
+                    <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 2 -->
+                    <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" alt="Distance" />
+                    <!-- /ko -->
+
+                    <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 3 -->
+                    <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" alt="Position start" />
+                    <!-- /ko -->
+
+                    <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 4 -->
+                    <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" alt="Position lap" />
+                    <!-- /ko -->
+
+                    <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 5 -->
+                    <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" alt="Position waypoint" />
+                    <!-- /ko -->
+
+                    <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 6 -->
+                    <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" alt="Position marked" />
+                    <!-- /ko -->
+
+                    <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 7 -->
+                    <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" alt="Session End" />
+                    <!-- /ko -->
+
+
+
+
+
+                    <!-- /ko -->
+
+                </div>
                 <!-- /ko -->
 
-                <!-- ko if:  avg_cadence().length > 0  -->
-                <span title="Average cadence" data-bind="text: avg_cadence()[selectedLap()]"></span>
-                <!-- /ko -->
+                <section id="divLaps">
 
-                <!-- ko if: max_cadence().length > 0  -->
-                <span title="Max cadence" data-bind="text: max_cadence()[selectedLap()]"></span>
-                <!-- /ko -->
+                    <!-- <h4>Laps</h4>-->
+                    <!-- ko if: $root !== undefined && $root.timestamp !== undefined -->
+                    <section id="lapList" data-bind="foreach: timestamp">
+                    </section>
+                    <!-- /ko -->
 
-                <!-- ko if: total_cycles_strides().length > 0  -->
-                <span title="Total cycles/strides" data-bind="text: total_cycles_strides()[selectedLap()]"></span>
-
-                <!-- /ko -->
-
-                <!-- ASCENT/DESCENT -->
-
-                <!-- ko if: total_ascent()[selectedLap()] >= 0  ||  total_descent()[selectedLap()] >= 0 -->
-
-                <img class="inlineIcon" alt="Ascent/Descent" title="Ascent/Descent" src="Images/ascent.png" />
-
-                <span title="Total ascent (m)" data-bind="text: total_ascent()[selectedLap()]"></span>
-
-                <span title="Total descent (m)" data-bind="text: total_descent()[selectedLap()]"></span>
-
-                <!-- /ko -->
-
-                <!-- ko if: avg_temperature()[selectedLap()] >= 0  ||  max_temperature()[selectedLap()] >= 0  -->
-
-                <img class="inlineIcon" alt="Temperature" title="Temperature (C)" src="Images/temperature.png" />
-
-                <span title="Average temperature (C)" data-bind="text: avg_temperature()[selectedLap()]"></span>
-
-                <span title="Max temperature (C)" data-bind="text: max_temperature()[selectedLap()]"></span>
-
-                <!-- /ko -->
-
-                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 0 -->
-                <img class="lapTrigger" src="Images/laptrigger/manual.png" title="LAP pressed" alt="LAP pressed" />
-                <!-- /ko -->
-
-
-                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 1 -->
-                <img class="lapTrigger" src="Images/laptrigger/time.png" title="Time" alt="Time" />
-                <!-- /ko -->
-
-                <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 2 -->
-                <img class="lapTrigger" src="Images/laptrigger/distance.png" title="Distance" alt="Distance"" />
-                <!-- /ko -->
-
-                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 3 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_start.png" title="Position start" alt="Position start"" />
-                <!-- /ko -->
-
-                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 4 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_lap.png" title="Position lap" alt="Position lap" />
-                <!-- /ko -->
-
-                <!-- ko if: lap_trigger && lap_trigger()[selectedLap()] === 5 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_waypoint.png" title="Position waypoint" alt="Position waypoint" />
-                <!-- /ko -->
-
-                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 6 -->
-                <img class="lapTrigger" src="Images/laptrigger/position_marked.png" title="Position marked" alt="Position marked" />
-                <!-- /ko -->
-
-                <!-- ko if: lap_trigger  && lap_trigger()[selectedLap()] === 7 -->
-                <img class="lapTrigger" src="Images/laptrigger/session_end.png" title="Session end" alt="Session End" />
-                <!-- /ko -->
-
-
-
-
-
-                <!-- /ko -->
-
-            </div>
-            <!-- /ko -->
-
-
-            <section id="divLaps">
-
-                <!-- <h4>Laps</h4>-->
-                <!-- ko if: $root !== undefined && $root.timestamp !== undefined -->
-                <section id="lapList" data-bind="foreach: timestamp">
-                </section>
-                <!-- /ko -->
-
-                <!--<div data-bind="text: ko.toJSON($root)"></div>
+                    <!--<div data-bind="text: ko.toJSON($root)"></div>
 
             <hr/> -->
 
-            </section>
+                </section>
 
-            <div id="divMapWrapper">
-                <div>
-                    <img id="liveImage" data-bind="attr: { src: settingsVM.liveImage}" alt="Live image"/>
-                </div>
-                <!-- ko with: activityVM -->
-                <div id="importedActivities">
+                <div id="divMapWrapper">
+                    <div>
+                        <img id="liveImage" data-bind="attr: { src: settingsVM.liveImage }" alt="Live image" />
+                    </div>
+                    <!-- ko with: activityVM -->
+                    <div id="importedActivities">
 
-                    <div style="margin-left:auto; margin-right:auto; font-weight:bold" data-bind="visible: activity().length === 0">Please import activities to explore</div>
+                        <div style="margin-left: auto; margin-right: auto; font-weight: bold" data-bind="visible: activity().length === 0">Please import activities to explore</div>
 
-                    <ul id="activityList" data-bind=" foreach: activity">
+                        <ul id="activityList" data-bind=" foreach: activity">
 
-                        
-                        <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data), attr: { title: 'Filename: ' + _headerInfo_.fitFile.name + ' Size: ' + _headerInfo_.fitFile.size + ' bytes' }}">
-                           <!-- http://stackoverflow.com/questions/9261296/any-good-techniques-to-debug-template-binding-faults-for-knockout-js -->
-                           <!-- <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>-->
-                                <a  data-bind="click: $parent.showActivity.bind($index())">
+
+                            <li class="newActivity" data-bind="style: { 'background-color': $parent.intenseActivity($data), attr: { title: 'Filename: ' + _headerInfo_.fitFile.name + ' Size: ' + _headerInfo_.fitFile.size + ' bytes' } }">
+                                <!-- http://stackoverflow.com/questions/9261296/any-good-techniques-to-debug-template-binding-faults-for-knockout-js -->
+                                <!-- <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>-->
+                                <a data-bind="click: $parent.showActivity.bind($index())">
 
                                     <!-- ko if: typeof (_staticGoogleMapSrc) !== "undefined" -->
-                                    <img data-bind="attr: { src :  _staticGoogleMapSrc }" style="width: 100%; height:150px" alt="Static google map image of activity" />
+                                    <img data-bind="attr: { src: _staticGoogleMapSrc }" style="width: 100%; height: 150px" alt="Static google map image of activity" />
                                     <!-- /ko -->
-                                   
-                                       
-                                        <!-- ko if: typeof garminConnect !== "undefined" && typeof (garminConnect.activity) !== "undefined" -->
-                                          <!-- ko if: typeof (garminConnect.activity.activityName) !== "undefined" -->
-                                              <span style="display: block" data-bind="text: garminConnect.activity.activityName, attr: { title: garminConnect.activity.activityDescription }"></span>
-                                          <!-- /ko -->
-                                        
-                                        <!-- /ko -->
 
-                                        <!-- ko if: typeof (record) === "undefined" && typeof garminConnect !== "undefined" && typeof (garminConnect.activity) === "undefined"-->
-                                        <span style="display: inline">No data.</span>
-                                        <!-- /ko -->
 
-                                       <!-- ko if: typeof session === "undefined" -->
-                                            <span> No session info. available </span> 
-                                            <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
-                                                <span data-bind="text: (new Date(record.timestamp[0])).toLocaleString()"></span>
-                                            <!-- /ko -->
-                                             
+                                    <!-- ko if: typeof garminConnect !== "undefined" && typeof (garminConnect.activity) !== "undefined" -->
+                                    <!-- ko if: typeof (garminConnect.activity.activityName) !== "undefined" -->
+                                    <span style="display: block" data-bind="text: garminConnect.activity.activityName, attr: { title: garminConnect.activity.activityDescription }"></span>
+                                    <!-- /ko -->
+
+                                    <!-- /ko -->
+
+                                    <!-- ko if: typeof (record) === "undefined" && typeof garminConnect !== "undefined" && typeof (garminConnect.activity) === "undefined"-->
+                                    <span style="display: inline">No data.</span>
+                                    <!-- /ko -->
+
+                                    <!-- ko if: typeof session === "undefined" -->
+                                    <span>No session info. available </span>
+                                    <!-- ko if: typeof (record) !== "undefined" && typeof (record.timestamp) !== "undefined" && record.timestamp.length > 0 -->
+                                    <span data-bind="text: (new Date(record.timestamp[0])).toLocaleString()"></span>
+                                    <!-- /ko -->
+
                                     <!-- /ko -->
 
                                     <!-- ko if: typeof session !== "undefined" -->
-                                    
+
                                     <!-- ko with: session -->
 
                                     <!--  <div data-bind="text: ko.toJSON($parent.hrv)"></div>-->
 
-                                        <!-- ko if: typeof sport !== "undefined" -->
-                                            <ul id="sportList" data-bind="foreach: sport">
+                                    <!-- ko if: typeof sport !== "undefined" -->
+                                    <ul id="sportList" data-bind="foreach: sport">
 
-                                                <li style="display: inline" data-bind="with: $parent">
-                                                    <div style="display: inline-block">
+                                        <li style="display: inline" data-bind="with: $parent">
+                                            <div style="display: inline-block">
 
-                                                        <!-- ko if: sport[$index()] === 1 -->
-                                                            <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
-                                                        <!-- /ko -->
+                                                <!-- ko if: sport[$index()] === 1 -->
+                                                <img class="inlineIcon" alt="Running" title="Running" src="Images/sport/running.png" />
+                                                <!-- /ko -->
 
-                                                        <!-- ko if: sport[$index()] === 2 -->
-                                                            <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
-                                                        <!-- /ko -->
+                                                <!-- ko if: sport[$index()] === 2 -->
+                                                <img class="inlineIcon" alt="Cycling" title="Cycling" src="Images/sport/cycling.png" />
+                                                <!-- /ko -->
 
-                                                        <!-- ko if: sport[$index()] === 5 -->
-                                                            <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
-                                                        <!-- /ko -->
+                                                <!-- ko if: sport[$index()] === 5 -->
+                                                <img class="inlineIcon" alt="Swimming" title="Swimming" src="Images/sport/swimming.png" />
+                                                <!-- /ko -->
 
-                                                        <!-- ko if: sport[$index()] !== 5 && sport[$index()]!== 2 && sport[$index()] !== 1 -->
-                                                            <img class="inlineIcon" src="Images/sport/generic.png" data-bind="attr: { title: 'Sport is ' + sport[$index()],  alt: 'Sport is ' + sport[$index()] }" />
-                                                        <!-- /ko -->
+                                                <!-- ko if: sport[$index()] !== 5 && sport[$index()]!== 2 && sport[$index()] !== 1 -->
+                                                <img class="inlineIcon" src="Images/sport/generic.png" data-bind="attr: { title: 'Sport is ' + sport[$index()], alt: 'Sport is ' + sport[$index()] }" />
+                                                <!-- /ko -->
 
-                                                        <!-- ko if: typeof start_time !== "undefined"  && start_time.length > 0 && typeof start_time[$index()] !== "undefined" -->
-                                                            <span style="display: inline" data-bind="text: (new Date(start_time[$index()])).toLocaleString()"></span>
-                                                        <!-- /ko -->
+                                                <!-- ko if: typeof start_time !== "undefined"  && start_time.length > 0 && typeof start_time[$index()] !== "undefined" -->
+                                                <span style="display: inline" data-bind="text: (new Date(start_time[$index()])).toLocaleString()"></span>
+                                                <!-- /ko -->
 
-                                                        <!-- ko if: typeof total_distance !== "undefined" && total_distance.length > 0  -->
-                                                             <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
+                                                <!-- ko if: typeof total_distance !== "undefined" && total_distance.length > 0  -->
+                                                <img class="inlineIcon" alt="Total distance" title="Total distance" src="Images/total_distance.png" />
 
-                                                            <!-- ko if: total_distance[$index()] >= 0 && total_distance[$index()] < 1000 -->
-                                                                <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance[$index()].toFixed(0) + ' m'"></span>
-                                                            <!-- /ko -->
+                                                <!-- ko if: total_distance[$index()] >= 0 && total_distance[$index()] < 1000 -->
+                                                <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: total_distance[$index()].toFixed(0) + ' m'"></span>
+                                                <!-- /ko -->
 
-                                                            <!-- ko if: total_distance[$index()] >= 1000 -->
-                                                                <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()] / 1000).toFixed(2) + ' km'"></span>
-                                                            <!-- /ko -->
-                                                        <!-- /ko -->
+                                                <!-- ko if: total_distance[$index()] >= 1000 -->
+                                                <span class="sessionTOTALDISTANCE" title="Total distance" data-bind="text: (total_distance[$index()] / 1000).toFixed(2) + ' km'"></span>
+                                                <!-- /ko -->
+                                                <!-- /ko -->
 
-                                                         <!-- ko if: typeof total_distance === "undefined" -->
-                                                            <!-- In case only HR and speed data, i.e indoor cycling without speed/cadence sensor -->
-                                                            <img class="inlineIcon" alt="Total distance not measured" title="Total distance not measured" src="Images/total_distance.png" />!
+                                                <!-- ko if: typeof total_distance === "undefined" -->
+                                                <!-- In case only HR and speed data, i.e indoor cycling without speed/cadence sensor -->
+                                                <img class="inlineIcon" alt="Total distance not measured" title="Total distance not measured" src="Images/total_distance.png" />!
                                                          <!-- /ko -->
 
-                                                         <!-- ko if: typeof num_laps !== "undefined" && num_laps[$index()] >= 0 -->
-                                                                <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
-                                                                <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps[$index()].toFixed(0)"></span>
-                                                         <!-- /ko -->
+                                                <!-- ko if: typeof num_laps !== "undefined" && num_laps[$index()] >= 0 -->
+                                                <img class="inlineIcon" alt="Number of laps" title="Number of laps" src="Images/number_of_laps.png" />
+                                                <span class="sessionTOTALDISTANCE" title="Number of laps" data-bind="text: num_laps[$index()].toFixed(0)"></span>
+                                                <!-- /ko -->
 
-                                                        <!-- ko if: typeof (avg_heart_rate) !== "undefined" && avg_heart_rate[$index()] >= 0 || typeof (max_heart_rate) !== "undefined" && max_heart_rate[$index()] >= 0 -->
-                                                            <img class="inlineIcon" alt="Heart rate" title="bpm" src="Images/heart.png" />
+                                                <!-- ko if: typeof (avg_heart_rate) !== "undefined" && avg_heart_rate[$index()] >= 0 || typeof (max_heart_rate) !== "undefined" && max_heart_rate[$index()] >= 0 -->
+                                                <img class="inlineIcon" alt="Heart rate" title="bpm" src="Images/heart.png" />
 
-                                                            <!-- ko if:  avg_heart_rate[$index()]  >= 0 -->
-                                                                <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate[$index()]"></span>
-                                                            <!-- /ko -->
+                                                <!-- ko if:  avg_heart_rate[$index()]  >= 0 -->
+                                                <span title="Average heart rate (bpm)" data-bind="text: avg_heart_rate[$index()]"></span>
+                                                <!-- /ko -->
 
-                                                            <!-- ko if: max_heart_rate[$index()] >= 0 -->
-                                                                <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate[$index()]"></span>
-                                                            <!-- /ko -->
+                                                <!-- ko if: max_heart_rate[$index()] >= 0 -->
+                                                <span title="Max heart rate (bpm)" data-bind="text: max_heart_rate[$index()]"></span>
+                                                <!-- /ko -->
 
-                                                        <!-- /ko -->
+                                                <!-- /ko -->
 
-                                                        <!-- ko with: $parents[2] -->
-                                                            <!-- ko if: typeof (hrv) !== "undefined" && typeof (hrv.time) !== "undefined" && hrv.time.length > 0 -->
-                                                                 <img class="inlineIcon" alt="HRV" title="HRV - heart rate variability. RR-interval data. Time in ms. between each heartbeat. It varies with expiration/inspiration." src="Images/hrv.png" />
-                                                                 <span data-bind="text: hrv.time.length,attr: { title: 'Contains ' + hrv.time.length + ' heart rate variability measurements' } "></span>
-                                                            <!-- /ko -->
-                                                        <!-- /ko -->
+                                                <!-- ko with: $parents[2] -->
+                                                <!-- ko if: typeof (hrv) !== "undefined" && typeof (hrv.time) !== "undefined" && hrv.time.length > 0 -->
+                                                <img class="inlineIcon" alt="HRV" title="HRV - heart rate variability. RR-interval data. Time in ms. between each heartbeat. It varies with expiration/inspiration." src="Images/hrv.png" />
+                                                <span data-bind="text: hrv.time.length, attr: { title: 'Contains ' + hrv.time.length + ' heart rate variability measurements' } "></span>
+                                                <!-- /ko -->
+                                                <!-- /ko -->
 
-                                                        <!-- ko if: (typeof (total_calories) !== "undefined" && total_calories.length > 0 && total_calories[$index()] > 0) ||
+                                                <!-- ko if: (typeof (total_calories) !== "undefined" && total_calories.length > 0 && total_calories[$index()] > 0) ||
                                                             (typeof (total_fat_calories) !== "undefined" && total_fat_calories.length > 0 && total_fat_calories[$index()] > 0) -->
-                                                        <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
+                                                <img class="inlineIcon" alt="kilo calorie" title="kcal" src="Images/kcalorie.png" />
 
-                                                        <span title="Total calories (kcal)" data-bind="text: total_calories[$index()]"></span>
-                                                             <!-- ko if: typeof total_timer_time[$index()] !== "undefined" && total_timer_time[$index()] > 0 -->
-                                                                   <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                                                                   <span title="Watt" data-bind="text: (total_calories[$index()]* 1000 * 4.1868 / total_timer_time[$index()]).toFixed(1)"></span>
-                                                            <!-- /ko -->
-                                                            <!-- ko if: (typeof (total_fat_calories) !== "undefined" && total_fat_calories.length > 0 && total_fat_calories[$index()] > 0) -->
-                                                                <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories[$index()]"></span>
-                                                                <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
-                                                                   <span title="Watt" data-bind="text: (total_fat_calories[$index()] * 1000 * 4.1868 / total_timer_time[$index()]).toFixed(1)"></span>
-                                                            <!-- /ko -->
-                                                        <!-- /ko -->
+                                                <span title="Total calories (kcal)" data-bind="text: total_calories[$index()]"></span>
+                                                <!-- ko if: typeof total_timer_time[$index()] !== "undefined" && total_timer_time[$index()] > 0 -->
+                                                <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
+                                                <span title="Watt" data-bind="text: (total_calories[$index()] * 1000 * 4.1868 / total_timer_time[$index()]).toFixed(1)"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: (typeof (total_fat_calories) !== "undefined" && total_fat_calories.length > 0 && total_fat_calories[$index()] > 0) -->
+                                                <span title="Total fat calories (kcal)" data-bind="text: total_fat_calories[$index()]"></span>
+                                                <img class="inlineIcon" alt="Watt (J/s)" title="Watt (J/s)" src="Images/watt.png" />
+                                                <span title="Watt" data-bind="text: (total_fat_calories[$index()] * 1000 * 4.1868 / total_timer_time[$index()]).toFixed(1)"></span>
+                                                <!-- /ko -->
+                                                <!-- /ko -->
 
 
-                                                        <!-- ko if: typeof (total_training_effect) !== "undefined" &&  total_training_effect[$index()] >= 1 -->
-                                                            <span title="Training Effect">TE</span>
-                                                            <span data-bind="text: total_training_effect[$index()]" title="Training Effect"></span>
+                                                <!-- ko if: typeof (total_training_effect) !== "undefined" &&  total_training_effect[$index()] >= 1 -->
+                                                <span title="Training Effect">TE</span>
+                                                <span data-bind="text: total_training_effect[$index()]" title="Training Effect"></span>
 
-                                                            <!-- meter tag ignored in  IE 10, but works in Chrome -->
-                                                            <meter title="Training effect" style="padding-left: 5px; padding-bottom: 6px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect[$index()]"></meter>
-                                                        <!-- /ko -->
-                                                    </div>
-                                                </li>
+                                                <!-- meter tag ignored in  IE 10, but works in Chrome -->
+                                                <meter title="Training effect" style="padding-left: 5px; padding-bottom: 6px" high="4" low="1.5" min="1" max="5" data-bind="value: total_training_effect[$index()]"></meter>
+                                                <!-- /ko -->
+                                            </div>
+                                        </li>
 
-                                            </ul>
-                                         <!-- /ko -->
+                                    </ul>
+                                    <!-- /ko -->
                                     <!-- /ko -->
 
                                     <!-- /ko -->
 
-                                    </a>
-                           
+                                </a>
 
-                        </li>
 
-                    </ul>
+                            </li>
 
-               </div>
-                 <!-- /ko -->
+                        </ul>
 
-                <div id="activityMap"></div>
-               
+                    </div>
+                    <!-- /ko -->
+
+                    <div id="activityMap"></div>
+
+                </div>
+
             </div>
-
         </div>
 
         <div id="divChartWrapper">
@@ -2044,18 +2045,20 @@
 
         </div>
 
-         <div id="zonesChart"></div>
+        <div id="divAdditionalCharts">
 
-        <div id="lapChart"></div>
+            <div id="zonesChart"></div>
 
-        <div id="weeklyCaloriesChart"></div>
+            <div id="lapChart"></div>
 
-         <div id="intensityChart"></div>
+            <div id="weeklyCaloriesChart"></div>
 
-        <div id="divPoincareChart"></div>
+            <div id="intensityChart"></div>
 
-        <div id="divMsgMap"></div>
+            <div id="divPoincareChart"></div>
 
+            <div id="divMsgMap"></div>
+        </div>
 
     </div>
 
