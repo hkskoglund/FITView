@@ -744,7 +744,13 @@
          masterVM: {
 
              liveSensorVM : {
-                 sensor : ko.observableArray()
+                 sensor: ko.observableArray(),
+                 inactiveSDM: function (page) {
+                     var bc,
+                         INACTIVE = 0x00;
+                     bc = (page.status.UseState === INACTIVE) ? 'lightgray' : 'transparent';
+                     return bc;
+                 },
             },
 
             exportVM: {

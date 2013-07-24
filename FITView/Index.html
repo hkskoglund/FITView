@@ -2063,23 +2063,23 @@
 
                                 <!--<span data-bind="text: ko.toJSON(page)"></span>-->
                                 <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
-                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
+                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1), style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
 
                             </li>
                     
-                    <li>
-
-                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
-                                <img class="sensorValueIcon" alt="Speed from sensor - minutes pr kilometre" title="Speed from sensor - min/km" src="Images/speed.png" />
-                                <span class="sensorValue" data-bind="text: speedMinPrKMMMSS"></span>
-
-                            </li>
-
                             <li>
 
                                 <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Speed from sensor - minutes pr kilometre" title="Speed from sensor - min/km" src="Images/speed.png" />
+                                <span class="sensorValue" data-bind="text: speedMinPrKMMMSS,  style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
+
+                            </li>
+
+                            <li}">
+
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
                                 <img class="sensorValueIcon" alt="Strides per minute  from sensor" title="Strides per minute from sensor" src="Images/cadence.png" />
-                                <span class="sensorValue" data-bind="text: cadence.toFixed(0)"></span>
+                                <span class="sensorValue" data-bind="text: cadence.toFixed(0), style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
 
                             </li>
 
