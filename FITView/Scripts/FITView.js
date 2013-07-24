@@ -11,83 +11,83 @@
        seriesData = [], // Actual data in multiChart
 
        xAxisID = {
-        lap: 'lapxAxis',
-        rawdata: 'rawdataxAxis',
-        speedVSHR: "combinedxAxis", // For speed vs HR
-        hrv: "hrvxAxis",
-        TE: "TExAxis",
-        //HRZonesxAxisID = "HRZonesxAxis",
-        weeklyCalories: "weeklyxAxis",
-        caloriesVSHRVSTE : "kcalVSHRVSTExAxis",
-        HRVXAxisPoincare: "HRVXAxisPoincare",
-        RMSSDXAxis: "RMSSDXAxis"
-    },
+           lap: 'lapxAxis',
+           rawdata: 'rawdataxAxis',
+           speedVSHR: "combinedxAxis", // For speed vs HR
+           hrv: "hrvxAxis",
+           TE: "TExAxis",
+           //HRZonesxAxisID = "HRZonesxAxis",
+           weeklyCalories: "weeklyxAxis",
+           caloriesVSHRVSTE : "kcalVSHRVSTExAxis",
+           HRVXAxisPoincare: "HRVXAxisPoincare",
+           RMSSDXAxis: "RMSSDXAxis"
+       },
 
      yAxisID = {
-        TE: 'TEyAxis',
-        weeklyCalories: 'weeklyCaloriesyAxis',
+         TE: 'TEyAxis',
+         weeklyCalories: 'weeklyCaloriesyAxis',
          speed : 'speedYAxis'
         
-    },
+     },
 
      seriesID = {
-        TE: 'TESeries',
-        HR: 'heartrateSeries',
-        speed: 'speedSeries',
-        speedAvg: 'speedavgSeries',
-        power: 'powerSeries',
-        cadence: 'cadenceSeries',
-        altitude: 'altitudeSeries',
-        temperature: 'temperatureSeries',
-        speedVSHR: 'speedVSHRSeries',
-        distance: 'distanceSeries',
-        hrv: 'HRVSeries',
-        weeklyCalories: 'weeklyCaloriesSeries',
-        weeklyCaloriesError: 'weeklyCaloriesErrorSeries',
-        kcalVSHRVSTE_run: 'kcalHRTE_runSeries',
-        kcalVSHRVSTE_bike: 'kcalHRTE_bikeSeries',
-        kcalVSHRVSTE_other: 'kcalHRTE_otherSeries',
-        LAP_avg_speed: 'LAP_avg_speed',
-        LAP_max_speed: 'LAP_max_speed',
-        LAP_avg_heart_rate: 'LAP_avg_heart_rate',
-        LAP_max_heart_rate: 'LAP_max_heart_rate',
-        LAP_total_calories: 'LAP_total_calories',
-        LAP_total_fat_calories : 'LAP_total_fat_calories',
-        LAP_total_ascent: 'LAP_total_ascent',
-        LAP_total_descent: 'LAP_total_descent',
-        LAP_intensity: 'LAP_intensity',
-        LAP_avg_cadence: 'LAP_avg_cadence',
-        LAP_max_cadence: 'LAP_max_cadence',
-        LAP_total_cycles_strides : 'LAP_total_cycles_strides',
-        LAP_avg_power: 'LAP_avg_power',
-        LAP_max_power: 'LAP_max_power',
-        LAP_total_distance: 'LAP_total_distance',
-        LAP_total_elapsed_time: 'LAP_total_elapsed_time',
-        LAP_total_timer_time: 'LAP_total_timer_time',
-        RRiRRi1: 'RRiRRi1',
-        RMSSD: 'RMSSD',
-        derivativeHR: 'derivativeHRSeries',
-        derivativeSpeed: 'derivativeSpeedSeries'
+         TE: 'TESeries',
+         HR: 'heartrateSeries',
+         speed: 'speedSeries',
+         speedAvg: 'speedavgSeries',
+         power: 'powerSeries',
+         cadence: 'cadenceSeries',
+         altitude: 'altitudeSeries',
+         temperature: 'temperatureSeries',
+         speedVSHR: 'speedVSHRSeries',
+         distance: 'distanceSeries',
+         hrv: 'HRVSeries',
+         weeklyCalories: 'weeklyCaloriesSeries',
+         weeklyCaloriesError: 'weeklyCaloriesErrorSeries',
+         kcalVSHRVSTE_run: 'kcalHRTE_runSeries',
+         kcalVSHRVSTE_bike: 'kcalHRTE_bikeSeries',
+         kcalVSHRVSTE_other: 'kcalHRTE_otherSeries',
+         LAP_avg_speed: 'LAP_avg_speed',
+         LAP_max_speed: 'LAP_max_speed',
+         LAP_avg_heart_rate: 'LAP_avg_heart_rate',
+         LAP_max_heart_rate: 'LAP_max_heart_rate',
+         LAP_total_calories: 'LAP_total_calories',
+         LAP_total_fat_calories : 'LAP_total_fat_calories',
+         LAP_total_ascent: 'LAP_total_ascent',
+         LAP_total_descent: 'LAP_total_descent',
+         LAP_intensity: 'LAP_intensity',
+         LAP_avg_cadence: 'LAP_avg_cadence',
+         LAP_max_cadence: 'LAP_max_cadence',
+         LAP_total_cycles_strides : 'LAP_total_cycles_strides',
+         LAP_avg_power: 'LAP_avg_power',
+         LAP_max_power: 'LAP_max_power',
+         LAP_total_distance: 'LAP_total_distance',
+         LAP_total_elapsed_time: 'LAP_total_elapsed_time',
+         LAP_total_timer_time: 'LAP_total_timer_time',
+         RRiRRi1: 'RRiRRi1',
+         RMSSD: 'RMSSD',
+         derivativeHR: 'derivativeHRSeries',
+         derivativeSpeed: 'derivativeSpeedSeries'
 
-    },
+     },
     
 
     // Based on info. in profile.xls from FIT SDK
      FITSport = {
 
-        generic: 0,
-        running: 1,
-        cycling: 2,
-        transition: 3, // Multisport transition
-        fitness_equipment: 4,
-        swimming: 5,
-        basketball: 6,
-        soccer: 7,
-        tennis: 8,
-        american_fotball: 9,
-        training: 10,
-        all: 254 // All is for goals only to include all sports.
-    },
+         generic: 0,
+         running: 1,
+         cycling: 2,
+         transition: 3, // Multisport transition
+         fitness_equipment: 4,
+         swimming: 5,
+         basketball: 6,
+         soccer: 7,
+         tennis: 8,
+         american_fotball: 9,
+         training: 10,
+         all: 254 // All is for goals only to include all sports.
+     },
 
     lap_trigger = {
 
@@ -102,46 +102,46 @@
     },
 
      event = {
-        timer: 0, // Group 0. Start / stop_all
-        workout: 3, //  start / stop
-        workout_step: 4, //  Start at beginning of workout. Stop at end of each step.
-        power_down: 5, // stop_all group 0
-        power_up: 6, //  stop_all group 0
-        off_course: 7, // start / stop group 0
-        session: 8, // Stop at end of each session.
-        lap: 9, //  Stop at end of each lap.
-        course_point: 10, // marker.
-        battery: 11, // marker.
-        virtual_partner_pace: 12, //  Group 1. Start at beginning of activity if VP enabled, when VP pace is changed during activity or VP enabled mid activity. stop_disable when VP disabled.
-        hr_high_alert: 13, // Group 0. Start / stop when in alert condition.
-        hr_low_alert: 14, //  Group 0. Start / stop when in alert condition.
-        speed_high_alert: 15, // Group 0. Start / stop when in alert condition.
-        speed_low_alert: 16, //  Group 0. Start / stop when in alert condition.
-        cad_high_alert: 17, //    Group 0. Start / stop when in alert condition.
-        cad_low_alert: 18, //   Group 0. Start / stop when in alert condition.
-        power_high_alert: 19, //  Group 0. Start / stop when in alert condition.
-        power_low_alert: 20, //   Group 0. Start / stop when in alert condition.
-        recovery_hr: 21, //  marker.
-        battery_low: 22, // marker.
-        time_duration_alert: 23, //    Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
-        distance_duration_alert: 24, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
-        calorie_duration_alert: 25, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
-        activity: 26, // Group 1.. Stop at end of activity.
-        fitness_equipment: 27, // marker.
-        length: 28 // Stop at end of each length.
-    },
+         timer: 0, // Group 0. Start / stop_all
+         workout: 3, //  start / stop
+         workout_step: 4, //  Start at beginning of workout. Stop at end of each step.
+         power_down: 5, // stop_all group 0
+         power_up: 6, //  stop_all group 0
+         off_course: 7, // start / stop group 0
+         session: 8, // Stop at end of each session.
+         lap: 9, //  Stop at end of each lap.
+         course_point: 10, // marker.
+         battery: 11, // marker.
+         virtual_partner_pace: 12, //  Group 1. Start at beginning of activity if VP enabled, when VP pace is changed during activity or VP enabled mid activity. stop_disable when VP disabled.
+         hr_high_alert: 13, // Group 0. Start / stop when in alert condition.
+         hr_low_alert: 14, //  Group 0. Start / stop when in alert condition.
+         speed_high_alert: 15, // Group 0. Start / stop when in alert condition.
+         speed_low_alert: 16, //  Group 0. Start / stop when in alert condition.
+         cad_high_alert: 17, //    Group 0. Start / stop when in alert condition.
+         cad_low_alert: 18, //   Group 0. Start / stop when in alert condition.
+         power_high_alert: 19, //  Group 0. Start / stop when in alert condition.
+         power_low_alert: 20, //   Group 0. Start / stop when in alert condition.
+         recovery_hr: 21, //  marker.
+         battery_low: 22, // marker.
+         time_duration_alert: 23, //    Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+         distance_duration_alert: 24, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+         calorie_duration_alert: 25, // Group 1. Start if enabled mid activity (not required at start of activity). Stop when duration is reached. stop_disable if disabled.
+         activity: 26, // Group 1.. Stop at end of activity.
+         fitness_equipment: 27, // marker.
+         length: 28 // Stop at end of each length.
+     },
 
      event_type = {
-        start: 0,
-        stop: 1,
-        consecutive_depreciated: 2,
-        marker: 3,
-        stop_all: 4,
-        begin_depreciated: 5,
-        end_depreciated: 6,
-        end_all_depreciated: 7,
-        stop_disable: 8,
-        stop_disable_all: 9
+         start: 0,
+         stop: 1,
+         consecutive_depreciated: 2,
+         marker: 3,
+         stop_all: 4,
+         begin_depreciated: 5,
+         end_depreciated: 6,
+         end_all_depreciated: 7,
+         stop_disable: 8,
+         stop_disable_all: 9
      },
 
      hr_zone_calc = {
@@ -188,11 +188,11 @@
             hasGPSData: function (rawdata) {
 
                 if (rawdata.record.position_lat === undefined) {
-                    self.loggMessage("info","No position data (position_lat)");
+                    self.logMessage("info","No position data (position_lat)");
                 }
 
                 if (rawdata.record.position_long === undefined) {
-                    self.loggMessage("info","No position data (position_lat)");
+                    self.logMessage("info","No position data (position_lat)");
                 }
 
                 return (rawdata.record.position_lat === undefined || rawdata.record.position_long === undefined) ? false : true;
@@ -204,12 +204,12 @@
                 // Pre-conditions
 
                 if (FITUtil.isUndefined(series1) || FITUtil.isUndefined(series2)) {
-                    self.loggMessage("error","Undefined series, cannot combine them.");
+                    self.logMessage("error","Undefined series, cannot combine them.");
                     return undefined;
                 }
 
                 if (FITUtil.isEmpty(series1) || FITUtil.isEmpty(series2)) {
-                    self.loggMessage("error","Empty series, cannot combine them.");
+                    self.logMessage("error","Empty series, cannot combine them.");
                     return undefined;
                 }
 
@@ -217,7 +217,7 @@
                 var lenSeries2 = series2.length;
 
                 if (lenSeries1 !== lenSeries2) {
-                    self.loggMessage("warn","Length of combined series does not match ", lenSeries1, lenSeries2);
+                    self.logMessage("warn","Length of combined series does not match ", lenSeries1, lenSeries2);
                 }
 
                 var elementNr;
@@ -233,14 +233,14 @@
                             combined.push([series1[elementNr][value], series2[elementNr][value]]);
                         else {
                             misMatchCount++;
-                        }  // self.loggMessage("error", "Timestamp of combined arrays doesnt match at element nr." + elementNr + " " + series1[elementNr][timestamp] + "/" + series2[elementNr][timestamp]);
+                        }  // self.logMessage("error", "Timestamp of combined arrays doesnt match at element nr." + elementNr + " " + series1[elementNr][timestamp] + "/" + series2[elementNr][timestamp]);
                     }
-                      else
-                            self.loggMessage("warn", "Got undefined value at elementNr " + elementNr);
+                    else
+                        self.logMessage("warn", "Got undefined value at elementNr " + elementNr);
                 }
 
                 if (misMatchCount > 0)
-                    self.loggMessage("warn", "Mismatched timestamp during combination is " + misMatchCount);
+                    self.logMessage("warn", "Mismatched timestamp during combination is " + misMatchCount);
 
                 return combined;
             },
@@ -260,15 +260,15 @@
                 }
 
                 if (timestamps === undefined) {
-                    self.loggMessage("warn","Found no timestamps to combine with data measurements.", seriesName);
+                    self.logMessage("warn","Found no timestamps to combine with data measurements.", seriesName);
                     return values;
                 }
 
                 if (values.length !== timestamps.length)
-                    self.loggMessage("warn","Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString(), seriesName);
+                    self.logMessage("warn","Length of arrays to combine is not of same size; values length = " + values.length.toString() + " timestamp length = " + timestamps.length.toString(), seriesName);
 
                 if (startTimestamp === undefined || endTimestamp === undefined) {
-                    self.loggMessage("error","Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps, series:", seriesName);
+                    self.logMessage("error","Either startTimestamp or endTimestamp is undefined, cannot continue, array not combined with timestamps, series:", seriesName);
                     return values;
                     // But, could perhaps add relative start time...?
                 }
@@ -303,7 +303,7 @@
                                         valuesForAverage.push(val);
 
                                 } else
-                                    self.loggMessage("log","Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
+                                    self.logMessage("log","Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
 
                                 prevTimestampNr = nr;
                                 nextTimestamp = timestamps[++nr];
@@ -320,7 +320,7 @@
                                 sum = valuesForAverage.reduce(sumTwoNumbers);
                                 avg = sum / valuesForAverage.length;
                             } else {
-                                self.loggMessage("warn","Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
+                                self.logMessage("warn","Empty array to calculate average for series", seriesName, " local timestamp is : ", localTimestamp);
                                 avg = 0;
                             }
 
@@ -340,7 +340,7 @@
                                     combined[nr] = [localTimestamp, val];
                             } else
                                 // Problem with using push in this exceptional case is that combined get unsynchronized between i.e speed vs HR
-                                self.loggMessage("log","Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
+                                self.logMessage("log","Tried to combine timestamp ", FITUtil.getTimestampString(timestamp), " with undefined value at index", nr, " series: ", seriesName);
 
                         }
 
@@ -356,12 +356,12 @@
             setDirtyTimestamps: function (rawdata, timestamps) {
 
                 if (FITUtil.isUndefined(timestamps)) {
-                    self.loggMessage("error","No timestamps - its undefined");
+                    self.logMessage("error","No timestamps - its undefined");
                     return undefined;
                 }
 
                 if (timestamps.length === 0) {
-                    self.loggMessage("warn","Empty timestamps, no one found to analyze for artifacts");
+                    self.logMessage("warn","Empty timestamps, no one found to analyze for artifacts");
                     return undefined;
                 }
 
@@ -376,7 +376,7 @@
                 var start_time = timestamps[0];
                 var maxLimit = start_time + oneWeek;
 
-                self.loggMessage("log","Start time is", FITUtil.getTimestampString(start_time),", marking timestamps with UTC over ", FITUtil.getTimestampString(maxLimit), "and if time difference between timestamps is over ",max," millisec. as dirty");
+                self.logMessage("log","Start time is", FITUtil.getTimestampString(start_time),", marking timestamps with UTC over ", FITUtil.getTimestampString(maxLimit), "and if time difference between timestamps is over ",max," millisec. as dirty");
                 var dirtyCounter = 0;
 
                 for (var index = 0; index < len; index++) {
@@ -385,7 +385,7 @@
                         if (timeDiff > 0 && timeDiff <= max && timestamps[index] <= maxLimit)
                             rawdata.dirty[index] = false;
                         else {
-                            self.loggMessage("warn","Found dirty timestamp ", timestamps[index], " at index ", index,"time difference between timestamp is ",timeDiff);
+                            self.logMessage("warn","Found dirty timestamp ", timestamps[index], " at index ", index,"time difference between timestamp is ",timeDiff);
                             rawdata.dirty[index] = true;
                             dirtyCounter++;
                         }
@@ -394,14 +394,14 @@
                         if (timestamps[index] < maxLimit)
                             rawdata.dirty[index] = false;
                         else {
-                            self.loggMessage("warn","Found dirty timestamp ", timestamps[index], " at index ", index);
+                            self.logMessage("warn","Found dirty timestamp ", timestamps[index], " at index ", index);
                             rawdata.dirty[index] = true;
                             dirtyCounter++;
                         }
                     }
                 }
 
-                self.loggMessage("log","Number of dirty timestamps : ", dirtyCounter);
+                self.logMessage("log","Number of dirty timestamps : ", dirtyCounter);
 
             },
 
@@ -504,7 +504,7 @@
                             rawData.session.total_timer_time.push(total_elapsed_time);
                         }
                         else
-                            self.loggMessage("error","Something is wrong with start and/or end timestamp", start_time, timestamp);
+                            self.logMessage("error","Something is wrong with start and/or end timestamp", start_time, timestamp);
 
                         // Take a guess on distance - assume one single session
                         // Drawback : does not check for multiple sessions
@@ -538,7 +538,7 @@
                             rawData.session.total_descent.push(parseFloat(total_descent.toFixed(1)));
                         }
                     } else
-                        self.loggMessage("warn","No data present on rawdata.record for restoration of session");
+                        self.logMessage("warn","No data present on rawdata.record for restoration of session");
 
                     // TO DO : calculate avg./max for speed, HR, ... not prioritized
 
@@ -553,7 +553,7 @@
 
                     // Try to get from cache first
                     if (typeof (self.timestampIndexCache) === "undefined") {
-                        self.loggMessage("log","Initialized timestamp index cache");
+                        self.logMessage("log","Initialized timestamp index cache");
                         self.timestampIndexCache = [];
                     }
 
@@ -582,7 +582,7 @@
                 };
 
                 if (timestamp === undefined) {
-                    self.loggMessage("error","Cannot lookup/find index in timestamp array of an undefined timestamp");
+                    self.logMessage("error","Cannot lookup/find index in timestamp array of an undefined timestamp");
                     return -1;
                 }
 
@@ -590,7 +590,7 @@
 
                 indexTimestamp = record.timestamp.indexOf(timestamp);
                 if (indexTimestamp === -1) {
-                    self.loggMessage("warn","Direct lookup for timestamp ", FITUtil.getTimestampString(timestamp), " not found, looping through available timestamps on message property record.timestamp to find nearest");
+                    self.logMessage("warn","Direct lookup for timestamp ", FITUtil.getTimestampString(timestamp), " not found, looping through available timestamps on message property record.timestamp to find nearest");
                     indexTimestamp = findNearestTimestamp(timestamp);
                 }
 
@@ -605,136 +605,136 @@
 
      converter = {
 
-        formatToMMSS: function (speed) {
-            if (speed === 0)
-                return "00:00";
+         formatToMMSS: function (speed) {
+             if (speed === 0)
+                 return "00:00";
 
-            var minutes = Math.floor(speed);
-            var seconds = parseInt(((speed - minutes) * 60).toFixed(), 10); // implicit rounding
-            if (seconds === 60) {
-                seconds = 0;
-                minutes += 1;
-            }
+             var minutes = Math.floor(speed);
+             var seconds = parseInt(((speed - minutes) * 60).toFixed(), 10); // implicit rounding
+             if (seconds === 60) {
+                 seconds = 0;
+                 minutes += 1;
+             }
 
-            var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+             var result = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
 
-            return result;
-        },
+             return result;
+         },
 
-        formatToHHMMSS : function (totalSec)
-        {
-            // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
+         formatToHHMMSS : function (totalSec)
+         {
+             // http://stackoverflow.com/questions/1322732/convert-seconds-to-hh-mm-ss-with-javascript
 
-            //var days = parseInt(totalSec / (3600*24), 10);
-            var hours = parseInt(totalSec / 3600, 10)
-           // var hours = parseInt(totalSec / 3600, 10) % 24; // If days are used to get hours
-            var minutes = parseInt(totalSec / 60, 10) % 60;
-            var seconds = parseInt(totalSec % 60, 10);
-            var tenthOfSec = parseInt((totalSec - parseInt(totalSec, 10)) * 10, 10);
+             //var days = parseInt(totalSec / (3600*24), 10);
+             var hours = parseInt(totalSec / 3600, 10)
+             // var hours = parseInt(totalSec / 3600, 10) % 24; // If days are used to get hours
+             var minutes = parseInt(totalSec / 60, 10) % 60;
+             var seconds = parseInt(totalSec % 60, 10);
+             var tenthOfSec = parseInt((totalSec - parseInt(totalSec, 10)) * 10, 10);
 
-            //var dayResult;
-            //if (days === 0)
-            //    dayResult = "";
-            //else
-            //    dayResult = days; // Implicit conversion
+             //var dayResult;
+             //if (days === 0)
+             //    dayResult = "";
+             //else
+             //    dayResult = days; // Implicit conversion
 
-            var hourResult;
-            if (hours !== 0)
-                hourResult = (hours < 10 ? "0" + hours : hours) + ":";
-            else
-                hourResult = "";
+             var hourResult;
+             if (hours !== 0)
+                 hourResult = (hours < 10 ? "0" + hours : hours) + ":";
+             else
+                 hourResult = "";
 
-            var tenthOfSecResult;
-            if (tenthOfSec === 0)
-                tenthOfSecResult = "";
-            else
-                tenthOfSecResult = "." + tenthOfSec;
+             var tenthOfSecResult;
+             if (tenthOfSec === 0)
+                 tenthOfSecResult = "";
+             else
+                 tenthOfSecResult = "." + tenthOfSec;
 
-            var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds)+tenthOfSecResult;
+             var result = hourResult + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds)+tenthOfSecResult;
 
-            return result;
-        },
+             return result;
+         },
 
-        convertSpeedToMinPrKM: function (speed) {
-            // speed in m/s to min/km
-            if (speed === 0)
-                return 0;
-            else
-                return 1 / (speed * 60 / 1000);
-        },
+         convertSpeedToMinPrKM: function (speed) {
+             // speed in m/s to min/km
+             if (speed === 0)
+                 return 0;
+             else
+                 return 1 / (speed * 60 / 1000);
+         },
 
-        convertSpeedToKMprH: function (speed) {
-            // raw speed in m/s to km/h
-            if (speed === 0)
-                return 0;
-            else
-                return speed * 3.6; // 3.6 = 3600 s/h / 1000 m/km
-        },
+         convertSpeedToKMprH: function (speed) {
+             // raw speed in m/s to km/h
+             if (speed === 0)
+                 return 0;
+             else
+                 return speed * 3.6; // 3.6 = 3600 s/h / 1000 m/km
+         },
 
-        convertKMprHToMprS : function (speed) {
-            if (speed === 0)
-                return 0;
-            else
-                return speed*1000/3600;
-        },
+         convertKMprHToMprS : function (speed) {
+             if (speed === 0)
+                 return 0;
+             else
+                 return speed*1000/3600;
+         },
 
-        convertSecsToHHMMSSModel: function (totalSec) {
-            // Callback on "create" from knockout
-            //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
+         convertSecsToHHMMSSModel: function (totalSec) {
+             // Callback on "create" from knockout
+             //ko.mapping.fromJS(totalSec, {}, this); //Maybe not needed on scalar object
 
-            this.value = totalSec;
+             this.value = totalSec;
 
 
-            this.toHHMMSS = ko.computed(function () {
+             this.toHHMMSS = ko.computed(function () {
               
-                return converter.formatToHHMMSS(totalSec);
+                 return converter.formatToHHMMSS(totalSec);
 
                
-            }, this);
-        },
+             }, this);
+         },
 
-        convertSpeedConverterModel: function (speedMprSEC) {
+         convertSpeedConverterModel: function (speedMprSEC) {
 
-            //ko.mapping.fromJS(speedMprSEC, {}, this);
+             //ko.mapping.fromJS(speedMprSEC, {}, this);
 
-            var minPrKM;
-            var minPr100M;
+             var minPrKM;
+             var minPr100M;
 
-            this.value = speedMprSEC;
+             this.value = speedMprSEC;
 
-            this.toMINpr100M = ko.computed(function () {
+             this.toMINpr100M = ko.computed(function () {
 
-                if (speedMprSEC > 0)
-                    minPr100M = 1 / (speedMprSEC * 60 / 100); // min/100m
-                else
-                    minPr100M = 0;
+                 if (speedMprSEC > 0)
+                     minPr100M = 1 / (speedMprSEC * 60 / 100); // min/100m
+                 else
+                     minPr100M = 0;
 
-                return converter.formatToMMSS(minPr100M);
-            }, self);
+                 return converter.formatToMMSS(minPr100M);
+             }, self);
 
-            this.toMINprKM = ko.computed(function () {
+             this.toMINprKM = ko.computed(function () {
 
-                minPrKM = converter.convertSpeedToMinPrKM(speedMprSEC);
-                return converter.formatToMMSS(minPrKM);
-            }, self);
+                 minPrKM = converter.convertSpeedToMinPrKM(speedMprSEC);
+                 return converter.formatToMMSS(minPrKM);
+             }, self);
 
-            this.toKMprH = ko.computed(function () {
-                var kmPrH = (speedMprSEC * 3.6).toFixed(1);
-                return kmPrH;
-            }, self);
+             this.toKMprH = ko.computed(function () {
+                 var kmPrH = (speedMprSEC * 3.6).toFixed(1);
+                 return kmPrH;
+             }, self);
 
-        },
+         },
 
-        convertToFullDate: function (UTCmillisec)
-            //// Callback on "create" from knockout
-        {
-            this.value = UTCmillisec;
-            this.fullDate = ko.computed(function () {
-                return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec);
-            }, this);
-        }
+         convertToFullDate: function (UTCmillisec)
+             //// Callback on "create" from knockout
+         {
+             this.value = UTCmillisec;
+             this.fullDate = ko.computed(function () {
+                 return Highcharts.dateFormat('%A %e %B %Y %H:%M:%S', UTCmillisec);
+             }, this);
+         }
 
-    },
+     },
 
      FITViewUIConverter = converter,
 
@@ -742,6 +742,10 @@
      FITViewUI = {
         
          masterVM: {
+
+             liveSensorVM : {
+                 sensor : ko.observableArray()
+            },
 
             exportVM: {
                 csv: {
@@ -1083,7 +1087,7 @@
             rawdata.garminConnect.activityDetails = activityDetails;
 
             if (!activityDetails.isDetailsAvailable) {
-                self.loggMessage("warn", "No activity details found for garmin connect activity");
+                self.logMessage("warn", "No activity details found for garmin connect activity");
                 return;
             }
 
@@ -1137,7 +1141,7 @@
                     if (position_lat !== 0) // Got some 0 data
                         rawdata.record.position_lat[metricNr] = position_lat;
                     else
-                        self.loggMessage("error","Got 0 in position_lat during import from garmin connect");
+                        self.logMessage("error","Got 0 in position_lat during import from garmin connect");
                 }
 
                 if (position_long_Index !== -1) {
@@ -1145,7 +1149,7 @@
                     if (position_long !== 0)
                         rawdata.record.position_long[metricNr] = position_long;
                     else
-                        self.loggMessage("error", "Got 0 in position_long during import from garmin connect");
+                        self.logMessage("error", "Got 0 in position_long during import from garmin connect");
                 }
 
                 if (distanceIndex !== -1)
@@ -1171,12 +1175,12 @@
         {
             var nodeServer = window.location.hostname;
             if (nodeServer !== 'localhost') {
-                self.loggMessage("info", "Setting node server to gclink.azurewebsites.net");
+                self.logMessage("info", "Setting node server to gclink.azurewebsites.net");
                 nodeServer = 'gclink.azurewebsites.net';
             }
 
             else
-                self.loggMessage("info", "Setting node server to localhost");
+                self.logMessage("info", "Setting node server to localhost");
             
             return nodeServer;
         },
@@ -1219,7 +1223,7 @@
                     icon: '/Images/error.png',
                     body: 'URL: '+url+ " "+this.statusText
                 });
-                self.loggMessage('error', 'Could not retrive data from ' + url);
+                self.logMessage('error', 'Could not retrive data from ' + url);
             };
 
             xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -1247,14 +1251,14 @@
                // var response = JSON.parse(this.response);
                // self.parseGCLinkActivitySummary(response);
                 if (this.status !== 200)
-                    self.loggMessage("error", this.status.toString() + " " + this.responseText);
+                    self.logMessage("error", this.status.toString() + " " + this.responseText);
                 else
                     if (typeof callback !== "undefined")
                         callback();
             };
 
             xhr.onerror = function (e) {
-                self.loggMessage('error', 'Could not retrive data from ' + url);
+                self.logMessage('error', 'Could not retrive data from ' + url);
             };
 
             xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -1296,7 +1300,7 @@
                         icon: '/Images/error.png',
                         body: 'URL: ' + url + " " + this.statusText
                     });
-                    self.loggMessage("error", this.status.toString() + " " + this.statusText);
+                    self.logMessage("error", this.status.toString() + " " + this.statusText);
                 }
             };
 
@@ -1306,7 +1310,7 @@
                     icon: '/Images/error.png',
                     body: 'URL: ' + url
                 });
-                self.loggMessage('error', 'Could not retrive data from ' + url);
+                self.logMessage('error', 'Could not retrive data from ' + url);
             };
 
             xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -1361,7 +1365,11 @@
                 if (typeof liveStreamWebSocket !== "undefined")
                     liveStreamWebSocket.close();
                 else
-                    self.loggMessage("warn", "liveStreamWebSocket is undefined. Attempt to close it was skipped");
+                    self.logMessage("warn", "liveStreamWebSocket is undefined. Attempt to close it was skipped");
+
+                self.masterVM.liveSensorVM.sensor.removeAll();
+
+                $('#divLiveSensors').hide();
             }
 
             // Converter
@@ -1382,7 +1390,7 @@
 
             self.masterVM.settingsVM.FITSetting(settings);
             if (typeof self.masterVM.settingsVM.FITSetting() === "undefined") {
-                self.loggMessage("warn", "No settings found");
+                self.logMessage("warn", "No settings found");
                 self.showTemporaryNotification({
                     title: 'No settings found',
                     icon: '/Images/error.png',
@@ -1416,7 +1424,7 @@
                 }
                 
                 if (typeof sportSetting === "undefined") {
-                    self.loggMessage("warn", "No settings (i.e HR zones) found for sport " + sport);
+                    self.logMessage("warn", "No settings (i.e HR zones) found for sport " + sport);
                    
                     self.showTemporaryNotification({
                         title: 'No settings (i.e HR zones) found for sport '+sportStr,
@@ -2018,7 +2026,7 @@
                         }
 
                     } else
-                        self.loggMessage("warn","No timestamps for lap in rawdata to lay out lap lines");
+                        self.logMessage("warn","No timestamps for lap in rawdata to lay out lap lines");
 
                     lapLinesConfig[lapNr] = getPlotLineConfiguration('Dash',lapLabel,FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.lap.timestamp[lapNr]));
                 }
@@ -2127,12 +2135,12 @@
             };
 
             if (typeof rawData.hrv === "undefined" || typeof rawData.hrv.time === "undefined" || rawData.hrv.time.length === 0) {
-                self.loggMessage("warn", "No HRV data to plot poincare chart");
+                self.logMessage("warn", "No HRV data to plot poincare chart");
                 return;
             }
 
             if (rawData.hrv.time.length < 2) {
-                self.loggMessage("warn", "Cannot plot HRV poincare chart, requires at least 2 measurements");
+                self.logMessage("warn", "Cannot plot HRV poincare chart, requires at least 2 measurements");
                 return;
             }
 
@@ -2151,7 +2159,7 @@
             if (n - 1 > 0)
                 RMSSD = Math.sqrt(sum/(n-1))*1000; // In ms.
             else
-                self.loggMessage("error", "Cannot calculate RMSSD n = 1 ");
+                self.logMessage("error", "Cannot calculate RMSSD n = 1 ");
 
             seriesData[seriesID.RMSSD].push(RMSSD);
 
@@ -2277,7 +2285,7 @@
                                  self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_elapsed_time] = total_distance;
                                  //self.masterVM.distanceAtTick[FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp) + total_timer_time] = total_distance;
                                  //else
-                                 //    self.loggMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
+                                 //    self.logMessage("warn", "Could not find distance at tick for lap end time UTC = ", rawData.lap.timestamp[lapNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.lap.timestamp[lapNr]));
 
                                  // Timestamp seems to be integer -> no way to get tenth of seconds from lap timestamp ...
                                  // Fraction of second is available on total_elapsed_time or total_timer_time
@@ -2287,9 +2295,9 @@
                          }
                      }
                  } else
-                     self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
+                     self.logMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
              } else {
-                 self.loggMessage("warn", "No lap data available to get tickpositions from, trying to set tick each 1km or each 100m if total distance less than 1km");
+                 self.logMessage("warn", "No lap data available to get tickpositions from, trying to set tick each 1km or each 100m if total distance less than 1km");
                  // TO DO : Default fallback, i.e tickPosition each 1km
                  if (sport === FITSport.running) {
                      var recLen = rawData.record.timestamp.length;
@@ -2343,7 +2351,7 @@
                                              self.masterVM.tickPositions.push(FITUtil.timestampUtil.addTimezoneOffsetToUTC(rawData.event.timestamp[eventNr]));
                                          }
                                          else
-                                             self.loggMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.event.timestamp[eventNr]));
+                                             self.logMessage("warn", "Could not find distance at tick for event end time UTC = ", rawData.event.timestamp[eventNr], Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', rawData.event.timestamp[eventNr]));
 
 
 
@@ -2355,7 +2363,7 @@
                          }
                  }
              } else
-                 self.loggMessage("warn", "Event is undefined, no event information can be gathered");
+                 self.logMessage("warn", "Event is undefined, no event information can be gathered");
 
              // Sort tickpositions
              function comparatorSimple(a, b) {
@@ -2371,7 +2379,7 @@
              if (self.masterVM.tickPositions && self.masterVM.tickPositions.length > 0)
                  self.masterVM.tickPositions.sort(comparatorSimple);
              else {
-                 self.loggMessage("warn", "No tickpositions found from lap or events");
+                 self.logMessage("warn", "No tickpositions found from lap or events");
                  // TO DO : Maybe plot ticks at each 1km
              }
 
@@ -2455,7 +2463,7 @@
              seriesData[seriesID.weeklyCalories] = getWeeklyCaloriesData();
 
              if (self.masterVM.activityVM.activity().length <= 1) {
-                 self.loggMessage("warn", "Either no activities or only 1 activity imported, no need to show chart now");
+                 self.logMessage("warn", "Either no activities or only 1 activity imported, no need to show chart now");
                  $('#weeklyCaloriesChart').hide();
                  return;
              };
@@ -2592,13 +2600,13 @@
          {
 
              if (typeof rawData.lap === "undefined") {
-                 self.loggMessage("warn", "No lap data available");
+                 self.logMessage("warn", "No lap data available");
                  $('#lapChart').hide();
                  return;
              };
 
              if (rawData.lap.start_time.length === 0) {
-                 self.loggMessage("warn", "No lap start times found");
+                 self.logMessage("warn", "No lap start times found");
                  $('#lapChart').hide();
                  return;
              };
@@ -2693,7 +2701,7 @@
                          }
                          else {
 
-                             self.loggMessage("warn", "Found no lap." + property + " in rawdata");
+                             self.logMessage("warn", "Found no lap." + property + " in rawdata");
                              return undefined;
                          }
                      };
@@ -2770,7 +2778,7 @@
                              }
                          }
                      } else
-                         self.loggMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
+                         self.logMessage("warn", "Either lap start_time or timestamp is undefined, start_time:", lap.start_time, " timestamp: ", lap.timestamp);
 
                     
                     
@@ -3177,7 +3185,7 @@
                          });
                  }
                  else
-                     self.loggMessage("warn", "No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
+                     self.logMessage("warn", "No lap data present on rawdata.lap, tried to set up lap chart for avg/max speed/HR etc.");
 
                  return lap;
              }
@@ -3285,45 +3293,53 @@
                  },
 
                  deviceType = {
-                     0x78 : "HRM",
+                     0x78: "HRM",
                      HRM: 0x78,
 
                      121: "SPDCAD",
                      SPDCAD: 121,
 
                      124: "SDM",
-                     SDM : 124,
+                     SDM: 124,
 
 
                  },
+                 // Keeps track of which sensors data is received from
+                 // If a new senor is received from add the channel ID to connectedSensor
                  connectedSensor = {
-                 };
+                 },
 
-             // Clean up previous chart
-             // http://api.highcharts.com/highcharts#Chart.destroy()
-             if (this.multiChart)
-                 this.multiChart.destroy();
+              seriesSetup = [], // Options name,id
 
-             $('#divDetailsAndMap').hide();
-             $('#divAdditionalCharts').hide();
-
-             var chartId = "multiChart";
-             var divChart = document.getElementById(chartId);
-             divChart.style.visibility = "visible";
-
-             var seriesSetup = []; // Options name,id
-
-             var msgCounter = {
+              msgCounter = {
                  count: 0,
-             };
+             },
 
-             var SPDCAD_Speed_Timeout,
+                SPDCAD_Speed_Timeout,
                  SPDCAD_Cadence_Timeout,
                  HRM_Timeout,
                  SPDCAD_Timeout_Interval = 2000,
                  HRM_Timeout_Interval = 2000;
 
+             // Called when receiving data on websocket - nb! this reference
              function initChart() {
+
+                 
+
+                 // Clean up previous chart
+                 // http://api.highcharts.com/highcharts#Chart.destroy()
+                 if (self.multiChart)
+                     self.multiChart.destroy();
+
+                 $('#divDetailsAndMap').hide();
+                 $('#divAdditionalCharts').hide();
+
+                 $('#divLiveSensors').show();
+
+                 var chartId = "multiChart";
+                 var divChart = document.getElementById(chartId);
+                 divChart.style.visibility = "visible";
+
                  self.multiChart = new Highcharts.StockChart({
                      chart: {
                          renderTo: chartId,
@@ -3425,7 +3441,10 @@
                  //type: 'line',
                  //data: stripOffUndefinedValues(seriesData[seriesID.HR]),
                  //zIndex: 100
-             });
+                 });
+
+                // ko.applyBindings(observableSensorsVM, document.getElementById('divLiveSensors'))
+
 
              };
 
@@ -3438,13 +3457,13 @@
              ws.onclose = function () {
                  var closeTimestamp = Date.now();
                  if ((closeTimestamp - startTimestamp) <= timeoutForOpen)
-                     self.loggMessage('log', 'Websocket is closed. Make sure websocket server is running.');
+                     self.logMessage('log', 'Websocket is closed. Make sure websocket server is running.');
                  self.masterVM.settingsVM.liveStreamingFromSensors(false);
-                 self.loggMessage('log', 'Closed websocket to ' + wsResourceURL);
+                 self.logMessage('log', 'Closed websocket to ' + wsResourceURL);
              };
 
              ws.onopen = function () {
-                 self.loggMessage('log', 'Open websocket to ' + wsResourceURL);
+                 self.logMessage('log', 'Open websocket to ' + wsResourceURL);
                  self.masterVM.settingsVM.liveStreamingFromSensors(true);
                  initChart();
 
@@ -3452,7 +3471,7 @@
 
              };
             
-             ws.onerror = function (error) { self.loggMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
+             ws.onerror = function (error) { self.logMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
 
              ws.onmessage = function (e) {
                  // Clears all timeouts that will generate a null on the specific series to visualize discontinous data
@@ -3460,7 +3479,8 @@
 
                  var page = JSON.parse(e.data),
                      channelIDProperty = page.channelID.toProperty;
-                 self.loggMessage('log', 'Received from device ' + channelIDProperty + " " + e.data);
+
+                 self.logMessage('log', 'Received from device ' + channelIDProperty + " " + e.data);
 
                  //function clearAllTimeouts() {
                  //    if (page.speed)
@@ -3475,8 +3495,10 @@
 
                  if (typeof connectedSensor[channelIDProperty] === "undefined")
                  {
-                     connectedSensor[channelIDProperty] = true;
-                     self.loggMessage('log', 'New sensor for device type ' + deviceType[page.channelID.deviceTypeID] + ' registered');
+                     //connectedSensor[channelIDProperty] = true;
+                     self.logMessage('log', 'New sensor for device type ' + deviceType[page.channelID.deviceTypeID] + ' registered');
+
+                    
 
                      switch (page.channelID.deviceTypeID) {
 
@@ -3547,6 +3569,11 @@
 
                          // HRM
                          case 0x78:
+
+                            
+
+                            
+
                              http://api.highcharts.com/highstock#Chart.addSeries()
                                  self.multiChart.addSeries({
 
@@ -3577,12 +3604,14 @@
                              break;
 
                          default:
-                             self.loggMessage('log', 'Add series for this device type not implemented');
+                             self.logMessage('log', 'Add series for this device type not implemented');
                              break;
                      }
                  }
 
                  msgCounter.count++;
+
+                 
 
 
                  switch (page.channelID.deviceTypeID) {
@@ -3600,7 +3629,7 @@
                              clearTimeout(SPDCAD_Speed_Timeout);
                              currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToKMprH(page.speed)], false, (currentSeries.speed.data.length > 60), false);
                              SPDCAD_Speed_Timeout = setTimeout(function spdcad_speed_handler() {
-                                 self.loggMessage('log', 'Adding null to SPDCAD speed series to allow for discontinous series - no speed data received in '+SPDCAD_Timeout_Interval+" ms");
+                                 self.logMessage('log', 'Adding null to SPDCAD speed series to allow for discontinous series - no speed data received in '+SPDCAD_Timeout_Interval+" ms");
                                  currentSeries.speed.addPoint([page.timestamp + 1, null], false, (currentSeries.speed.data.length > 60), false);
                              }, SPDCAD_Timeout_Interval);
                          }
@@ -3608,14 +3637,14 @@
                          if (typeof page.cadence !== "undefined") {
                              // Sensor max. message rate is about 4 Hz -> 4 rounds/sconds -> 4*60 rounds/minute
                              if (page.cadence > 240) {
-                                 self.loggMessage('log', 'Unrealistic cadence, something is wrong with data received from sensor cadence, max. sensor rate is about 4 Hz: ' + page.cadence);
-                                 self.loggMessage('log', 'Received page:' + JSON.stringify(page));
+                                 self.logMessage('log', 'Unrealistic cadence, something is wrong with data received from sensor cadence, max. sensor rate is about 4 Hz: ' + page.cadence);
+                                 self.logMessage('log', 'Received page:' + JSON.stringify(page));
                              }
                              clearTimeout(SPDCAD_Cadence_Timeout);
                              if (page.cadence <= 240)
                                  currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
                              SPDCAD_Cadence_Timeout = setTimeout(function spdcad_cadence_handler() {
-                                 self.loggMessage('log', 'Adding null to SPDCAD cadence series to allow for discontinous series - no cadence data received in '+SPDCAD_Timeout_Interval+" ms");
+                                 self.logMessage('log', 'Adding null to SPDCAD cadence series to allow for discontinous series - no cadence data received in '+SPDCAD_Timeout_Interval+" ms");
                                  currentSeries.cadence.addPoint([page.timestamp + 1, null], false, (currentSeries.cadence.data.length > 60), false);
                              }, SPDCAD_Timeout_Interval);
                          }
@@ -3628,6 +3657,7 @@
                      case 124:
 
                          //console.log(page);
+
                          currentSeries.cadence = self.multiChart.get(seriesID.cadence + channelIDProperty);
                          currentSeries.speed = self.multiChart.get(seriesID.speed + channelIDProperty);
 
@@ -3635,20 +3665,41 @@
                              // Main
 
                              case 1:
+                                
 
-                                 currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                                 page.speedMinPrKM = FITViewUIConverter.convertSpeedToMinPrKM(page.speed);
+                                 page.speedMinPrKMMMSS = FITViewUIConverter.formatToMMSS(page.speedMinPrKM);
+
+                                 if (typeof connectedSensor[channelIDProperty] !== "undefined") {
+                                     if (typeof connectedSensor[channelIDProperty].previousMessageDistance !== "undefined") {
+                                         connectedSensor[channelIDProperty].cumulativeDistance += page.distance - connectedSensor[channelIDProperty].previousMessageDistance;
+
+                                         if (connectedSensor[channelIDProperty].previousMessageDistance > page.distance) // We got a "roll over" which happens each 256 m
+                                             connectedSensor[channelIDProperty].cumulativeDistance += 256;
+
+                                         //console.log(connectedSensor[channelIDProperty].cumulativeDistance, "prev.distance", connectedSensor[channelIDProperty].previousMessageDistance)
+                                     }
+
+                                     connectedSensor[channelIDProperty].previousMessageDistance = page.distance;
+                                 }
+
+                                 currentSeries.speed.addPoint([page.timestamp, page.speedMinPrKM], false, (currentSeries.speed.data.length > 60), false);
 
                                  break;
                                  // Background
                              case 2:
 
+                                 
                                  currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
-                                 currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToMinPrKM(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+
+                                 page.speedMinPrKM = FITViewUIConverter.convertSpeedToMinPrKM(page.speed);
+                                 page.speedMinPrKMMMSS = FITViewUIConverter.formatToMMSS(page.speedMinPrKM);
+                                 currentSeries.speed.addPoint([page.timestamp, page.speedMinPrKM], false, (currentSeries.speed.data.length > 60), false);
 
                                  break;
 
                              default:
-                                 self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented for SDM');
+                                 self.logMessage('log', 'Page number ' + page.pageNumber + ' not implemented for SDM');
                                  break;
                          }
 
@@ -3663,7 +3714,8 @@
                          switch (page.dataPageNumber) {
 
                              case 4:
-                                 self.loggMessage('log', 'Timestamp ' + page.timestamp + ' HR ' + page.computedHeartRate + ' RR ' + page.RRInterval);
+                                 self.logMessage('log', 'Timestamp ' + page.timestamp + ' HR ' + page.computedHeartRate + ' RR ' + page.RRInterval);
+                                
                                  //console.log(Date.now(), "SeriesID", seriesID.HR + channelIDProperty);
                                
                                  //msgCounter.HR++; // Added to prevent stall in redraw of chart - only redraw each n points
@@ -3675,14 +3727,14 @@
                                  currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HRV.data.length > 60), false);
                                  
                                  HRM_Timeout = setTimeout(function hrm_timeout_handler() {
-                                     self.loggMessage('log', 'Adding null to HR/HRV series to allow for discontinous series - no HRM data received in ' + HRM_Timeout_Interval + " ms");
+                                     self.logMessage('log', 'Adding null to HR/HRV series to allow for discontinous series - no HRM data received in ' + HRM_Timeout_Interval + " ms");
                                      currentSeries.HR.addPoint([page.timestamp + 1, null], false, (currentSeries.HR.data.length > 60), false);
                                      currentSeries.HRV.addPoint([page.timestamp + 1, null], false, (currentSeries.HRV.data.length > 60), false);
-                                 }, HRM_Timeout);
+                                 }, HRM_Timeout_Interval);
                                  break;
 
                              default:
-                                 self.loggMessage('log', 'Page number ' + page.pageNumber + ' not implemented for HRM');
+                                 self.logMessage('log', 'Page number ' + page.pageNumber + ' not implemented for HRM');
                                  break;
 
                          }
@@ -3690,9 +3742,27 @@
                          break;
                      
                      default:
-                         self.loggMessage('log', 'Device type ' + page.deviceType + ' not implemented');
+                         self.logMessage('log', 'Device type ' + page.deviceType + ' not implemented');
                          break;
                  }
+
+                 //console.log(page);
+
+                 if (typeof connectedSensor[channelIDProperty] === "undefined") {
+                     connectedSensor[channelIDProperty] = {
+                         page: ko.observable(page)
+                     };
+
+                     if (page.channelID.deviceTypeID === 124) {
+                         // Section 6.2.2 Decoding Cumulative Data Fields in "ANT+ Managed Network Document - Stide Based Speed and Distance Monitor Device Profile" Rev. 1.3 p. 24
+                         connectedSensor[channelIDProperty].cumulativeDistance = 0;
+                         connectedSensor[channelIDProperty].previousMessageDistance = page.distance;
+                     }
+
+                     self.masterVM.liveSensorVM.sensor.push(connectedSensor[channelIDProperty]);
+                 }
+
+                 connectedSensor[channelIDProperty].page(page);
 
                  //console.log("msgCounter",msgCounter);
 
@@ -3708,7 +3778,7 @@
              //setTimeout(function ()
              //{
              //    if (ws.readyState === WebSocket.prototype.CLOSED)
-             //        self.loggMessage('log',"Failed to open websocket to " + wsResourceURL);
+             //        self.logMessage('log',"Failed to open websocket to " + wsResourceURL);
              //}, timeoutForOpen);
 
              liveStreamWebSocket = ws;
@@ -3753,10 +3823,10 @@
             var timezoneDiff;
 
             if (FITUtil.isUndefined(rawData.record))
-                self.loggMessage("error","No rawdata present on rawdata.record, cannot render chart");
+                self.logMessage("error","No rawdata present on rawdata.record, cannot render chart");
             else
                 if (FITUtil.isEmpty(rawData.record))
-                    self.loggMessage("warn","Empty rawdata on rawdata.record, nothing to render in chart");
+                    self.logMessage("warn","Empty rawdata on rawdata.record, nothing to render in chart");
 
             function stripOffUndefinedValues(series) {
                 var elementNr;
@@ -3767,7 +3837,7 @@
                     if (series[elementNr] !== undefined)
                         mapped.push(series[elementNr]);
                     else
-                        self.loggMessage("warn", "Filter out elementNr " + elementNr + " from series, its undefined");
+                        self.logMessage("warn", "Filter out elementNr " + elementNr + " from series, its undefined");
                 }
 
                return mapped;
@@ -3783,12 +3853,12 @@
                 
 
                 if (typeof rawData.record[property] === "undefined" || rawData.record[property].length <= 0) {
-                    self.loggMessage("warn", "Cannot calculate derivative of property : " + property);
+                    self.logMessage("warn", "Cannot calculate derivative of property : " + property);
                     return undefined;
                 }
 
                 if (typeof rawData.record.timestamp === "undefined" || rawData.record.timestamp.length <= 0) {
-                    self.loggMessage("warn", "Cannot calculate derivative due to missing timestamps for property : " + property);
+                    self.logMessage("warn", "Cannot calculate derivative due to missing timestamps for property : " + property);
                     return undefined;
                 }
 
@@ -3798,11 +3868,11 @@
                     deltaProperty = rawData.record[property][timestampNr + 1] - rawData.record[property][timestampNr];
                     deltaTime = (rawData.record.timestamp[timestampNr + 1] - rawData.record.timestamp[timestampNr])/1000; // In secs. please
                     if (typeof deltaProperty !== "number") {
-                        self.loggMessage("warn", "Deltaproperty is not a number");
+                        self.logMessage("warn", "Deltaproperty is not a number");
                         continue;
                     }
                     if (typeof deltaTime !== "number") {
-                        self.loggMessage("warn", "Deltatime is not a number");
+                        self.logMessage("warn", "Deltatime is not a number");
                         continue;
                     }
 
@@ -3818,7 +3888,7 @@
 
             function prepareHRSeries() {
                 if (!self.hasHRdata(rawData)) {
-                    self.loggMessage("info", "No HR data available in rawdata");
+                    self.logMessage("info", "No HR data available in rawdata");
                     return;
                 }
                     seriesData[seriesID.HR] = FITUtil.combine(rawData, rawData.record.heart_rate, rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.HR);
@@ -3847,7 +3917,7 @@
 
             function preparederivativeHRSeries() {
                 if (!self.hasHRdata(rawData)) {
-                    self.loggMessage("info", "No HR data available in rawdata");
+                    self.logMessage("info", "No HR data available in rawdata");
                     return;
                 }
                 seriesData[seriesID.derivativeHR] = FITUtil.combine(rawData, stripOffUndefinedValues(getDerivativeSeries("heart_rate")), rawData.record.timestamp, startTimestamp, endTimestamp, undefined, seriesID.derivativeHR);
@@ -3884,7 +3954,7 @@
 
             function preparederivativeSpeedSeries() {
                 if (!hasSpeedData()) {
-                    self.loggMessage("info", "No speed data available in rawdata");
+                    self.logMessage("info", "No speed data available in rawdata");
                     return;
                 }
 
@@ -3918,7 +3988,7 @@
 
                 if (!hasSpeedData()) 
                 {
-                    self.loggMessage("info", "No speed data available in rawdata");
+                    self.logMessage("info", "No speed data available in rawdata");
                     return;
                 }
 
@@ -4171,7 +4241,7 @@
                 if (n > 0)
                     RMSSD = Math.sqrt(sum /n) ; 
                 else
-                    self.loggMessage("error", "Cannot calculate RMSSD n = 0 ");
+                    self.logMessage("error", "Cannot calculate RMSSD n = 0 ");
 
                 return RMSSD;
             }
@@ -4188,7 +4258,7 @@
 
                 hrv_start_time = self.getStartTime(rawData);
                 if (hrv_start_time === 0) 
-                    self.loggMessage("warn","Could not find start_time in session,lap and record head, trying relative time starting at 0");
+                    self.logMessage("warn","Could not find start_time in session,lap and record head, trying relative time starting at 0");
 
                 hrv_time_length = rawData.hrv.time.length;
                 //if (hrv_time_length > 500)
@@ -4224,7 +4294,7 @@
                 //    //lowerLimit = avg*(1-0.05);
                 //    //upperLimit = avg*(1+0.05);
                 //    //if (hrv_time_next < lowerLimit || hrv_time_next > upperLimit) {
-                //    //    self.loggMessage("info", "Setting measurement nr. " + measurementNr.toString() + " with hrv time (RR) " + hrv_time_next.toString() + " to average (possible outlier), lowerLimit/avg./upperLimit " + lowerLimit.toFixed(1) + '/' + avg.toFixed(1) + '/' + upperLimit.toFixed(1));
+                //    //    self.logMessage("info", "Setting measurement nr. " + measurementNr.toString() + " with hrv time (RR) " + hrv_time_next.toString() + " to average (possible outlier), lowerLimit/avg./upperLimit " + lowerLimit.toFixed(1) + '/' + avg.toFixed(1) + '/' + upperLimit.toFixed(1));
                 //    //    hrv_timestamp += avg;
                 //    //    hrv_combined_timestamp_arr.push([hrv_timestamp, avg]);
                 //    //} else {
@@ -4480,14 +4550,14 @@
             //    chartOptions.inverted = true;
 
             var d = new Date();
-            self.loggMessage("log","Starting multichart setup now " + d);
+            self.logMessage("log","Starting multichart setup now " + d);
 
 
             // Shared mouse event handler for spline/line series in multichart
             var mouseHandler =
                 {
                     select: function () {
-                        self.loggMessage("log",(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y));
+                        self.logMessage("log",(Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x), this.y));
                     },
 
                     mouseOut: function () {
@@ -4527,7 +4597,7 @@
 
 
                             if (index === -1) {
-                                self.loggMessage("error","Could not find index of timestamp ", this.x);
+                                self.logMessage("error","Could not find index of timestamp ", this.x);
                                 return;
                             }
 
@@ -4773,7 +4843,7 @@
                             if (this.series.xAxis.isDatetimeAxis) {
                                 var elapsedTime = (this.x - FITUtil.timestampUtil.addTimezoneOffsetToUTC(startTimestamp)) / 1000; // startTimestamp from clousure/actual parameter in UTC
                                 if (elapsedTime < 0)
-                                    self.loggMessage("error", "Strange that current timestamp is before start timestamp");
+                                    self.logMessage("error", "Strange that current timestamp is before start timestamp");
                                 else
                                     tip += '<br/><b>Time:</b> ' + FITViewUIConverter.formatToHHMMSS(elapsedTime);
                             }
@@ -4885,7 +4955,7 @@
                 self.addLapLines(rawData, self.multiChart, false);
 
             d = new Date();
-            self.loggMessage("log", "Finishing multichart setup now " + d);
+            self.logMessage("log", "Finishing multichart setup now " + d);
 
             // Details
             self.showLapChart(rawData, startTimestamp, endTimestamp, sport);
@@ -4951,19 +5021,19 @@
             };
 
             if (FITUtil.isUndefined(rawdata)) {
-                self.loggMessage("error","No rawdata available");
+                self.logMessage("error","No rawdata available");
                 return;
             }
 
             if (FITUtil.isUndefined(rawdata.device_info)) {
-                self.loggMessage("error","No device information on rawdata.device_info");
+                self.logMessage("error","No device information on rawdata.device_info");
                 return;
             }
 
             var deviceInfoLen = rawdata.device_info.timestamp.length;
 
             if (FITUtil.isUndefined(deviceInfoLen) || deviceInfoLen === 0) {
-                self.loggMessage("error","No timestamp information in device_info, device_info.timestamp");
+                self.logMessage("error","No timestamp information in device_info, device_info.timestamp");
                 return;
             }
 
@@ -4982,11 +5052,11 @@
             var min = xaxis.min;
 
             if (typeof max === "undefined" || typeof min === "undefined") {
-                self.loggMessage("log", "Max/Min of axis is undefined, cannot show device/sensor info.");
+                self.logMessage("log", "Max/Min of axis is undefined, cannot show device/sensor info.");
                 return;
             }
 
-            self.loggMessage("log","Deviceinfo xaxis extreemes datamin,datamax : ", min, max);
+            self.logMessage("log","Deviceinfo xaxis extreemes datamin,datamax : ", min, max);
 
             this.removeSVGGroup(this.masterVM.deviceInfoGroup);
             this.masterVM.deviceInfoGroup = renderer.g('deviceinfo').add();
@@ -5198,19 +5268,19 @@
             var ev_data_str;
 
             if (FITUtil.isUndefined(rawdata)) {
-                self.loggMessage("error","No rawdata available");
+                self.logMessage("error","No rawdata available");
                 return;
             }
 
             if (FITUtil.isUndefined(rawdata.event)) {
-                self.loggMessage("error","No event information");
+                self.logMessage("error","No event information");
                 return;
             }
 
             var eventLen = rawdata.event.timestamp.length;
 
             if (FITUtil.isUndefined(eventLen) || eventLen === 0) {
-                self.loggMessage("error","No timestamp information from event, event.timestamp");
+                self.logMessage("error","No timestamp information from event, event.timestamp");
                 return;
             }
 
@@ -5226,11 +5296,11 @@
             var min = xaxis.min;
 
             if (typeof max === "undefined" || typeof min === "undefined") {
-                self.loggMessage("log", "Max/Min of axis is undefined, cannot show events");
+                self.logMessage("log", "Max/Min of axis is undefined, cannot show events");
                 return;
             }
 
-            self.loggMessage("log","Event xaxis extremes datamin,datamax : ", min, max);
+            self.logMessage("log","Event xaxis extremes datamin,datamax : ", min, max);
 
             var srcImgEvent, titleEvent;
             var SVGeventElement;
@@ -5512,24 +5582,24 @@
         showLapTriggers: function (rawdata) {
 
             if (FITUtil.isUndefined(rawdata)) {
-                self.loggMessage("error","No rawdata, cannot show lap triggers");
+                self.logMessage("error","No rawdata, cannot show lap triggers");
                 return;
             }
 
             if (FITUtil.isUndefined(rawdata.lap)) {
-                self.loggMessage("error","No lap information");
+                self.logMessage("error","No lap information");
                 return;
             }
 
             var lapLen = rawdata.lap.timestamp.length;
 
             if (FITUtil.isUndefined(lapLen) || lapLen === 0) {
-                self.loggMessage("error","No timestamp information from lap, lap.timestamp");
+                self.logMessage("error","No timestamp information from lap, lap.timestamp");
                 return;
             }
 
             if (FITUtil.isUndefined(this.multiChart)) {
-                self.loggMessage("error","Multichart not defined");
+                self.logMessage("error","Multichart not defined");
                 return;
 
             }
@@ -5546,11 +5616,11 @@
             var min = xaxis.min;
 
             if (typeof max === "undefined" || typeof min === "undefined") {
-                self.loggMessage("log", "Max/Min of axis is undefined, cannot show lap triggers");
+                self.logMessage("log", "Max/Min of axis is undefined, cannot show lap triggers");
                 return;
             }
 
-            self.loggMessage("log","Lap triggers xaxis extremes datamin,datamax : ", min, max);
+            self.logMessage("log","Lap triggers xaxis extremes datamin,datamax : ", min, max);
 
             var srcImg, title;
             var SVG_elmImg;
@@ -5638,7 +5708,7 @@
                 } else {
                     srcImg = "Images/laptrigger/unknown.png";
                     title = "No lap trigger found";
-                    self.loggMessage("warn", "Lap has no lap_trigger data, cannot decide what triggered lap");
+                    self.logMessage("warn", "Lap has no lap_trigger data, cannot decide what triggered lap");
                 }
 
                 title += " @ " + Highcharts.dateFormat('%H:%M:%S', timestamp);
@@ -5658,12 +5728,12 @@
             var divChart = document.getElementById(divChartId);
 
             if (FITUtil.isUndefined(self.masterVM.IntensityVM.history)) {
-                self.loggMessage("warn", "Cannot show intensity chart with undefined history");
+                self.logMessage("warn", "Cannot show intensity chart with undefined history");
                 return -1;
             }
 
             if (self.masterVM.IntensityVM.history.length === 0) {
-                self.loggMessage("warn", "No intensity history available");
+                self.logMessage("warn", "No intensity history available");
                 return;
             }
 
@@ -5672,7 +5742,7 @@
                 self.intensityChart.destroy();
 
             if (self.masterVM.IntensityVM.history.length <= 1) {
-                self.loggMessage("warn", "Less than two measurements available in intensity (watt) history, no need to show entire chart");
+                self.logMessage("warn", "Less than two measurements available in intensity (watt) history, no need to show entire chart");
                 $('#intensityChart').hide();
                 return;
             }
@@ -5834,7 +5904,7 @@
             if (typeof mySetting !== "undefined" && typeof mySettings.user_profile !== "undefined" && typeof mySettings.user_profile.resting_heart_rate !== "undefined" && mySettings.user_profile.resting_heart_rate.length >= 1)
                 restingHR = mySettings.user_profile.resting_heart_rate[0];
             else {
-                self.loggMessage("warn", "Did not find resting heart rate in user profile (from ./Settings/*.FIT), used to calculate HRR  - heart rate reserve. Setting default resting HR to 60");
+                self.logMessage("warn", "Did not find resting heart rate in user profile (from ./Settings/*.FIT), used to calculate HRR  - heart rate reserve. Setting default resting HR to 60");
                 restingHR = 60; // Default fallback
             }
 
@@ -5845,18 +5915,18 @@
         getTimeInHRZone : function (rawdata,sport,startTimestamp,endTimestamp,fixedStartIndex,fixedEndIndex)
         {
             if (FITUtil.isUndefined(rawdata.record)) {
-                self.loggMessage("warn", "Cannot set HR zones data when there is no rawdata, tried looking in rawdata.record");
+                self.logMessage("warn", "Cannot set HR zones data when there is no rawdata, tried looking in rawdata.record");
                 return undefined;
             }
 
             if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
-                self.loggMessage("warn", "No HR data found");
+                self.logMessage("warn", "No HR data found");
                 return undefined;
             }
 
             var mySportSettings = self.getSportSettingsFromMemory(sport);
             if (typeof mySportSettings === "undefined" || mySportSettings === null) {
-                self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
+                self.logMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
                 return undefined;
             }
 
@@ -5875,7 +5945,7 @@
 
             var restingHR = self.getRestingHR();
 
-            self.loggMessage("log", "Basing HR zone chart on start_time UTC :", new Date(startTimestamp), " at index ", startIndex, "on rawdata.record, and timestamp UTC :", new Date(endTimestamp), " at index: ", endIndex);
+            self.logMessage("log", "Basing HR zone chart on start_time UTC :", new Date(startTimestamp), " at index ", startIndex, "on rawdata.record, and timestamp UTC :", new Date(endTimestamp), " at index: ", endIndex);
 
             var len = mySportSettings.hr_zone.high_bpm.length;
 
@@ -5901,12 +5971,12 @@
                     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/isNaN
 
                     if (isNaN(timeInZoneMillisec)) {// Should not happen....
-                        self.loggMessage("error", "Time in zone is NaN");
+                        self.logMessage("error", "Time in zone is NaN");
                         break;
                     }
 
                     if (timeInZoneMillisec > maxTimeDifference) {
-                        self.loggMessage("warn", "Greater than ", maxTimeDifference, "ms difference between timestamps, skipped (not calculated in HR zones)");
+                        self.logMessage("warn", "Greater than ", maxTimeDifference, "ms difference between timestamps, skipped (not calculated in HR zones)");
                         continue;
                     }
 
@@ -5917,7 +5987,7 @@
                 //    HR = undefined;
 
                 if (HR === undefined || HR === null)
-                    self.loggMessage("error", "Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
+                    self.logMessage("error", "Could not access heart rate raw data for record.timestamp " + rawdata.record.timestamp[datap].toString() + " at index " + datap.toString());
                 else {
 
                     if (datap === endIndex)
@@ -5946,7 +6016,7 @@
                                 HR = (HR - restingHR) / (maximumHR - minimumHR) * 100;
                                 break;
                             default:
-                                self.loggMessage("error", "Did not find calculation method (custom/%max/%hrr) for heart rate zone calculation");
+                                self.logMessage("error", "Did not find calculation method (custom/%max/%hrr) for heart rate zone calculation");
                                 self.showTemporaryNotification({
                                     title: 'No HR zone calculation method found',
                                     icon: '/Images/error.png',
@@ -5983,7 +6053,7 @@
                 case 0: search = "other"; break;
                 case 1: search = "running"; break;
                 case 2: search = "cycling"; break;
-                default: self.loggMessage("warn", "No support for HR zones for sport " + sport); return;  break;
+                default: self.logMessage("warn", "No support for HR zones for sport " + sport); return;  break;
             }
 
             if (typeof self.masterVM.settingsVM.FITSportSetting() !== "undefined")
@@ -5991,7 +6061,7 @@
                     return ko.utils.stringStartsWith(item.sport.name[0].toLowerCase(), search);
                 });
             //else {
-            //    self.loggMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
+            //    self.logMessage("warn", "No settings found for sport, cannot calculate time in HR zone" + sport);
             //    return undefined;
             //}
 
@@ -6006,22 +6076,22 @@
             $('#zonesChart').hide();
 
             if (FITUtil.isUndefined(rawdata.record)) {
-                self.loggMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
+                self.logMessage("warn","Cannot show HR zones data when there is no rawdata, tried looking in rawdata.record");
                 return -1;
             }
 
             if (FITUtil.isUndefined(rawdata.record.heart_rate) || rawdata.record.heart_rate.length === 0) {
-                self.loggMessage("warn","No HR data found, skipping HR Zones chart");
+                self.logMessage("warn","No HR data found, skipping HR Zones chart");
                 return;
             }
 
             //var mySportSettings = self.getSportSettingsFromMemory(sport);
 
-           
+            var timeInZone = self.getTimeInHRZone(rawdata,sport, startTimestamp, endTimestamp);
+            if (typeof timeInZone === "undefined")
+                return;
 
             $('#zonesChart').show();
-
-            var timeInZone = self.getTimeInHRZone(rawdata,sport, startTimestamp, endTimestamp);
            
             //$('#zonesChart').show();
 
@@ -6171,7 +6241,7 @@
 
             var setMapCenter = function (sport, lat, longPos) {
                 var latlong = new google.maps.LatLng(FITUtil.timestampUtil.semiCirclesToDegrees(lat), FITUtil.timestampUtil.semiCirclesToDegrees(longPos));
-                self.loggMessage("info","Setting map center for sport ", sport, " at ", latlong);
+                self.logMessage("info","Setting map center for sport ", sport, " at ", latlong);
                 map.setCenter(latlong);
 
                 if (self.sessionMarkers === undefined || self.sessionMarkers === null)
@@ -6282,11 +6352,11 @@
                     sport = 0; // Default to generic
 
                 if (lat && longPos) {
-                    self.loggMessage("info","No start position was found in session data, got a position at start of record messages.", lat, longPos);
+                    self.logMessage("info","No start position was found in session data, got a position at start of record messages.", lat, longPos);
                     setMapCenter(sport, lat, longPos);
                     mapCenterSet = true;
                 } else
-                    self.loggMessage("info","Got no start position from head/index 0 of position_lat/long");
+                    self.logMessage("info","Got no start position from head/index 0 of position_lat/long");
             }
 
             return mapCenterSet;
@@ -6309,7 +6379,7 @@
                 return false;
 
             if (session.swc_lat === undefined || session.swc_long === undefined || session.nec_lat === undefined || session.nec_long === undefined) {
-                self.loggMessage("info","No swc/nec data available in session");
+                self.logMessage("info","No swc/nec data available in session");
                 return false;
             }
 
@@ -6434,7 +6504,7 @@
                 self.masterVM.activityPolyline = {};
 
             if (record === undefined) {
-                self.loggMessage("info","No record msg. to based plot of polyline data for session,lap etc.");
+                self.logMessage("info","No record msg. to based plot of polyline data for session,lap etc.");
                 return false;
             }
 
@@ -6455,7 +6525,7 @@
             var latLength = record.position_lat.length;
             var longLength = record.position_long.length;
 
-            self.loggMessage("info","Total GPS points available (position_lat,position_long) : ", latLength, longLength);
+            self.logMessage("info","Total GPS points available (position_lat,position_long) : ", latLength, longLength);
 
             //var sampleInterval = Math.floor(latLength / 30);
 
@@ -6464,7 +6534,7 @@
 
             var sampleInterval = 2; // Max. sampling rate for 910XT is 1 second 
 
-            self.loggMessage("info","Sample length for polyline is ", sampleInterval);
+            self.logMessage("info","Sample length for polyline is ", sampleInterval);
 
             //var sample = 0;
 
@@ -6492,7 +6562,7 @@
                     }
             }
 
-            self.loggMessage("info","Total length of polyline array with coordinates is : ", self.masterVM.activityCoordinates[type].length.toString());
+            self.logMessage("info","Total length of polyline array with coordinates is : ", self.masterVM.activityCoordinates[type].length.toString());
 
             self.masterVM.activityPolyline[type] = new google.maps.Polyline({
                 path: self.masterVM.activityCoordinates[type],
@@ -6508,27 +6578,27 @@
 
         intepretMessageCounters: function (counter, type) {
             if (FITUtil.isUndefined(counter)) {
-                self.loggMessage("warn","Message counters is undefined, cannot intepret counter of global messages in FIT file");
+                self.logMessage("warn","Message counters is undefined, cannot intepret counter of global messages in FIT file");
                 return -1;
             }
 
             if (counter.file_id !== 1)
-                self.loggMessage("error","File id msg. should be 1, but is ", counter.fileIdCounter);
+                self.logMessage("error","File id msg. should be 1, but is ", counter.fileIdCounter);
             if (counter.file_creator !== 1)
-                self.loggMessage("error","File creator msg. should be 1, but is ", counter.fileCreatorCounter);
+                self.logMessage("error","File creator msg. should be 1, but is ", counter.fileCreatorCounter);
 
             if (type === FITFileType.activityfile) { // Activity
 
                 if (counter.session === 0)
-                    self.loggMessage("error","Session msg. should be at least 1, but is ", counter.sessionCounter);
+                    self.logMessage("error","Session msg. should be at least 1, but is ", counter.sessionCounter);
                 if (counter.lap === 0)
-                    self.loggMessage("error","Lap msg. should be at least 1, but is ", counter.lapCounter);
+                    self.logMessage("error","Lap msg. should be at least 1, but is ", counter.lapCounter);
                 if (counter.activity !== 1)
-                    self.loggMessage("error","Activity msg. should be 1, but is ", counter.activityCounter);
+                    self.logMessage("error","Activity msg. should be 1, but is ", counter.activityCounter);
                 if (counter.device_info === 0)
-                    self.loggMessage("error","Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
+                    self.logMessage("error","Expected more than 0 device_info msg. ", counter.deviceInfoCounter);
                 if (counter.record === 0)
-                    self.loggMessage("error","No record msg. ", counter.lapCounter);
+                    self.logMessage("error","No record msg. ", counter.lapCounter);
             }
 
         },
@@ -6581,7 +6651,7 @@
             sport = rawData.sport.sport[0];
             
             localStorage["sportsetting" + sport] = toJSON;
-            self.loggMessage("info", "Saved sport settings to local storage" + toJSON);
+            self.logMessage("info", "Saved sport settings to local storage" + toJSON);
 
             self.showTemporaryNotification({
                 title: 'Imported ' + rawData.sport.name + ' settings file ',
@@ -6607,7 +6677,7 @@
             var toJSON = JSON.stringify(rawData);
 
             localStorage["totals"] = toJSON;
-            self.loggMessage("info", "Saved totals to local storage" + toJSON);
+            self.logMessage("info", "Saved totals to local storage" + toJSON);
 
            
             self.showTemporaryNotification({
@@ -6647,7 +6717,7 @@
             var toJSON = JSON.stringify(rawData);
 
             localStorage["setting"] = toJSON;
-            self.loggMessage("info", "Saved settings to local storage" + toJSON);
+            self.logMessage("info", "Saved settings to local storage" + toJSON);
 
             self.showTemporaryNotification({
                 title: 'Imported settings file',
@@ -6700,7 +6770,7 @@
             // http://updates.html5rocks.com/2012/06/Don-t-Build-Blobs-Construct-Them
             // http://updates.html5rocks.com/2011/08/Downloading-resources-in-HTML5-a-download
             if (!self.hasHRVdata(rawdata)) {
-                self.loggMessage("warn","No HRV data available for export as CSV");
+                self.logMessage("warn","No HRV data available for export as CSV");
                 return;
             }
 
@@ -6729,7 +6799,7 @@
                     else if (type === "bar/column")
                         headerStr = 'category,';
                     else if (type !== "raw")
-                        self.loggMessage("warn","Unknown CSV export type", type, "choosing default raw");
+                        self.logMessage("warn","Unknown CSV export type", type, "choosing default raw");
 
                     headerStr += 'time' + CRLF;
                     CSVtimeStr = headerStr;
@@ -6754,7 +6824,7 @@
             // Blob(array,objectliteral)
          
             self.masterVM.exportVM.csv.blob = new Blob([CSVtimeStr], { type: 'text/csv' });
-            self.loggMessage("log","Size of CSV blob:", self.masterVM.exportVM.csv.blob.size, " bytes");
+            self.logMessage("log","Size of CSV blob:", self.masterVM.exportVM.csv.blob.size, " bytes");
 
             window.URL = window.URL || window.webkitURL;
 
@@ -6789,7 +6859,7 @@
             if (rawData.record)
                 FITUtil.setDirtyTimestamps(rawData, rawData.record.timestamp);
             else
-                self.loggMessage("warn","No rawdata present on rawdata.record - no data in file");
+                self.logMessage("warn","No rawdata present on rawdata.record - no data in file");
 
             // Enable export of HRV data
             
@@ -6848,15 +6918,15 @@
 
             if (FITUtil.isUndefined(rawData.session.start_time)) {
 
-                self.loggMessage("warn","Session start time not found");
+                self.logMessage("warn","Session start time not found");
                 start_time = rawData.lap.start_time[0];
 
                 if (start_time === undefined) {
-                    self.loggMessage("warn","Session start time not found in first lap either, trying record head");
+                    self.logMessage("warn","Session start time not found in first lap either, trying record head");
                     start_time = rawData.record.timestamp[0];
                 }
 
-                self.loggMessage("info","Found start_time for session:", start_time);
+                self.logMessage("info","Found start_time for session:", start_time);
 
                 rawData.session.start_time = [];
                 rawData.session.start_time.push(start_time);
@@ -6866,15 +6936,15 @@
             var timestamp;
 
             if (FITUtil.isUndefined(rawData.session.timestamp)) {
-                self.loggMessage("warn","Session end time not found");
+                self.logMessage("warn","Session end time not found");
                 timestamp = rawData.lap.timestamp[rawData.session.num_laps - 1];
-                self.loggMessage("info","Timestamp of lap", rawData.session_num_laps, "is :", timestamp);
+                self.logMessage("info","Timestamp of lap", rawData.session_num_laps, "is :", timestamp);
 
                 if (timestamp === undefined) {
-                    self.loggMessage("warn","Session end not found in timestamp for lap", rawData.session.num_laps);
+                    self.logMessage("warn","Session end not found in timestamp for lap", rawData.session.num_laps);
                     var len = rawData.record.timestamp.length;
                     timestamp = rawData.record.timestamp[len - 1];
-                    self.loggMessage("info","Timestamp of last rawdata.record is :", timestamp);
+                    self.logMessage("info","Timestamp of last rawdata.record is :", timestamp);
                 }
                 rawData.session.timestamp = [];
                 rawData.session.timestamp.push(timestamp);
@@ -6975,7 +7045,7 @@
             var headerInfo = rawdata._headerInfo_;
 
             if (typeof headerInfo === "undefined") {
-                self.loggMessage("warn", "No header information available, cannot copy information to headerInfo view model");
+                self.logMessage("warn", "No header information available, cannot copy information to headerInfo view model");
                 return;
             }
 
@@ -7049,19 +7119,19 @@
 
             if (typeof rawData.session === "undefined")
             {
-                self.loggMessage("warn","No session information available, cannot update intensity Watt (J/s) history");
+                self.logMessage("warn","No session information available, cannot update intensity Watt (J/s) history");
                 return;
             }
 
             if (typeof rawData.session.total_calories === "undefined" || rawData.session.total_calories.length === 0)
             {
-                self.loggMessage("error","Cannot estimate watt due to no available total_calories data for session");
+                self.logMessage("error","Cannot estimate watt due to no available total_calories data for session");
                 return;
             }
 
             if (typeof rawData.session.total_timer_time === "undefined" || rawData.session.total_timer_time.length === 0)
             {
-                self.loggMessage("error","Cannot estimate watt due to no available total_timer_time data for session");
+                self.logMessage("error","Cannot estimate watt due to no available total_timer_time data for session");
                 return;
             }
 
@@ -7076,7 +7146,7 @@
 
                 if (typeof sessionStartTime === "undefined") {
 
-                    self.loggMessage("error", "Could not find start_time for session nr., will not be available in chart (removed from data series) : ", sessionNr);
+                    self.logMessage("error", "Could not find start_time for session nr., will not be available in chart (removed from data series) : ", sessionNr);
 
                     continue;
 
@@ -7113,7 +7183,7 @@
 
                     if (typeof sessionStartTime === "undefined") {
 
-                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+                        self.logMessage("error", "Could not find start_time for session : ", sessionNr);
 
                         continue;
 
@@ -7161,7 +7231,7 @@
 
                     if (typeof sessionStartTime === "undefined") {
 
-                        self.loggMessage("error", "Could not find start_time for session : ", sessionNr);
+                        self.logMessage("error", "Could not find start_time for session : ", sessionNr);
 
                         continue;
 
@@ -7250,27 +7320,27 @@
                     // TO DO: push rawdata in an viewmodel for imported rawdata files....
 
                     if (FITUtil.isUndefined(rawData)) {
-                        self.loggMessage("error","Received undefined rawdata from import worker thread, its discarded, no further processing necessary");
+                        self.logMessage("error","Received undefined rawdata from import worker thread, its discarded, no further processing necessary");
                         break;
                     }
 
                     if (rawData.file_id)
-                        self.loggMessage("info","file_id message : ", JSON.stringify(rawData.file_id));
+                        self.logMessage("info","file_id message : ", JSON.stringify(rawData.file_id));
 
                     if (rawData.file_creator)
-                        self.loggMessage("info","file_creator message : ", JSON.stringify(rawData.file_creator));
+                        self.logMessage("info","file_creator message : ", JSON.stringify(rawData.file_creator));
 
                     if (rawData.file_id) {
                         fileIdType = rawData.file_id.type[0];
 
                         if (rawData.file_id.type.length > 1)
-                            self.loggMessage("warn","More than 1 file_id type");
+                            self.logMessage("warn","More than 1 file_id type");
                     }
                     else {
                         // Normally FIT files contains exactly ONE file_id message at the start
 
                         if (rawData.session || rawData.lap || rawData.record) {
-                            self.loggMessage("log","No file_id message in FIT file, but assume its an activity file - found session or lap or record");
+                            self.logMessage("log","No file_id message in FIT file, but assume its an activity file - found session or lap or record");
                             fileIdType = FITFileType.activityfile;
                         }
                     }
@@ -7286,7 +7356,7 @@
                             //    body: rawData._headerInfo_.fitFile.name
                             //});
 
-                            self.loggMessage("info", "Processing an activity file - type 4");
+                            self.logMessage("info", "Processing an activity file - type 4");
 
                             self.setMapImage(rawData);
                             
@@ -7322,17 +7392,17 @@
 
                         case FITFileType.sportsettingfile:
                            
-                            self.loggMessage("info","Processing a sport settings file - type 3");
+                            self.logMessage("info","Processing a sport settings file - type 3");
                             self.processSportSettingFile(rawData);
                             break;
 
                         case FITFileType.settingfile:
-                            self.loggMessage("info", "Processing a settings file - type 2");
+                            self.logMessage("info", "Processing a settings file - type 2");
                             self.processSettingFile(rawData);
                             break;
 
                         case FITFileType.totalsfile:
-                            self.loggMessage("info", "Processing a totals file - type 10");
+                            self.logMessage("info", "Processing a totals file - type 10");
                             self.processTotalsFile(rawData);
                             break;
 
@@ -7342,7 +7412,7 @@
                                 icon: '/Images/error.png',
                                 body: fileIdType.toString()
                             });
-                            self.loggMessage("info","Cannot process file id with type : ", fileIdType);
+                            self.logMessage("info","Cannot process file id with type : ", fileIdType);
                             break;
                     }
 
@@ -7380,11 +7450,11 @@
                                 errMsg += "property " + prop + " : " + eventdata.event.prop;
                         }
                     }
-                    self.loggMessage("error",errMsg);
+                    self.logMessage("error",errMsg);
                     break;
 
                 case 'info':
-                    self.loggMessage("info",eventdata.data);
+                    self.logMessage("info",eventdata.data);
                     break;
 
                 case 'importProgress':
@@ -7403,7 +7473,7 @@
                     break;
 
                 default:
-                    self.loggMessage("error","Received unrecognized message from worker " + eventdata.response);
+                    self.logMessage("error","Received unrecognized message from worker " + eventdata.response);
                     break;
             }
 
@@ -7411,7 +7481,7 @@
 
         },
 
-        loggMessage: function (type, msg, extraargs)
+        logMessage: function (type, msg, extraargs)
         // Weakness: doesnt get linenumber of error...maybe fix...
         {
             if (self.masterVM.settingsVM.logging())
@@ -7422,7 +7492,7 @@
         },
 
         onFITManagerError: function (e) {
-            self.loggMessage("error","Error in worker, event: ", e);
+            self.logMessage("error","Error in worker, event: ", e);
         },
 
         terminateWebWorker : function ()
@@ -7459,10 +7529,10 @@
                 demoMode: true
             };
             
-            self.loggMessage("info", "Setting timeout for loading of demo .FIT to " + timeout.toString() + " ms");
+            self.logMessage("info", "Setting timeout for loading of demo .FIT to " + timeout.toString() + " ms");
 
             var timeoutID = setTimeout(function () {
-                self.loggMessage("info", "Starting automatic load of demo .FIT file");
+                self.logMessage("info", "Starting automatic load of demo .FIT file");
                 self.initWebWorker();
                 self.getFITfiles(msg);
             }, timeout);
@@ -7476,7 +7546,7 @@
         onFitFileSelected: function (e) {
 
             if (FITUtil.isUndefined(e.target.files) || e.target.files.length === 0) {
-                self.loggMessage("warn","No file selected for import");
+                self.logMessage("warn","No file selected for import");
                 return;
             }
 
@@ -7568,7 +7638,7 @@
             if (JSONstring !== null)
                  myObject = JSON.parse(JSONstring);
             else {
-                self.loggMessage("info", "Local storage of " + key + " not found");
+                self.logMessage("info", "Local storage of " + key + " not found");
             }
 
             return myObject;
@@ -7589,7 +7659,7 @@
         try {
             req = indexedDB.deleteDatabase("fit-import");
         } catch (e) {
-            self.loggMessage("error",e.message);
+            self.logMessage("error",e.message);
         }
         //req.onblocked = function (evt) {
         //    self.postMessage({ respone: "error", data: "Database is blocked - error code" + (evt.target.error ? evt.target.error : evt.target.errorCode) });
@@ -7597,12 +7667,12 @@
 
 
         req.onsuccess = function (evt) {
-            self.loggMessage("info","Delete " + evt.currentTarget.readyState);
+            self.logMessage("info","Delete " + evt.currentTarget.readyState);
 
         };
 
         req.onerror = function (evt) {
-            self.loggMessage("error","Error deleting database");
+            self.logMessage("error","Error deleting database");
         };
 
     }

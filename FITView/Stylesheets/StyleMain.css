@@ -445,3 +445,27 @@ ul#sessionList {
     width:  350px;
     height : 350px;
 }
+
+.sensorValue {
+  font-size : xx-large
+}
+
+#sensorList {
+    list-style-type: none;
+    padding-left: 0px;
+    -webkit-padding-start: 0px; /* Defaults to 40px in Chrome*/
+}
+
+#sensorList li
+{
+    display: inline;
+    list-style-type: none;
+}
+
+.sensorValueIcon {
+    /*padding-top: 3px;*/
+    border: none; /* Turn off default IE 10 border*/
+    height: 16px;
+    /*padding-right: 5px;*/
+    /*padding-left: 5px;*/
+}

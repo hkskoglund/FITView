@@ -2036,12 +2036,88 @@
                 </div>
 
             </div>
-        </div>
+        
+
+            <!-- ko with: liveSensorVM -->
+            <div id="divLiveSensors">
+                  <!-- ko if: typeof sensor !== "undefined" && sensor().length > 0 -->
+                <!--<div data-bind="text: ko.toJSON(sensor)"></div>-->
+                <!-- /ko -->
+                <ul id="sensorList" data-bind="foreach: sensor">
+                     <!-- ko with: page -->
+
+                         <!-- ko if: channelID.deviceTypeID === 120 && dataPageNumber === 4 -->
+                                <li>
+                               
+                                    <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                    <img class="sensorValueIcon" alt="Beats per minute from sensor" title="Beats per minute from sensor" src="Images/heart.png" />
+                                    <span class="sensorValue" data-bind="text: computedHeartRate"></span>
+                               
+                                </li>
+                          <!-- /ko -->
+                  
+                    <!--  SDM 4 SENSOR -->
+
+                    <!-- ko if: channelID.deviceTypeID === 124 && dataPageNumber === 2 -->
+                             <li>
+
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
+                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
+
+                            </li>
+                    
+                    <li>
+
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Speed from sensor - minutes pr kilometre" title="Speed from sensor - min/km" src="Images/speed.png" />
+                                <span class="sensorValue" data-bind="text: speedMinPrKMMMSS"></span>
+
+                            </li>
+
+                            <li>
+
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Strides per minute  from sensor" title="Strides per minute from sensor" src="Images/cadence.png" />
+                                <span class="sensorValue" data-bind="text: cadence.toFixed(0)"></span>
+
+                            </li>
+
+                            
+                          <!-- /ko -->
+
+                     <!-- ko if: channelID.deviceTypeID === 124 && dataPageNumber === 1 -->
+
+                            <li>
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
+                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
+
+                            </li>
+
+                            <li>
+
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Speed from sensor - minutes pr kilometre" title="Speed from sensor - min/km" src="Images/speed.png" />
+                                <span class="sensorValue" data-bind="text: speedMinPrKMMMSS"></span>
+
+                            </li>
+
+                            
+                          <!-- /ko -->
+                       
+                    <!-- /ko -->
+
+                </ul>
+
+            </div>
+            <!-- /ko -->
+
+            </div>
 
         <div id="divChartWrapper">
 
             <div id="multiChart"></div>
-            
 
         </div>
 
