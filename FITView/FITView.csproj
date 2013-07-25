@@ -60,6 +60,7 @@
     <Content Include="favicon.ico" />
     <Content Include="Images\livestream\closestream.png" />
     <Content Include="Images\livestream\openstream.png" />
+    <Content Include="Images\livestream\SDM\battery-low.png" />
     <Content Include="Images\totals.png" />
     <Content Include="Images\total_elapsed_time.png" />
     <Content Include="Images\hrv.png" />
@@ -165,6 +166,7 @@
     <Content Include="Scripts\lib\modernizr-2.6.2.js" />
     <Content Include="Scripts\Messages\FITSettingsFile.js" />
     <Content Include="Scripts\Messages\FITTotalsFile.js" />
+    <Content Include="Snippets\FITSettings.js" />
     <Content Include="Snippets\getRecord.js" />
     <Content Include="Snippets\intepretDataRecord.js" />
     <Content Include="Snippets\LapDetails.html" />

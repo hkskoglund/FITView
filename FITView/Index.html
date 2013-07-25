@@ -2075,13 +2075,36 @@
 
                             </li>
 
-                            <li}">
+                            <li>
 
                                 <!--<span data-bind="text: ko.toJSON(page)"></span>-->
                                 <img class="sensorValueIcon" alt="Strides per minute  from sensor" title="Strides per minute from sensor" src="Images/cadence.png" />
                                 <span class="sensorValue" data-bind="text: cadence.toFixed(0), style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
 
                             </li>
+
+                    <li>
+
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                              <!--  <img class="sensorValueIcon" alt="Strides per minute  from sensor" title="Strides per minute from sensor" src="Images/cadence.png" />-->
+                                <span class="sensorValue" data-bind="text: $parent.cumulativeStrideCount, style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
+
+                            </li>
+
+                    <!-- ko if: status.BatteryStatus === 0x03 -->
+                     <li>
+
+                                <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Battery level SDM sensor is low" title="Low battery level SDM" src="Images/livestream/SDM/battery-low.png" />
+                      </li>
+                    <!-- /ko -->
+
+                    <!-- ko if: status.SDMHealth > 0x00 -->
+                     <li>
+                                <span data-bind="text: status.SDMHealthFriendly"></span>
+                                
+                      </li>
+                    <!-- /ko -->
 
                             
                           <!-- /ko -->

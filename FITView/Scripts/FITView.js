@@ -1421,7 +1421,7 @@
                         sportStr = "Other";
                         break;
                     case FITSport.running:
-                       sportStr = "Running";
+                        sportStr = "Running";
                         break;
                     case FITSport.cycling:
                          sportStr = "Cycling";
@@ -3325,7 +3325,24 @@
                  SPDCAD_Cadence_Timeout,
                  HRM_Timeout,
                  SPDCAD_Timeout_Interval = 2000,
-                 HRM_Timeout_Interval = 2000;
+                 HRM_Timeout_Interval = 2000,
+                  
+                     sdm_cal_factor;
+
+             // Get SDM calibration factor
+             if (typeof self.masterVM.settingsVM.FITSetting() !== "undefined") {
+                 // cal.factor stored in % sdm_profile on FIT settings file
+                 if (typeof self.masterVM.settingsVM.FITSetting().sdm_profile !== "undefined" || typeof self.masterVM.settingsVM.FITSetting().sdm_profile.sdm_cal_factor === "undefined") {
+                     sdm_cal_factor = self.masterVM.settingsVM.FITSetting().sdm_profile.sdm_cal_factor[0];
+                     self.logMessage("log", "Using SDM calibration factor of " + sdm_cal_factor.toFixed(1) + " % for speed and distance");
+                     //console.log("SDM cal factor", sdm_cal_factor);
+                 } 
+             }
+
+             if (typeof sdm_cal_factor === "undefined") {
+                 self.logMessage("warn", "SDM calibration factor not found using default 100% = 1000");
+                 sdm_cal_factor = 100;
+             }
 
              // Called when receiving data on websocket - nb! this reference
              function initChart() {
@@ -3486,7 +3503,7 @@
                  var page = JSON.parse(e.data),
                      channelIDProperty = page.channelID.toProperty;
 
-                 self.logMessage('log', 'Received from device ' + channelIDProperty + " " + e.data);
+                // self.logMessage('log', 'Received from device ' + channelIDProperty + " " + e.data);
 
                  //function clearAllTimeouts() {
                  //    if (page.speed)
@@ -3673,12 +3690,12 @@
                              case 1:
                                 
 
-                                 page.speedMinPrKM = FITViewUIConverter.convertSpeedToMinPrKM(page.speed);
+                                 page.speedMinPrKM = FITViewUIConverter.convertSpeedToMinPrKM(sdm_cal_factor/100*page.speed);
                                  page.speedMinPrKMMMSS = FITViewUIConverter.formatToMMSS(page.speedMinPrKM);
 
                                  if (typeof connectedSensor[channelIDProperty] !== "undefined") {
                                      if (typeof connectedSensor[channelIDProperty].previousMessageDistance !== "undefined") {
-                                         connectedSensor[channelIDProperty].cumulativeDistance += page.distance - connectedSensor[channelIDProperty].previousMessageDistance;
+                                         connectedSensor[channelIDProperty].cumulativeDistance += (sdm_cal_factor/100)*(page.distance - connectedSensor[channelIDProperty].previousMessageDistance);
 
                                          if (connectedSensor[channelIDProperty].previousMessageDistance > page.distance) // We got a "roll over" which happens each 256 m
                                              connectedSensor[channelIDProperty].cumulativeDistance += 256;
@@ -3687,6 +3704,18 @@
                                      }
 
                                      connectedSensor[channelIDProperty].previousMessageDistance = page.distance;
+
+                                     //console.log("Previous stride count",connectedSensor[channelIDProperty].previousStrideCount);
+                                     if (typeof connectedSensor[channelIDProperty].previousStrideCount !== "undefined") {
+                                         connectedSensor[channelIDProperty].cumulativeStrideCount += page.strideCount - connectedSensor[channelIDProperty].previousStrideCount;
+
+                                         if (connectedSensor[channelIDProperty].previousStrideCount > page.strideCount) // We got a "roll over" which happens each 256 strides
+                                             connectedSensor[channelIDProperty].cumulativeStrideCount += 256;
+
+                                        
+                                     }
+
+                                     connectedSensor[channelIDProperty].previousStrideCount = page.strideCount
                                  }
 
                                  currentSeries.speed.addPoint([page.timestamp, page.speedMinPrKM], false, (currentSeries.speed.data.length > 60), false);
@@ -3705,7 +3734,7 @@
                                  break;
 
                              default:
-                                 self.logMessage('log', 'Page number ' + page.pageNumber + ' not implemented for SDM');
+                                 self.logMessage('log', 'Page number ' + page.dataPageNumber + ' not implemented for SDM');
                                  break;
                          }
 
@@ -3740,7 +3769,7 @@
                                  break;
 
                              default:
-                                 self.logMessage('log', 'Page number ' + page.pageNumber + ' not implemented for HRM');
+                                 self.logMessage('log', 'Page number ' + page.dataPageNumber + ' not implemented for HRM');
                                  break;
 
                          }
@@ -3762,7 +3791,10 @@
                      if (page.channelID.deviceTypeID === 124) {
                          // Section 6.2.2 Decoding Cumulative Data Fields in "ANT+ Managed Network Document - Stide Based Speed and Distance Monitor Device Profile" Rev. 1.3 p. 24
                          connectedSensor[channelIDProperty].cumulativeDistance = 0;
-                         connectedSensor[channelIDProperty].previousMessageDistance = page.distance;
+                         //connectedSensor[channelIDProperty].previousMessageDistance = page.distance;
+
+                         connectedSensor[channelIDProperty].cumulativeStrideCount = 0;
+                         //connectedSensor[channelIDProperty].previousStrideCount = page.strideCount;
                      }
 
                      self.masterVM.liveSensorVM.sensor.push(connectedSensor[channelIDProperty]);
