@@ -3327,7 +3327,8 @@
                  SPDCAD_Timeout_Interval = 2000,
                  HRM_Timeout_Interval = 2000,
                   
-                     sdm_cal_factor;
+                     sdm_cal_factor,
+                     timeZoneDifferenceFromUTC = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
 
              // Get SDM calibration factor
              if (typeof self.masterVM.settingsVM.FITSetting() !== "undefined") {
@@ -3650,10 +3651,10 @@
 
                          if (typeof page.speed !== "undefined") {
                              clearTimeout(SPDCAD_Speed_Timeout);
-                             currentSeries.speed.addPoint([page.timestamp, FITViewUIConverter.convertSpeedToKMprH(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                             currentSeries.speed.addPoint([page.timestamp + timeZoneDifferenceFromUTC, FITViewUIConverter.convertSpeedToKMprH(page.speed)], false, (currentSeries.speed.data.length > 60), false);
                              SPDCAD_Speed_Timeout = setTimeout(function spdcad_speed_handler() {
                                  self.logMessage('log', 'Adding null to SPDCAD speed series to allow for discontinous series - no speed data received in '+SPDCAD_Timeout_Interval+" ms");
-                                 currentSeries.speed.addPoint([page.timestamp + 1, null], false, (currentSeries.speed.data.length > 60), false);
+                                 currentSeries.speed.addPoint([page.timestamp + timeZoneDifferenceFromUTC + 1, null], false, (currentSeries.speed.data.length > 60), false);
                              }, SPDCAD_Timeout_Interval);
                          }
 
@@ -3665,10 +3666,10 @@
                              }
                              clearTimeout(SPDCAD_Cadence_Timeout);
                              if (page.cadence <= 240)
-                                 currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
+                                 currentSeries.cadence.addPoint([page.timestamp + timeZoneDifferenceFromUTC, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
                              SPDCAD_Cadence_Timeout = setTimeout(function spdcad_cadence_handler() {
                                  self.logMessage('log', 'Adding null to SPDCAD cadence series to allow for discontinous series - no cadence data received in '+SPDCAD_Timeout_Interval+" ms");
-                                 currentSeries.cadence.addPoint([page.timestamp + 1, null], false, (currentSeries.cadence.data.length > 60), false);
+                                 currentSeries.cadence.addPoint([page.timestamp  + timeZoneDifferenceFromUTC + 1, null], false, (currentSeries.cadence.data.length > 60), false);
                              }, SPDCAD_Timeout_Interval);
                          }
 
@@ -3718,18 +3719,18 @@
                                      connectedSensor[channelIDProperty].previousStrideCount = page.strideCount
                                  }
 
-                                 currentSeries.speed.addPoint([page.timestamp, page.speedMinPrKM], false, (currentSeries.speed.data.length > 60), false);
+                                 currentSeries.speed.addPoint([page.timestamp + timeZoneDifferenceFromUTC, page.speedMinPrKM], false, (currentSeries.speed.data.length > 60), false);
 
                                  break;
                                  // Background
                              case 2:
 
                                  
-                                 currentSeries.cadence.addPoint([page.timestamp, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
+                                 currentSeries.cadence.addPoint([page.timestamp + timeZoneDifferenceFromUTC, page.cadence], false, (currentSeries.cadence.data.length > 60), false);
 
                                  page.speedMinPrKM = FITViewUIConverter.convertSpeedToMinPrKM(page.speed);
                                  page.speedMinPrKMMMSS = FITViewUIConverter.formatToMMSS(page.speedMinPrKM);
-                                 currentSeries.speed.addPoint([page.timestamp, page.speedMinPrKM], false, (currentSeries.speed.data.length > 60), false);
+                                 currentSeries.speed.addPoint([page.timestamp + timeZoneDifferenceFromUTC, page.speedMinPrKM], false, (currentSeries.speed.data.length > 60), false);
 
                                  break;
 
@@ -3758,13 +3759,13 @@
 
                                  clearTimeout(HRM_Timeout);
 
-                                 currentSeries.HR.addPoint([page.timestamp, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
-                                 currentSeries.HRV.addPoint([page.timestamp, page.RRInterval], false, (currentSeries.HRV.data.length > 60), false);
+                                 currentSeries.HR.addPoint([page.timestamp + timeZoneDifferenceFromUTC, page.computedHeartRate], false, (currentSeries.HR.data.length > 60), false);
+                                 currentSeries.HRV.addPoint([page.timestamp + timeZoneDifferenceFromUTC, page.RRInterval], false, (currentSeries.HRV.data.length > 60), false);
                                  
                                  HRM_Timeout = setTimeout(function hrm_timeout_handler() {
                                      self.logMessage('log', 'Adding null to HR/HRV series to allow for discontinous series - no HRM data received in ' + HRM_Timeout_Interval + " ms");
-                                     currentSeries.HR.addPoint([page.timestamp + 1, null], false, (currentSeries.HR.data.length > 60), false);
-                                     currentSeries.HRV.addPoint([page.timestamp + 1, null], false, (currentSeries.HRV.data.length > 60), false);
+                                     currentSeries.HR.addPoint([page.timestamp + timeZoneDifferenceFromUTC + 1, null], false, (currentSeries.HR.data.length > 60), false);
+                                     currentSeries.HRV.addPoint([page.timestamp + timeZoneDifferenceFromUTC + 1, null], false, (currentSeries.HRV.data.length > 60), false);
                                  }, HRM_Timeout_Interval);
                                  break;
 
