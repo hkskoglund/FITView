@@ -167,6 +167,7 @@
     <Content Include="Scripts\Messages\FITSettingsFile.js" />
     <Content Include="Scripts\Messages\FITTotalsFile.js" />
     <Content Include="Snippets\FITSettings.js" />
+    <Content Include="Snippets\FITSportSetting2_Cycling.js" />
     <Content Include="Snippets\getRecord.js" />
     <Content Include="Snippets\intepretDataRecord.js" />
     <Content Include="Snippets\LapDetails.html" />

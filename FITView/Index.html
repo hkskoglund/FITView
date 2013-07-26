@@ -2046,6 +2046,8 @@
                 <ul id="sensorList" data-bind="foreach: sensor">
                      <!-- ko with: page -->
 
+                     <!--  HRM SENSOR -->
+
                          <!-- ko if: channelID.deviceTypeID === 120 && dataPageNumber === 4 -->
                                 <li>
                                
@@ -2053,6 +2055,31 @@
                                     <img class="sensorValueIcon" alt="Beats per minute from sensor" title="Beats per minute from sensor" src="Images/heart.png" />
                                     <span class="sensorValue" data-bind="text: computedHeartRate"></span>
                                
+                                </li>
+                          <!-- /ko -->
+
+                    <!--  SPDCAD SENSOR -->
+
+                         <!-- ko if: channelID.deviceTypeID === 121 && dataPageNumber === 0 -->
+                                <li>
+
+                                    <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
+                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
+
+                               
+                                    <!-- ko if: typeof speedKMprH !== "undefined" -->
+                                        <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                        <img class="sensorValueIcon" alt="Speed from combined speed and cadence sensor - kilometers pr hour" title="Speed from SPDCAD sensor - km/h" src="Images/speed.png" />
+                                        <span class="sensorValue" data-bind="text: speedKMprH.toFixed(1)"></span>
+                                    <!-- /ko -->
+
+                                     <!-- ko if: typeof cadence !== "undefined" -->
+                                        <!--<span data-bind="text: ko.toJSON(page)"></span>-->
+                                        <img class="sensorValueIcon" alt="Rounds per minute from sensor" title="Rounds per minute from sensor" src="Images/cadence.png" />
+                                        <span class="sensorValue" data-bind="text: cadence.toFixed(0)"></span>
+                                      <!-- /ko -->
+
                                 </li>
                           <!-- /ko -->
                   

@@ -1373,7 +1373,8 @@
                 else
                     self.logMessage("warn", "liveStreamWebSocket is undefined. Attempt to close it was skipped");
 
-                self.masterVM.liveSensorVM.sensor.removeAll();
+                var removedSensors = self.masterVM.liveSensorVM.sensor.removeAll();
+               // removedSensors.splice(0);
 
                 $('#divLiveSensors').hide();
             }
@@ -3318,32 +3319,61 @@
               seriesSetup = [], // Options name,id
 
               msgCounter = {
-                 count: 0,
-             },
+                  count: 0,
+              },
 
                 SPDCAD_Speed_Timeout,
                  SPDCAD_Cadence_Timeout,
                  HRM_Timeout,
                  SPDCAD_Timeout_Interval = 2000,
                  HRM_Timeout_Interval = 2000,
-                  
+
                      sdm_cal_factor,
-                     timeZoneDifferenceFromUTC = FITUtil.timestampUtil.getTimezoneOffsetFromUTC();
+                     timeZoneDifferenceFromUTC = FITUtil.timestampUtil.getTimezoneOffsetFromUTC(),
+                     bike_wheelSize,
+                     setting = self.masterVM.settingsVM.FITSetting(),
+                      selectedBikeIndex,
+                      auto_wheel_cal;
 
              // Get SDM calibration factor
-             if (typeof self.masterVM.settingsVM.FITSetting() !== "undefined") {
+             if (typeof setting !== "undefined") {
                  // cal.factor stored in % sdm_profile on FIT settings file
-                 if (typeof self.masterVM.settingsVM.FITSetting().sdm_profile !== "undefined" || typeof self.masterVM.settingsVM.FITSetting().sdm_profile.sdm_cal_factor === "undefined") {
-                     sdm_cal_factor = self.masterVM.settingsVM.FITSetting().sdm_profile.sdm_cal_factor[0];
+                 if (typeof setting.sdm_profile !== "undefined" && typeof setting.sdm_profile.sdm_cal_factor !== "undefined") {
+                     sdm_cal_factor = setting.sdm_profile.sdm_cal_factor[0];
                      self.logMessage("log", "Using SDM calibration factor of " + sdm_cal_factor.toFixed(1) + " % for speed and distance");
                      //console.log("SDM cal factor", sdm_cal_factor);
-                 } 
+                 }
+
+                 if (typeof setting.bike_profile !== "undefined") {
+                     selectedBikeIndex = setting.bike_profile.selectedBikeIndex(); // Is a dependentObservable function
+
+                     if (typeof selectedBikeIndex !== "undefined" && typeof setting.bike_profile.auto_wheel_cal !== "undefined") {
+                         auto_wheel_cal = setting.bike_profile.auto_wheel_cal[selectedBikeIndex];
+                         if (auto_wheel_cal === 1) {
+                             if (typeof setting.bike_profile.auto_wheelsize !== "undefined" && setting.bike_profile.auto_wheelsize[selectedBikeIndex] === 0)
+                                 self.logMessage("warn", "Auto wheel size for bike " + selectedBikeIndex + " is 0 m");
+                             else
+                                 bike_wheelSize = setting.bike_profile.auto_wheelsize[selectedBikeIndex];
+                         } else {
+                             if (typeof setting.bike_profile.custom_wheelsize !== "undefined" && setting.bike_profile.custom_wheelsize[selectedBikeIndex] === 0)
+                                 self.logMessage("warn", "Custom wheel size for bike " + selectedBikeIndex + " is 0 m");
+                             else
+                                 bike_wheelSize = setting.bike_profile.custom_wheelsize[selectedBikeIndex];
+                         }
+                     }
+                 }
              }
 
              if (typeof sdm_cal_factor === "undefined") {
                  self.logMessage("warn", "SDM calibration factor not found using default 100% = 1000");
                  sdm_cal_factor = 100;
              }
+
+             if (typeof bike_wheelSize === "undefined") {
+                 self.logMessage("warn", "Could'nt determine bike wheelsize from FIT settings, using default 2.1 m");
+                 bike_wheelSize = 2.1;
+             } else
+                 self.logMessage("log", "Using " + bike_wheelSize + " m as bike wheel size in speed and distance measurements for SPDCAD sensor");
 
              // Called when receiving data on websocket - nb! this reference
              function initChart() {
@@ -3526,7 +3556,7 @@
 
                      switch (page.channelID.deviceTypeID) {
 
-                         // Combined speed/cadence sensor
+                         // Combined speed/cadence sensor SPDCAD
 
                          case 121:
 
@@ -3640,7 +3670,7 @@
 
                  switch (page.channelID.deviceTypeID) {
 
-                     // Bike speed/cadence sensor
+                     // Bike speed/cadence sensor SPDCAD
 
                      case 121:
 
@@ -3651,7 +3681,21 @@
 
                          if (typeof page.speed !== "undefined") {
                              clearTimeout(SPDCAD_Speed_Timeout);
-                             currentSeries.speed.addPoint([page.timestamp + timeZoneDifferenceFromUTC, FITViewUIConverter.convertSpeedToKMprH(page.speed)], false, (currentSeries.speed.data.length > 60), false);
+                             page.speed = bike_wheelSize * page.revolutionSpeedCountDifference * 1024 / page.measurementSpeedTimeDifference;
+
+                // accumulated distance between measurements
+                             page.wheelCircumference = bike_wheelSize;
+                             page.accumulatedDistance = page.wheelCircumference * page.revolutionSpeedCountDifference;
+                             if (typeof connectedSensor[channelIDProperty] !== "undefined")
+                                 if (typeof connectedSensor[channelIDProperty].cumulativeDistance === "undefined")
+                                     connectedSensor[channelIDProperty].cumulativeDistance = 0;
+                                 else
+                                     connectedSensor[channelIDProperty].cumulativeDistance += page.accumulatedDistance;
+
+                             page.speedKMprH = FITViewUIConverter.convertSpeedToKMprH(page.speed);
+
+                             currentSeries.speed.addPoint([page.timestamp + timeZoneDifferenceFromUTC, page.speedKMprH], false, (currentSeries.speed.data.length > 60), false);
+
                              SPDCAD_Speed_Timeout = setTimeout(function spdcad_speed_handler() {
                                  self.logMessage('log', 'Adding null to SPDCAD speed series to allow for discontinous series - no speed data received in '+SPDCAD_Timeout_Interval+" ms");
                                  currentSeries.speed.addPoint([page.timestamp + timeZoneDifferenceFromUTC + 1, null], false, (currentSeries.speed.data.length > 60), false);
@@ -3796,7 +3840,8 @@
 
                          connectedSensor[channelIDProperty].cumulativeStrideCount = 0;
                          //connectedSensor[channelIDProperty].previousStrideCount = page.strideCount;
-                     }
+                     } 
+
 
                      self.masterVM.liveSensorVM.sensor.push(connectedSensor[channelIDProperty]);
                  }
