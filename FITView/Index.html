@@ -2064,9 +2064,10 @@
                                 <li>
 
                                     <!--<span data-bind="text: ko.toJSON(page)"></span>-->
-                                <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
-                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
-
+                                     <!-- ko if: typeof $parent.cumulativeDistance !== "undefined" -->
+                                        <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
+                                        <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
+                                    <!-- /ko -->
                                
                                     <!-- ko if: typeof speedKMprH !== "undefined" -->
                                         <!--<span data-bind="text: ko.toJSON(page)"></span>-->
@@ -2089,9 +2090,10 @@
                              <li>
 
                                 <!--<span data-bind="text: ko.toJSON(page)"></span>-->
-                                <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
-                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1), style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
-
+                                  <!-- ko if: typeof $parent.cumulativeDistance !== "undefined" -->
+                                    <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
+                                    <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1), style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
+                                  <!-- /ko -->
                             </li>
                     
                             <li>
@@ -2105,9 +2107,10 @@
                             <li>
 
                                 <!--<span data-bind="text: ko.toJSON(page)"></span>-->
-                                <img class="sensorValueIcon" alt="Strides per minute  from sensor" title="Strides per minute from sensor" src="Images/cadence.png" />
-                                <span class="sensorValue" data-bind="text: cadence.toFixed(0), style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
-
+                                 <!-- ko if: typeof cadence !== "undefined" -->
+                                    <img class="sensorValueIcon" alt="Strides per minute  from sensor" title="Strides per minute from sensor" src="Images/cadence.png" />
+                                    <span class="sensorValue" data-bind="text: cadence.toFixed(0), style: { 'background-color': $parents[1].inactiveSDM($data) }"></span>
+                                 <!-- /ko -->
                             </li>
 
                     <li>
@@ -2140,9 +2143,11 @@
 
                             <li>
                                 <!--<span data-bind="text: ko.toJSON(page)"></span>-->
-                                <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
-                                <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
-
+                             
+                                <!-- ko if: typeof $parent.cumulativeDistance !== "undefined" -->
+                                   <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
+                                    <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1)"></span>
+                                <!-- /ko -->
                             </li>
 
                             <li>
