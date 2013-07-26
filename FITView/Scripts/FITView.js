@@ -3397,7 +3397,8 @@
                  self.multiChart = new Highcharts.StockChart({
                      chart: {
                          renderTo: chartId,
-                         alignTicks: false
+                         alignTicks: false,
+                         animation : false // For added performance
                      },
 
                      legend : {
@@ -3514,6 +3515,10 @@
                      self.logMessage('log', 'Websocket is closed. Make sure websocket server is running.');
                  self.masterVM.settingsVM.liveStreamingFromSensors(false);
                  self.logMessage('log', 'Closed websocket to ' + wsResourceURL);
+                 var removedSensors = self.masterVM.liveSensorVM.sensor.removeAll();
+                 // removedSensors.splice(0);
+
+                 $('#divLiveSensors').hide();
              };
 
              ws.onopen = function () {

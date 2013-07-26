@@ -2155,11 +2155,11 @@
                              
 
                                 <!-- ko if: typeof $parent.cumulativeDistance !== "undefined" && $parent.cumulativeDistance < 1000 -->
-                                   <!-- <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />-->
+                                    <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
                                     <span class="sensorValue" data-bind="text: $parent.cumulativeDistance.toFixed(1) + ' m'"></span>
                                   <!-- /ko -->
                                  <!-- ko if: typeof $parent.cumulativeDistance !== "undefined" && $parent.cumulativeDistance >= 1000 -->
-                                   <!-- <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />-->
+                                    <img class="sensorValueIcon" alt="Cumulative distance" title="Cumulative distance" src="Images/total_distance.png" />
                                     <span class="sensorValue" data-bind="text: ($parent.cumulativeDistance / 1000).toFixed(2) + ' km'"></span>
                                   <!-- /ko -->
                             </li>
