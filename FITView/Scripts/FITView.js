@@ -3686,11 +3686,8 @@
                 // accumulated distance between measurements
                              page.wheelCircumference = bike_wheelSize;
                              page.accumulatedDistance = page.wheelCircumference * page.revolutionSpeedCountDifference;
-                             if (typeof connectedSensor[channelIDProperty] !== "undefined")
-                                 if (typeof connectedSensor[channelIDProperty].cumulativeDistance === "undefined")
-                                     connectedSensor[channelIDProperty].cumulativeDistance = 0;
-                                 else
-                                     connectedSensor[channelIDProperty].cumulativeDistance += page.accumulatedDistance;
+                             if (typeof connectedSensor[channelIDProperty] !== "undefined" && typeof connectedSensor[channelIDProperty].cumulativeDistance !== "undefined")
+                                  connectedSensor[channelIDProperty].cumulativeDistance += page.accumulatedDistance;
 
                              page.speedKMprH = FITViewUIConverter.convertSpeedToKMprH(page.speed);
 
@@ -3840,7 +3837,12 @@
 
                          connectedSensor[channelIDProperty].cumulativeStrideCount = 0;
                          //connectedSensor[channelIDProperty].previousStrideCount = page.strideCount;
-                     } 
+                     } else if (page.channelID.deviceTypeID === 121) {
+                         if (page.speed)
+                             connectedSensor[channelIDProperty].cumulativeDistance = bike_wheelSize;
+                         else
+                             connectedSensor[channelIDProperty].cumulativeDistance = 0;
+                     }
 
 
                      self.masterVM.liveSensorVM.sensor.push(connectedSensor[channelIDProperty]);
