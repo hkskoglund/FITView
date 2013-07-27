@@ -864,7 +864,8 @@
                 webSocketServerHost: ko.observable('localhost'),
                 webSocketServerPort: ko.observable(8093),
 
-                liveStreamingFromSensors: ko.observable(false)
+                liveStreamingFromSensors: ko.observable(false),
+                liveStreamUpdateInterval : ko.observable(1000)
             },
 
             progressVM: {
@@ -3333,7 +3334,9 @@
                      bike_wheelSize,
                      setting = self.masterVM.settingsVM.FITSetting(),
                       selectedBikeIndex,
-                      auto_wheel_cal;
+                      auto_wheel_cal,
+                          lastChartRedrawTimestamp;
+                       
 
              // Get SDM calibration factor
              if (typeof setting !== "undefined") {
@@ -3533,11 +3536,13 @@
              ws.onerror = function (error) { self.logMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
 
              ws.onmessage = function (e) {
-                 // Clears all timeouts that will generate a null on the specific series to visualize discontinous data
-               
 
                  var page = JSON.parse(e.data),
-                     channelIDProperty = page.channelID.toProperty;
+                     channelIDProperty = page.channelID.toProperty,
+                     messageReceivedTimestamp = Date.now();
+
+                 if (typeof lastChartRedrawTimestamp === "undefined")
+                     lastChartRedrawTimestamp = messageReceivedTimestamp;
 
                 // self.logMessage('log', 'Received from device ' + channelIDProperty + " " + e.data);
 
@@ -3629,10 +3634,6 @@
                          // HRM
                          case 0x78:
 
-                            
-
-                            
-
                              http://api.highcharts.com/highstock#Chart.addSeries()
                                  self.multiChart.addSeries({
 
@@ -3668,7 +3669,7 @@
                      }
                  }
 
-                 msgCounter.count++;
+                // msgCounter.count++;
 
                  
 
@@ -3857,12 +3858,23 @@
 
                  //console.log("msgCounter",msgCounter);
 
-                 if (msgCounter.count > 3) {
-                     //console.time("Redraw multichart");
-                     self.multiChart.redraw();
-                     msgCounter.count = 0;
-                     //console.timeEnd("Redraw multichart");
+
+                 if (typeof lastChartRedrawTimestamp !== "undefined") {
+
+                     if (messageReceivedTimestamp - lastChartRedrawTimestamp >= self.masterVM.settingsVM.liveStreamUpdateInterval()) {
+                         lastChartRedrawTimestamp = Date.now();
+                         self.multiChart.redraw();
+                     }
                  }
+
+                
+
+                 //if (msgCounter.count > 3) {
+                 //    //console.time("Redraw multichart");
+                 //    self.multiChart.redraw();
+                 //    msgCounter.count = 0;
+                 //    //console.timeEnd("Redraw multichart");
+                 //}
                  
              };
 
