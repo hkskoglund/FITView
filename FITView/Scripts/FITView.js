@@ -861,8 +861,8 @@
                 FITTotals: ko.observable(undefined),
                 //requestHideAltitude : ko.observable(true)
 
-                webSocketServerHost: ko.observable('localhost'),
-                webSocketServerPort: ko.observable(8093),
+                webSocketServerHost: ko.observable(localStorage.webSocketServerHost),
+                webSocketServerPort: ko.observable(localStorage.webSocketServerPort),
 
                 liveStreamingFromSensors: ko.observable(false),
                 liveStreamUpdateInterval : ko.observable(1000)
@@ -1363,6 +1363,19 @@
                 return 'ws://'+self.masterVM.settingsVM.webSocketServerHost() + ":" + self.masterVM.settingsVM.webSocketServerPort();
             });
 
+            
+            if (localStorage.webSocketServerHost === undefined) {
+                self.logMessage("log", "Found no websocket server hostname in local storage, setting default localhost");
+                localStorage.webSocketServerHost = 'localhost';
+                self.maserVM.settingsVM.webSocketServerHost(localStorage.webSocketServerHost);
+            }
+
+            if (localStorage.webSocketServerPort === undefined) {
+                self.logMessage("log", "Found no websocket server port in local storage, setting default 8093");
+                localStorage.webSocketServerPort = 8093;
+                self.maserVM.settingsVM.webSocketServerPort(localStorage.webSocketServerPort);
+            }
+
             // Click-handler for live streaming from sensors
             self.masterVM.startWebSocketClient = function () {
                 self.showLiveChart();
@@ -1567,6 +1580,16 @@
                 localStorage.liveImage = liveImage;
             }
             );
+
+            this.masterVM.settingsVM.webSocketServerHost.subscribe(function (webSocketServerHost) {
+                localStorage.webSocketServerHost = webSocketServerHost;
+            }
+           );
+
+            this.masterVM.settingsVM.webSocketServerPort.subscribe(function (webSocketServerPort) {
+                localStorage.webSocketServerPort = webSocketServerPort;
+            }
+           );
 
             // Make sure we always is ready to export CSV data when user changes parameters
             this.masterVM.exportVM.csv.header.subscribe(function (header) {
@@ -3425,6 +3448,12 @@
                          animation: false,
                          enabled : false
                      },
+
+                     plotOptions: {
+                         series: {
+                             animation: false
+                         }
+                     },
                      
                      xAxis: [{
                     
@@ -3670,9 +3699,6 @@
                  }
 
                 // msgCounter.count++;
-
-                 
-
 
                  switch (page.channelID.deviceTypeID) {
 

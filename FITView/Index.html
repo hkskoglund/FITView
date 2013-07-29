@@ -526,11 +526,25 @@
                                 </a>
                             </li>
 
+                             <li title="Live data from sensors are provided by a separate nodejs app. that interfaces with the USB ANT stick (nRF24AP2) and provides a websocket server">
+                                <a>
+                                    <label>Websocket hostname:</label>
+                                    <input data-bind="value: webSocketServerHost, valueUpdate: 'afterkeydown'" title="Websocket server hostname, i.e localhost" />
+                                </a>
+                            </li>
+
+                             <li title="Live data from sensors are provided by a separate nodejs app. that interfaces with the USB ANT stick (nRF24AP2) and provides a websocket server">
+                                <a>
+                                    <label>Websocket port:</label>
+                                    <input data-bind="value: webSocketServerPort, valueUpdate: 'afterkeydown'" title="Websocket port, i.e 8093" />
+                                </a>
+                            </li>
+
 
                             <li title="Live data from sensors are provided by a separate nodejs app. that interfaces with the USB ANT stick (nRF24AP2) and provides a websocket server">
                                 <a>
                                     <span>Websocket server:</span>
-                                    <span data-bind="text: webSocketServerURL"></span>
+                                    <span data-bind="text: webSocketServerURL" title="Websocket server URL for live streaming sensor ANT+ pages"></span>
                                 </a>
                             </li>
 
