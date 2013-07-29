@@ -1367,13 +1367,13 @@
             if (localStorage.webSocketServerHost === undefined) {
                 self.logMessage("log", "Found no websocket server hostname in local storage, setting default localhost");
                 localStorage.webSocketServerHost = 'localhost';
-                self.maserVM.settingsVM.webSocketServerHost(localStorage.webSocketServerHost);
+                self.masterVM.settingsVM.webSocketServerHost(localStorage.webSocketServerHost);
             }
 
             if (localStorage.webSocketServerPort === undefined) {
                 self.logMessage("log", "Found no websocket server port in local storage, setting default 8093");
                 localStorage.webSocketServerPort = 8093;
-                self.maserVM.settingsVM.webSocketServerPort(localStorage.webSocketServerPort);
+                self.masterVM.settingsVM.webSocketServerPort(localStorage.webSocketServerPort);
             }
 
             // Click-handler for live streaming from sensors
