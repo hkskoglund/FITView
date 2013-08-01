@@ -3562,7 +3562,9 @@
 
              };
             
-             ws.onerror = function (error) { self.logMessage('log','Error in websocket to ' + wsResourceURL + ' ' + error); };
+             ws.onerror = function (error) {
+                 self.logMessage('log', 'Error in websocket to ' + wsResourceURL + ' ' + error.type);
+             };
 
              ws.onmessage = function (e) {
 
