@@ -143,8 +143,8 @@
     <Content Include="Scripts\lib\jquery-v2.0.2\jquery-2.0.2.min.js" />
     <Content Include="Scripts\lib\jquery-v2.0.2\jquery-2.0.2.min.map" />
     <Content Include="Scripts\lib\knockout.mapping-v2.4.1\knockout.mapping.js" />
-    <Content Include="Scripts\lib\moment.isocalendar.js" />
-    <Content Include="Scripts\lib\moment.js" />
+    <Content Include="Scripts\lib\moment-v2.1.0\moment.js" />
+    <Content Include="Scripts\lib\moment.isocalendar-v0.1.0\moment.isocalendar.js" />
     <Content Include="Scripts\Messages\FITCommonMessage.js" />
     <Content Include="Scripts\FITImport.js" />
     <Content Include="Scripts\Messages\FITSportSetting.js" />
@@ -155,7 +155,7 @@
     <None Include="Properties\PublishProfiles\fitview - Web Deploy.pubxml" />
     <Content Include="Scripts\Messages\FITActivityFile.js" />
     <Content Include="Scripts\FITCRCTimestampUtility.js" />
-    <Content Include="Scripts\lib\modernizr-2.6.2.js" />
+    <Content Include="Scripts\lib\modernizr-v2.6.2\modernizr-2.6.2.js" />
     <Content Include="Scripts\Messages\FITSettingsFile.js" />
     <Content Include="Scripts\Messages\FITTotalsFile.js" />
     <Content Include="Snippets\FITSettings.js" />
